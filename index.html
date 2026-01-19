@@ -6,116 +6,287 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>ACG 收藏庫 - TECH v2.4.3</title>
+  <title>ACG 收藏庫 - TECH v3.0 ULTRA</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* ========== 極致科技感 v2.4.3 - Cyber Tech (內嵌樣式) ========== */
+    /* ========== 極致科技感 v3.0 ULTRA - 毛玻璃 + 動態霓虹 + 故障效果 ========== */
+    
     :root {
-        --bg-dark: #020408;
+        --bg-dark: #0a0e1a;
+        --bg-darker: #050609;
         --panel-bg: rgba(10, 15, 25, 0.95);
+        --glass-bg: rgba(15, 20, 35, 0.4);
         --neon-blue: #00d4ff;
+        --neon-cyan: #00ffff;
         --neon-purple: #b026ff;
+        --neon-pink: #ff006e;
+        --neon-green: #00ff41;
         --text-main: #e0e6ed;
+        --text-secondary: #a8b0c0;
         --border-glow: 0 0 10px rgba(0, 212, 255, 0.5);
+        --border-glow-strong: 0 0 20px rgba(0, 212, 255, 0.8);
+        --shadow-glow: 0 0 30px rgba(0, 212, 255, 0.3);
+        --transition-smooth: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html, body {
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
     }
 
     body {
         background-color: var(--bg-dark) !important;
         background-image: 
-            linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px) !important;
-        background-size: 30px 30px !important;
+            radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(176, 38, 255, 0.05) 0%, transparent 50%),
+            linear-gradient(rgba(0, 212, 255, 0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 212, 255, 0.02) 1px, transparent 1px) !important;
+        background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px !important;
+        background-attachment: fixed !important;
         color: var(--text-main) !important;
-        font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif !important; font-weight: bold !important;
-        margin: 0; padding: 0;
+        font-family: 'Space Mono', 'Microsoft JhengHei', '微軟正黑體', monospace !important;
+        font-weight: 400 !important;
+        line-height: 1.6;
         overflow-x: hidden !important;
     }
 
-    * { border-radius: 4px !important; }
-    * { scrollbar-width: thin !important; scrollbar-color: var(--neon-blue) #020408 !important; }
-    ::-webkit-scrollbar { width: 4px !important; height: 4px !important; }
-    ::-webkit-scrollbar-track { background: #020408 !important; }
-    ::-webkit-scrollbar-thumb { background: var(--neon-blue) !important; }
+    /* ========== 滾動條美化 ========== */
+    * { scrollbar-width: thin !important; scrollbar-color: var(--neon-blue) var(--bg-darker) !important; }
+    ::-webkit-scrollbar { width: 6px !important; height: 6px !important; }
+    ::-webkit-scrollbar-track { background: var(--bg-darker) !important; }
+    ::-webkit-scrollbar-thumb { 
+        background: linear-gradient(180deg, var(--neon-blue), var(--neon-purple)) !important;
+        border-radius: 3px !important;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--neon-cyan) !important; }
 
+    /* ========== 全局動畫定義 ========== */
+    @keyframes neon-glow {
+        0%, 100% { 
+            box-shadow: 0 0 5px rgba(0, 212, 255, 0.5), 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+        50% { 
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.8), 0 0 25px rgba(0, 212, 255, 0.5);
+        }
+    }
+
+    @keyframes glitch-shift {
+        0% { transform: translate(0); }
+        20% { transform: translate(-2px, 2px); }
+        40% { transform: translate(-2px, -2px); }
+        60% { transform: translate(2px, 2px); }
+        80% { transform: translate(2px, -2px); }
+        100% { transform: translate(0); }
+    }
+
+    @keyframes pulse-glow {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+
+    @keyframes scanline {
+        0% { top: -100%; }
+        100% { top: 100%; }
+    }
+
+    @keyframes float-up {
+        0% { transform: translateY(0px); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateY(-20px); opacity: 0; }
+    }
+
+    @keyframes cyber-flicker {
+        0%, 100% { opacity: 1; }
+        4% { opacity: 0.9; }
+        8% { opacity: 1; }
+        12% { opacity: 0.95; }
+    }
+
+    /* ========== 標題與文字樣式 ========== */
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Orbitron', sans-serif !important;
+        font-weight: 700 !important;
+        letter-spacing: 2px !important;
+        text-transform: uppercase !important;
+    }
+
+    h1 {
+        font-size: 32px !important;
+        color: var(--neon-cyan) !important;
+        text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-purple) !important;
+        animation: cyber-flicker 0.15s infinite;
+    }
+
+    h2 {
+        font-size: 20px !important;
+        color: var(--neon-blue) !important;
+        text-shadow: 0 0 8px var(--neon-blue) !important;
+    }
+
+    h3 {
+        font-size: 16px !important;
+        color: var(--neon-blue) !important;
+    }
+
+    /* ========== 浮動選單按鈕 ========== */
     .floating-menu-btn {
         position: fixed !important;
         top: 20px !important;
         right: 20px !important;
-        width: 40px !important;
-        height: 40px !important;
-        background: #000 !important;
-        border: 1px solid var(--neon-blue) !important;
+        width: 50px !important;
+        height: 50px !important;
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(176, 38, 255, 0.1)) !important;
+        border: 2px solid var(--neon-blue) !important;
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
         cursor: pointer !important;
         z-index: 10000 !important;
-        box-shadow: var(--border-glow) !important;
+        box-shadow: var(--border-glow-strong), inset 0 0 10px rgba(0, 212, 255, 0.2) !important;
+        border-radius: 8px !important;
+        backdrop-filter: blur(10px) !important;
+        transition: var(--transition-smooth) !important;
     }
+
+    .floating-menu-btn:hover {
+        box-shadow: var(--border-glow-strong), 0 0 30px var(--neon-blue), inset 0 0 15px rgba(0, 212, 255, 0.3) !important;
+        transform: scale(1.1) !important;
+        border-color: var(--neon-cyan) !important;
+    }
+
     .floating-menu-btn.hidden { display: none !important; }
     
     .floating-menu-btn::before {
-        content: ''; width: 20px; height: 20px;
-        background: var(--neon-blue);
-        clip-path: polygon(
-            50% 0%, 60% 10%, 90% 10%, 100% 20%, 100% 50%, 90% 60%, 90% 90%, 80% 100%, 50% 100%, 40% 90%, 10% 90%, 0% 80%, 0% 50%, 10% 40%, 10% 10%, 20% 0%
-        );
-        mask: radial-gradient(circle, transparent 30%, black 35%);
-        -webkit-mask: radial-gradient(circle, transparent 30%, black 35%);
+        content: '⚙';
+        font-size: 24px;
+        color: var(--neon-cyan);
+        animation: glitch-shift 0.3s ease-in-out;
     }
 
+    .floating-menu-btn:hover::before {
+        animation: glitch-shift 0.15s ease-in-out infinite;
+    }
+
+    /* ========== 下拉選單 ========== */
     .menu-dropdown-v2 {
         position: fixed !important;
-        top: 70px !important;
+        top: 80px !important;
         right: 20px !important;
-        background: #000 !important;
-        border: 1px solid var(--neon-blue) !important;
-        width: 140px !important;
+        background: linear-gradient(135deg, rgba(10, 15, 25, 0.95), rgba(15, 20, 35, 0.95)) !important;
+        border: 2px solid var(--neon-blue) !important;
+        width: 180px !important;
         display: none;
         flex-direction: column !important;
         z-index: 9999 !important;
+        border-radius: 8px !important;
+        backdrop-filter: blur(15px) !important;
+        box-shadow: 0 0 30px rgba(0, 212, 255, 0.4), inset 0 0 15px rgba(0, 212, 255, 0.1) !important;
+        overflow: hidden !important;
+        animation: float-up 0.4s ease-out !important;
     }
+
     .menu-dropdown-v2.active { display: flex !important; }
+
     .menu-item-v2 {
-        padding: 10px !important;
+        padding: 12px 15px !important;
         color: var(--neon-blue) !important;
         cursor: pointer !important;
-        font-size: 12px !important;
-        border-bottom: 1px solid rgba(0, 212, 255, 0.2) !important;
+        font-size: 13px !important;
+        border-bottom: 1px solid rgba(0, 212, 255, 0.15) !important;
         text-align: center !important;
+        transition: var(--transition-smooth) !important;
+        font-weight: 600 !important;
     }
-    .menu-item-v2:hover { background: var(--neon-blue); color: #000; }
 
+    .menu-item-v2:last-child { border-bottom: none !important; }
+
+    .menu-item-v2:hover { 
+        background: rgba(0, 212, 255, 0.2) !important;
+        color: var(--neon-cyan) !important;
+        box-shadow: inset 0 0 10px rgba(0, 212, 255, 0.3) !important;
+        transform: translateX(5px) !important;
+    }
+
+    /* ========== 作品卡片 ========== */
     .anime-card {
-        background: #000 !important;
-        border: 1px solid rgba(0, 212, 255, 0.3) !important;
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)) !important;
+        border: 1.5px solid rgba(0, 212, 255, 0.3) !important;
         position: relative !important;
-        transition: all 0.3s ease !important;
+        transition: var(--transition-smooth) !important;
         cursor: pointer;
-    }
-    .anime-card:hover {
-        border-color: var(--neon-blue) !important;
-        box-shadow: 0 0 15px var(--neon-blue) !important;
+        border-radius: 8px !important;
+        overflow: hidden !important;
+        backdrop-filter: blur(5px) !important;
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.1) !important;
     }
 
+    .anime-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent 30%, rgba(0, 212, 255, 0.1) 50%, transparent 70%);
+        transform: rotate(45deg);
+        animation: none;
+        z-index: 1;
+    }
+
+    .anime-card:hover {
+        border-color: var(--neon-cyan) !important;
+        box-shadow: 0 0 20px var(--neon-blue), 0 0 40px rgba(0, 212, 255, 0.3), inset 0 0 15px rgba(0, 212, 255, 0.1) !important;
+        transform: translateY(-8px) scale(1.02) !important;
+    }
+
+    .anime-card:hover::before {
+        animation: glitch-shift 0.2s ease-in-out;
+    }
+
+    /* ========== 推薦徽章 ========== */
     .recommendation-badge {
         position: absolute !important;
-        top: 5px !important;
-        right: 5px !important;
-        padding: 2px 8px !important;
-        font-size: 10px !important;
+        top: 8px !important;
+        right: 8px !important;
+        padding: 4px 10px !important;
+        font-size: 11px !important;
         font-weight: bold !important;
-        z-index: 10 !important;
-        background: #000 !important;
-        border: 1px solid currentColor !important;
-        border-radius: 10px !important;
-        animation: star-glow 2s infinite alternate !important;
-    }
-    @keyframes star-glow {
-        from { box-shadow: 0 0 2px currentColor; }
-        to { box-shadow: 0 0 12px currentColor; }
+        z-index: 20 !important;
+        background: rgba(0, 0, 0, 0.7) !important;
+        border: 1.5px solid currentColor !important;
+        border-radius: 6px !important;
+        backdrop-filter: blur(8px) !important;
+        animation: pulse-glow 2s ease-in-out infinite !important;
+        box-shadow: 0 0 10px currentColor !important;
     }
 
+    /* ========== 評分徽章 ========== */
+    .rating-badge {
+        position: absolute !important;
+        top: 8px !important;
+        right: 8px !important;
+        padding: 4px 8px !important;
+        font-size: 12px !important;
+        background: rgba(0, 0, 0, 0.7) !important;
+        border: 1.5px solid var(--neon-purple) !important;
+        border-radius: 6px !important;
+        color: var(--neon-purple) !important;
+        z-index: 20 !important;
+        backdrop-filter: blur(8px) !important;
+        box-shadow: 0 0 10px var(--neon-purple) !important;
+    }
+
+    /* ========== 水平滾動容器 ========== */
     .horizontal-scroll-container {
         display: flex !important;
         overflow-x: auto !important;
@@ -123,127 +294,288 @@
         padding-bottom: 10px !important;
     }
 
+    /* ========== 垂直卡片 ========== */
     .vertical-scroll-card {
-        flex: 0 0 180px !important;
-        background: rgba(0, 212, 255, 0.05) !important;
-        border: 1px solid rgba(0, 212, 255, 0.2) !important;
-        padding: 10px !important;
+        flex: 0 0 200px !important;
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(176, 38, 255, 0.08)) !important;
+        border: 1.5px solid rgba(0, 212, 255, 0.3) !important;
+        padding: 12px !important;
         display: flex !important;
         flex-direction: column !important;
+        border-radius: 8px !important;
+        backdrop-filter: blur(8px) !important;
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.1), inset 0 0 10px rgba(0, 212, 255, 0.05) !important;
+        transition: var(--transition-smooth) !important;
     }
+
+    .vertical-scroll-card:hover {
+        border-color: var(--neon-cyan) !important;
+        box-shadow: 0 0 20px var(--neon-blue), inset 0 0 15px rgba(0, 212, 255, 0.1) !important;
+        transform: translateY(-4px) !important;
+    }
+
     .scroll-list {
         max-height: 200px !important;
         overflow-y: auto !important;
         margin-top: 5px !important;
     }
 
+    /* ========== 表單元素 ========== */
     input, select, textarea {
-        background: #050810 !important;
-        border: 1px solid #2d3b5a !important;
+        background: rgba(5, 9, 16, 0.8) !important;
+        border: 1.5px solid rgba(0, 212, 255, 0.3) !important;
         color: var(--neon-blue) !important;
-        padding: 8px !important;
+        padding: 10px 12px !important;
         outline: none !important;
+        border-radius: 6px !important;
+        font-family: 'Space Mono', monospace !important;
+        font-size: 13px !important;
+        transition: var(--transition-smooth) !important;
+        backdrop-filter: blur(5px) !important;
     }
-    input:focus, select:focus { border-color: var(--neon-blue) !important; box-shadow: 0 0 5px var(--neon-blue); }
 
+    input::placeholder, select::placeholder, textarea::placeholder {
+        color: rgba(160, 176, 192, 0.5) !important;
+    }
+
+    input:focus, select:focus, textarea:focus { 
+        border-color: var(--neon-cyan) !important;
+        box-shadow: 0 0 15px var(--neon-blue), inset 0 0 8px rgba(0, 212, 255, 0.1) !important;
+        background: rgba(5, 9, 16, 0.95) !important;
+    }
+
+    /* ========== 主要按鈕 ========== */
     .btn-primary {
-        background: transparent !important;
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(176, 38, 255, 0.15)) !important;
         color: var(--neon-blue) !important;
-        border: 1px solid var(--neon-blue) !important;
-        padding: 8px 15px !important;
+        border: 1.5px solid var(--neon-blue) !important;
+        padding: 10px 18px !important;
         cursor: pointer !important;
-        font-weight: bold !important;
+        font-weight: 600 !important;
+        border-radius: 6px !important;
+        transition: var(--transition-smooth) !important;
+        font-family: 'Orbitron', sans-serif !important;
+        font-size: 13px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        backdrop-filter: blur(5px) !important;
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.2) !important;
+        position: relative !important;
+        overflow: hidden !important;
     }
-    .btn-primary:hover { background: var(--neon-blue) !important; color: #000 !important; }
-    .btn-primary.active { background: var(--neon-blue) !important; color: #000 !important; }
 
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.3), transparent);
+        transition: left 0.5s ease !important;
+    }
+
+    .btn-primary:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary:hover { 
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(176, 38, 255, 0.3)) !important;
+        color: var(--neon-cyan) !important;
+        border-color: var(--neon-cyan) !important;
+        box-shadow: 0 0 20px var(--neon-blue), 0 0 40px rgba(0, 212, 255, 0.2) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    .btn-primary.active { 
+        background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)) !important;
+        color: var(--bg-dark) !important;
+        border-color: var(--neon-cyan) !important;
+        box-shadow: 0 0 25px var(--neon-blue), 0 0 50px rgba(0, 212, 255, 0.3) !important;
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.4 !important;
+        cursor: not-allowed !important;
+        box-shadow: none !important;
+    }
+
+    /* ========== 模態視窗 ========== */
     .modal-overlay {
         position: fixed !important;
-        top: 0 !important; left: 0 !important;
-        width: 100% !important; height: 100% !important;
-        background: rgba(0,0,0,0.8) !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: rgba(0, 0, 0, 0.85) !important;
+        backdrop-filter: blur(5px) !important;
         display: none;
         justify-content: center !important;
         align-items: center !important;
         z-index: 20000 !important;
     }
+
     .modal-overlay.active { display: flex !important; }
+
     .modal-content {
-        background: #000 !important;
-        background-image: 
-            linear-gradient(0deg, transparent 24%, rgba(0, 212, 255, 0.08) 25%, rgba(0, 212, 255, 0.08) 26%, transparent 27%, transparent 74%, rgba(0, 212, 255, 0.08) 75%, rgba(0, 212, 255, 0.08) 76%, transparent 77%, transparent),
-            linear-gradient(90deg, transparent 24%, rgba(0, 212, 255, 0.08) 25%, rgba(0, 212, 255, 0.08) 26%, transparent 27%, transparent 74%, rgba(0, 212, 255, 0.08) 75%, rgba(0, 212, 255, 0.08) 76%, transparent 77%, transparent) !important;
-        background-size: 40px 40px !important;
-        border: 1px solid var(--neon-blue) !important;
-        padding: 30px !important;
+        background: linear-gradient(135deg, rgba(10, 15, 25, 0.95), rgba(15, 20, 35, 0.95)) !important;
+        border: 2px solid var(--neon-blue) !important;
+        padding: 35px !important;
         width: 90% !important;
-        max-width: 800px !important;
+        max-width: 850px !important;
         position: relative !important;
-        box-shadow: 0 0 50px rgba(0, 212, 255, 0.4) !important;
+        box-shadow: 0 0 50px rgba(0, 212, 255, 0.5), 0 0 100px rgba(176, 38, 255, 0.3), inset 0 0 30px rgba(0, 212, 255, 0.1) !important;
         overflow: hidden;
+        border-radius: 12px !important;
+        backdrop-filter: blur(15px) !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
     }
+
     .modal-content::before {
         content: "";
         position: absolute;
-        top: -100%; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(to bottom, transparent, rgba(0, 212, 255, 0.05), transparent);
+        top: -100%;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, transparent, rgba(0, 212, 255, 0.08), transparent);
         animation: scanline 6s linear infinite;
         pointer-events: none;
         z-index: 0;
     }
-    @keyframes scanline {
-        0% { top: -100%; }
-        100% { top: 100%; }
-    }
+
     .modal-content::after {
         content: "";
         position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 212, 255, 0.03) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 212, 255, 0.02) 50%),
+            linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.01));
         background-size: 100% 3px, 3px 100%;
         pointer-events: none;
         z-index: 0;
     }
 
+    .modal-content > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ========== 標籤 ========== */
     .tag-item {
         display: inline-block;
         margin-right: 10px;
-        padding: 2px 10px;
+        padding: 4px 12px;
         font-size: 11px;
-        border: 1px solid currentColor;
-        border-radius: 12px !important;
+        border: 1.5px solid currentColor;
+        border-radius: 6px !important;
         white-space: nowrap;
-    }
-    .combined-tag {
-        display: inline-block;
-        padding: 4px 15px;
-        font-size: 16px;
-        border: 2px solid var(--neon-blue);
-        border-radius: 8px !important;
-        background: rgba(0, 212, 255, 0.1);
-        color: var(--neon-blue);
-        margin-bottom: 15px;
-    }
-    .rating-badge {
-        position: absolute !important;
-        top: 5px !important;
-        right: 75px !important;
-        padding: 2px 8px !important;
-        font-size: 12px !important;
-        background: #000 !important;
-        border: 1px solid var(--neon-purple) !important;
-        border-radius: 8px !important;
-        color: var(--neon-purple) !important;
-        z-index: 10 !important;
+        background: rgba(0, 212, 255, 0.08) !important;
+        transition: var(--transition-smooth) !important;
     }
 
-    .toast {
-        position: fixed; bottom: 20px; left: 20px;
-        background: var(--neon-blue); color: #000;
-        padding: 8px 15px; font-size: 12px; font-weight: bold;
-        display: none; z-index: 11000;
+    .tag-item:hover {
+        background: rgba(0, 212, 255, 0.15) !important;
+        box-shadow: 0 0 8px currentColor !important;
     }
+
+    .combined-tag {
+        display: inline-block;
+        padding: 8px 18px;
+        font-size: 14px;
+        border: 2px solid var(--neon-blue);
+        border-radius: 8px !important;
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(176, 38, 255, 0.15)) !important;
+        color: var(--neon-cyan);
+        margin-bottom: 15px;
+        font-weight: 600;
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.3) !important;
+        backdrop-filter: blur(8px) !important;
+    }
+
+    /* ========== 吐司通知 ========== */
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: linear-gradient(135deg, var(--neon-blue), var(--neon-cyan));
+        color: var(--bg-dark);
+        padding: 12px 20px;
+        font-size: 13px;
+        font-weight: bold;
+        display: none;
+        z-index: 11000;
+        border-radius: 6px;
+        box-shadow: 0 0 20px var(--neon-blue);
+        backdrop-filter: blur(8px);
+        animation: float-up 3s ease-out forwards;
+    }
+
     .toast.show { display: block; }
+
+    /* ========== 容器與佈局 ========== */
+    .app-container {
+        padding: 25px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    header {
+        margin-bottom: 35px;
+        text-align: center;
+        border-bottom: 2px solid var(--neon-blue);
+        padding-bottom: 20px;
+        position: relative;
+    }
+
+    header::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--neon-blue), var(--neon-purple), transparent);
+        animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    /* ========== 網格 ========== */
+    .anime-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 18px;
+    }
+
+    /* ========== 響應式設計 ========== */
+    @media (max-width: 1024px) {
+        .anime-grid {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+        }
+        h1 { font-size: 24px !important; }
+    }
+
+    @media (max-width: 768px) {
+        .anime-grid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+        .app-container { padding: 15px; }
+        h1 { font-size: 20px !important; }
+        .modal-content { padding: 20px !important; }
+    }
+
+    @media (max-width: 480px) {
+        .anime-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+        .floating-menu-btn { width: 45px !important; height: 45px !important; }
+    }
   </style>
  </head>
  <body>
@@ -257,14 +589,14 @@
   <!-- Floating Menu -->
   <div class="floating-menu-btn" id="gearBtn" onclick="window.toggleSystemMenu(event)"></div>
   <div class="menu-dropdown-v2" id="systemMenu">
-    <div class="menu-item-v2" onclick="window.refreshSystem()">同步資料</div>
+    <div class="menu-item-v2" onclick="window.refreshSystem()">⟳ 同步資料</div>
     <div id="adminMenuOptions"></div>
   </div>
 
   <!-- Detail Modal -->
   <div class="modal-overlay" id="detailModal">
    <div class="modal-content">
-    <button style="position: absolute; top: 10px; right: 10px; background: #000; border: 1px solid var(--neon-blue); color: var(--neon-blue); width: 25px; height: 25px; cursor: pointer;" onclick="window.closeAnimeDetail()">X</button>
+    <button style="position: absolute; top: 15px; right: 15px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(176, 38, 255, 0.15)); border: 1.5px solid var(--neon-blue); color: var(--neon-cyan); width: 35px; height: 35px; cursor: pointer; border-radius: 6px; font-size: 16px; font-weight: bold; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;" onclick="window.closeAnimeDetail()" onmouseover="this.style.boxShadow='0 0 15px var(--neon-blue)'; this.style.borderColor='var(--neon-cyan)'" onmouseout="this.style.boxShadow=''; this.style.borderColor='var(--neon-blue)'">✕</button>
     <div id="detailContent"></div>
    </div>
   </div>
