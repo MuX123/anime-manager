@@ -373,7 +373,7 @@ window.showAnimeDetail = (id) => {
 	                </div>
 
                 <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2);">
-                    <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 12px; padding: 6px 0; justify-content: center; min-height: 50px;">
+                    <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 12px; padding: 10px 5px; justify-content: flex-start; min-height: 50px;">
                         ${(item.links || []).map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="font-size: 12px; padding: 8px 22px; white-space: nowrap; display: inline-flex; align-items: center; text-decoration: none;">🔗 ${l.name}</a>`).join('')}
                     </div>
                 </div>
