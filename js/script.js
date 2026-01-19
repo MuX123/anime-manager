@@ -346,9 +346,9 @@ window.showAnimeDetail = (id) => {
                     </div>
                     <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 360px; object-fit: cover; display: block;">
                 </div>
-                <div style="width: 280px; border: 1.5px solid rgba(0, 212, 255, 0.4); background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 212, 255, 0.05)); border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.15);">
-                    ${timeInfo ? `<div style="flex: 1; text-align: left;"><div style="display: inline-block; border: 1.5px solid ${yearColor}; color: ${yearColor}; font-size: 11px; padding: 4px 8px; border-radius: 4px; box-shadow: 0 0 8px ${yearColor}44; font-weight: 600;">${timeInfo}</div></div>` : '<div style="flex: 1;"></div>'}
-                    ${item.episodes ? `<div style="text-align: right;"><div style="display: inline-block; color: ${descColor}; font-size: 11px; padding: 4px 8px; font-weight: 600;">全${item.episodes}集</div></div>` : ''}
+                <div style="width: 280px; padding: 0; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    ${timeInfo ? `<div style="flex: 1; text-align: left;"><div style="display: inline-block; border: 1.5px solid ${yearColor}; color: ${yearColor}; font-size: 14px; padding: 6px 12px; border-radius: 6px; box-shadow: 0 0 10px ${yearColor}66; font-weight: 700;">${timeInfo}</div></div>` : ''}
+                    ${item.episodes ? `<div style="flex: 1; text-align: right;"><div style="display: inline-block; border: 1.5px solid ${descColor}; color: ${descColor}; font-size: 14px; padding: 6px 12px; border-radius: 6px; box-shadow: 0 0 10px ${descColor}66; font-weight: 700;">全${item.episodes}集</div></div>` : ''}
                 </div>
             </div>
             
