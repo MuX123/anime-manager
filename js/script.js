@@ -140,7 +140,7 @@ window.renderAnimeGrid = function() {
         return `
             <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="animation: float-up 0.6s ease-out ${idx * 0.08}s forwards;">
                 <div style="position: absolute; top: 8px; right: 8px; display: flex; align-items: center; gap: 3px; z-index: 20;">
-                    ${item.rating ? `<div style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; padding: 0; border: 1.5px solid var(--neon-purple); color: var(--neon-purple); background: rgba(0,0,0,0.8); border-radius: 4px; box-shadow: 0 0 8px var(--neon-purple);">${item.rating.charAt(0)}</div>` : ''}
+                    ${item.rating ? `<div style="display: flex; align-items: center; justify-content: center; font-size: 11px; padding: 0; border: 1.5px solid var(--neon-purple); color: var(--neon-purple); background: rgba(0,0,0,0.8); border-radius: 4px; box-shadow: 0 0 8px var(--neon-purple);">${item.rating.charAt(0)}</div>` : ''}
                     ${item.recommendation ? `<div style="height: 22px; display: flex; align-items: center; color: ${starColor}; border: 1.5px solid ${starColor}; font-size: 10px; padding: 0 6px; background: rgba(0,0,0,0.8); border-radius: 4px; box-shadow: 0 0 8px ${starColor}; animation: pulse-glow 2s ease-in-out infinite;">${item.recommendation}</div>` : ''}
                 </div>
                 
@@ -280,16 +280,16 @@ window.updateFormPreview = function(type, val) {
 
 window.renderAdminOptions = function() {
     return `
-        <div style="margin-bottom: 20px; display: flex; gap: 12px;"><input type="text" id="new-category-name" placeholder="新類別名稱..." style="flex: 1;"><button class="btn-primary" onclick="window.addNewCategory()">➕ 新增類別</button></div>
+        <div style="margin-bottom: 20px; display: flex; gap: 12px;"><input type="text" id="new-category-name" placeholder="新類別名稱..." style="flex: 1;"><button class="btn-primary" onclick="window.addNewCategory()">Add</button></div>
         <div class="horizontal-scroll-container force-scroll" style="padding-bottom: 20px;">
             ${Object.keys(optionsData).filter(k => k !== 'category_colors').map(key => {
                 const catColor = optionsData.category_colors?.[key] || 'var(--neon-blue)';
                 return `
                     <div class="vertical-scroll-card" style="border-color: ${catColor};">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"><h4 style="font-size: 13px; color: ${catColor}; margin: 0; font-weight: 700;">${window.getOptionLabel(key)}</h4><input type="color" value="${catColor}" style="width: 24px; height: 24px; border-radius: 4px; cursor: pointer;" onchange="window.updateCategoryColor('${key}', this.value)"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"><h4 style="font-size: 13px; color: ${catColor}; margin: 0; font-weight: 700;">${window.getOptionLabel(key)}</h4><input type="color" value="${catColor}" style="width: 40px; height: 40px; border-radius: 4px; cursor: pointer;" onchange="window.updateCategoryColor('${key}', this.value)"></div>
                         <div class="scroll-list force-scroll" style="height: 280px;">
                             ${optionsData[key].map((opt, idx) => `<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px; border-bottom: 1px solid rgba(0, 212, 255, 0.08); border-radius: 4px; transition: background 0.2s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.05)'" onmouseout="this.style.background=''"><span style="font-size: 12px; color: ${catColor}; flex: 1;">${opt}</span><button style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 11px; font-weight: bold; padding: 2px 6px;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</button></div>`).join('')}
-                            <div style="display: flex; gap: 6px; margin-top: 12px;"><input type="text" id="add-opt-${key}" placeholder="新增..." style="flex: 1; font-size: 11px;"><button class="btn-primary" style="padding: 4px 8px; font-size: 10px;" onclick="window.addOptionItem('${key}')">+</button></div>
+                            <div style="display: flex; gap: 6px; margin-top: 12px;"><input type="text" id="add-opt-${key}" placeholder="新增..." style="flex: 1; font-size: 11px;" onkeypress="if(event.key==='Enter') window.addOptionItem('${key}')"><button class="btn-primary" style="padding: 4px 8px; font-size: 10px;" onclick="window.addOptionItem('${key}')">+</button></div>
                         </div>
                     </div>
                 `;
@@ -299,7 +299,7 @@ window.renderAdminOptions = function() {
 };
 
 window.renderAdminData = function() {
-    return `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"><div class="vertical-scroll-card"><h4 style="font-size: 14px; color: var(--neon-blue); margin: 0 0 15px 0;">📤 匯出 CSV</h4><div style="display: flex; flex-direction: column; gap: 10px;"><button class="btn-primary" onclick="window.exportCSV('anime')">▼ 匯出動畫</button><button class="btn-primary" onclick="window.exportCSV('manga')">▼ 匯出漫畫</button><button class="btn-primary" onclick="window.exportCSV('movie')">▼ 匯出電影</button></div></div><div class="vertical-scroll-card"><h4 style="font-size: 14px; color: var(--neon-blue); margin: 0 0 15px 0;">📥 匯入 CSV</h4><div style="display: flex; flex-direction: column; gap: 10px;"><button class="btn-primary" onclick="window.triggerImport('anime')">▲ 匯入動畫</button><button class="btn-primary" onclick="window.triggerImport('manga')">▲ 匯入漫畫</button><button class="btn-primary" onclick="window.triggerImport('movie')">▲ 匯入電影</button></div></div></div>`;
+    return `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"><div class="vertical-scroll-card"><h4 style="font-size: 14px; color: var(--neon-blue); margin: 0 0 15px 0;">Export</h4><div style="display: flex; flex-direction: column; gap: 10px;"><button class="btn-primary" onclick="window.exportCSV('anime')">Export Anime</button><button class="btn-primary" onclick="window.exportCSV('manga')">Export Manga</button><button class="btn-primary" onclick="window.exportCSV('movie')">Export Movie</button></div></div><div class="vertical-scroll-card"><h4 style="font-size: 14px; color: var(--neon-blue); margin: 0 0 15px 0;">Import</h4><div style="display: flex; flex-direction: column; gap: 10px;"><button class="btn-primary" onclick="window.triggerImport('anime')">Import Anime</button><button class="btn-primary" onclick="window.triggerImport('manga')">Import Manga</button><button class="btn-primary" onclick="window.triggerImport('movie')">Import Movie</button></div></div></div>`;
 };
 
 window.renderAdminSettings = function() {
@@ -336,14 +336,14 @@ window.showAnimeDetail = (id) => {
         <div style="display: flex; gap: 35px; flex-wrap: wrap; align-items: flex-start; justify-content: center;">
             <div style="width: 300px; border: 2px solid var(--neon-blue); position: relative; aspect-ratio: 2/3; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3), inset 0 0 15px rgba(0, 212, 255, 0.1); border-radius: 8px; overflow: hidden;">
                 <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 5px; z-index: 20;">
-                    ${item.rating ? `<div style="display: flex; align-items: center; justify-content: center; font-size: 16px; padding: 6px 10px; border: 1.5px solid var(--neon-purple); color: var(--neon-purple); background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px var(--neon-purple); font-weight: bold;">SCORE ${item.rating.charAt(0)}</div>` : ''}
-                    ${item.recommendation ? `<div style="display: flex; align-items: center; color: ${starColor}; border: 1.5px solid ${starColor}; font-size: 16px; padding: 6px 10px; background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px ${starColor}; animation: pulse-glow 2s ease-in-out infinite; font-weight: bold;">STAR ${item.recommendation}</div>` : ''}
+                    ${item.rating ? `<div style="display: flex; align-items: center; justify-content: center; font-size: 18px; padding: 6px 10px; border: 1.5px solid var(--neon-purple); color: var(--neon-purple); background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px var(--neon-purple); font-weight: bold;">${item.rating.charAt(0)}</div>` : ''}
+                    ${item.recommendation ? `<div style="display: flex; align-items: center; color: ${starColor}; border: 1.5px solid ${starColor}; font-size: 18px; padding: 6px 10px; background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px ${starColor}; animation: pulse-glow 2s ease-in-out infinite; font-weight: bold;">${item.recommendation}</div>` : ''}
                 </div>
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
                 ${item.episodes ? `<div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); color: ${descColor}; font-size: 14px; padding: 12px 8px; text-align: center; font-weight: 600;">全${item.episodes}集</div>` : ''}
             </div>
             
-            <div style="flex: 1; min-width: 340px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px;">
+            <div style="flex: 1; min-width: 340px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px;">
                 
                 <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(176, 38, 255, 0.08)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2); overflow: hidden;">
                     <div style="overflow-x: auto; overflow-y: hidden; white-space: nowrap; scrollbar-width: thin; scrollbar-color: var(--neon-blue) rgba(0, 212, 255, 0.1);">
@@ -352,13 +352,13 @@ window.showAnimeDetail = (id) => {
                 </div>
 
                 ${timeInfo ? `
-                <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2);">
-                    <div style="display: inline-block; border: 1.5px solid ${yearColor}; color: ${yearColor}; font-size: 13px; padding: 6px 22px; border-radius: 6px; box-shadow: 0 0 12px ${yearColor}44; font-weight: 600;">${timeInfo}</div>
+                <div style="width: 100%; padding: 8px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2);">
+                    <div style="display: inline-block; border: 1.5px solid ${yearColor}; color: ${yearColor}; font-size: 12px; padding: 4px 16px; border-radius: 6px; box-shadow: 0 0 12px ${yearColor}44; font-weight: 600;">${timeInfo}</div>
                 </div>` : ''}
 
                 <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2);">
                     <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 8px; padding: 6px 0; justify-content: center;">
-                        ${genres.map(g => `<span class="tag-item" style="font-size: 12px; padding: 4px 14px; border-color: ${genreColor}; color: ${genreColor}; white-space: nowrap; background: rgba(0, 212, 255, 0.08);">${g}</span>`).join('')}
+                        ${genres.map(g => `<span class="tag-item" style="font-size: 14px; padding: 6px 16px; border-color: ${genreColor}; color: ${genreColor}; white-space: nowrap; background: rgba(0, 212, 255, 0.08);">${g}</span>`).join('')}
                     </div>
                 </div>
 
