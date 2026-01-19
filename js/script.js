@@ -95,9 +95,9 @@ window.renderApp = function() {
                 <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px; letter-spacing: 1px;">[ CYBER ARCHIVE SYSTEM ]</div>
             </header>
             <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap;">
-                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
-                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
-                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
+                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ ${window.getCategoryName('anime')}</button>
+                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ ${window.getCategoryName('manga')}</button>
+                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ ${window.getCategoryName('movie')}</button>
             </div>
             <div style="border: 1.5px solid var(--neon-blue); padding: 15px; margin-bottom: 25px; font-size: 13px; color: var(--text-secondary); text-align: center; border-radius: 8px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); backdrop-filter: blur(5px); box-shadow: 0 0 15px rgba(0, 212, 255, 0.1);">
                 <span style="color: var(--neon-cyan);">▸</span> ${siteSettings.announcement} <span style="color: var(--neon-cyan);">◂</span>
@@ -345,8 +345,10 @@ window.showAnimeDetail = (id) => {
             
             <div style="flex: 1; min-width: 340px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px;">
                 
-                <div style="width: 100%; padding: 15px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(176, 38, 255, 0.08)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2);">
-                    <h2 style="color: ${nameColor}; margin: 0; font-size: 24px; text-shadow: 0 0 10px ${nameColor}66; font-weight: 700;">${item.name}</h2>
+                <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(176, 38, 255, 0.08)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2); overflow: hidden;">
+                    <div style="overflow-x: auto; overflow-y: hidden; white-space: nowrap; scrollbar-width: thin; scrollbar-color: var(--neon-blue) rgba(0, 212, 255, 0.1);">
+                        <h2 style="color: ${nameColor}; margin: 0; font-size: 16px; text-shadow: 0 0 10px ${nameColor}66; font-weight: 700; display: inline-block; padding-right: 20px;">${item.name}</h2>
+                    </div>
                 </div>
 
                 ${timeInfo ? `
@@ -360,11 +362,9 @@ window.showAnimeDetail = (id) => {
                     </div>
                 </div>
 
-	                <div style="width: 100%; padding: 15px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(0, 212, 255, 0.05)); border: 1.5px solid ${descColor}; border-left: 4px solid ${descColor}; border-radius: 8px; text-align: left; max-height: 220px; overflow: hidden;">
-	                    <div class="scroll-list force-scroll" style="height: 100%; max-height: 180px; overflow-y: auto;">
-	                        <div style="font-size: 13px; color: ${descColor}; line-height: 1.9; padding-right: 10px; font-weight: 500;">
-	                            ${item.description || '[ 系統資料庫中暫無此作品之詳細介紹 ]'}
-	                        </div>
+	                <div style="width: 100%; padding: 15px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(0, 212, 255, 0.05)); border: 1.5px solid ${descColor}; border-left: 4px solid ${descColor}; border-radius: 8px; text-align: left; max-height: 180px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: ${descColor} rgba(0, 0, 0, 0.3);">
+	                    <div style="font-size: 13px; color: ${descColor}; line-height: 1.9; padding-right: 10px; font-weight: 500;">
+	                        ${item.description || '[ 系統資料庫中暫無此作品之詳細介紹 ]'}
 	                    </div>
 	                </div>
 

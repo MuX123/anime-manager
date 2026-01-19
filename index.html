@@ -417,46 +417,25 @@
     .modal-overlay.active { display: flex !important; }
 
     .modal-content {
-        background: linear-gradient(135deg, rgba(10, 15, 25, 0.95), rgba(15, 20, 35, 0.95)) !important;
+        background: rgba(10, 15, 25, 0.95) !important;
         border: 2px solid var(--neon-blue) !important;
         padding: 35px !important;
         width: 90% !important;
         max-width: 850px !important;
         position: relative !important;
-        box-shadow: 0 0 50px rgba(0, 212, 255, 0.5), 0 0 100px rgba(176, 38, 255, 0.3), inset 0 0 30px rgba(0, 212, 255, 0.1) !important;
+        box-shadow: 0 0 30px rgba(0, 212, 255, 0.4) !important;
         overflow: hidden;
         border-radius: 12px !important;
-        backdrop-filter: blur(15px) !important;
         max-height: 90vh !important;
         overflow-y: auto !important;
     }
 
     .modal-content::before {
-        content: "";
-        position: absolute;
-        top: -100%;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(to bottom, transparent, rgba(0, 212, 255, 0.08), transparent);
-        animation: scanline 6s linear infinite;
-        pointer-events: none;
-        z-index: 0;
+        display: none !important;
     }
 
     .modal-content::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: 
-            linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 212, 255, 0.02) 50%),
-            linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.01));
-        background-size: 100% 3px, 3px 100%;
-        pointer-events: none;
-        z-index: 0;
+        display: none !important;
     }
 
     .modal-content > * {
