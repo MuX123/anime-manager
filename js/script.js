@@ -92,7 +92,6 @@ window.renderApp = function() {
         <div class="app-container">
             <header>
                 <h1>${siteSettings.site_title}</h1>
-                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px; letter-spacing: 1px;">[ CYBER ARCHIVE SYSTEM ]</div>
             </header>
             <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap;">
                 <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ ${window.getCategoryName('anime')}</button>
@@ -140,7 +139,7 @@ window.renderAnimeGrid = function() {
         return `
             <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="animation: float-up 0.6s ease-out ${idx * 0.08}s forwards;">
                 <div style="position: absolute; top: 8px; right: 8px; display: flex; align-items: center; gap: 3px; z-index: 20;">
-                    ${item.rating ? `<div style="display: flex; align-items: center; justify-content: center; font-size: 11px; padding: 0; border: 1.5px solid var(--neon-purple); color: var(--neon-purple); background: rgba(0,0,0,0.8); border-radius: 4px; box-shadow: 0 0 8px var(--neon-purple);">${item.rating.charAt(0)}</div>` : ''}
+                    ${item.rating ? `<div style="display: flex; align-items: center; justify-content: center; font-size: 11px; padding: 0; border: 1.5px solid ${optionsData.category_colors?.[item.rating] || 'var(--neon-purple)'}; color: ${optionsData.category_colors?.[item.rating] || 'var(--neon-purple)'}; background: rgba(0,0,0,0.8); border-radius: 4px; box-shadow: 0 0 8px ${optionsData.category_colors?.[item.rating] || 'var(--neon-purple)'}; ">${item.rating.charAt(0)}</div>` : ''}
                     ${item.recommendation ? `<div style="height: 22px; display: flex; align-items: center; color: ${starColor}; border: 1.5px solid ${starColor}; font-size: 10px; padding: 0 6px; background: rgba(0,0,0,0.8); border-radius: 4px; box-shadow: 0 0 8px ${starColor}; animation: pulse-glow 2s ease-in-out infinite;">${item.recommendation}</div>` : ''}
                 </div>
                 
@@ -299,7 +298,7 @@ window.renderAdminOptions = function() {
 };
 
 window.renderAdminData = function() {
-    return `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"><div class="vertical-scroll-card"><h4 style="font-size: 14px; color: var(--neon-blue); margin: 0 0 15px 0;">Export</h4><div style="display: flex; flex-direction: column; gap: 10px;"><button class="btn-primary" onclick="window.exportCSV('anime')">Export Anime</button><button class="btn-primary" onclick="window.exportCSV('manga')">Export Manga</button><button class="btn-primary" onclick="window.exportCSV('movie')">Export Movie</button></div></div><div class="vertical-scroll-card"><h4 style="font-size: 14px; color: var(--neon-blue); margin: 0 0 15px 0;">Import</h4><div style="display: flex; flex-direction: column; gap: 10px;"><button class="btn-primary" onclick="window.triggerImport('anime')">Import Anime</button><button class="btn-primary" onclick="window.triggerImport('manga')">Import Manga</button><button class="btn-primary" onclick="window.triggerImport('movie')">Import Movie</button></div></div></div>`;
+    return `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"><div class="vertical-scroll-card"><h4 style="font-size: 14px; color: var(--neon-blue); margin: 0 0 15px 0;">資料備份</h4><div style="display: flex; flex-direction: column; gap: 10px;"><button class="btn-primary" onclick="window.exportCSV('anime')">匯出動畫</button><button class="btn-primary" onclick="window.exportCSV('manga')">匯出漫畫</button><button class="btn-primary" onclick="window.exportCSV('movie')">匯出電影</button></div></div><div class="vertical-scroll-card"><h4 style="font-size: 14px; color: var(--neon-blue); margin: 0 0 15px 0;">資料還原</h4><div style="display: flex; flex-direction: column; gap: 10px;"><button class="btn-primary" onclick="window.triggerImport('anime')">匯入動畫</button><button class="btn-primary" onclick="window.triggerImport('manga')">匯入漫畫</button><button class="btn-primary" onclick="window.triggerImport('movie')">匯入電影</button></div></div></div>`;
 };
 
 window.renderAdminSettings = function() {
@@ -333,28 +332,24 @@ window.showAnimeDetail = (id) => {
 
     const modal = document.getElementById('detailModal');
     document.getElementById('detailContent').innerHTML = `
-        <div style="display: flex; gap: 35px; flex-wrap: wrap; align-items: flex-start; justify-content: center;">
-            <div style="width: 300px; border: 2px solid var(--neon-blue); position: relative; aspect-ratio: 2/3; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3), inset 0 0 15px rgba(0, 212, 255, 0.1); border-radius: 8px; overflow: hidden;">
+        <div style="display: flex; gap: 25px; flex-wrap: wrap; align-items: flex-start; justify-content: center;">
+            <div style="width: 300px; border: 2px solid var(--neon-blue); position: relative; aspect-ratio: 2/3; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3), inset 0 0 15px rgba(0, 212, 255, 0.1); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
                 <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 5px; z-index: 20;">
-                    ${item.rating ? `<div style="display: flex; align-items: center; justify-content: center; font-size: 18px; padding: 6px 10px; border: 1.5px solid var(--neon-purple); color: var(--neon-purple); background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px var(--neon-purple); font-weight: bold;">${item.rating.charAt(0)}</div>` : ''}
+                    ${item.rating ? `<div style="display: flex; align-items: center; justify-content: center; font-size: 18px; padding: 6px 10px; border: 1.5px solid ${optionsData.category_colors?.[item.rating] || 'var(--neon-purple)'}; color: ${optionsData.category_colors?.[item.rating] || 'var(--neon-purple)'}; background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px ${optionsData.category_colors?.[item.rating] || 'var(--neon-purple)'}; font-weight: bold;">${item.rating.charAt(0)}</div>` : ''}
                     ${item.recommendation ? `<div style="display: flex; align-items: center; color: ${starColor}; border: 1.5px solid ${starColor}; font-size: 18px; padding: 6px 10px; background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px ${starColor}; animation: pulse-glow 2s ease-in-out infinite; font-weight: bold;">${item.recommendation}</div>` : ''}
                 </div>
-                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
-                ${item.episodes ? `<div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); color: ${descColor}; font-size: 14px; padding: 12px 8px; text-align: center; font-weight: 600;">全${item.episodes}集</div>` : ''}
+                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover; flex: 1;">
+                ${item.episodes ? `<div style="background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); color: ${descColor}; font-size: 14px; padding: 12px 8px; text-align: center; font-weight: 600;">全${item.episodes}集</div>` : ''}
+                ${timeInfo ? `<div style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); border-top: 1.5px solid rgba(0, 212, 255, 0.2); padding: 8px; text-align: center;"><div style="display: inline-block; border: 1.5px solid ${yearColor}; color: ${yearColor}; font-size: 12px; padding: 4px 12px; border-radius: 6px; box-shadow: 0 0 12px ${yearColor}44; font-weight: 600;">${timeInfo}</div></div>` : ''}
             </div>
             
-            <div style="flex: 1; min-width: 340px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px;">
+            <div style="flex: 1; min-width: 340px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
                 
                 <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(176, 38, 255, 0.08)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2); overflow: hidden;">
                     <div style="overflow-x: auto; overflow-y: hidden; white-space: nowrap; scrollbar-width: thin; scrollbar-color: var(--neon-blue) rgba(0, 212, 255, 0.1);">
                         <h2 style="color: ${nameColor}; margin: 0; font-size: 16px; text-shadow: 0 0 10px ${nameColor}66; font-weight: 700; display: inline-block; padding-right: 20px;">${item.name}</h2>
                     </div>
                 </div>
-
-                ${timeInfo ? `
-                <div style="width: 100%; padding: 8px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2);">
-                    <div style="display: inline-block; border: 1.5px solid ${yearColor}; color: ${yearColor}; font-size: 12px; padding: 4px 16px; border-radius: 6px; box-shadow: 0 0 12px ${yearColor}44; font-weight: 600;">${timeInfo}</div>
-                </div>` : ''}
 
                 <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2);">
                     <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 8px; padding: 6px 0; justify-content: center;">
