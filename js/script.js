@@ -15,7 +15,7 @@ let optionsData = {
     recommendation: ['★★★★★', '★★★★', '★★★', '★★', '★'],
     category_colors: {}
 };
-let siteSettings = { site_title: 'ACG 收藏庫', announcement: '⚡ 系統連線中 // 歡迎光臨 ⚡' };
+let siteSettings = { site_title: 'ACG 收藏庫', announcement: '⚡ 系統連線中 // 歡迎光臨 ⚡', title_color: '#00ffff', announcement_color: '#a8b0c0' };
 let currentCategory = 'anime';
 let currentAdminTab = 'manage';
 let isAdmin = false;
@@ -54,6 +54,8 @@ window.initApp = async function() {
             settings.forEach(s => {
                 if (s.id === 'site_title') siteSettings.site_title = s.value;
                 if (s.id === 'announcement') siteSettings.announcement = s.value;
+                if (s.id === 'title_color') siteSettings.title_color = s.value;
+                if (s.id === 'announcement_color') siteSettings.announcement_color = s.value;
                 if (s.id === 'options_data') { try { optionsData = JSON.parse(s.value); } catch(e) {} }
             });
         }
@@ -89,18 +91,18 @@ window.renderApp = function() {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.0.4</div>
+        <div class="site-version">v3.0.5</div>
         <div class="app-container">
             <header>
-                <h1>${siteSettings.site_title}</h1>
+                <h1 style="color: ${siteSettings.title_color || 'var(--neon-cyan)'}; text-shadow: 0 0 10px ${siteSettings.title_color || 'var(--neon-blue)'};">${siteSettings.site_title}</h1>
             </header>
             <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap;">
                 <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ ${window.getCategoryName('anime')}</button>
                 <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ ${window.getCategoryName('manga')}</button>
                 <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ ${window.getCategoryName('movie')}</button>
             </div>
-            <div style="border: 1.5px solid var(--neon-blue); padding: 15px; margin-bottom: 25px; font-size: 13px; color: var(--text-secondary); text-align: center; border-radius: 8px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); backdrop-filter: blur(5px); box-shadow: 0 0 15px rgba(0, 212, 255, 0.1);">
-                <span style="color: var(--neon-cyan);">▸</span> ${siteSettings.announcement} <span style="color: var(--neon-cyan);">◂</span>
+            <div style="border: 1.5px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 15px; margin-bottom: 25px; font-size: 13px; color: ${siteSettings.announcement_color || 'var(--text-secondary)'}; text-align: center; border-radius: 8px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); backdrop-filter: blur(5px); box-shadow: 0 0 15px rgba(0, 212, 255, 0.1);">
+                <span style="color: ${siteSettings.announcement_color || 'var(--neon-cyan)'};">▸</span> ${siteSettings.announcement} <span style="color: ${siteSettings.announcement_color || 'var(--neon-cyan)'};">◂</span>
             </div>
             <div style="margin-bottom: 25px;">
                 <input type="text" placeholder="🔍 搜尋作品..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 15px;">
@@ -180,7 +182,7 @@ window.renderAdmin = function() {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.0.4</div>
+        <div class="site-version">v3.0.5</div>
         <div class="admin-container">
             <div class="admin-panel">
                 <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 15px; position: relative;">
@@ -313,6 +315,8 @@ window.updateFormPreview = function(type, val) {
 };
 
 window.renderAdminOptions = function() {
+    const scrollPos = document.querySelector('.horizontal-scroll-container')?.scrollLeft || 0;
+    setTimeout(() => { if(document.querySelector('.horizontal-scroll-container')) document.querySelector('.horizontal-scroll-container').scrollLeft = scrollPos; }, 0);
     return `
         <div style="margin-bottom: 20px; display: flex; gap: 12px;"><input type="text" id="new-category-name" placeholder="新類別名稱..." style="flex: 1;"><button class="btn-primary" onclick="window.addNewCategory()">Add</button></div>
         <div class="horizontal-scroll-container force-scroll" style="padding-bottom: 20px;">
@@ -337,7 +341,28 @@ window.renderAdminData = function() {
 };
 
 window.renderAdminSettings = function() {
-    return `<div style="max-width: 600px;"><h3 style="font-size: 15px; color: var(--neon-cyan); margin: 0 0 20px 0; font-weight: 700;">🔧 網站設定</h3><div class="form-group"><label style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 12px; font-weight: 600;">網站標題</label><input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;"></div><div class="form-group" style="margin-top: 18px;"><label style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 12px; font-weight: 600;">公告內容</label><textarea id="set-announcement" rows="5" style="width: 100%;">${siteSettings.announcement}</textarea></div><button class="btn-primary" style="margin-top: 20px; width: 100%;" onclick="window.saveSettings()">✓ 更新設定</button></div>`;
+    return `
+        <div style="max-width: 600px;">
+            <h3 style="font-size: 15px; color: var(--neon-cyan); margin: 0 0 20px 0; font-weight: 700;">🔧 網站設定</h3>
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 12px; font-weight: 600;">網站標題</label>
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    <div id="swatch-title" style="width: 30px; height: 30px; border-radius: 4px; background: ${siteSettings.title_color || '#00ffff'}; border: 1px solid rgba(255,255,255,0.2);"></div>
+                    <input type="color" id="set-title-color" value="${siteSettings.title_color || '#00ffff'}" style="width: 50px; height: 30px; border: none; background: none; cursor: pointer;" oninput="document.getElementById('swatch-title').style.background = this.value">
+                    <input type="text" id="set-title" value="${siteSettings.site_title}" style="flex: 1;">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 18px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 12px; font-weight: 600;">公告內容</label>
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    <div id="swatch-announcement" style="width: 30px; height: 30px; border-radius: 4px; background: ${siteSettings.announcement_color || '#a8b0c0'}; border: 1px solid rgba(255,255,255,0.2);"></div>
+                    <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#a8b0c0'}" style="width: 50px; height: 30px; border: none; background: none; cursor: pointer;" oninput="document.getElementById('swatch-announcement').style.background = this.value">
+                    <textarea id="set-announcement" rows="3" style="flex: 1;">${siteSettings.announcement}</textarea>
+                </div>
+            </div>
+            <button class="btn-primary" style="margin-top: 20px; width: 100%;" onclick="window.saveSettings()">✓ 更新設定</button>
+        </div>
+    `;
 };
 
 // --- Logic Functions ---
@@ -474,21 +499,26 @@ window.exportCSV = (cat) => {
     a.click();
     window.showToast('✓ 匯出成功');
 };
-window.triggerImport = (cat) => { importTarget = cat; document.getElementById('importFile').click(); };
-window.saveSettings = async () => {
-    const title = document.getElementById('set-title').value;
-    const ann = document.getElementById('set-announcement').value;
-    await supabaseClient.from('site_settings').upsert({ id: 'site_title', value: title });
-    await supabaseClient.from('site_settings').upsert({ id: 'announcement', value: ann });
-    siteSettings.site_title = title;
-    siteSettings.announcement = ann;
-    document.title = title;
-    window.showToast('✓ 設定已儲存');
-    window.renderAdmin();
-};
-
-// --- Auth Functions ---
-window.showLoginModal = () => {
+window.triggerImport = (cat) => { importTarget = cat; document.getElementById('importFile').click(); };window.saveSettings = async () => {
+    try {
+        const title = document.getElementById('set-title').value;
+        const announcement = document.getElementById('set-announcement').value;
+        const titleColor = document.getElementById('set-title-color').value;
+        const announcementColor = document.getElementById('set-announcement-color').value;
+        await supabaseClient.from('site_settings').upsert([
+            { id: 'site_title', value: title }, 
+            { id: 'announcement', value: announcement },
+            { id: 'title_color', value: titleColor },
+            { id: 'announcement_color', value: announcementColor }
+        ]);
+        siteSettings.site_title = title;
+        siteSettings.announcement = announcement;
+        siteSettings.title_color = titleColor;
+        siteSettings.announcement_color = announcementColor;
+        window.showToast('✓ 設定已更新');
+        window.renderAdmin();
+    } catch (err) { window.showToast('✗ 更新失敗', 'error'); }
+};inModal = () => {
     setTimeout(() => {
         const email = prompt('🔐 請輸入管理員 Email：');
         if (!email) return;
