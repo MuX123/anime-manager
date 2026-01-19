@@ -138,7 +138,7 @@ window.renderAnimeGrid = function() {
         const descColor = item.desc_color || '#00d4ff';
         
         return `
-            <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="animation: float-up 0.5s ease-out ${idx * 0.05}s both;">
+            <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="animation: float-up 0.6s ease-out ${idx * 0.08}s forwards;">
                 <div style="position: absolute; top: 8px; right: 8px; display: flex; align-items: center; gap: 3px; z-index: 20;">
                     ${item.rating ? `<div style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; padding: 0; border: 1.5px solid var(--neon-purple); color: var(--neon-purple); background: rgba(0,0,0,0.8); border-radius: 4px; box-shadow: 0 0 8px var(--neon-purple);">${item.rating.charAt(0)}</div>` : ''}
                     ${item.recommendation ? `<div style="height: 22px; display: flex; align-items: center; color: ${starColor}; border: 1.5px solid ${starColor}; font-size: 10px; padding: 0 6px; background: rgba(0,0,0,0.8); border-radius: 4px; box-shadow: 0 0 8px ${starColor}; animation: pulse-glow 2s ease-in-out infinite;">${item.recommendation}</div>` : ''}
