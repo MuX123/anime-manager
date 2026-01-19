@@ -144,10 +144,10 @@ window.renderAnimeGrid = function() {
                     ${item.recommendation ? `<div style="height: 22px; display: flex; align-items: center; color: ${starColor}; border: 1.5px solid ${starColor}; font-size: 10px; padding: 0 6px; background: rgba(0,0,0,0.8); border-radius: 4px; box-shadow: 0 0 8px ${starColor}; animation: pulse-glow 2s ease-in-out infinite;">${item.recommendation}</div>` : ''}
                 </div>
                 
-                <div style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
-                    <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;">
-                    ${item.episodes ? `<div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); color: ${descColor}; font-size: 11px; padding: 8px 5px; text-align: center; border-top: 1.5px solid ${descColor};">${item.episodes}</div>` : ''}
-                </div>
+	                <div style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
+	                    <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;">
+	                    ${item.episodes ? `<div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, transparent 100%); color: ${descColor}; font-size: 11px; padding: 12px 5px 8px 5px; text-align: center; border-top: 1.5px solid ${descColor}; text-shadow: 0 0 5px rgba(0,0,0,1); font-weight: bold;">${item.episodes}</div>` : ''}
+	                </div>
                 <div style="padding: 10px; border-top: 1.5px solid rgba(0, 212, 255, 0.2); background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 212, 255, 0.05));">
                     <h3 style="font-size: 13px; margin: 0 0 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ${nameColor}; text-align: center; text-shadow: 0 0 5px ${nameColor}44;">${item.name}</h3>
                     <div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;">
@@ -329,7 +329,7 @@ window.showAnimeDetail = (id) => {
     const timeInfo = [item.year, item.season, monthStr].filter(t => t).join(' ');
     const yearColor = item.year ? `hsl(${(parseInt(item.year) % 10) * 36}, 70%, 60%)` : 'var(--neon-blue)';
 
-    const genres = Array.isArray(item.genre) ? item.genre : (item.genre ? item.genre.split('|') : []);
+	    const genres = (Array.isArray(item.genre) ? item.genre : (item.genre ? item.genre.split('|') : [])).map(g => g.replace(/["'\[\]]/g, '').trim());
 
     const modal = document.getElementById('detailModal');
     document.getElementById('detailContent').innerHTML = `
@@ -360,13 +360,13 @@ window.showAnimeDetail = (id) => {
                     </div>
                 </div>
 
-                <div style="width: 100%; padding: 15px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(0, 212, 255, 0.05)); border: 1.5px solid ${descColor}; border-left: 4px solid ${descColor}; border-radius: 8px; text-align: left;">
-                    <div class="scroll-list force-scroll" style="height: 180px; overflow-y: auto;">
-                        <div style="font-size: 13px; color: ${descColor}; line-height: 1.9; padding-right: 10px; font-weight: 500;">
-                            ${item.description || '[ 系統資料庫中暫無此作品之詳細介紹 ]'}
-                        </div>
-                    </div>
-                </div>
+	                <div style="width: 100%; padding: 15px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(0, 212, 255, 0.05)); border: 1.5px solid ${descColor}; border-left: 4px solid ${descColor}; border-radius: 8px; text-align: left; max-height: 220px; overflow: hidden;">
+	                    <div class="scroll-list force-scroll" style="height: 100%; max-height: 180px; overflow-y: auto;">
+	                        <div style="font-size: 13px; color: ${descColor}; line-height: 1.9; padding-right: 10px; font-weight: 500;">
+	                            ${item.description || '[ 系統資料庫中暫無此作品之詳細介紹 ]'}
+	                        </div>
+	                    </div>
+	                </div>
 
                 <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2);">
                     <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 12px; padding: 6px 0; justify-content: center; min-height: 50px;">
@@ -453,11 +453,13 @@ window.saveSettings = async () => {
 
 // --- Auth Functions ---
 window.showLoginModal = () => {
-    const email = prompt('🔐 請輸入管理員 Email：');
-    if (!email) return;
-    const pass = prompt('🔑 請輸入密碼：');
-    if (!pass) return;
-    window.handleLogin(email, pass);
+    setTimeout(() => {
+        const email = prompt('🔐 請輸入管理員 Email：');
+        if (!email) return;
+        const pass = prompt('🔑 請輸入密碼：');
+        if (!pass) return;
+        window.handleLogin(email, pass);
+    }, 100);
 };
 
 window.handleLogin = async (email, password) => {
