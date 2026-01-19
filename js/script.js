@@ -220,7 +220,7 @@ window.renderAdminManage = function() {
         <div style="min-height: 400px; overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                 <thead><tr style="text-align: left; border-bottom: 2px solid var(--neon-blue); color: var(--neon-cyan); background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent);"><th style="padding: 12px;">海報</th><th style="padding: 12px;">名稱</th><th style="padding: 12px;">年份</th><th style="padding: 12px;">評分</th><th style="padding: 12px;">操作</th></tr></thead>
-                <tbody>${pageItems.map(item => `<tr style="border-bottom: 1px solid rgba(0, 212, 255, 0.1); transition: background 0.2s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.05)'" onmouseout="this.style.background=''"><td style="padding: 10px;"><img src="${item.poster_url}" style="width: 28px; height: 42px; object-fit: cover; border-radius: 4px; box-shadow: 0 0 8px rgba(0, 212, 255, 0.2);"></td><td style="padding: 10px; color: var(--text-main);">${item.name}</td><td style="padding: 10px; color: var(--text-secondary);">${item.year}</td><td style="padding: 10px;"><span style="color: var(--neon-purple); font-weight: bold;">${item.rating}</span></td><td style="padding: 10px;"><button class="btn-primary" style="padding: 6px 12px; font-size: 11px; margin-right: 5px;" onclick="window.editAnime('${item.id}')">✎ 編輯</button> <button class="btn-primary" style="padding: 6px 12px; font-size: 11px; border-color: #ff4444; color: #ff4444;" onclick="window.deleteAnime('${item.id}')">✕ 刪除</button></td></tr>`).join('')}</tbody>
+                <tbody>${pageItems.map(item => `<tr style="border-bottom: 1px solid rgba(0, 212, 255, 0.1); transition: background 0.2s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.05)'" onmouseout="this.style.background=''"><td style="padding: 10px;"><img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 28px; height: 42px; object-fit: cover; border-radius: 4px; box-shadow: 0 0 8px rgba(0, 212, 255, 0.2);"></td><td style="padding: 10px; color: var(--text-main);">${item.name}</td><td style="padding: 10px; color: var(--text-secondary);">${item.year}</td><td style="padding: 10px;"><span style="color: var(--neon-purple); font-weight: bold;">${item.rating}</span></td><td style="padding: 10px;"><button class="btn-primary" style="padding: 6px 12px; font-size: 11px; margin-right: 5px;" onclick="window.editAnime('${item.id}')">✎ 編輯</button> <button class="btn-primary" style="padding: 6px 12px; font-size: 11px; border-color: #ff4444; color: #ff4444;" onclick="window.deleteAnime('${item.id}')">✕ 刪除</button></td></tr>`).join('')}</tbody>
             </table>
         </div>
         <div style="display: flex; justify-content: center; gap: 12px; margin-top: 25px;">
@@ -393,17 +393,17 @@ window.saveAnime = async (editId) => {
             genre: Array.from(document.querySelectorAll('input[name="form-genre"]:checked')).map(cb => cb.value),
             links: Array.from(document.querySelectorAll('#links-container > div')).map(row => ({ name: row.querySelector('.link-name').value, url: row.querySelector('.link-url').value })),
             description: document.getElementById('form-desc').value,
-            year: document.getElementById('form-year')?.value,
-            month: document.getElementById('form-month')?.value,
-            season: document.getElementById('form-season')?.value,
-            episodes: document.getElementById('form-episodes')?.value,
-            rating: document.getElementById('form-rating')?.value,
-            recommendation: document.getElementById('form-recommendation')?.value,
+            year: document.getElementById('form-year')?.value || '',
+            month: document.getElementById('form-month')?.value || '',
+            season: document.getElementById('form-season')?.value || '',
+            episodes: document.getElementById('form-episodes')?.value || '',
+            rating: document.getElementById('form-rating')?.value || '',
+            recommendation: document.getElementById('form-recommendation')?.value || '',
             star_color: document.getElementById('form-star-color').value,
             name_color: document.getElementById('form-name-color').value,
             desc_color: document.getElementById('form-desc-color').value
         };
-        const { error } = editId && editId !== 'null' ? await supabaseClient.from('anime_list').update(payload).eq('id', editId) : await supabaseClient.from('anime_list').insert([payload]);
+        const { error } = (editId && editId !== 'null' && editId !== 'undefined') ? await supabaseClient.from('anime_list').update(payload).eq('id', editId) : await supabaseClient.from('anime_list').insert([payload]);
         if (error) throw error;
         window.showToast('✓ 儲存成功');
         await window.loadData();
@@ -481,6 +481,39 @@ window.handleLogout = async () => {
 
 window.toggleSystemMenu = (e) => { e.stopPropagation(); document.getElementById('systemMenu').classList.toggle('active'); };
 window.refreshSystem = async () => { await window.loadData(); if (isAdmin) window.renderAdmin(); else window.renderApp(); window.showToast('✓ 同步完成'); };
+
+window.importData = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const csv = e.target.result;
+            const lines = csv.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            const items = [];
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const values = lines[i].match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g).map(v => v.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+                const item = {};
+                headers.forEach((h, idx) => {
+                    let val = values[idx];
+                    if (h === 'genre') val = val ? val.split('|') : [];
+                    if (h === 'links') { try { val = JSON.parse(val); } catch(e) { val = []; } }
+                    item[h] = val;
+                });
+                item.category = importTarget;
+                items.push(item);
+            }
+            const { error } = await supabaseClient.from('anime_list').insert(items);
+            if (error) throw error;
+            window.showToast(`✓ 成功匯入 ${items.length} 筆資料`);
+            await window.loadData();
+            window.renderAdmin();
+        } catch (err) { window.showToast('✗ 匯入失敗：' + err.message, 'error'); }
+    };
+    reader.readAsText(file);
+};
 
 // --- Helpers ---
 window.getOptionLabel = (key) => ({ genre: '類型', year: '年份', month: '月份', season: '季度', episodes: '集數', rating: '評分', recommendation: '推薦' }[key] || key);
