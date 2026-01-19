@@ -336,21 +336,23 @@ window.showAnimeDetail = (id) => {
     const modal = document.getElementById('detailModal');
     document.getElementById('detailContent').innerHTML = `
         <div style="display: flex; gap: 25px; flex-wrap: wrap; align-items: flex-start; justify-content: center;">
-            <div style="width: 280px; border: 2px solid var(--neon-blue); position: relative; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3), inset 0 0 15px rgba(0, 212, 255, 0.1); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; max-height: auto;">
-                <div style="position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 5px; z-index: 20;">
-                    ${item.recommendation ? `<div style="display: flex; align-items: center; color: ${starColor}; border: 1.5px solid ${starColor}; font-size: 18px; padding: 8px 12px; background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px ${starColor}; animation: pulse-glow 2s ease-in-out infinite; font-weight: bold;">${item.recommendation}</div>` : ''}
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="width: 280px; border: 2px solid var(--neon-blue); position: relative; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3), inset 0 0 15px rgba(0, 212, 255, 0.1); border-radius: 8px; overflow: hidden;">
+                    <div style="position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 5px; z-index: 20;">
+                        ${item.recommendation ? `<div style="display: flex; align-items: center; color: ${starColor}; border: 1.5px solid ${starColor}; font-size: 18px; padding: 8px 12px; background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px ${starColor}; animation: pulse-glow 2s ease-in-out infinite; font-weight: bold;">${item.recommendation}</div>` : ''}
+                    </div>
+                    <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 5px; z-index: 20;">
+                        ${item.rating ? `<div style="display: flex; align-items: center; justify-content: center; font-size: 18px; padding: 8px 12px; border: 1.5px solid ${optionsData.category_colors?.rating || 'var(--neon-purple)'}; color: ${optionsData.category_colors?.rating || 'var(--neon-purple)'}; background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px ${optionsData.category_colors?.rating || 'var(--neon-purple)'}; font-weight: bold;">${item.rating.charAt(0)}</div>` : ''}
+                    </div>
+                    <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 360px; object-fit: cover; display: block;">
                 </div>
-                <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 5px; z-index: 20;">
-                    ${item.rating ? `<div style="display: flex; align-items: center; justify-content: center; font-size: 18px; padding: 8px 12px; border: 1.5px solid ${optionsData.category_colors?.rating || 'var(--neon-purple)'}; color: ${optionsData.category_colors?.rating || 'var(--neon-purple)'}; background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px ${optionsData.category_colors?.rating || 'var(--neon-purple)'}; font-weight: bold;">${item.rating.charAt(0)}</div>` : ''}
-                </div>
-                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 360px; object-fit: cover; flex-shrink: 0;">
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 8px; gap: 8px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 212, 255, 0.03)); border-top: 1.5px solid rgba(0, 212, 255, 0.2); flex-shrink: 0;">
+                <div style="width: 280px; border: 1.5px solid rgba(0, 212, 255, 0.4); background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 212, 255, 0.05)); border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.15);">
                     ${timeInfo ? `<div style="flex: 1; text-align: left;"><div style="display: inline-block; border: 1.5px solid ${yearColor}; color: ${yearColor}; font-size: 11px; padding: 4px 8px; border-radius: 4px; box-shadow: 0 0 8px ${yearColor}44; font-weight: 600;">${timeInfo}</div></div>` : '<div style="flex: 1;"></div>'}
                     ${item.episodes ? `<div style="text-align: right;"><div style="display: inline-block; color: ${descColor}; font-size: 11px; padding: 4px 8px; font-weight: 600;">全${item.episodes}集</div></div>` : ''}
                 </div>
             </div>
             
-            <div style="flex: 1; min-width: 340px; max-width: 500px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
+            <div style="flex: 1; min-width: 340px; max-width: 500px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; margin-top: 15px;">
                 
                 <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(176, 38, 255, 0.08)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2); overflow: hidden;">
                     <div style="overflow-x: auto; overflow-y: hidden; white-space: nowrap; scrollbar-width: thin; scrollbar-color: var(--neon-blue) rgba(0, 212, 255, 0.1);">
