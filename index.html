@@ -12,8 +12,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* ========== 極致科技感 v3.0 ULTRA - 毛玻璃 + 動態霓虹 + 故障效果 ========== */
-    
     :root {
         --bg-dark: #0a0e1a;
         --bg-darker: #050609;
@@ -32,304 +30,150 @@
         --transition-smooth: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    html, body {
-        width: 100%;
-        height: 100%;
-        overflow-x: hidden;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-        background-color: var(--bg-dark) !important;
+        background-color: var(--bg-dark);
         background-image: 
             radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
             radial-gradient(circle at 80% 80%, rgba(176, 38, 255, 0.05) 0%, transparent 50%),
             linear-gradient(rgba(0, 212, 255, 0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 212, 255, 0.02) 1px, transparent 1px) !important;
-        background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px !important;
-        background-attachment: fixed !important;
-        color: var(--text-main) !important;
-        font-family: 'Space Mono', 'Microsoft JhengHei', '微軟正黑體', monospace !important;
-        font-weight: 400 !important;
-        line-height: 1.6;
-        overflow-x: hidden !important;
+            linear-gradient(90deg, rgba(0, 212, 255, 0.02) 1px, transparent 1px);
+        background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+        background-attachment: fixed;
+        color: var(--text-main);
+        font-family: 'Space Mono', 'Microsoft JhengHei', monospace;
+        overflow-x: hidden;
     }
 
-    /* ========== 滾動條美化 ========== */
-    * { scrollbar-width: thin !important; scrollbar-color: var(--neon-blue) var(--bg-darker) !important; }
-    ::-webkit-scrollbar { width: 6px !important; height: 6px !important; }
-    ::-webkit-scrollbar-track { background: var(--bg-darker) !important; }
-    ::-webkit-scrollbar-thumb { 
-        background: linear-gradient(180deg, var(--neon-blue), var(--neon-purple)) !important;
-        border-radius: 3px !important;
-    }
-    ::-webkit-scrollbar-thumb:hover { background: var(--neon-cyan) !important; }
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-darker); }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--neon-blue), var(--neon-purple)); border-radius: 3px; }
 
-    /* ========== 全局動畫定義 ========== */
-    @keyframes neon-glow {
-        0%, 100% { box-shadow: 0 0 5px rgba(0, 212, 255, 0.5), 0 0 10px rgba(0, 212, 255, 0.3); }
-        50% { box-shadow: 0 0 15px rgba(0, 212, 255, 0.8), 0 0 25px rgba(0, 212, 255, 0.5); }
-    }
+    /* Animations */
+    @keyframes pulse-glow { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+    @keyframes float-up { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0px); opacity: 1; } }
 
-    @keyframes glitch-shift {
-        0% { transform: translate(0); }
-        20% { transform: translate(-2px, 2px); }
-        40% { transform: translate(-2px, -2px); }
-        60% { transform: translate(2px, 2px); }
-        80% { transform: translate(2px, -2px); }
-        100% { transform: translate(0); }
+    /* Layout */
+    .app-container, .admin-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+    header { text-align: center; margin-bottom: 40px; }
+    h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; margin-bottom: 10px; }
+
+    /* Grid */
+    .anime-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 25px;
     }
 
-    @keyframes pulse-glow {
-        0%, 100% { opacity: 0.6; }
-        50% { opacity: 1; }
+    /* Card */
+    .anime-card {
+        background: var(--glass-bg);
+        border: 1.5px solid rgba(0, 212, 255, 0.2);
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+        position: relative;
+        backdrop-filter: blur(10px);
+    }
+    .anime-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        border-color: var(--neon-blue);
+        box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
     }
 
-    @keyframes float-up {
-        0% { transform: translateY(20px); opacity: 0; }
-        100% { transform: translateY(0px); opacity: 1; }
+    /* Tags */
+    .tag-item {
+        display: inline-block;
+        border: 1.5px solid var(--neon-blue);
+        color: var(--neon-blue);
+        border-radius: 4px;
+        font-weight: bold;
     }
 
-    @keyframes cyber-flicker {
-        0%, 100% { opacity: 1; }
-        4% { opacity: 0.9; }
-        8% { opacity: 1; }
-        12% { opacity: 0.95; }
-    }
-
-    /* ========== 標題與文字樣式 ========== */
-    h1, h2, h3, h4, h5, h6 {
-        font-family: 'Orbitron', sans-serif !important;
-        font-weight: 700 !important;
-        letter-spacing: 2px !important;
-        text-transform: uppercase !important;
-    }
-
-    h1 {
-        font-size: 32px !important;
-        color: var(--neon-cyan) !important;
-        text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-purple) !important;
-        animation: cyber-flicker 0.15s infinite;
-    }
-
-    h2 {
-        font-size: 20px !important;
-        color: var(--neon-blue) !important;
-        text-shadow: 0 0 8px var(--neon-blue) !important;
-    }
-
-    h3 {
-        font-size: 16px !important;
-        color: var(--neon-blue) !important;
-    }
-
-    .site-version {
-        position: fixed !important;
-        top: 10px !important;
-        left: 10px !important;
-        font-size: 10px !important;
-        color: var(--neon-blue) !important;
-        opacity: 0.6 !important;
-        z-index: 1000 !important;
-        font-family: 'Orbitron', sans-serif !important;
-        letter-spacing: 1px !important;
-        pointer-events: none !important;
-    }
-
-    /* ========== 浮動選單按鈕 ========== */
-    .floating-menu-btn {
-        position: fixed !important;
-        top: 20px !important;
-        right: 20px !important;
-        width: 50px !important;
-        height: 50px !important;
-        background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(176, 38, 255, 0.1)) !important;
-        border: 2px solid var(--neon-blue) !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        cursor: pointer !important;
-        z-index: 10000 !important;
-        box-shadow: var(--border-glow-strong), inset 0 0 10px rgba(0, 212, 255, 0.2) !important;
-        border-radius: 8px !important;
-        backdrop-filter: blur(10px) !important;
-        transition: var(--transition-smooth) !important;
-    }
-
-    .floating-menu-btn:hover {
-        box-shadow: var(--border-glow-strong), 0 0 30px var(--neon-blue), inset 0 0 15px rgba(0, 212, 255, 0.3) !important;
-        transform: scale(1.1) !important;
-        border-color: var(--neon-cyan) !important;
-    }
-
-    .floating-menu-btn::before {
-        content: '⚙';
-        font-size: 24px;
-        color: var(--neon-cyan);
-    }
-
-    /* ========== 下拉選單 ========== */
-    .menu-dropdown-v2 {
-        position: fixed !important;
-        top: 80px !important;
-        right: 20px !important;
-        background: linear-gradient(135deg, rgba(10, 15, 25, 0.95), rgba(15, 20, 35, 0.95)) !important;
-        border: 2px solid var(--neon-blue) !important;
-        width: 180px !important;
-        display: none;
-        flex-direction: column !important;
-        z-index: 9999 !important;
-        border-radius: 8px !important;
-        backdrop-filter: blur(15px) !important;
-        box-shadow: 0 0 30px rgba(0, 212, 255, 0.4), inset 0 0 15px rgba(0, 212, 255, 0.1) !important;
-        overflow: hidden !important;
-        animation: float-up 0.4s ease-out !important;
-    }
-
-    .menu-dropdown-v2.active { display: flex !important; }
-
-    .menu-item-v2 {
-        padding: 12px 15px !important;
-        color: var(--neon-blue) !important;
-        cursor: pointer !important;
-        font-size: 13px !important;
-        border-bottom: 1px solid rgba(0, 212, 255, 0.15) !important;
-        text-align: center !important;
-        transition: var(--transition-smooth) !important;
-        font-weight: 600 !important;
-    }
-
-    .menu-item-v2:hover { 
-        background: rgba(0, 212, 255, 0.2) !important;
-        color: var(--neon-cyan) !important;
-        transform: translateX(5px) !important;
-    }
-
-    /* ========== 模態視窗 ========== */
-    .modal {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        background: rgba(0, 0, 0, 0.85) !important;
-        display: none !important;
-        justify-content: center !important;
-        align-items: center !important;
-        z-index: 10000 !important;
-        backdrop-filter: blur(10px) !important;
-    }
-
-    .modal.active { display: flex !important; }
-
-    .modal-content {
-        background: rgba(10, 15, 25, 0.95) !important;
-        border: 2px solid var(--neon-blue) !important;
-        padding: 30px !important;
-        border-radius: 12px !important;
-        position: relative !important;
-        max-width: 90% !important;
-        max-height: 90% !important;
-        overflow-y: auto !important;
-        box-shadow: 0 0 50px rgba(0, 212, 255, 0.3) !important;
-    }
-
-    /* ========== 按鈕樣式 ========== */
+    /* Buttons */
     .btn-primary {
-        background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(176, 38, 255, 0.1)) !important;
-        border: 1.5px solid var(--neon-blue) !important;
-        color: var(--neon-cyan) !important;
-        padding: 10px 20px !important;
-        cursor: pointer !important;
-        border-radius: 6px !important;
-        font-family: 'Orbitron', sans-serif !important;
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        transition: var(--transition-smooth) !important;
-        text-transform: uppercase !important;
-        letter-spacing: 1px !important;
+        background: rgba(0, 212, 255, 0.1);
+        border: 1.5px solid var(--neon-blue);
+        color: var(--neon-cyan);
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 6px;
+        font-family: 'Orbitron', sans-serif;
+        transition: var(--transition-smooth);
+    }
+    .btn-primary:hover:not(:disabled) { background: rgba(0, 212, 255, 0.2); box-shadow: 0 0 15px var(--neon-blue); }
+    .btn-primary.active { background: var(--neon-blue); color: var(--bg-dark); }
+
+    /* Modals */
+    .modal {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center;
+        z-index: 10000; backdrop-filter: blur(10px);
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+        background: var(--panel-bg); border: 2px solid var(--neon-blue);
+        padding: 30px; border-radius: 12px; position: relative;
+        max-width: 90%; max-height: 90%; overflow-y: auto;
     }
 
-    .btn-primary:hover:not(:disabled) {
-        background: rgba(0, 212, 255, 0.2) !important;
-        box-shadow: 0 0 15px var(--neon-blue) !important;
-        transform: translateY(-2px) !important;
+    /* Admin */
+    .admin-panel { background: var(--panel-bg); border: 2px solid var(--neon-blue); padding: 30px; border-radius: 12px; }
+    .vertical-scroll-card {
+        background: rgba(0, 0, 0, 0.3); border: 1.5px solid rgba(0, 212, 255, 0.2);
+        padding: 15px; border-radius: 8px; flex: 1; min-width: 200px;
     }
+    .scroll-list { max-height: 200px; overflow-y: auto; }
 
-    .btn-primary.active {
-        background: var(--neon-blue) !important;
-        color: var(--bg-dark) !important;
-        box-shadow: 0 0 20px var(--neon-blue) !important;
+    /* Utilities */
+    .horizontal-scroll-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
+    .force-scroll::-webkit-scrollbar { height: 4px; }
+    .auto-width-select { background: rgba(0,0,0,0.5); color: var(--text-main); border: 1.5px solid rgba(0,212,255,0.3); padding: 8px; border-radius: 4px; }
+    .site-version { position: fixed; top: 10px; left: 10px; font-size: 10px; color: var(--neon-blue); opacity: 0.6; z-index: 1000; }
+    .floating-menu-btn {
+        position: fixed; top: 20px; right: 20px; width: 50px; height: 50px;
+        background: rgba(0, 212, 255, 0.1); border: 2px solid var(--neon-blue);
+        display: flex; justify-content: center; align-items: center; cursor: pointer;
+        z-index: 10000; border-radius: 8px; backdrop-filter: blur(10px);
     }
-
-    .btn-primary:disabled {
-        opacity: 0.3 !important;
-        cursor: not-allowed !important;
+    .floating-menu-btn::before { content: '⚙'; font-size: 24px; color: var(--neon-cyan); }
+    .menu-dropdown-v2 {
+        position: fixed; top: 80px; right: 20px; background: var(--panel-bg);
+        border: 2px solid var(--neon-blue); width: 180px; display: none;
+        flex-direction: column; z-index: 9999; border-radius: 8px; overflow: hidden;
     }
-
-    /* ========== 輸入框樣式 ========== */
-    input[type="text"], input[type="email"], input[type="password"], select, textarea {
-        background: rgba(0, 0, 0, 0.5) !important;
-        border: 1.5px solid rgba(0, 212, 255, 0.3) !important;
-        color: var(--text-main) !important;
-        padding: 10px 15px !important;
-        border-radius: 6px !important;
-        font-family: 'Space Mono', monospace !important;
-        outline: none !important;
-        transition: var(--transition-smooth) !important;
-    }
-
-    input:focus, select:focus, textarea:focus {
-        border-color: var(--neon-blue) !important;
-        box-shadow: 0 0 10px rgba(0, 212, 255, 0.3) !important;
-    }
-
+    .menu-dropdown-v2.active { display: flex; }
+    .menu-item-v2 { padding: 12px; color: var(--neon-blue); cursor: pointer; text-align: center; border-bottom: 1px solid rgba(0,212,255,0.1); }
+    .menu-item-v2:hover { background: rgba(0,212,255,0.2); }
     .toast {
-        position: fixed !important;
-        bottom: 30px !important;
-        left: 50% !important;
-        transform: translateX(-50%) translateY(100px) !important;
-        background: rgba(10, 15, 25, 0.9) !important;
-        border: 1.5px solid var(--neon-blue) !important;
-        color: var(--neon-cyan) !important;
-        padding: 12px 25px !important;
-        border-radius: 8px !important;
-        z-index: 11000 !important;
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-        backdrop-filter: blur(10px) !important;
-        font-weight: 600 !important;
-        box-shadow: 0 0 20px rgba(0, 212, 255, 0.2) !important;
+        position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+        background: var(--panel-bg); border: 1.5px solid var(--neon-blue); color: var(--neon-cyan);
+        padding: 12px 25px; border-radius: 8px; z-index: 11000; transition: transform 0.3s;
     }
+    .toast.active { transform: translateX(-50%) translateY(0); }
 
-    .toast.active { transform: translateX(-50%) translateY(0) !important; }
-
-    /* ========== 響應式佈局 ========== */
-    @media (max-width: 768px) {
-        h1 { font-size: 24px !important; }
-        .modal-content { width: 95% !important; padding: 20px !important; }
+    @media (max-width: 480px) {
+        .anime-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
+        h1 { font-size: 24px; }
     }
   </style>
  </head>
  <body>
+  <div class="site-version">v3.0.5</div>
   <script>
     document.write('<script src="./js/script.js?v=' + new Date().getTime() + '"><\/script>');
   </script>
 
   <div id="app"></div>
 
-  <!-- Floating Menu -->
   <div class="floating-menu-btn" id="gearBtn" onclick="window.toggleSystemMenu(event)"></div>
   <div class="menu-dropdown-v2" id="systemMenu">
     <div class="menu-item-v2" onclick="window.refreshSystem()">⟳ 同步資料</div>
     <div id="adminMenuOptions"></div>
   </div>
 
-  <!-- Detail Modal -->
   <div id="detailModal" class="modal" onclick="if(event.target===this) window.closeAnimeDetail()">
     <div class="modal-content">
       <button style="position: absolute; top: 15px; right: 15px; background: none; border: 1.5px solid var(--neon-blue); color: var(--neon-cyan); width: 30px; height: 30px; cursor: pointer; border-radius: 4px;" onclick="window.closeAnimeDetail()">✕</button>
@@ -337,7 +181,6 @@
     </div>
   </div>
 
-  <!-- Login Modal -->
   <div id="loginModal" class="modal">
     <div class="modal-content" style="max-width: 350px;">
       <h2 style="margin-bottom: 20px; text-align: center; color: var(--neon-cyan);">🔐 管理員登入</h2>
