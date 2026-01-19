@@ -89,6 +89,7 @@ window.renderApp = function() {
     if (!app) return;
 
     app.innerHTML = `
+        <div class="site-version">v3.0.4</div>
         <div class="app-container">
             <header>
                 <h1>${siteSettings.site_title}</h1>
@@ -170,15 +171,15 @@ window.renderPagination = function() {
     for (let i = 1; i <= totalPages; i++) { if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) html += `<button class="btn-primary ${i === currentPage ? 'active' : ''}" onclick="window.changePage(${i})">${i}</button>`; }
     html += `<button class="btn-primary" ${currentPage === totalPages ? 'disabled' : ''} onclick="window.changePage(${currentPage + 1})">下一頁 →</button>`;
     return html;
-};
-
-window.renderAdmin = function() {
+}window.renderAdmin = function() {
     const gear = document.getElementById('gearBtn');
     if (gear) gear.classList.add('hidden');
     const app = document.getElementById('app');
     if (!app) return;
+
     app.innerHTML = `
-        <div class="app-container">
+        <div class="site-version">v3.0.4</div>
+        <div class="admin-container">
             <div class="admin-panel">
                 <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 15px; position: relative;">
                     <h2 style="color: var(--neon-cyan); font-size: 22px; margin: 0; text-shadow: 0 0 10px var(--neon-blue);">⚙ 管理控制台</h2>
@@ -257,9 +258,18 @@ window.renderAdminForm = function(editId = null) {
                     <div class="vertical-scroll-card">
                         <h4 style="font-size: 13px; color: var(--neon-blue); margin: 0 0 12px 0; font-weight: 700;">顏色設定</h4>
                         <div class="scroll-list force-scroll">
-                            <div style="margin-bottom: 14px;"><span id="preview-star-label" style="font-size: 11px; color: ${item.star_color || '#ffcc00'}; font-weight: 600;">★ 星星顏色</span><input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" style="width: 100%; height: 28px; border-radius: 4px;" oninput="window.updateFormPreview('star', this.value)"></div>
-                            <div style="margin-bottom: 14px;"><span id="preview-name-label" style="font-size: 11px; color: ${item.name_color || '#ffffff'}; font-weight: 600;">◆ 名稱顏色</span><input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" style="width: 100%; height: 28px; border-radius: 4px;" oninput="window.updateFormPreview('name-color', this.value)"></div>
-                            <div style="margin-bottom: 14px;"><span id="preview-desc-label" style="font-size: 11px; color: ${item.desc_color || '#00d4ff'}; font-weight: 600;">◈ 劇情顏色</span><input type="color" id="form-desc-color" value="${item.desc_color || '#00d4ff'}" style="width: 100%; height: 28px; border-radius: 4px;" oninput="window.updateFormPreview('desc-color', this.value)"></div>
+                            <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
+                                <div id="swatch-star" style="width: 24px; height: 24px; border-radius: 4px; background: ${item.star_color || '#ffcc00'}; border: 1px solid rgba(255,255,255,0.2);"></div>
+                                <div style="flex: 1;"><span id="preview-star-label" style="font-size: 11px; color: ${item.star_color || '#ffcc00'}; font-weight: 600;">★ 星星顏色</span><input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" style="width: 100%; height: 24px; border: none; background: none; cursor: pointer;" oninput="window.updateFormPreview('star', this.value)"></div>
+                            </div>
+                            <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
+                                <div id="swatch-name" style="width: 24px; height: 24px; border-radius: 4px; background: ${item.name_color || '#ffffff'}; border: 1px solid rgba(255,255,255,0.2);"></div>
+                                <div style="flex: 1;"><span id="preview-name-label" style="font-size: 11px; color: ${item.name_color || '#ffffff'}; font-weight: 600;">◆ 名稱顏色</span><input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" style="width: 100%; height: 24px; border: none; background: none; cursor: pointer;" oninput="window.updateFormPreview('name-color', this.value)"></div>
+                            </div>
+                            <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
+                                <div id="swatch-desc" style="width: 24px; height: 24px; border-radius: 4px; background: ${item.desc_color || '#00d4ff'}; border: 1px solid rgba(255,255,255,0.2);"></div>
+                                <div style="flex: 1;"><span id="preview-desc-label" style="font-size: 11px; color: ${item.desc_color || '#00d4ff'}; font-weight: 600;">◈ 劇情顏色</span><input type="color" id="form-desc-color" value="${item.desc_color || '#00d4ff'}" style="width: 100%; height: 24px; border: none; background: none; cursor: pointer;" oninput="window.updateFormPreview('desc-color', this.value)"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="vertical-scroll-card" style="flex: 0 0 300px;">
@@ -276,9 +286,28 @@ window.renderAdminForm = function(editId = null) {
 };
 
 window.updateFormPreview = function(type, val) {
-    if (type === 'name-color') { document.getElementById('preview-name-label').style.color = val; document.getElementById('form-name').style.color = val; document.getElementById('form-name').style.borderColor = val; }
-    if (type === 'desc-color') { document.getElementById('preview-desc-label').style.color = val; document.getElementById('form-desc').style.color = val; document.getElementById('form-desc').style.borderColor = val; }
-    if (type === 'star') { document.getElementById('preview-star-label').style.color = val; }
+    if (type === 'name-color') { 
+        document.getElementById('preview-name-label').style.color = val; 
+        document.getElementById('form-name').style.color = val; 
+        document.getElementById('form-name').style.borderColor = val; 
+        document.getElementById('swatch-name').style.background = val;
+    }
+    if (type === 'desc-color') { 
+        document.getElementById('preview-desc-label').style.color = val; 
+        document.getElementById('form-desc').style.color = val; 
+        document.getElementById('form-desc').style.borderColor = val; 
+        document.getElementById('swatch-desc').style.background = val;
+    }
+    if (type === 'star') { 
+        document.getElementById('preview-star-label').style.color = val; 
+        document.getElementById('swatch-star').style.background = val;
+    }
+    if (type === 'name-text') {
+        document.getElementById('form-name').value = val;
+    }
+    if (type === 'desc-text') {
+        document.getElementById('form-desc').value = val;
+    }
 };
 
 window.renderAdminOptions = function() {
