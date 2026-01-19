@@ -499,7 +499,9 @@ window.exportCSV = (cat) => {
     a.click();
     window.showToast('✓ 匯出成功');
 };
-window.triggerImport = (cat) => { importTarget = cat; document.getElementById('importFile').click(); };window.saveSettings = async () => {
+window.triggerImport = (cat) => { importTarget = cat; document.getElementById('importFile').click(); };
+
+window.saveSettings = async () => {
     try {
         const title = document.getElementById('set-title').value;
         const announcement = document.getElementById('set-announcement').value;
@@ -518,21 +520,34 @@ window.triggerImport = (cat) => { importTarget = cat; document.getElementById('i
         window.showToast('✓ 設定已更新');
         window.renderAdmin();
     } catch (err) { window.showToast('✗ 更新失敗', 'error'); }
-};inModal = () => {
-    setTimeout(() => {
-        const email = prompt('🔐 請輸入管理員 Email：');
-        if (!email) return;
-        const pass = prompt('🔑 請輸入密碼：');
-        if (!pass) return;
-        window.handleLogin(email, pass);
-    }, 100);
 };
 
-window.handleLogin = async (email, password) => {
+window.showLoginModal = () => {
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+    }
+};
+
+window.hideLoginModal = () => {
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+    }
+};
+
+window.handleLogin = async () => {
     try {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-password').value;
+        if (!email || !pass) return window.showToast('✗ 請輸入帳號密碼', 'error');
+        
         window.showToast('驗證中...', 'info');
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
         if (error) throw error;
+        window.hideLoginModal();
     } catch (err) {
         window.showToast('✗ 登入失敗：' + err.message, 'error');
     }
