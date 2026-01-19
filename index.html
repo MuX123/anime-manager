@@ -589,3 +589,38 @@
   <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
  </body>
 </html>
+
+  <!-- Detail Modal -->
+  <div id="detailModal" class="modal" onclick="if(event.target===this) window.closeAnimeDetail()">
+    <div class="modal-content">
+      <button class="close-btn" onclick="window.closeAnimeDetail()">✕</button>
+      <div id="detailContent"></div>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content" style="max-width: 350px;">
+      <h2 style="margin-bottom: 20px; text-align: center;">🔐 管理員登入</h2>
+      <input type="email" id="login-email" placeholder="電子郵件" style="width: 100%; margin-bottom: 15px;">
+      <input type="password" id="login-password" placeholder="密碼" style="width: 100%; margin-bottom: 20px;">
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-primary" style="flex: 1;" onclick="window.handleLogin()">登入</button>
+        <button class="btn-primary" style="flex: 1; border-color: #ff4444; color: #ff4444;" onclick="window.hideLoginModal()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    window.onload = () => {
+        if (typeof window.initApp === 'function') {
+            window.initApp();
+        } else {
+            console.error('initApp not found');
+        }
+    };
+  </script>
+ </body>
+</html>

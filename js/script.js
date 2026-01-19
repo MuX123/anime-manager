@@ -171,7 +171,9 @@ window.renderPagination = function() {
     for (let i = 1; i <= totalPages; i++) { if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) html += `<button class="btn-primary ${i === currentPage ? 'active' : ''}" onclick="window.changePage(${i})">${i}</button>`; }
     html += `<button class="btn-primary" ${currentPage === totalPages ? 'disabled' : ''} onclick="window.changePage(${currentPage + 1})">下一頁 →</button>`;
     return html;
-}window.renderAdmin = function() {
+};
+
+window.renderAdmin = function() {
     const gear = document.getElementById('gearBtn');
     if (gear) gear.classList.add('hidden');
     const app = document.getElementById('app');
