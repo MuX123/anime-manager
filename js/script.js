@@ -152,7 +152,7 @@ window.renderAnimeGrid = function() {
 		                    ${item.episodes ? `<div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, transparent 100%); color: ${descColor}; font-size: 11px; padding: 12px 5px 8px 5px; text-align: center; text-shadow: 0 0 5px rgba(0,0,0,1); font-weight: bold;">全${item.episodes}集</div>` : ''}
 	                </div>
                 <div style="padding: 10px; border-top: 1.5px solid rgba(0, 212, 255, 0.2); background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 212, 255, 0.05));">
-                    <h3 style="font-size: 11px; margin: 0 0 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ${nameColor}; text-align: center; text-shadow: 0 0 5px ${nameColor}44;">${item.name}</h3>
+                    <h3 style="font-size: 9px; margin: 0 0 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ${nameColor}; text-align: center; text-shadow: 0 0 5px ${nameColor}44;">${item.name}</h3>
                     <div style="display: flex; justify-content: center;">
                         ${[item.year, item.season, item.month ? (item.month.includes('月') ? item.month : item.month + '月') : ''].filter(t => t).length > 0 ? `<span class="tag-item" style="font-size: 10px; padding: 4px 10px; border-color: ${yearColor}; color: ${yearColor}; background: rgba(0, 212, 255, 0.08); box-shadow: 0 0 8px ${yearColor}44;">${[item.year, item.season, item.month ? (item.month.includes('月') ? item.month : item.month + '月') : ''].filter(t => t).join(' ')}</span>` : ''}
                     </div>
@@ -336,19 +336,19 @@ window.showAnimeDetail = (id) => {
     const modal = document.getElementById('detailModal');
     document.getElementById('detailContent').innerHTML = `
         <div style="display: flex; gap: 25px; flex-wrap: wrap; align-items: flex-start; justify-content: center;">
-            <div style="width: 300px; border: 2px solid var(--neon-blue); position: relative; aspect-ratio: 2/3; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3), inset 0 0 15px rgba(0, 212, 255, 0.1); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="width: 280px; border: 2px solid var(--neon-blue); position: relative; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3), inset 0 0 15px rgba(0, 212, 255, 0.1); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; max-height: 480px;">
                 <div style="position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 5px; z-index: 20;">
                     ${item.recommendation ? `<div style="display: flex; align-items: center; color: ${starColor}; border: 1.5px solid ${starColor}; font-size: 18px; padding: 8px 12px; background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px ${starColor}; animation: pulse-glow 2s ease-in-out infinite; font-weight: bold;">${item.recommendation}</div>` : ''}
                 </div>
                 <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 5px; z-index: 20;">
                     ${item.rating ? `<div style="display: flex; align-items: center; justify-content: center; font-size: 18px; padding: 8px 12px; border: 1.5px solid ${optionsData.category_colors?.rating || 'var(--neon-purple)'}; color: ${optionsData.category_colors?.rating || 'var(--neon-purple)'}; background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px ${optionsData.category_colors?.rating || 'var(--neon-purple)'}; font-weight: bold;">${item.rating.charAt(0)}</div>` : ''}
                 </div>
-                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover; flex: 1;">
-                ${item.episodes ? `<div style="background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); color: ${descColor}; font-size: 14px; padding: 12px 8px; text-align: center; font-weight: 600;">全${item.episodes}集</div>` : ''}
-                ${timeInfo ? `<div style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); border-top: 1.5px solid rgba(0, 212, 255, 0.2); padding: 8px; text-align: center;"><div style="display: inline-block; border: 1.5px solid ${yearColor}; color: ${yearColor}; font-size: 12px; padding: 4px 12px; border-radius: 6px; box-shadow: 0 0 12px ${yearColor}44; font-weight: 600;">${timeInfo}</div></div>` : ''}
+                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 360px; object-fit: cover; flex-shrink: 0;">
+                ${item.episodes ? `<div style="background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); color: ${descColor}; font-size: 12px; padding: 8px 6px; text-align: center; font-weight: 600; flex-shrink: 0;">全${item.episodes}集</div>` : ''}
+                ${timeInfo ? `<div style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); border-top: 1.5px solid rgba(0, 212, 255, 0.2); padding: 6px; text-align: center; flex-shrink: 0;"><div style="display: inline-block; border: 1.5px solid ${yearColor}; color: ${yearColor}; font-size: 11px; padding: 3px 10px; border-radius: 6px; box-shadow: 0 0 12px ${yearColor}44; font-weight: 600;">${timeInfo}</div></div>` : ''}
             </div>
             
-            <div style="flex: 1; min-width: 340px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
+            <div style="flex: 1; min-width: 340px; max-width: 500px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
                 
                 <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(176, 38, 255, 0.08)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2); overflow: hidden;">
                     <div style="overflow-x: auto; overflow-y: hidden; white-space: nowrap; scrollbar-width: thin; scrollbar-color: var(--neon-blue) rgba(0, 212, 255, 0.1);">
