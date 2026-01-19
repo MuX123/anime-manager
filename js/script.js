@@ -146,7 +146,7 @@ window.renderAnimeGrid = function() {
                 
 	                <div style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
 	                    <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;">
-	                    ${item.episodes ? `<div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, transparent 100%); color: ${descColor}; font-size: 11px; padding: 12px 5px 8px 5px; text-align: center; border-top: 1.5px solid ${descColor}; text-shadow: 0 0 5px rgba(0,0,0,1); font-weight: bold;">${item.episodes}</div>` : ''}
+		                    ${item.episodes ? `<div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, transparent 100%); color: ${descColor}; font-size: 11px; padding: 12px 5px 8px 5px; text-align: center; text-shadow: 0 0 5px rgba(0,0,0,1); font-weight: bold;">全${item.episodes}集</div>` : ''}
 	                </div>
                 <div style="padding: 10px; border-top: 1.5px solid rgba(0, 212, 255, 0.2); background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 212, 255, 0.05));">
                     <h3 style="font-size: 13px; margin: 0 0 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ${nameColor}; text-align: center; text-shadow: 0 0 5px ${nameColor}44;">${item.name}</h3>
@@ -336,11 +336,11 @@ window.showAnimeDetail = (id) => {
         <div style="display: flex; gap: 35px; flex-wrap: wrap; align-items: flex-start; justify-content: center;">
             <div style="width: 300px; border: 2px solid var(--neon-blue); position: relative; aspect-ratio: 2/3; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3), inset 0 0 15px rgba(0, 212, 255, 0.1); border-radius: 8px; overflow: hidden;">
                 <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 5px; z-index: 20;">
-                    ${item.rating ? `<div style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 14px; padding: 0; border: 1.5px solid var(--neon-purple); color: var(--neon-purple); background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px var(--neon-purple);">${item.rating.charAt(0)}</div>` : ''}
-                    ${item.recommendation ? `<div style="height: 28px; display: flex; align-items: center; color: ${starColor}; border: 1.5px solid ${starColor}; font-size: 12px; padding: 0 10px; background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px ${starColor}; animation: pulse-glow 2s ease-in-out infinite;">${item.recommendation}</div>` : ''}
+                    ${item.rating ? `<div style="display: flex; align-items: center; justify-content: center; font-size: 16px; padding: 6px 10px; border: 1.5px solid var(--neon-purple); color: var(--neon-purple); background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px var(--neon-purple); font-weight: bold;">SCORE ${item.rating.charAt(0)}</div>` : ''}
+                    ${item.recommendation ? `<div style="display: flex; align-items: center; color: ${starColor}; border: 1.5px solid ${starColor}; font-size: 16px; padding: 6px 10px; background: rgba(0,0,0,0.85); border-radius: 6px; box-shadow: 0 0 12px ${starColor}; animation: pulse-glow 2s ease-in-out infinite; font-weight: bold;">STAR ${item.recommendation}</div>` : ''}
                 </div>
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
-                ${item.episodes ? `<div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); color: ${descColor}; font-size: 13px; padding: 12px 8px; text-align: center; border-top: 2px solid ${descColor}; font-weight: 600;">${item.episodes}</div>` : ''}
+                ${item.episodes ? `<div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); color: ${descColor}; font-size: 14px; padding: 12px 8px; text-align: center; font-weight: 600;">全${item.episodes}集</div>` : ''}
             </div>
             
             <div style="flex: 1; min-width: 340px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px;">
