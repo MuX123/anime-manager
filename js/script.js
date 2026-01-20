@@ -1,4 +1,4 @@
-// TECH v3.2.7 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v3.2.8 - ACG Manager Logic (System Admin AI Optimized)
 let animeData = [];
 let optionsData = {
     genre: ['冒險', '奇幻', '熱血', '校園', '戀愛', '喜劇', '科幻', '懸疑', '日常', '異世界'],
@@ -16,7 +16,7 @@ let optionsData = {
         season: '#ffffff',
         episodes: '#00ffff',
         rating: '#b026ff',
-        recommendation: '#ffcc00',
+        recommendation: '#ffcc00', // 推薦顏色保留在數據中供前台使用，但從選項管理 UI 移除設定
         btn_bg: '#00d4ff'
     }
 };
@@ -117,7 +117,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.2.7-ULTRA</div>
+        <div class="site-version">v3.2.8-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -476,11 +476,13 @@ window.renderOptionsManager = () => {
             ${keys.map(key => `
                 <div class="options-column">
                     <div class="options-column-header">
-                        <div class="color-input-wrapper">
-                            <div class="color-swatch" style="background: ${optionsData.category_colors[key] || '#ffffff'};"></div>
-                            <input type="color" value="${optionsData.category_colors[key] || '#ffffff'}" onchange="window.updateCategoryColor('${key}', this.value); this.previousElementSibling.style.background = this.value">
-                        </div>
-                        <span style="margin-left: 8px;">${window.getOptionLabel(key)}</span>
+                        ${key !== 'recommendation' ? `
+                            <div class="color-input-wrapper">
+                                <div class="color-swatch" style="background: ${optionsData.category_colors[key] || '#ffffff'};"></div>
+                                <input type="color" value="${optionsData.category_colors[key] || '#ffffff'}" onchange="window.updateCategoryColor('${key}', this.value); this.previousElementSibling.style.background = this.value">
+                            </div>
+                        ` : ''}
+                        <span style="${key !== 'recommendation' ? 'margin-left: 8px;' : ''}">${window.getOptionLabel(key)}</span>
                     </div>
                     <div class="options-list force-scroll">
                         ${optionsData[key].map((opt, idx) => {
