@@ -257,20 +257,117 @@ window.toggleAdminMode = (show) => { if (show) window.renderAdmin(); else window
 
 window.renderAdmin = () => {
     const app = document.getElementById('app');
+    const data = animeData.filter(item => item.category === currentCategory);
+    const pagedData = data.slice((adminPage-1)*adminItemsPerPage, adminPage*adminItemsPerPage);
+
     app.innerHTML = `
         <div class="admin-container">
             <div class="admin-panel">
                 <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px;">
                     <h2 style="color: var(--neon-cyan);">⚙ 管理控制台</h2>
-                    <button class="btn-primary" onclick="window.toggleAdminMode(false)">返回前台</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-primary" onclick="window.toggleAdminMode(false)">返回前台</button>
+                        <button class="btn-primary" style="border-color: var(--neon-purple); color: var(--neon-purple);" onclick="window.switchAdminTab('add')">➕ 新增作品</button>
+                    </div>
                 </header>
-                <div style="text-align: center; padding: 50px; border: 1px dashed var(--neon-blue);">
-                    <p>v3.1.7 原始管理功能已恢復</p>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 10px;">請點擊左側選單進行操作</p>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-primary ${currentAdminTab === 'manage' ? 'active' : ''}" onclick="window.switchAdminTab('manage')">📦 作品管理</button>
+                    <button class="btn-primary ${currentAdminTab === 'settings' ? 'active' : ''}" onclick="window.switchAdminTab('settings')">🔧 網站設定</button>
+                </div>
+
+                <div id="adminContent">
+                    ${window.renderAdminContent(pagedData, data.length)}
                 </div>
             </div>
         </div>
     `;
+};
+
+window.switchAdminTab = (tab) => { currentAdminTab = tab; window.renderAdmin(); };
+
+window.renderAdminContent = (pagedData, total) => {
+    if (currentAdminTab === 'manage') {
+        return `
+            <div class="admin-table-container" style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--neon-blue); color: var(--neon-cyan); text-align: left;">
+                            <th style="padding: 10px;">名稱</th>
+                            <th style="padding: 10px;">年份</th>
+                            <th style="padding: 10px;">評分</th>
+                            <th style="padding: 10px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pagedData.map(item => `
+                            <tr style="border-bottom: 1px solid rgba(0,212,255,0.1);">
+                                <td style="padding: 10px;">${item.name}</td>
+                                <td style="padding: 10px;">${item.year || ''}</td>
+                                <td style="padding: 10px;">${item.rating || ''}</td>
+                                <td style="padding: 10px;">
+                                    <button class="btn-primary" style="padding: 4px 8px; font-size: 11px;" onclick="window.editAnime('${item.id}')">📝</button>
+                                    <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; border-color: #ff4444; color: #ff4444;" onclick="window.deleteAnime('${item.id}')">✕</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+                ${window.renderAdminPagination(total)}
+            </div>
+        `;
+    } else if (currentAdminTab === 'settings') {
+        return `
+            <div style="display: flex; flex-direction: column; gap: 15px; max-width: 500px; margin: 0 auto;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px; color: var(--neon-cyan);">網站標題</label>
+                    <input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; color: var(--neon-cyan);">公告內容</label>
+                    <textarea id="set-announcement" style="width: 100%; height: 80px;">${siteSettings.announcement}</textarea>
+                </div>
+                <button class="btn-primary" onclick="window.saveSettings()">💾 儲存設定</button>
+            </div>
+        `;
+    }
+    return '';
+};
+
+window.renderAdminPagination = (total) => {
+    const pages = Math.ceil(total / adminItemsPerPage);
+    if (pages <= 1) return '';
+    return Array.from({length: pages}, (_, i) => i + 1).map(p => `<button class="btn-primary ${adminPage === p ? 'active' : ''}" style="width: 30px; padding: 5px 0;" onclick="window.changeAdminPage(${p})">${p}</button>`).join('');
+};
+
+window.changeAdminPage = (p) => { adminPage = p; window.renderAdmin(); };
+
+window.saveSettings = async () => {
+    try {
+        const title = document.getElementById('set-title').value;
+        const announcement = document.getElementById('set-announcement').value;
+        await supabaseClient.from('site_settings').upsert([
+            { id: 'site_title', value: title }, 
+            { id: 'announcement', value: announcement }
+        ]);
+        siteSettings.site_title = title;
+        siteSettings.announcement = announcement;
+        window.showToast('✓ 設定已更新');
+        window.renderAdmin();
+    } catch (err) { window.showToast('✗ 更新失敗', 'error'); }
+};
+
+window.deleteAnime = async (id) => {
+    if (!confirm('確定要刪除此作品嗎？')) return;
+    try {
+        const { error } = await supabaseClient.from('anime_list').delete().eq('id', id);
+        if (error) throw error;
+        window.showToast('✓ 已刪除');
+        await window.loadData();
+        window.renderAdmin();
+    } catch (err) { window.showToast('✗ 刪除失敗', 'error'); }
 };
 
 document.addEventListener('click', () => { const m = document.getElementById('systemMenu'); if (m) m.classList.remove('active'); });
