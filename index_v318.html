@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>ACG 收藏庫 - TECH v3.2.1 ULTRA</title>
+  <title>ACG 收藏庫 - TECH v3.1.8 ULTRA</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,60 +56,37 @@
     header { text-align: center; margin-bottom: 40px; }
     h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; margin-bottom: 10px; }
 
-    /* Grid - 修正排版：使用 6 欄排列 */
+    /* Grid */
     .anime-grid {
         display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 25px;
     }
 
-    /* Card - 還原銳利直角風格 */
+    /* Card */
     .anime-card {
         background: var(--glass-bg);
         border: 1.5px solid rgba(0, 212, 255, 0.2);
-        border-radius: 0px; /* 還原銳利直角 */
+        border-radius: 12px;
         overflow: hidden;
         cursor: pointer;
         transition: var(--transition-smooth);
         position: relative;
         backdrop-filter: blur(10px);
-        display: flex;
-        flex-direction: column;
     }
     .anime-card:hover {
-        transform: translateY(-8px);
+        transform: translateY(-8px) scale(1.02);
         border-color: var(--neon-blue);
-        box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
     }
-
-    .card-poster { position: relative; width: 100%; aspect-ratio: 2/3; overflow: hidden; }
-    .card-poster img { width: 100%; height: 100%; object-fit: cover; }
-    
-    .card-overlay {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 30%, rgba(0,0,0,0.8) 100%);
-        opacity: 1;
-    }
-
-    .card-rating {
-        position: absolute; top: 10px; right: 10px;
-        font-weight: bold; font-size: 14px;
-        background: rgba(0,0,0,0.6); padding: 2px 8px; border: 1px solid rgba(0,212,255,0.3);
-    }
-
-    .card-info { padding: 12px; text-align: center; flex-grow: 1; }
-    .card-info h3 { font-size: 14px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .card-meta { font-size: 11px; display: flex; flex-direction: column; gap: 4px; }
 
     /* Tags */
     .tag-item {
         display: inline-block;
         border: 1.5px solid var(--neon-blue);
         color: var(--neon-blue);
-        border-radius: 0px; /* 還原銳利直角 */
+        border-radius: 4px;
         font-weight: bold;
-        padding: 2px 8px;
-        font-size: 11px;
     }
 
     /* Buttons */
@@ -119,7 +96,7 @@
         color: var(--neon-cyan);
         padding: 10px 20px;
         cursor: pointer;
-        border-radius: 0px; /* 還原銳利直角 */
+        border-radius: 6px;
         font-family: 'Orbitron', sans-serif;
         transition: var(--transition-smooth);
     }
@@ -135,14 +112,18 @@
     .modal.active { display: flex; }
     .modal-content {
         background: var(--panel-bg); border: 2px solid var(--neon-blue);
-        padding: 30px; border-radius: 0px; position: relative;
+        padding: 30px; border-radius: 12px; position: relative;
         max-width: 90%; max-height: 90%; overflow-y: auto;
-        box-shadow: 0 0 40px rgba(0, 212, 255, 0.2);
     }
 
     /* Admin */
-    .admin-panel { background: var(--panel-bg); border: 2px solid var(--neon-blue); padding: 30px; border-radius: 0px; }
-    
+    .admin-panel { background: var(--panel-bg); border: 2px solid var(--neon-blue); padding: 30px; border-radius: 12px; }
+    .vertical-scroll-card {
+        background: rgba(0, 0, 0, 0.3); border: 1.5px solid rgba(0, 212, 255, 0.2);
+        padding: 15px; border-radius: 8px; flex: 1; min-width: 200px;
+    }
+    .scroll-list { max-height: 200px; overflow-y: auto; }
+
     /* Utilities */
     .horizontal-scroll-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
     .force-scroll::-webkit-scrollbar { height: 4px; }
@@ -152,44 +133,67 @@
         border: 1.5px solid rgba(0, 212, 255, 0.2) !important;
         color: var(--neon-cyan) !important;
         padding: 10px 15px !important;
-        border-radius: 0px !important;
+        border-radius: 4px !important;
         font-family: 'Space Mono', monospace !important;
         outline: none !important;
         transition: all 0.3s ease !important;
+        box-shadow: inset 0 0 8px rgba(0, 212, 255, 0.05) !important;
     }
 
+    input:focus, select:focus, textarea:focus {
+        border-color: var(--neon-blue) !important;
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.3), inset 0 0 10px rgba(0, 212, 255, 0.1) !important;
+        background: rgba(10, 20, 40, 0.9) !important;
+    }
+
+    select option {
+        background: var(--bg-darker) !important;
+        color: var(--neon-cyan) !important;
+    }
+
+    .auto-width-select { 
+        background: rgba(5, 10, 20, 0.8) !important; 
+        color: var(--neon-cyan) !important; 
+        border: 1.5px solid rgba(0, 212, 255, 0.2) !important; 
+        padding: 8px 30px 8px 12px !important; 
+        border-radius: 4px !important;
+        appearance: none !important;
+        background-image: linear-gradient(45deg, transparent 50%, var(--neon-blue) 50%), linear-gradient(135deg, var(--neon-blue) 50%, transparent 50%) !important;
+        background-position: calc(100% - 15px) 50%, calc(100% - 10px) 50% !important;
+        background-size: 5px 5px, 5px 5px !important;
+        background-repeat: no-repeat !important;
+    }
     .site-version { position: fixed; top: 10px; left: 10px; font-size: 10px; color: var(--neon-blue); opacity: 0.6; z-index: 1000; }
     .floating-menu-btn {
         position: fixed; top: 20px; right: 20px; width: 50px; height: 50px;
         background: rgba(0, 212, 255, 0.1); border: 2px solid var(--neon-blue);
         display: flex; justify-content: center; align-items: center; cursor: pointer;
-        z-index: 10000; border-radius: 0px; backdrop-filter: blur(10px);
+        z-index: 10000; border-radius: 8px; backdrop-filter: blur(10px);
     }
     .floating-menu-btn::before { content: '⚙'; font-size: 24px; color: var(--neon-cyan); }
-    
     .menu-dropdown-v2 {
         position: fixed; top: 80px; right: 20px; background: var(--panel-bg);
         border: 2px solid var(--neon-blue); width: 180px; display: none;
-        flex-direction: column; z-index: 9999; border-radius: 0px; overflow: hidden;
+        flex-direction: column; z-index: 9999; border-radius: 8px; overflow: hidden;
     }
     .menu-dropdown-v2.active { display: flex; }
     .menu-item-v2 { padding: 12px; color: var(--neon-blue); cursor: pointer; text-align: center; border-bottom: 1px solid rgba(0,212,255,0.1); }
     .menu-item-v2:hover { background: rgba(0,212,255,0.2); }
-
     .toast {
         position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
         background: var(--panel-bg); border: 1.5px solid var(--neon-blue); color: var(--neon-cyan);
-        padding: 12px 25px; border-radius: 0px; z-index: 11000; transition: transform 0.3s;
+        padding: 12px 25px; border-radius: 8px; z-index: 11000; transition: transform 0.3s;
     }
     .toast.active { transform: translateX(-50%) translateY(0); }
 
-    @media (max-width: 1024px) { .anime-grid { grid-template-columns: repeat(4, 1fr); } }
-    @media (max-width: 768px) { .anime-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 480px) { .anime-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } }
+    @media (max-width: 480px) {
+        .anime-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
+        h1 { font-size: 24px; }
+    }
   </style>
  </head>
  <body>
-  <div class="site-version">v3.2.1</div>
+  <div class="site-version">v3.1.8</div>
   
   <div id="app"></div>
 
@@ -201,7 +205,7 @@
 
   <div id="detailModal" class="modal" onclick="if(event.target===this) window.closeAnimeDetail()">
     <div class="modal-content">
-      <button style="position: absolute; top: 15px; right: 15px; background: none; border: 1.5px solid var(--neon-blue); color: var(--neon-cyan); width: 30px; height: 30px; cursor: pointer; border-radius: 0px;" onclick="window.closeAnimeDetail()">✕</button>
+      <button style="position: absolute; top: 15px; right: 15px; background: none; border: 1.5px solid var(--neon-blue); color: var(--neon-cyan); width: 30px; height: 30px; cursor: pointer; border-radius: 4px;" onclick="window.closeAnimeDetail()">✕</button>
       <div id="detailContent"></div>
     </div>
   </div>
@@ -222,10 +226,12 @@
   <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
   <script>
+    // Supabase 初始化
     const SUPABASE_URL = 'https://twgydqknzdyahgfuamak.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3Z3lkcWtuemR5YWhnZnVhbWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg4NzExMDksImV4cCI6MjA1NDQ0NzEwOX0.0';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // 動態載入主程式
     const script = document.createElement('script');
     script.src = './js/script.js?v=' + new Date().getTime();
     document.body.appendChild(script);

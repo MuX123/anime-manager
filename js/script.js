@@ -1,7 +1,7 @@
-// TECH v3.2.0 ULTRA - ACG Manager Logic
+// TECH v3.2.1 ULTRA - ACG Manager Logic
 let animeData = [];
 let optionsData = { genre: [], year: [], month: [], season: [], episodes: [], rating: [], recommendation: [], category_colors: {} };
-let siteSettings = { site_title: 'TECH v3.2.0 ULTRA', announcement: '歡迎來到 ACG 收藏庫', title_color: '#00d4ff', announcement_color: '#00d4ff' };
+let siteSettings = { site_title: 'TECH v3.2.1 ULTRA', announcement: '歡迎來到 ACG 收藏庫', title_color: '#00d4ff', announcement_color: '#00d4ff' };
 let currentCategory = 'anime';
 let currentPage = 1;
 let itemsPerPage = 18; // 根據偏好設定為 18
@@ -67,12 +67,12 @@ window.updateAdminMenu = function() {
     const container = document.getElementById('adminMenuOptions');
     if (!container) return;
     container.innerHTML = `
-        <div class="menu-item-v2" onclick="window.switchAdminTab('manage')">📦 作品管理</div>
-        <div class="menu-item-v2" onclick="window.switchAdminTab('add')">➕ 新增作品</div>
-        <div class="menu-item-v2" onclick="window.switchAdminTab('options')">⚙ 選項管理</div>
-        <div class="menu-item-v2" onclick="window.switchAdminTab('data')">💾 資料備份</div>
-        <div class="menu-item-v2" onclick="window.switchAdminTab('settings')">🔧 網站設定</div>
-        <div class="menu-item-v2" style="color: #ff4444;" onclick="supabaseClient.auth.signOut().then(() => location.reload())">🚪 登出系統</div>
+        <button class="menu-item-v2" onclick="window.switchAdminTab('manage')">📦 作品管理</button>
+        <button class="menu-item-v2" onclick="window.switchAdminTab('add')">➕ 新增作品</button>
+        <button class="menu-item-v2" onclick="window.switchAdminTab('options')">⚙ 選項管理</button>
+        <button class="menu-item-v2" onclick="window.switchAdminTab('data')">💾 資料備份</button>
+        <button class="menu-item-v2" onclick="window.switchAdminTab('settings')">🔧 網站設定</button>
+        <button class="menu-item-v2" style="color: #ff4444;" onclick="supabaseClient.auth.signOut().then(() => location.reload())">🚪 登出</button>
     `;
 };
 
@@ -87,24 +87,24 @@ window.renderApp = () => {
     app.innerHTML = `
         <div class="app-container">
             <header>
-                <h1 style="color: ${siteSettings.title_color || 'var(--neon-cyan)'}; text-shadow: 0 0 15px ${siteSettings.title_color || 'var(--neon-blue)'};">${siteSettings.site_title}</h1>
+                <h1 style="color: ${siteSettings.title_color || 'var(--neon-cyan)'}; text-shadow: 0 0 10px ${siteSettings.title_color || 'var(--neon-blue)'};">${siteSettings.site_title}</h1>
             </header>
             
-            <div class="announcement-bar" style="border-color: ${siteSettings.announcement_color || 'var(--neon-blue)'};">
-                <div style="color: ${siteSettings.announcement_color || 'var(--neon-cyan)'}; font-weight: bold;">
-                    📢 ${siteSettings.announcement}
+            <div class="announcement-bar" style="border: 1px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 10px; margin-bottom: 30px; text-align: center; background: rgba(0,212,255,0.05);">
+                <div style="color: ${siteSettings.announcement_color || 'var(--neon-cyan)'};">
+                    <span>📢 ${siteSettings.announcement}</span>
                 </div>
             </div>
 
-            <nav class="category-nav">
-                <button class="${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">動畫</button>
-                <button class="${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">漫畫</button>
-                <button class="${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">電影</button>
+            <nav class="category-nav" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px;">
+                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">動畫</button>
+                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">漫畫</button>
+                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">電影</button>
             </nav>
 
-            <div class="filter-section">
-                <input type="text" placeholder="搜尋作品名稱..." oninput="window.handleSearch(this.value)" value="${filters.search}">
-                <div class="filter-group">
+            <div class="filter-section" style="display: flex; gap: 15px; margin-bottom: 40px; background: var(--glass-bg); padding: 20px; border: 1px solid rgba(0,212,255,0.1);">
+                <input type="text" placeholder="搜尋作品名稱..." oninput="window.handleSearch(this.value)" value="${filters.search}" style="flex: 1;">
+                <div style="display: flex; gap: 10px;">
                     <select onchange="window.handleFilter('year', this.value)">
                         <option value="">年份</option>
                         ${optionsData.year.map(y => `<option value="${y}" ${filters.year === y ? 'selected' : ''}>${y}</option>`).join('')}
@@ -125,6 +125,8 @@ window.renderApp = () => {
             </div>
 
             ${window.renderPagination()}
+            
+            <div style="position: fixed; bottom: 20px; right: 20px; cursor: pointer; opacity: 0.5;" onclick="window.toggleAdminMode(true)">⚙</div>
         </div>
     `;
 };
@@ -141,7 +143,9 @@ window.renderCard = (item) => {
         <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')">
             <div class="card-poster">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=No+Poster'}" alt="${item.name}">
-                <div class="card-rating-badge">★ ${item.rating || '0.0'}</div>
+                <div class="card-overlay">
+                    <div class="card-rating" style="color: ${starColor}; text-shadow: 0 0 5px ${starColor};">★ ${item.rating || '0.0'}</div>
+                </div>
             </div>
             <div class="card-info">
                 <h3 style="color: ${nameColor};">${item.name}</h3>
@@ -165,37 +169,30 @@ window.showAnimeDetail = (id) => {
     const links = Array.isArray(item.links) ? item.links : [];
 
     content.innerHTML = `
-        <div class="detail-layout">
-            <div class="detail-poster">
-                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=No+Poster'}" alt="${item.name}">
+        <div style="display: grid; grid-template-columns: 300px 1fr; gap: 30px;">
+            <div>
+                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=No+Poster'}" style="width: 100%; border: 1px solid var(--neon-blue);">
             </div>
-            <div class="detail-info">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                    <h2 style="color: ${item.name_color || 'var(--neon-cyan)'};">${item.name}</h2>
-                    <div style="background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 8px; border: 1px solid var(--neon-blue);">
-                        <span style="font-size: 20px; color: ${item.star_color || '#ffcc00'}; font-weight: bold;">${item.rating || '0.0'}</span>
-                        <span style="color: ${item.star_color || '#ffcc00'}; margin-left: 5px;">★</span>
-                    </div>
-                </div>
+            <div>
+                <h2 style="color: ${item.name_color || 'var(--neon-cyan)'}; font-family: 'Orbitron', sans-serif; margin-bottom: 15px;">${item.name}</h2>
                 
-                <div class="detail-tags force-scroll">
+                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 20px;">
                     ${genres.map(g => `<span class="tag-item">${g}</span>`).join('')}
                 </div>
 
-                <div class="detail-desc" style="color: ${item.desc_color || 'var(--text-main)'};">
-                    ${item.description || '暫無簡介資料。'}
+                <div style="color: ${item.desc_color || 'var(--text-main)'}; line-height: 1.8; margin-bottom: 25px; font-size: 14px;">
+                    ${item.description || '暫無簡介。'}
                 </div>
 
-                <div style="margin-bottom: 20px; padding: 15px; background: rgba(0,212,255,0.05); border-radius: 8px; border-left: 4px solid var(--neon-blue);">
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 5px;">作品資訊</div>
+                <div style="margin-bottom: 20px; padding: 15px; background: rgba(0,212,255,0.05); border-left: 4px solid var(--neon-blue);">
                     <div style="color: var(--neon-cyan); font-weight: bold;">
-                        ${item.year || ''} ${item.season || ''} ${item.month || ''} | ${item.episodes ? '全 ' + item.episodes + ' 集' : ''}
+                        ${item.year || ''} ${item.season || ''} ${item.month || ''} | ${item.episodes ? '全 ' + item.episodes + ' 集' : ''} | ★ ${item.rating || '0.0'}
                     </div>
                 </div>
 
-                <div class="detail-links">
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                     ${links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="text-decoration: none; font-size: 12px;">🔗 ${l.name}</a>`).join('')}
-                    ${isAdmin ? `<button class="btn-primary" style="border-color: var(--neon-purple); color: var(--neon-purple);" onclick="window.editAnime('${item.id}')">📝 編輯作品</button>` : ''}
+                    ${isAdmin ? `<button class="btn-primary" style="border-color: var(--neon-purple); color: var(--neon-purple);" onclick="window.editAnime('${item.id}')">📝 編輯</button>` : ''}
                 </div>
             </div>
         </div>
@@ -204,7 +201,6 @@ window.showAnimeDetail = (id) => {
 };
 
 window.closeAnimeDetail = () => { document.getElementById('detailModal').classList.remove('active'); };
-
 window.switchCategory = (cat) => { currentCategory = cat; currentPage = 1; if (isAdmin) window.renderAdmin(); else window.renderApp(); };
 window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(); };
 window.handleFilter = (key, val) => { filters[key] = val; currentPage = 1; window.renderApp(); };
@@ -229,11 +225,13 @@ window.renderPagination = () => {
     const total = window.getFilteredData().length;
     const pages = Math.ceil(total / itemsPerPage);
     if (pages <= 1) return '';
-    return `<div class="pagination">${Array.from({length: pages}, (_, i) => i + 1).map(p => `<button class="${currentPage === p ? 'active' : ''}" onclick="window.changePage(${p})">${p}</button>`).join('')}</div>`;
+    return `<div style="display: flex; justify-content: center; gap: 8px; margin-top: 20px;">
+        ${Array.from({length: pages}, (_, i) => i + 1).map(p => `<button class="btn-primary ${currentPage === p ? 'active' : ''}" style="width: 40px; padding: 10px 0;" onclick="window.changePage(${p})">${p}</button>`).join('')}
+    </div>`;
 };
 
 window.toggleSystemMenu = (e) => { e.stopPropagation(); document.getElementById('systemMenu').classList.toggle('active'); };
-window.refreshSystem = async () => { window.showToast('⏳ 正在同步資料...'); await window.loadData(); if (isAdmin) window.renderAdmin(); else window.renderApp(); window.showToast('✓ 資料已同步'); };
+window.refreshSystem = async () => { window.showToast('⏳ 同步中...'); await window.loadData(); if (isAdmin) window.renderAdmin(); else window.renderApp(); window.showToast('✓ 已同步'); };
 window.showToast = (msg, type = 'success') => {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -241,41 +239,17 @@ window.showToast = (msg, type = 'success') => {
     setTimeout(() => t.classList.remove('active'), 3000);
 };
 
-window.toggleAdminMode = (show) => {
-    if (show && !isAdmin) { window.showLoginModal(); }
-    else if (!show) { isAdmin = false; window.renderApp(); }
-};
-
-window.showLoginModal = () => { document.getElementById('loginModal').classList.add('active'); };
-window.hideLoginModal = () => { document.getElementById('loginModal').classList.remove('active'); };
+window.toggleAdminMode = (show) => { if (show && !isAdmin) document.getElementById('loginModal').classList.add('active'); else if (!show) { isAdmin = false; window.renderApp(); } };
 window.handleLogin = async () => {
     const email = document.getElementById('login-email').value;
     const pass = document.getElementById('login-password').value;
     const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
-    if (error) window.showToast('✗ 登入失敗', 'error'); else location.reload();
+    if (error) window.showToast('✗ 失敗', 'error'); else location.reload();
 };
 
-window.switchAdminTab = (tab) => { currentAdminTab = tab; window.renderAdmin(); };
-
-// 管理介面渲染 (簡化版，僅供參考結構)
 window.renderAdmin = () => {
     const app = document.getElementById('app');
-    app.innerHTML = `
-        <div class="admin-container">
-            <header>
-                <h1 style="color: var(--neon-purple);">⚙ 管理控制台</h1>
-                <button class="btn-primary" onclick="window.switchCategory('anime')">返回前台</button>
-            </header>
-            <div style="display: grid; grid-template-columns: 200px 1fr; gap: 30px; margin-top: 30px;">
-                <aside id="adminMenuOptions"></aside>
-                <main id="adminMainContent">
-                    <div style="background: var(--glass-bg); padding: 40px; border-radius: 12px; text-align: center; border: 1px dashed var(--neon-blue);">
-                        <h3>請從左側選單選擇操作項目</h3>
-                    </div>
-                </main>
-            </div>
-        </div>
-    `;
+    app.innerHTML = `<div class="admin-container"><header><h1>⚙ 管理模式</h1><button class="btn-primary" onclick="window.toggleAdminMode(false)">返回</button></header><div id="adminMenuOptions" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;"></div><div id="adminMainContent" style="margin-top: 30px; text-align: center; border: 1px dashed var(--neon-blue); padding: 50px;">請選擇功能</div></div>`;
     window.updateAdminMenu();
 };
 
