@@ -39,24 +39,11 @@ window.initApp = async function() {
     try {
         console.log('🚀 系統初始化中...');
         
-        supabaseClient.auth.onAuthStateChange((event, session) => {
-            const prevAdmin = isAdmin;
-            isAdmin = !!session;
-            window.updateAdminMenu();
-            
-            if (isAdmin && !prevAdmin && !isFirstLoad) {
-                window.showToast('✓ 登入成功');
-            }
-            
-            if (isFirstLoad) {
-                isFirstLoad = false;
-                window.renderApp();
-            }
-        });
-
+        // 1. 先獲取 Session 狀態
         const { data: { session } } = await supabaseClient.auth.getSession();
         isAdmin = !!session;
-        
+
+        // 2. 獲取網站設定與選項資料
         const { data: settings } = await supabaseClient.from('site_settings').select('*');
         if (settings) {
             settings.forEach(s => {
@@ -79,15 +66,37 @@ window.initApp = async function() {
         }
         document.title = siteSettings.site_title;
         
+        // 3. 載入作品資料
         try {
             await window.loadData();
         } catch (e) {
             console.error('Data load error:', e);
             window.showToast('資料讀取失敗', 'error');
         }
+
+        // 4. 執行首次渲染
+        isFirstLoad = false;
         window.renderApp();
         window.updateAdminMenu();
         window.initGlobalScroll();
+
+        // 5. 監聽後續登入狀態變化
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            const prevAdmin = isAdmin;
+            isAdmin = !!session;
+            window.updateAdminMenu();
+            
+            if (isAdmin && !prevAdmin) {
+                window.showToast('✓ 登入成功');
+            }
+            
+            // 登入狀態改變時，若在後台則重新渲染後台，若在前台則重新渲染前台
+            if (document.querySelector('.admin-container')) {
+                window.renderAdmin();
+            } else {
+                window.renderApp();
+            }
+        });
         
     } catch (err) { 
         console.error('Init error:', err);
