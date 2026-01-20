@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>ACG 收藏庫 - TECH v3.1.9 ULTRA</title>
+  <title>ACG 收藏庫 - TECH v3.2.0 ULTRA</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,8 +25,6 @@
         --text-main: #e0e6ed;
         --text-secondary: #a8b0c0;
         --border-glow: 0 0 10px rgba(0, 212, 255, 0.5);
-        --border-glow-strong: 0 0 20px rgba(0, 212, 255, 0.8);
-        --shadow-glow: 0 0 30px rgba(0, 212, 255, 0.3);
         --transition-smooth: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
@@ -45,159 +43,190 @@
         overflow-x: hidden;
     }
 
-    /* Scrollbar - 水藍色半透明科技感 */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(0, 212, 255, 0.3); border-radius: 10px; border: 1px solid rgba(0, 212, 255, 0.1); }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(0, 212, 255, 0.6); box-shadow: 0 0 10px rgba(0, 212, 255, 0.4); }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 212, 255, 0.3); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0, 212, 255, 0.6); }
 
     /* Layout */
-    .app-container, .admin-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+    .app-container, .admin-container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
     header { text-align: center; margin-bottom: 40px; }
-    h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; margin-bottom: 10px; }
+    h1 { font-family: 'Orbitron', sans-serif; font-size: 36px; letter-spacing: 4px; margin-bottom: 10px; }
 
-    /* Grid */
+    /* Announcement */
+    .announcement-bar {
+        background: rgba(0, 212, 255, 0.05);
+        border: 1px solid var(--neon-blue);
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        text-align: center;
+        box-shadow: inset 0 0 15px rgba(0, 212, 255, 0.1);
+    }
+
+    /* Nav */
+    .category-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
+    .category-nav button {
+        background: transparent; border: 1px solid rgba(0, 212, 255, 0.3);
+        color: var(--text-secondary); padding: 10px 25px; border-radius: 4px;
+        cursor: pointer; font-family: 'Orbitron', sans-serif; transition: var(--transition-smooth);
+    }
+    .category-nav button.active {
+        background: rgba(0, 212, 255, 0.1); border-color: var(--neon-blue);
+        color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+    }
+
+    /* Filters */
+    .filter-section {
+        display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 40px;
+        background: var(--glass-bg); padding: 20px; border-radius: 12px;
+        border: 1px solid rgba(0, 212, 255, 0.1);
+    }
+    .filter-section input { flex: 2; min-width: 200px; }
+    .filter-group { flex: 3; display: flex; gap: 10px; min-width: 300px; }
+    .filter-group select { flex: 1; }
+
+    /* Grid - 6 items per row on desktop */
     .anime-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 25px;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 20px;
+        margin-bottom: 40px;
     }
 
     /* Card */
     .anime-card {
         background: var(--glass-bg);
-        border: 1.5px solid rgba(0, 212, 255, 0.2);
-        border-radius: 12px;
+        border: 1px solid rgba(0, 212, 255, 0.15);
+        border-radius: 10px;
         overflow: hidden;
         cursor: pointer;
         transition: var(--transition-smooth);
         position: relative;
-        backdrop-filter: blur(10px);
+        display: flex;
+        flex-direction: column;
     }
     .anime-card:hover {
-        transform: translateY(-8px) scale(1.02);
+        transform: translateY(-5px);
         border-color: var(--neon-blue);
-        box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        box-shadow: 0 5px 20px rgba(0, 212, 255, 0.2);
+    }
+    .card-poster {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 2/3;
+        overflow: hidden;
+    }
+    .card-poster img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+    .anime-card:hover .card-poster img { transform: scale(1.1); }
+    
+    .card-rating-badge {
+        position: absolute; top: 8px; right: 8px;
+        background: rgba(0, 0, 0, 0.7); color: #ffcc00;
+        padding: 2px 8px; border-radius: 12px; font-size: 12px;
+        font-weight: bold; border: 1px solid rgba(255, 204, 0, 0.3);
+        backdrop-filter: blur(4px);
     }
 
-    /* Tags */
-    .tag-item {
-        display: inline-block;
-        border: 1.5px solid var(--neon-blue);
-        color: var(--neon-blue);
-        border-radius: 4px;
-        font-weight: bold;
+    .card-info { padding: 12px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .card-info h3 {
+        font-size: 14px; margin-bottom: 8px; line-height: 1.4;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
+    .card-meta { font-size: 11px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px; }
 
-    /* Buttons */
-    .btn-primary {
-        background: rgba(0, 212, 255, 0.1);
-        border: 1.5px solid var(--neon-blue);
-        color: var(--neon-cyan);
-        padding: 10px 20px;
-        cursor: pointer;
-        border-radius: 6px;
-        font-family: 'Orbitron', sans-serif;
-        transition: var(--transition-smooth);
+    /* Pagination */
+    .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+    .pagination button {
+        background: transparent; border: 1px solid rgba(0, 212, 255, 0.3);
+        color: var(--neon-blue); width: 35px; height: 35px; border-radius: 4px;
+        cursor: pointer; transition: var(--transition-smooth);
     }
-    .btn-primary:hover:not(:disabled) { background: rgba(0, 212, 255, 0.2); box-shadow: 0 0 15px var(--neon-blue); }
-    .btn-primary.active { background: var(--neon-blue); color: var(--bg-dark); }
+    .pagination button.active { background: var(--neon-blue); color: var(--bg-dark); }
 
-    /* Modals */
+    /* Modal */
     .modal {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center;
-        z-index: 10000; backdrop-filter: blur(10px);
+        background: rgba(0, 0, 0, 0.9); display: none; justify-content: center; align-items: center;
+        z-index: 10000; backdrop-filter: blur(15px);
     }
     .modal.active { display: flex; }
     .modal-content {
-        background: var(--panel-bg); border: 2px solid var(--neon-blue);
-        padding: 30px; border-radius: 12px; position: relative;
-        max-width: 90%; max-height: 90%; overflow-y: auto;
+        background: var(--panel-bg); border: 1px solid var(--neon-blue);
+        padding: 30px; border-radius: 15px; position: relative;
+        width: 90%; max-width: 900px; max-height: 90vh; overflow-y: auto;
+        box-shadow: 0 0 50px rgba(0, 212, 255, 0.2);
     }
 
-    /* Admin */
-    .admin-panel { background: var(--panel-bg); border: 2px solid var(--neon-blue); padding: 30px; border-radius: 12px; }
-    .vertical-scroll-card {
-        background: rgba(0, 0, 0, 0.3); border: 1.5px solid rgba(0, 212, 255, 0.2);
-        padding: 15px; border-radius: 8px; flex: 1; min-width: 200px;
+    /* Detail UI */
+    .detail-layout { display: grid; grid-template-columns: 300px 1fr; gap: 30px; }
+    .detail-poster img { width: 100%; border-radius: 10px; border: 1px solid rgba(0, 212, 255, 0.3); }
+    .detail-info h2 { font-family: 'Orbitron', sans-serif; color: var(--neon-cyan); margin-bottom: 15px; }
+    .detail-tags { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; white-space: nowrap; }
+    .tag-item {
+        border: 1px solid var(--neon-blue); color: var(--neon-blue);
+        padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;
     }
-    .scroll-list { max-height: 200px; overflow-y: auto; }
+    .detail-desc { line-height: 1.8; color: var(--text-main); margin-bottom: 25px; font-size: 14px; }
+    .detail-links { display: flex; flex-wrap: wrap; gap: 10px; }
 
-    /* Utilities */
-    .horizontal-scroll-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
-    .force-scroll::-webkit-scrollbar { height: 4px; }
-    
-    input[type="text"], input[type="email"], input[type="password"], select, textarea {
-        background: rgba(5, 10, 20, 0.8) !important;
-        border: 1.5px solid rgba(0, 212, 255, 0.2) !important;
-        color: var(--neon-cyan) !important;
-        padding: 10px 15px !important;
-        border-radius: 4px !important;
-        font-family: 'Space Mono', monospace !important;
-        outline: none !important;
-        transition: all 0.3s ease !important;
-        box-shadow: inset 0 0 8px rgba(0, 212, 255, 0.05) !important;
+    /* Form Elements */
+    input, select, textarea {
+        background: rgba(5, 10, 20, 0.8); border: 1px solid rgba(0, 212, 255, 0.2);
+        color: var(--neon-cyan); padding: 10px 15px; border-radius: 4px;
+        font-family: 'Space Mono', monospace; outline: none; transition: all 0.3s;
     }
+    input:focus, select:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); }
 
-    input:focus, select:focus, textarea:focus {
-        border-color: var(--neon-blue) !important;
-        box-shadow: 0 0 15px rgba(0, 212, 255, 0.3), inset 0 0 10px rgba(0, 212, 255, 0.1) !important;
-        background: rgba(10, 20, 40, 0.9) !important;
+    .btn-primary {
+        background: rgba(0, 212, 255, 0.1); border: 1px solid var(--neon-blue);
+        color: var(--neon-cyan); padding: 10px 20px; cursor: pointer;
+        border-radius: 4px; font-family: 'Orbitron', sans-serif; transition: var(--transition-smooth);
     }
+    .btn-primary:hover { background: var(--neon-blue); color: var(--bg-dark); box-shadow: 0 0 15px var(--neon-blue); }
 
-    select option {
-        background: var(--bg-darker) !important;
-        color: var(--neon-cyan) !important;
-    }
-
-    .auto-width-select { 
-        background: rgba(5, 10, 20, 0.8) !important; 
-        color: var(--neon-cyan) !important; 
-        border: 1.5px solid rgba(0, 212, 255, 0.2) !important; 
-        padding: 8px 30px 8px 12px !important; 
-        border-radius: 4px !important;
-        appearance: none !important;
-        background-image: linear-gradient(45deg, transparent 50%, var(--neon-blue) 50%), linear-gradient(135deg, var(--neon-blue) 50%, transparent 50%) !important;
-        background-position: calc(100% - 15px) 50%, calc(100% - 10px) 50% !important;
-        background-size: 5px 5px, 5px 5px !important;
-        background-repeat: no-repeat !important;
-    }
+    /* Floating UI */
     .site-version { position: fixed; top: 10px; left: 10px; font-size: 10px; color: var(--neon-blue); opacity: 0.6; z-index: 1000; }
     .floating-menu-btn {
-        position: fixed; top: 20px; right: 20px; width: 50px; height: 50px;
-        background: rgba(0, 212, 255, 0.1); border: 2px solid var(--neon-blue);
+        position: fixed; top: 20px; right: 20px; width: 45px; height: 45px;
+        background: rgba(0, 212, 255, 0.1); border: 1px solid var(--neon-blue);
         display: flex; justify-content: center; align-items: center; cursor: pointer;
-        z-index: 10000; border-radius: 8px; backdrop-filter: blur(10px);
+        z-index: 10000; border-radius: 50%; backdrop-filter: blur(10px);
     }
-    .floating-menu-btn::before { content: '⚙'; font-size: 24px; color: var(--neon-cyan); }
     .menu-dropdown-v2 {
-        position: fixed; top: 80px; right: 20px; background: var(--panel-bg);
-        border: 2px solid var(--neon-blue); width: 180px; display: none;
+        position: fixed; top: 75px; right: 20px; background: var(--panel-bg);
+        border: 1px solid var(--neon-blue); width: 180px; display: none;
         flex-direction: column; z-index: 9999; border-radius: 8px; overflow: hidden;
     }
     .menu-dropdown-v2.active { display: flex; }
     .menu-item-v2 { padding: 12px; color: var(--neon-blue); cursor: pointer; text-align: center; border-bottom: 1px solid rgba(0,212,255,0.1); }
     .menu-item-v2:hover { background: rgba(0,212,255,0.2); }
+
     .toast {
         position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
-        background: var(--panel-bg); border: 1.5px solid var(--neon-blue); color: var(--neon-cyan);
+        background: var(--panel-bg); border: 1px solid var(--neon-blue); color: var(--neon-cyan);
         padding: 12px 25px; border-radius: 8px; z-index: 11000; transition: transform 0.3s;
     }
     .toast.active { transform: translateX(-50%) translateY(0); }
 
-    @media (max-width: 480px) {
-        .anime-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
-        h1 { font-size: 24px; }
+    /* Responsive */
+    @media (max-width: 1200px) { .anime-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (max-width: 900px) { 
+        .anime-grid { grid-template-columns: repeat(3, 1fr); }
+        .detail-layout { grid-template-columns: 1fr; }
+        .detail-poster { display: flex; justify-content: center; }
+        .detail-poster img { max-width: 250px; }
     }
+    @media (max-width: 600px) { .anime-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } }
   </style>
  </head>
  <body>
-  <div class="site-version">v3.1.9</div>
+  <div class="site-version">v3.2.0</div>
   
   <div id="app"></div>
 
-  <div class="floating-menu-btn" id="gearBtn" onclick="window.toggleSystemMenu(event)"></div>
+  <div class="floating-menu-btn" id="gearBtn" onclick="window.toggleSystemMenu(event)">⚙</div>
   <div class="menu-dropdown-v2" id="systemMenu">
     <div class="menu-item-v2" onclick="window.refreshSystem()">⟳ 同步資料</div>
     <div id="adminMenuOptions"></div>
@@ -205,7 +234,7 @@
 
   <div id="detailModal" class="modal" onclick="if(event.target===this) window.closeAnimeDetail()">
     <div class="modal-content">
-      <button style="position: absolute; top: 15px; right: 15px; background: none; border: 1.5px solid var(--neon-blue); color: var(--neon-cyan); width: 30px; height: 30px; cursor: pointer; border-radius: 4px;" onclick="window.closeAnimeDetail()">✕</button>
+      <button style="position: absolute; top: 15px; right: 15px; background: none; border: 1px solid var(--neon-blue); color: var(--neon-cyan); width: 30px; height: 30px; cursor: pointer; border-radius: 4px;" onclick="window.closeAnimeDetail()">✕</button>
       <div id="detailContent"></div>
     </div>
   </div>
@@ -215,7 +244,7 @@
       <h2 style="margin-bottom: 20px; text-align: center; color: var(--neon-cyan);">🔐 管理員登入</h2>
       <input type="email" id="login-email" placeholder="電子郵件" style="width: 100%; margin-bottom: 15px;">
       <input type="password" id="login-password" placeholder="密碼" style="width: 100%; margin-bottom: 20px;">
-      <div style="display: flex; gap: 10px;">
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
         <button class="btn-primary" style="flex: 1;" onclick="window.handleLogin()">登入</button>
         <button class="btn-primary" style="flex: 1; border-color: #ff4444; color: #ff4444;" onclick="window.hideLoginModal()">取消</button>
       </div>
@@ -226,12 +255,10 @@
   <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
   <script>
-    // Supabase 初始化
     const SUPABASE_URL = 'https://twgydqknzdyahgfuamak.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3Z3lkcWtuemR5YWhnZnVhbWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg4NzExMDksImV4cCI6MjA1NDQ0NzEwOX0.0';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 動態載入主程式
     const script = document.createElement('script');
     script.src = './js/script.js?v=' + new Date().getTime();
     document.body.appendChild(script);
