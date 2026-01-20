@@ -1,10 +1,10 @@
-// TECH v3.2.2 ULTRA - ACG Manager Logic (Restored from v3.1.8)
+// TECH v3.2.3 ULTRA - ACG Manager Logic (Restored from v3.1.8 with Bug Fixes)
 let animeData = [];
 let optionsData = { genre: [], year: [], month: [], season: [], episodes: [], rating: [], recommendation: [], category_colors: {} };
 let siteSettings = { site_title: 'TECH v3.1.8 ULTRA', announcement: '歡迎來到 ACG 收藏庫', title_color: '#00d4ff', announcement_color: '#00d4ff' };
 let currentCategory = 'anime';
 let currentPage = 1;
-let itemsPerPage = 12;
+let itemsPerPage = 18; // 根據偏好設定為 18
 let isAdmin = false;
 let currentAdminTab = 'manage';
 let adminPage = 1;
@@ -72,6 +72,7 @@ window.updateAdminMenu = function() {
         <button class="admin-menu-item ${currentAdminTab === 'options' ? 'active' : ''}" onclick="window.switchAdminTab('options')">⚙ 選項管理</button>
         <button class="admin-menu-item ${currentAdminTab === 'data' ? 'active' : ''}" onclick="window.switchAdminTab('data')">💾 資料備份</button>
         <button class="admin-menu-item ${currentAdminTab === 'settings' ? 'active' : ''}" onclick="window.switchAdminTab('settings')">🔧 網站設定</button>
+        <button class="admin-menu-item" style="border-color: #ff4444; color: #ff4444;" onclick="supabaseClient.auth.signOut().then(() => location.reload())">🚪 登出</button>
     `;
 };
 
@@ -80,28 +81,31 @@ window.renderApp = () => {
     const app = document.getElementById('app');
     if (!app) return;
 
+    const filtered = window.getFilteredData();
+    const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
+
     app.innerHTML = `
-        <div class="site-version">v3.2.2</div>
+        <div class="site-version">v3.2.3</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || 'var(--neon-cyan)'}; text-shadow: 0 0 10px ${siteSettings.title_color || 'var(--neon-blue)'};">${siteSettings.site_title}</h1>
             </header>
             
-            <div class="announcement-bar" style="border-color: ${siteSettings.announcement_color || 'var(--neon-blue)'};">
+            <div class="announcement-bar" style="border: 1px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 10px; margin-bottom: 30px; text-align: center; background: rgba(0,212,255,0.05);">
                 <div class="announcement-content" style="color: ${siteSettings.announcement_color || 'var(--neon-cyan)'};">
                     <span>📢 ${siteSettings.announcement}</span>
                 </div>
             </div>
 
-            <nav class="category-nav">
-                <button class="${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">動畫</button>
-                <button class="${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">漫畫</button>
-                <button class="${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">電影</button>
+            <nav class="category-nav" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px;">
+                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">動畫</button>
+                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">漫畫</button>
+                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">電影</button>
             </nav>
 
-            <div class="filter-section">
-                <input type="text" placeholder="搜尋作品名稱..." oninput="window.handleSearch(this.value)" value="${filters.search}">
-                <div class="filter-group">
+            <div class="filter-section" style="display: flex; gap: 15px; margin-bottom: 40px; background: var(--glass-bg); padding: 20px; border: 1px solid rgba(0,212,255,0.1);">
+                <input type="text" placeholder="搜尋作品名稱..." oninput="window.handleSearch(this.value)" value="${filters.search}" style="flex: 1;">
+                <div class="filter-group" style="display: flex; gap: 10px;">
                     <select onchange="window.handleFilter('year', this.value)">
                         <option value="">年份</option>
                         ${optionsData.year.map(y => `<option value="${y}" ${filters.year === y ? 'selected' : ''}>${y}</option>`).join('')}
@@ -118,12 +122,12 @@ window.renderApp = () => {
             </div>
 
             <div class="anime-grid">
-                ${window.getFilteredData().slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage).map(item => window.renderCard(item)).join('')}
+                ${paged.map(item => window.renderCard(item)).join('')}
             </div>
 
             ${window.renderPagination()}
             
-            <div class="admin-trigger" onclick="window.toggleAdminMode(true)">⚙</div>
+            <div class="admin-trigger" style="position: fixed; bottom: 20px; right: 20px; cursor: pointer; opacity: 0.5; font-size: 24px;" onclick="window.toggleAdminMode(true)">⚙</div>
         </div>
     `;
 };
@@ -147,8 +151,8 @@ window.renderCard = (item) => {
             <div class="card-info">
                 <h3 style="color: ${nameColor};">${item.name}</h3>
                 <div class="card-meta">
-                    <span style="color: var(--neon-cyan);">${timeInfo}</span>
-                    <span style="color: ${episodesColor}; font-weight: bold;">${episodes}</span>
+                    <span style="color: var(--neon-cyan); font-weight: bold;">[ ${timeInfo} ]</span>
+                    <span style="color: ${episodesColor};">${episodes}</span>
                 </div>
             </div>
         </div>
@@ -204,12 +208,16 @@ window.handleFilter = (key, val) => { filters[key] = val; currentPage = 1; windo
 window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollTo({top: 0, behavior: 'smooth'}); };
 
 window.getFilteredData = () => {
+    const searchLower = filters.search.toLowerCase();
     return animeData.filter(item => {
         if (item.category !== currentCategory) return false;
-        if (filters.search && !item.name.toLowerCase().includes(filters.search.toLowerCase())) return false;
+        if (filters.search && !item.name.toLowerCase().includes(searchLower)) return false;
         if (filters.year && item.year !== filters.year) return false;
         if (filters.season && item.season !== filters.season) return false;
-        if (filters.genre && !(Array.isArray(item.genre) ? item.genre.includes(filters.genre) : item.genre.includes(filters.genre))) return false;
+        if (filters.genre) {
+            const itemGenre = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
+            if (!itemGenre.includes(filters.genre)) return false;
+        }
         return true;
     });
 };
@@ -218,7 +226,9 @@ window.renderPagination = () => {
     const total = window.getFilteredData().length;
     const pages = Math.ceil(total / itemsPerPage);
     if (pages <= 1) return '';
-    return `<div class="pagination">${Array.from({length: pages}, (_, i) => i + 1).map(p => `<button class="${currentPage === p ? 'active' : ''}" onclick="window.changePage(${p})">${p}</button>`).join('')}</div>`;
+    return `<div class="pagination" style="display: flex; justify-content: center; gap: 8px; margin-top: 20px;">
+        ${Array.from({length: pages}, (_, i) => i + 1).map(p => `<button class="btn-primary ${currentPage === p ? 'active' : ''}" style="width: 40px; padding: 10px 0;" onclick="window.changePage(${p})">${p}</button>`).join('')}
+    </div>`;
 };
 
 window.showToast = (msg, type = 'success') => {
