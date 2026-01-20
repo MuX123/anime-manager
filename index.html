@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>ACG 收藏庫 - TECH v3.0 ULTRA</title>
+  <title>ACG 收藏庫 - TECH v3.1.8 ULTRA</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -131,7 +131,7 @@
     /* Utilities */
     .horizontal-scroll-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
     .force-scroll::-webkit-scrollbar { height: 4px; }
-    /* 輸入框樣式 - 科技感重構 */
+    
     input[type="text"], input[type="email"], input[type="password"], select, textarea {
         background: rgba(5, 10, 20, 0.8) !important;
         border: 1.5px solid rgba(0, 212, 255, 0.2) !important;
@@ -198,10 +198,7 @@
  </head>
  <body>
   <div class="site-version">v3.1.8</div>
-  <script>
-    document.write('<script src="./js/script.js?v=' + new Date().getTime() + '"><\/script>');
-  </script>
-
+  
   <div id="app"></div>
 
   <div class="floating-menu-btn" id="gearBtn" onclick="window.toggleSystemMenu(event)"></div>
@@ -232,10 +229,11 @@
   <div id="toast" class="toast"></div>
   <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
+  <script src="./js/supabase.js"></script>
   <script>
-    window.onload = () => {
-        if (typeof window.initApp === 'function') window.initApp();
-    };
+    const script = document.createElement('script');
+    script.src = './js/script.js?v=' + new Date().getTime();
+    document.body.appendChild(script);
   </script>
  </body>
 </html>

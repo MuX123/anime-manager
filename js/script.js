@@ -645,3 +645,37 @@ window.showToast = (msg, type = 'success') => {
 
 window.getOptionLabel = (key) => ({ genre: '類型', year: '年份', month: '月份', season: '季度', episodes: '集數', rating: '評分', recommendation: '推薦' }[key] || key);
 window.getCategoryName = (cat) => ({ anime: '動畫', manga: '漫畫', movie: '電影' }[cat]);
+
+window.toggleSystemMenu = (e) => {
+    e.stopPropagation();
+    const menu = document.getElementById('systemMenu');
+    menu.classList.toggle('active');
+};
+
+window.refreshSystem = async () => {
+    window.showToast('⏳ 正在同步資料...');
+    await window.loadData();
+    if (isAdmin) window.renderAdmin(); else window.renderApp();
+    window.showToast('✓ 資料已同步');
+};
+
+window.hideLoginModal = () => {
+    const modal = document.getElementById('loginModal');
+    if (modal) modal.classList.remove('active');
+};
+
+window.handleLogin = async () => {
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-password').value;
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+    if (error) {
+        window.showToast('✗ 登入失敗：' + error.message, 'error');
+    } else {
+        location.reload();
+    }
+};
+
+document.addEventListener('click', () => {
+    const menu = document.getElementById('systemMenu');
+    if (menu) menu.classList.remove('active');
+});
