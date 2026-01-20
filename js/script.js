@@ -191,7 +191,7 @@ window.renderAdmin = function() {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.1.5</div>
+        <div class="site-version">v3.1.6</div>
         <div class="admin-container">
             <div class="admin-panel">
                 <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 15px; position: relative;">
@@ -463,8 +463,21 @@ window.showAnimeDetail = (id) => {
             </div>
         </div>
     `;
-    modal.classList.add('active');
-};
+	    modal.classList.add('active');
+	    
+	    // 為詳情頁內的橫向滾動容器加入滾輪支援
+	    setTimeout(() => {
+	        const containers = modal.querySelectorAll('.horizontal-scroll-container');
+	        containers.forEach(container => {
+	            container.addEventListener('wheel', (e) => {
+	                if (e.deltaY !== 0) {
+	                    e.preventDefault();
+	                    container.scrollLeft += e.deltaY;
+	                }
+	            });
+	        });
+	    }, 100);
+	};
 
 window.closeAnimeDetail = () => document.getElementById('detailModal').classList.remove('active');
 window.editAnime = (id) => { currentAdminTab = 'add'; window.renderAdmin(); document.querySelector('.admin-panel main').innerHTML = window.renderAdminForm(id); };
