@@ -1,7 +1,7 @@
-// TECH v3.1.7 ULTRA - ACG Manager Logic
+// TECH v3.1.8 ULTRA - ACG Manager Logic
 let animeData = [];
 let optionsData = { genre: [], year: [], month: [], season: [], episodes: [], rating: [], recommendation: [], category_colors: {} };
-let siteSettings = { site_title: 'TECH v3.1.7 ULTRA', announcement: '歡迎來到 ACG 收藏庫', title_color: '#00d4ff', announcement_color: '#00d4ff' };
+let siteSettings = { site_title: 'TECH v3.1.8 ULTRA', announcement: '歡迎來到 ACG 收藏庫', title_color: '#00d4ff', announcement_color: '#00d4ff' };
 let currentCategory = 'anime';
 let currentPage = 1;
 let itemsPerPage = 12;
@@ -70,7 +70,7 @@ window.renderApp = () => {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.1.7</div>
+        <div class="site-version">v3.1.8</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || 'var(--neon-cyan)'}; text-shadow: 0 0 10px ${siteSettings.title_color || 'var(--neon-blue)'};">${siteSettings.site_title}</h1>
@@ -149,7 +149,7 @@ window.renderAdmin = () => {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.1.7</div>
+        <div class="site-version">v3.1.8</div>
         <div class="admin-container">
             <div class="admin-panel">
                 <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 15px; position: relative;">
