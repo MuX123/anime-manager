@@ -10,10 +10,14 @@
     --neon-green: #00ff41;
     --text-main: #e0e6ed;
     --text-secondary: #a8b0c0;
-    --border-glow: 0 0 10px rgba(0, 212, 255, 0.5);
-    --border-glow-strong: 0 0 20px rgba(0, 212, 255, 0.8);
-    --shadow-glow: 0 0 30px rgba(0, 212, 255, 0.3);
     --transition-smooth: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 全局比例縮小 20% */
+html {
+    zoom: 0.8;
+    -moz-transform: scale(0.8);
+    -moz-transform-origin: top center;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -42,7 +46,7 @@ body {
 header { text-align: center; margin-bottom: 40px; }
 h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; margin-bottom: 10px; }
 
-/* Grid - 調整為每排 5 個 */
+/* Grid - 每排 5 個 */
 .anime-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -53,7 +57,6 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
 @media (max-width: 1400px) { .anime-grid { grid-template-columns: repeat(4, 1fr); } }
 @media (max-width: 1100px) { .anime-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 768px) { .anime-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px) { .anime-grid { grid-template-columns: 1fr; } }
 
 /* Card */
 .anime-card {
@@ -72,16 +75,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
 }
 
-/* Tags */
-.tag-item {
-    display: inline-block;
-    border: 1.5px solid var(--neon-blue);
-    color: var(--neon-blue);
-    border-radius: 4px;
-    font-weight: bold;
-}
-
-/* Buttons - 粗體、大尺寸 */
+/* Buttons */
 .btn-primary {
     background: rgba(0, 212, 255, 0.1);
     border: 2px solid var(--neon-blue);
@@ -128,6 +122,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     gap: 20px;
     overflow-x: auto;
     padding: 10px 0;
+    min-height: 550px;
 }
 .options-column {
     display: flex;
@@ -135,7 +130,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     background: rgba(0, 0, 0, 0.3);
     border: 1.5px solid rgba(0, 212, 255, 0.2);
     border-radius: 8px;
-    min-width: 220px;
+    min-width: 240px;
     width: fit-content;
     height: 500px;
 }
@@ -153,6 +148,8 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     flex: 1;
     overflow-y: auto;
     padding: 10px;
+    /* 確保直向滾動不受橫向滾動干擾 */
+    touch-action: pan-y;
 }
 .option-item-row {
     display: flex;
@@ -166,6 +163,17 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     white-space: nowrap;
 }
 .option-item-row:hover { background: rgba(0, 212, 255, 0.15); }
+
+/* 色塊顯示 */
+.color-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.3);
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+}
 
 /* 表單滾動區塊 */
 .form-scroll-section {
@@ -183,7 +191,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
 input[type="text"], input[type="email"], input[type="password"], select, textarea {
     background: rgba(5, 10, 20, 0.8) !important;
     border: 1.5px solid rgba(0, 212, 255, 0.2) !important;
-    color: #ffffff !important; /* 預設白色 */
+    color: #ffffff !important;
     padding: 10px 15px !important;
     border-radius: 4px !important;
     font-family: 'Space Mono', monospace !important;
@@ -194,6 +202,19 @@ input[type="text"], input[type="email"], input[type="password"], select, textare
 input:focus, select:focus, textarea:focus {
     border-color: var(--neon-blue) !important;
     box-shadow: 0 0 15px rgba(0, 212, 255, 0.3) !important;
+}
+
+/* 隱藏原生 color input，改用色塊觸發 */
+.color-input-wrapper {
+    position: relative;
+    display: inline-block;
+}
+.color-input-wrapper input[type="color"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
 }
 
 .toast {

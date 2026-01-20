@@ -1,4 +1,4 @@
-// TECH v3.2.2 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v3.2.3 - ACG Manager Logic (System Admin AI Optimized)
 let animeData = [];
 let optionsData = {
     genre: ['冒險', '奇幻', '熱血', '校園', '戀愛', '喜劇', '科幻', '懸疑', '日常', '異世界'],
@@ -19,12 +19,13 @@ let currentCategory = 'anime';
 let currentAdminTab = 'manage';
 let isAdmin = false;
 let currentPage = 1;
-const itemsPerPage = 20; // 5x4 佈局
+const itemsPerPage = 20; 
 const adminItemsPerPage = 10;
 let adminPage = 1;
 let filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' };
 let importTarget = 'anime';
 let editId = null;
+let isFirstLoad = true;
 
 // --- Core Functions ---
 
@@ -33,13 +34,24 @@ window.initApp = async function() {
         console.log('🚀 系統初始化中...');
         
         supabaseClient.auth.onAuthStateChange((event, session) => {
+            const prevAdmin = isAdmin;
             isAdmin = !!session;
             window.updateAdminMenu();
-            if (isAdmin) {
+            
+            // 只有在狀態真正改變且不是首次載入時才顯示 Toast
+            if (isAdmin && !prevAdmin && !isFirstLoad) {
                 window.showToast('✓ 登入成功');
-                window.renderAdmin();
-            } else {
-                window.renderApp();
+            }
+            
+            // 首次載入後標記
+            if (isFirstLoad) {
+                isFirstLoad = false;
+                if (isAdmin) {
+                    // 如果已登入，預設顯示前台，不自動跳轉後台
+                    window.renderApp();
+                } else {
+                    window.renderApp();
+                }
             }
         });
 
@@ -64,7 +76,7 @@ window.initApp = async function() {
         document.title = siteSettings.site_title;
         
         await window.loadData();
-        if (isAdmin) window.renderAdmin(); else window.renderApp();
+        window.renderApp();
         window.updateAdminMenu();
         window.initGlobalScroll();
         
@@ -103,7 +115,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.2.2-ULTRA</div>
+        <div class="site-version">v3.2.3-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -161,18 +173,17 @@ window.showAnimeDetail = (id) => {
     if (!item) return;
     const modal = document.getElementById('detailModal');
     const content = document.getElementById('detailContent');
+    
+    // 類型處理：移除標點符號，僅保留選項內容
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
+    
     const links = Array.isArray(item.links) ? item.links : [];
     const starColor = item.star_color || '#ffcc00';
     const ratingColor = optionsData.category_colors?.rating || 'var(--neon-purple)';
 
-    // 獲取除了類型以外的其他標籤
-    const otherTags = [];
-    if (item.year) otherTags.push(item.year);
-    if (item.season) otherTags.push(item.season);
-    if (item.month) otherTags.push(item.month.includes('月') ? item.month : item.month + '月');
-    if (item.episodes) otherTags.push(item.episodes + ' 集');
-    if (item.rating) otherTags.push(item.rating);
+    // 獲取除了類型以外的其他標籤 (根據需求：第二列不要顯示 年 月 季度 集數 評級)
+    // 這裡我們只顯示自定義標籤，如果有的話。目前先留空或顯示其他非排除項。
+    const otherTags = []; 
 
     content.innerHTML = `
         <div style="display: grid; grid-template-columns: 320px 1fr; gap: 30px;">
@@ -189,8 +200,8 @@ window.showAnimeDetail = (id) => {
                     ${genres.map(g => `<span style="border: 1.5px solid var(--neon-blue); color: var(--neon-cyan); padding: 3px 10px; border-radius: 4px; font-size: 13px; font-weight: bold; white-space: nowrap; margin-right: 8px;">${g}</span>`).join('')}
                 </div>
 
-                <!-- 其他標籤區塊 (獨立滾動) -->
-                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 20px; padding: 5px 0;">
+                <!-- 第二列標籤區塊 (獨立滾動) - 根據需求目前不顯示年月等 -->
+                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 20px; padding: 5px 0; display: ${otherTags.length > 0 ? 'flex' : 'none'};">
                     ${otherTags.map(t => `<span style="background: rgba(0,212,255,0.1); color: var(--neon-cyan); padding: 3px 10px; border-radius: 4px; font-size: 13px; white-space: nowrap; margin-right: 8px;">${t}</span>`).join('')}
                 </div>
 
@@ -295,6 +306,11 @@ window.switchAdminTab = (tab, id = null) => {
 window.renderAdminContent = (pagedData, total) => {
     if (currentAdminTab === 'manage') {
         return `
+            <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
+                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime'); window.renderAdmin();">動畫板塊</button>
+                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga'); window.renderAdmin();">漫畫板塊</button>
+                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie'); window.renderAdmin();">電影板塊</button>
+            </div>
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 20px;">
                 <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.exportCSV('${currentCategory}')">📥 匯出 ${currentCategory} CSV</button>
                 <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.triggerImport('${currentCategory}')">📤 匯入 ${currentCategory} CSV</button>
@@ -337,9 +353,21 @@ window.renderAdminContent = (pagedData, total) => {
         return `
             <div style="display: flex; flex-direction: column; gap: 20px; max-width: 600px; margin: 0 auto;">
                 <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">網站標題</label><input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;"></div>
-                <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">標題顏色</label><input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" style="width: 100%; height: 45px;"></div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">標題顏色</label>
+                    <div class="color-input-wrapper">
+                        <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 40px; height: 40px;"></div>
+                        <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                    </div>
+                </div>
                 <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告內容</label><textarea id="set-announcement" style="width: 100%; height: 100px;">${siteSettings.announcement}</textarea></div>
-                <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告顏色</label><input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" style="width: 100%; height: 45px;"></div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告顏色</label>
+                    <div class="color-input-wrapper">
+                        <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 40px; height: 40px;"></div>
+                        <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                    </div>
+                </div>
                 <button class="btn-primary" style="margin-top: 10px;" onclick="window.saveSettings()">💾 儲存設定</button>
             </div>
         `;
@@ -388,9 +416,27 @@ window.renderAnimeForm = (item) => {
                     </div>
                     <textarea id="form-desc" placeholder="作品簡介" style="height: 120px; margin-top: 15px; width: 100%;">${item.description || ''}</textarea>
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 15px;">
-                        <div><label style="font-size: 12px; color: var(--neon-cyan);">星標顏色</label><input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" style="width: 100%;"></div>
-                        <div><label style="font-size: 12px; color: var(--neon-cyan);">名稱顏色</label><input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" style="width: 100%;"></div>
-                        <div><label style="font-size: 12px; color: var(--neon-cyan);">簡介顏色</label><input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" style="width: 100%;"></div>
+                        <div>
+                            <label style="font-size: 12px; color: var(--neon-cyan);">星標顏色</label>
+                            <div class="color-input-wrapper" style="width: 100%;">
+                                <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 100%; height: 35px;"></div>
+                                <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" onchange="this.previousElementSibling.style.background = this.value">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: var(--neon-cyan);">名稱顏色</label>
+                            <div class="color-input-wrapper" style="width: 100%;">
+                                <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 35px;"></div>
+                                <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: var(--neon-cyan);">簡介顏色</label>
+                            <div class="color-input-wrapper" style="width: 100%;">
+                                <div class="color-swatch" style="background: ${item.desc_color || '#ffffff'}; width: 100%; height: 35px;"></div>
+                                <input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <button class="btn-primary" style="margin-top: 15px; border-color: var(--neon-purple); color: var(--neon-purple); font-size: 16px;" onclick="window.saveAnime()">💾 儲存作品資料</button>
@@ -427,15 +473,24 @@ window.renderOptionsManager = () => {
                 <div class="options-list force-scroll">
                     <div class="option-item-row" style="flex-direction: column; align-items: flex-start; gap: 10px; height: auto;">
                         <label style="font-size: 13px;">評級外框顏色</label>
-                        <input type="color" value="${optionsData.category_colors.rating}" onchange="window.updateCategoryColor('rating', this.value)" style="width: 100%; height: 35px;">
+                        <div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${optionsData.category_colors.rating}; width: 100%; height: 35px;"></div>
+                            <input type="color" value="${optionsData.category_colors.rating}" onchange="window.updateCategoryColor('rating', this.value); this.previousElementSibling.style.background = this.value">
+                        </div>
                     </div>
                     <div class="option-item-row" style="flex-direction: column; align-items: flex-start; gap: 10px; height: auto;">
                         <label style="font-size: 13px;">集數文字顏色</label>
-                        <input type="color" value="${optionsData.category_colors.episodes}" onchange="window.updateCategoryColor('episodes', this.value)" style="width: 100%; height: 35px;">
+                        <div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${optionsData.category_colors.episodes}; width: 100%; height: 35px;"></div>
+                            <input type="color" value="${optionsData.category_colors.episodes}" onchange="window.updateCategoryColor('episodes', this.value); this.previousElementSibling.style.background = this.value">
+                        </div>
                     </div>
                     <div class="option-item-row" style="flex-direction: column; align-items: flex-start; gap: 10px; height: auto;">
                         <label style="font-size: 13px;">網站按鈕顏色</label>
-                        <input type="color" value="${optionsData.category_colors.btn_bg || '#00d4ff'}" onchange="window.updateCategoryColor('btn_bg', this.value)" style="width: 100%; height: 35px;">
+                        <div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${optionsData.category_colors.btn_bg || '#00d4ff'}; width: 100%; height: 35px;"></div>
+                            <input type="color" value="${optionsData.category_colors.btn_bg || '#00d4ff'}" onchange="window.updateCategoryColor('btn_bg', this.value); this.previousElementSibling.style.background = this.value">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -596,9 +651,12 @@ window.initGlobalScroll = () => {
 };
 
 window.handleWheelScroll = (e) => {
-    if (e.deltaY !== 0) {
-        e.preventDefault();
-        e.currentTarget.scrollLeft += e.deltaY;
+    // 只有當容器可以橫向捲動時才攔截滾輪
+    if (e.currentTarget.scrollWidth > e.currentTarget.clientWidth) {
+        if (e.deltaY !== 0) {
+            e.preventDefault();
+            e.currentTarget.scrollLeft += e.deltaY;
+        }
     }
 };
 
