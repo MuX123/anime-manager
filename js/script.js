@@ -133,13 +133,9 @@ window.renderApp = function() {
                 <span>📢 ${siteSettings.announcement}</span>
             </div>
             <div style="margin-bottom: 30px;">
-                <input type="text" placeholder="🔍 搜尋作品..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 16px;">
-                <div class="horizontal-scroll-container force-scroll" style="padding: 10px 0;">
-                    <select class="auto-width-select" onchange="window.handleFilter('genre', this.value)"><option value="">📂 類型</option>${optionsData.genre.map(g => `<option value="${g}" ${filters.genre === g ? 'selected' : ''}>${g}</option>`).join('')}</select>
-                    <select class="auto-width-select" onchange="window.handleFilter('year', this.value)"><option value="">📅 年份</option>${optionsData.year.map(y => `<option value="${y}" ${filters.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select>
-                    <select class="auto-width-select" onchange="window.handleFilter('season', this.value)"><option value="">🌍 季度</option>${optionsData.season.map(s => `<option value="${s}" ${filters.season === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
-                    <select class="auto-width-select" onchange="window.handleFilter('month', this.value)"><option value="">📆 月份</option>${optionsData.month.map(m => `<option value="${m}" ${filters.month === m ? 'selected' : ''}>${m}</option>`).join('')}</select>
-                    <select class="auto-width-select" onchange="window.handleFilter('rating', this.value)"><option value="">⭐ 評分</option>${optionsData.rating.map(r => `<option value="${r}" ${filters.rating === r ? 'selected' : ''}>${r}</option>`).join('')}</select>
+                <input type="text" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px !important; border-radius: 50px !important;">
+                <div id="searchFilters" class="search-filters-container">
+                    ${window.renderSearchFiltersHTML()}
                 </div>
             </div>
             <div class="anime-grid">
@@ -272,9 +268,60 @@ window.renderPagination = (total) => {
 };
 
 window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-
 window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(); };
-window.handleFilter = (key, val) => { filters[key] = val; currentPage = 1; window.renderApp(); };
+
+window.renderSearchFiltersHTML = () => {
+    let html = '';
+    const filterCategories = [
+        { id: 'genre', label: '類型', options: optionsData.genre },
+        { id: 'year', label: '年份', options: optionsData.year },
+        { id: 'season', label: '季度', options: optionsData.season },
+        { id: 'month', label: '月份', options: optionsData.month },
+        { id: 'rating', label: '評分', options: optionsData.rating },
+        ...Object.keys(optionsData.custom_lists || {}).map(key => ({
+            id: `custom_${key}`,
+            label: key,
+            options: optionsData.custom_lists[key]
+        }))
+    ];
+
+    filterCategories.forEach(cat => {
+        if (!cat.options || cat.options.length === 0) return;
+        const catId = cat.id.replace('custom_', '');
+        const catColor = optionsData.category_colors?.[catId] || 'var(--neon-blue)';
+        const activeVal = cat.id.startsWith('custom_') ? (filters.extra_data?.[catId] || '') : (filters[cat.id] || '');
+        
+        html += `
+            <div class="filter-row">
+                <div class="filter-label">${cat.label}</div>
+                <div class="filter-group force-scroll">
+                    <div class="filter-item ${!activeVal ? 'active' : ''}" 
+                         style="color: var(--neon-blue);"
+                         onclick="window.handleFilter('${cat.id}', '')">全部</div>
+                    ${cat.options.map(opt => `
+                        <div class="filter-item ${activeVal === opt ? 'active' : ''}" 
+                             style="color: ${catColor};"
+                             onclick="window.handleFilter('${cat.id}', '${opt}')">${opt}</div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    });
+    return html;
+};
+
+window.handleFilter = (catId, val) => {
+    if (catId.startsWith('custom_')) {
+        const listName = catId.replace('custom_', '');
+        if (!filters.extra_data) filters.extra_data = {};
+        if (!val) delete filters.extra_data[listName];
+        else filters.extra_data[listName] = val;
+    } else {
+        filters[catId] = val;
+    }
+    currentPage = 1;
+    window.renderApp();
+};
 
 window.getFilteredData = () => {
     return animeData.filter(item => {
@@ -285,11 +332,19 @@ window.getFilteredData = () => {
         if (filters.rating && item.rating !== filters.rating) return false;
         if (filters.season && item.season !== filters.season) return false;
         if (filters.month && item.month !== filters.month) return false;
+        
+        if (filters.extra_data) {
+            const matchesExtra = Object.entries(filters.extra_data).every(([key, val]) => {
+                if (!val) return true;
+                return item.extra_data && item.extra_data[key] === val;
+            });
+            if (!matchesExtra) return false;
+        }
         return true;
     });
 };
 
-window.switchCategory = (cat) => { currentCategory = cat; currentPage = 1; filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' }; window.renderApp(); };
+window.switchCategory = (cat) => { currentCategory = cat; currentPage = 1; filters = { search: '', genre: '', year: '', rating: '', season: '', month: '', extra_data: {} }; window.renderApp(); };
 
 window.showLoginModal = () => { document.getElementById('loginModal').classList.add('active'); };
 window.hideLoginModal = () => { document.getElementById('loginModal').classList.remove('active'); };
