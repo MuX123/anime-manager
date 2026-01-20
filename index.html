@@ -7,6 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>ACG 收藏庫</title>
+  <!-- 優先載入 Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,12 +45,8 @@
   <div id="toast" class="toast"></div>
   <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
+  <!-- 依序載入配置與邏輯 -->
   <script src="./js/supabase.js"></script>
-  <script>
-    // 載入主程式
-    const script = document.createElement('script');
-    script.src = './js/script.js?v=' + new Date().getTime();
-    document.body.appendChild(script);
-  </script>
+  <script src="./js/script.js"></script>
  </body>
 </html>
