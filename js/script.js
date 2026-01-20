@@ -119,7 +119,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.3.0-ULTRA</div>
+        <div class="site-version">v3.3.1-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -210,7 +210,7 @@ window.showAnimeDetail = (id) => {
                 </div>
                 
                 <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 20px; padding-bottom: 10px;">
-                    ${genres.map(g => `<span style="border: 1.5px solid ${optionsData.category_colors.genre}; color: ${optionsData.category_colors.genre}; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; white-space: nowrap;">${g}</span>`).join('')}
+                    ${genres.map(g => `<span style="border: 1.5px solid ${optionsData.category_colors.genre}; color: ${optionsData.category_colors.genre}; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; white-space: nowrap;">${g.replace(/[[:punct:]]/g, '')}</span>`).join('')}
                 </div>
 
                 <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 25px; padding-bottom: 10px;">
@@ -523,10 +523,12 @@ window.renderOptionsManager = () => {
                     </div>
                     <div class="options-list force-scroll">
                         ${(optionsData[key] || []).map((opt, idx) => {
+                            // 獲取顏色：如果是自定義列表，嘗試獲取其專屬顏色，否則使用預設
                             const color = optionsData.category_colors[key] || '#ffffff';
                             return `
                                 <div class="option-item-row">
-                                    <div class="color-swatch" style="background: ${color}; cursor: default;"></div>
+                                    <div class="color-swatch" style="background: ${color}; cursor: default;" onclick="window.triggerColorPicker(this)"></div>
+                                    <input type="color" style="display:none" value="${color}" onchange="window.updateCategoryColor('${key}', this.value)">
                                     <span style="flex: 1;">${opt}</span>
                                     <span style="cursor: pointer; color: #ff4444; font-weight: bold;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</span>
                                 </div>
@@ -622,9 +624,15 @@ window.addOptionItem = async (key) => { const input = document.getElementById(`a
 window.deleteOptionItem = async (key, idx) => { optionsData[key].splice(idx, 1); await window.saveOptionsToDB(); window.renderAdmin(); };
 
 window.updateCategoryColor = async (key, color) => {
+    if (!optionsData.category_colors) optionsData.category_colors = {};
     optionsData.category_colors[key] = color;
     await window.saveOptionsToDB();
     window.renderAdmin();
+};
+
+window.triggerColorPicker = (el) => {
+    const input = el.nextElementSibling;
+    if (input && input.type === 'color') input.click();
 };
 
 window.saveOptionsToDB = async () => { await supabaseClient.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) }); window.showToast('✓ 設定已同步'); };
