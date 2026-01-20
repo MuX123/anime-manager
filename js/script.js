@@ -183,7 +183,7 @@ window.renderAdmin = function() {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.1.3</div>
+        <div class="site-version">v3.1.4</div>
         <div class="admin-container">
             <div class="admin-panel">
                 <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 15px; position: relative;">
@@ -477,12 +477,14 @@ window.saveAnime = async (editId) => {
 	            desc_color: document.getElementById('form-desc-color').value
 	        };
 	        
-	        // 動態獲取所有自定義選項，存入 extra_data 以避免資料庫欄位缺失錯誤
-	        payload.extra_data = {};
-	        Object.keys(optionsData).filter(k => !['genre', 'category_colors'].includes(k)).forEach(key => {
-	            const el = document.getElementById(`form-${key}`);
-	            if (el) payload.extra_data[key] = el.value;
-	        });
+		        // 動態獲取所有自定義選項，並嘗試直接存入 payload (如果資料庫欄位存在)
+		        // 注意：如果資料庫沒有 extra_data 欄位，我們將資料直接扁平化存入 payload，
+		        // 但會過濾掉資料庫中不存在的欄位以防止 400 錯誤。
+		        const dbColumns = ['name', 'poster_url', 'category', 'genre', 'links', 'description', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'star_color', 'name_color', 'desc_color'];
+		        Object.keys(optionsData).filter(k => !['genre', 'category_colors'].includes(k)).forEach(key => {
+		            const el = document.getElementById(`form-${key}`);
+		            if (el && dbColumns.includes(key)) payload[key] = el.value;
+		        });
         const { error } = (editId && editId !== 'null' && editId !== 'undefined') ? await supabaseClient.from('anime_list').update(payload).eq('id', editId) : await supabaseClient.from('anime_list').insert([payload]);
         if (error) throw error;
         window.showToast('✓ 儲存成功');
@@ -620,7 +622,23 @@ window.importData = (event) => {
 // --- Helpers ---
 window.getOptionLabel = (key) => ({ genre: '類型', year: '年份', month: '月份', season: '季度', episodes: '集數', rating: '評分', recommendation: '推薦' }[key] || key);
 window.getCategoryName = (cat) => ({ anime: '動畫', manga: '漫畫', movie: '電影' }[cat]);
-window.showToast = (msg, type = 'success') => { const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast show ${type}`; setTimeout(() => t.classList.remove('show'), 3000); };
+window.showToast = (msg, type = 'success') => {
+    const t = document.getElementById('toast');
+    if (type === 'error') {
+        t.innerHTML = `<div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-weight: bold; color: #ff4444;">⚠️ 系統錯誤</div>
+            <div style="font-size: 13px; color: var(--neon-cyan); word-break: break-all;">${msg}</div>
+            <button class="btn-primary" style="margin-top: 5px; padding: 5px; font-size: 11px; border-color: #ff4444; color: #ff4444;" onclick="this.parentElement.parentElement.classList.remove('active')">確定並關閉</button>
+        </div>`;
+        t.classList.add('active');
+        t.style.transform = 'translateX(-50%) translateY(0)';
+    } else {
+        t.textContent = msg;
+        t.className = 'toast active success';
+        t.style.transform = 'translateX(-50%) translateY(0)';
+        setTimeout(() => { t.classList.remove('active'); t.style.transform = 'translateX(-50%) translateY(100px)'; }, 3000);
+    }
+};
 
 window.onload = window.initApp;
 document.addEventListener('click', () => { const m = document.getElementById('systemMenu'); if(m) m.classList.remove('active'); });
