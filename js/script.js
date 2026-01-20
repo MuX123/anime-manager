@@ -119,7 +119,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.2.9-ULTRA</div>
+        <div class="site-version">v3.3.0-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -753,7 +753,34 @@ window.handleWheelScroll = (e) => {
     }
 };
 
-document.addEventListener('click', () => { const m = document.getElementById('systemMenu'); if (m) m.classList.remove('active'); });
+// --- UI Helpers ---
+window.toggleSystemMenu = (e) => {
+    e.stopPropagation();
+    const menu = document.getElementById('systemMenu');
+    if (menu) menu.classList.toggle('active');
+};
+
+window.refreshSystem = async () => {
+    window.showToast('⚡ 同步資料中...');
+    await window.loadData();
+    window.renderApp();
+    window.showToast('✓ 資料已同步');
+};
+
+window.showToast = (msg, type = 'info') => {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.style.borderColor = type === 'error' ? '#ff4444' : 'var(--neon-blue)';
+    toast.style.color = type === 'error' ? '#ff4444' : 'var(--neon-cyan)';
+    toast.classList.add('active');
+    setTimeout(() => toast.classList.remove('active'), 3000);
+};
+
+document.addEventListener('click', () => { 
+    const m = document.getElementById('systemMenu'); 
+    if (m) m.classList.remove('active'); 
+});
 
 // 啟動應用
 window.initApp();
