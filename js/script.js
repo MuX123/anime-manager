@@ -119,7 +119,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.3.1-ULTRA</div>
+        <div class="site-version">v3.3.2-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -507,40 +507,37 @@ window.renderOptionsManager = () => {
             <button class="btn-primary" onclick="window.addNewCustomList()">＋ 新增自定義列表</button>
         </div>
         <div class="options-scroll-wrapper force-scroll" id="optionsWrapper">
-            ${allKeys.map(key => `
-                <div class="options-column">
-                    <div class="options-column-header">
-                        ${(key !== 'recommendation' && !customKeys.includes(key)) ? `
-                            <div class="color-input-wrapper">
-                                <div class="color-swatch" style="background: ${optionsData.category_colors[key] || '#ffffff'};"></div>
-                                <input type="color" value="${optionsData.category_colors[key] || '#ffffff'}" onchange="window.updateCategoryColor('${key}', this.value); this.previousElementSibling.style.background = this.value">
+            ${allKeys.map(key => {
+                const color = optionsData.category_colors[key] || '#ffffff';
+                return `
+                    <div class="options-column">
+                        <div class="options-column-header">
+                            ${key !== 'recommendation' ? `
+                                <div class="color-input-wrapper">
+                                    <div class="color-swatch" style="background: ${color};"></div>
+                                    <input type="color" value="${color}" onchange="window.updateCategoryColor('${key}', this.value); this.previousElementSibling.style.background = this.value">
+                                </div>
+                            ` : ''}
+                            <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center;">
+                                <span style="${key !== 'recommendation' ? 'margin-left: 8px;' : ''}">${window.getOptionLabel(key)}</span>
+                                ${customKeys.includes(key) ? `<button style="background:none; border:none; color:#ff4444; cursor:pointer; font-size:12px;" onclick="window.deleteCustomList('${key}')">🗑</button>` : ''}
                             </div>
-                        ` : ''}
-                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center;">
-                            <span style="${(key !== 'recommendation' && !customKeys.includes(key)) ? 'margin-left: 8px;' : ''}">${window.getOptionLabel(key)}</span>
-                            ${customKeys.includes(key) ? `<button style="background:none; border:none; color:#ff4444; cursor:pointer; font-size:12px;" onclick="window.deleteCustomList('${key}')">🗑</button>` : ''}
                         </div>
-                    </div>
-                    <div class="options-list force-scroll">
-                        ${(optionsData[key] || []).map((opt, idx) => {
-                            // 獲取顏色：如果是自定義列表，嘗試獲取其專屬顏色，否則使用預設
-                            const color = optionsData.category_colors[key] || '#ffffff';
-                            return `
+                        <div class="options-list force-scroll">
+                            ${(optionsData[key] || []).map((opt, idx) => `
                                 <div class="option-item-row">
-                                    <div class="color-swatch" style="background: ${color}; cursor: default;" onclick="window.triggerColorPicker(this)"></div>
-                                    <input type="color" style="display:none" value="${color}" onchange="window.updateCategoryColor('${key}', this.value)">
-                                    <span style="flex: 1;">${opt}</span>
+                                    <span style="flex: 1; color: ${color}; font-weight: bold;">${opt}</span>
                                     <span style="cursor: pointer; color: #ff4444; font-weight: bold;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</span>
                                 </div>
-                            `;
-                        }).join('')}
+                            `).join('')}
+                        </div>
+                        <div style="padding: 15px; border-top: 1px solid rgba(0,212,255,0.1); display: flex; gap: 5px; align-items: center;">
+                            <input type="text" id="add-opt-${key}" placeholder="新增..." style="width: 120px; font-size: 12px; padding: 6px !important; flex-shrink: 0;">
+                            <button class="btn-primary" style="padding: 6px 10px; font-size: 12px; flex-shrink: 0; min-width: 40px;" onclick="window.addOptionItem('${key}')">＋</button>
+                        </div>
                     </div>
-                    <div style="padding: 15px; border-top: 1px solid rgba(0,212,255,0.1); display: flex; gap: 5px; align-items: center;">
-                        <input type="text" id="add-opt-${key}" placeholder="新增..." style="width: 120px; font-size: 12px; padding: 6px !important; flex-shrink: 0;">
-                        <button class="btn-primary" style="padding: 6px 10px; font-size: 12px; flex-shrink: 0; min-width: 40px;" onclick="window.addOptionItem('${key}')">＋</button>
-                    </div>
-                </div>
-            `).join('')}
+                `;
+            }).join('')}
         </div>
     `;
 };
