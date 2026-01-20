@@ -119,7 +119,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.5.2-ULTRA</div>
+        <div class="site-version">v3.5.3-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -625,11 +625,29 @@ window.saveAnime = async () => {
             extra_data: extra_data
         };
         
-        const { error } = editId ? 
+        let { error } = editId ? 
             await supabaseClient.from('anime_list').update(payload).eq('id', editId) : 
             await supabaseClient.from('anime_list').insert([payload]);
         
-        if (error) throw error;
+        if (error) {
+            // 如果是欄位缺失錯誤，嘗試不帶 extra_data 再次儲存
+            if (error.message.includes('extra_data')) {
+                window.showToast('⚠️ 偵測到資料庫欄位缺失，正在嘗試相容模式儲存...', 'info');
+                delete payload.extra_data;
+                const retry = editId ? 
+                    await supabaseClient.from('anime_list').update(payload).eq('id', editId) : 
+                    await supabaseClient.from('anime_list').insert([payload]);
+                if (!retry.error) {
+                    window.showToast('✓ 已儲存 (自定義標籤需補齊資料庫欄位後生效)');
+                    await window.loadData();
+                    window.switchAdminTab('manage');
+                    return;
+                }
+                error = retry.error;
+            }
+            throw error;
+        }
+        
         window.showToast('✓ 儲存成功');
         await window.loadData();
         window.switchAdminTab('manage');
