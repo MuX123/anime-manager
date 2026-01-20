@@ -1,10 +1,10 @@
-// TECH v3.2.1 ULTRA - ACG Manager Logic
+// TECH v3.2.2 ULTRA - ACG Manager Logic (Restored from v3.1.8)
 let animeData = [];
 let optionsData = { genre: [], year: [], month: [], season: [], episodes: [], rating: [], recommendation: [], category_colors: {} };
-let siteSettings = { site_title: 'TECH v3.2.1 ULTRA', announcement: '歡迎來到 ACG 收藏庫', title_color: '#00d4ff', announcement_color: '#00d4ff' };
+let siteSettings = { site_title: 'TECH v3.1.8 ULTRA', announcement: '歡迎來到 ACG 收藏庫', title_color: '#00d4ff', announcement_color: '#00d4ff' };
 let currentCategory = 'anime';
 let currentPage = 1;
-let itemsPerPage = 18; // 根據偏好設定為 18
+let itemsPerPage = 12;
 let isAdmin = false;
 let currentAdminTab = 'manage';
 let adminPage = 1;
@@ -53,7 +53,7 @@ window.loadData = async function() {
                 const extra = extraMap[item.id] || {};
                 return {
                     ...item,
-                    ...extra,
+                    ...extra, // 將 extra_data 直接合併到 item 中以確保顏色等資料被讀取
                     extra_data: extra
                 };
             });
@@ -67,12 +67,11 @@ window.updateAdminMenu = function() {
     const container = document.getElementById('adminMenuOptions');
     if (!container) return;
     container.innerHTML = `
-        <button class="menu-item-v2" onclick="window.switchAdminTab('manage')">📦 作品管理</button>
-        <button class="menu-item-v2" onclick="window.switchAdminTab('add')">➕ 新增作品</button>
-        <button class="menu-item-v2" onclick="window.switchAdminTab('options')">⚙ 選項管理</button>
-        <button class="menu-item-v2" onclick="window.switchAdminTab('data')">💾 資料備份</button>
-        <button class="menu-item-v2" onclick="window.switchAdminTab('settings')">🔧 網站設定</button>
-        <button class="menu-item-v2" style="color: #ff4444;" onclick="supabaseClient.auth.signOut().then(() => location.reload())">🚪 登出</button>
+        <button class="admin-menu-item ${currentAdminTab === 'manage' ? 'active' : ''}" onclick="window.switchAdminTab('manage')">📦 作品管理</button>
+        <button class="admin-menu-item ${currentAdminTab === 'add' ? 'active' : ''}" onclick="window.switchAdminTab('add')">➕ 新增作品</button>
+        <button class="admin-menu-item ${currentAdminTab === 'options' ? 'active' : ''}" onclick="window.switchAdminTab('options')">⚙ 選項管理</button>
+        <button class="admin-menu-item ${currentAdminTab === 'data' ? 'active' : ''}" onclick="window.switchAdminTab('data')">💾 資料備份</button>
+        <button class="admin-menu-item ${currentAdminTab === 'settings' ? 'active' : ''}" onclick="window.switchAdminTab('settings')">🔧 網站設定</button>
     `;
 };
 
@@ -81,30 +80,28 @@ window.renderApp = () => {
     const app = document.getElementById('app');
     if (!app) return;
 
-    const filtered = window.getFilteredData();
-    const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
-
     app.innerHTML = `
+        <div class="site-version">v3.2.2</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || 'var(--neon-cyan)'}; text-shadow: 0 0 10px ${siteSettings.title_color || 'var(--neon-blue)'};">${siteSettings.site_title}</h1>
             </header>
             
-            <div class="announcement-bar" style="border: 1px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 10px; margin-bottom: 30px; text-align: center; background: rgba(0,212,255,0.05);">
-                <div style="color: ${siteSettings.announcement_color || 'var(--neon-cyan)'};">
+            <div class="announcement-bar" style="border-color: ${siteSettings.announcement_color || 'var(--neon-blue)'};">
+                <div class="announcement-content" style="color: ${siteSettings.announcement_color || 'var(--neon-cyan)'};">
                     <span>📢 ${siteSettings.announcement}</span>
                 </div>
             </div>
 
-            <nav class="category-nav" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px;">
-                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">動畫</button>
-                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">漫畫</button>
-                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">電影</button>
+            <nav class="category-nav">
+                <button class="${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">動畫</button>
+                <button class="${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">漫畫</button>
+                <button class="${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">電影</button>
             </nav>
 
-            <div class="filter-section" style="display: flex; gap: 15px; margin-bottom: 40px; background: var(--glass-bg); padding: 20px; border: 1px solid rgba(0,212,255,0.1);">
-                <input type="text" placeholder="搜尋作品名稱..." oninput="window.handleSearch(this.value)" value="${filters.search}" style="flex: 1;">
-                <div style="display: flex; gap: 10px;">
+            <div class="filter-section">
+                <input type="text" placeholder="搜尋作品名稱..." oninput="window.handleSearch(this.value)" value="${filters.search}">
+                <div class="filter-group">
                     <select onchange="window.handleFilter('year', this.value)">
                         <option value="">年份</option>
                         ${optionsData.year.map(y => `<option value="${y}" ${filters.year === y ? 'selected' : ''}>${y}</option>`).join('')}
@@ -121,12 +118,12 @@ window.renderApp = () => {
             </div>
 
             <div class="anime-grid">
-                ${paged.map(item => window.renderCard(item)).join('')}
+                ${window.getFilteredData().slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage).map(item => window.renderCard(item)).join('')}
             </div>
 
             ${window.renderPagination()}
             
-            <div style="position: fixed; bottom: 20px; right: 20px; cursor: pointer; opacity: 0.5;" onclick="window.toggleAdminMode(true)">⚙</div>
+            <div class="admin-trigger" onclick="window.toggleAdminMode(true)">⚙</div>
         </div>
     `;
 };
@@ -150,8 +147,8 @@ window.renderCard = (item) => {
             <div class="card-info">
                 <h3 style="color: ${nameColor};">${item.name}</h3>
                 <div class="card-meta">
-                    <span style="color: var(--neon-cyan); font-weight: bold;">[ ${timeInfo} ]</span>
-                    <span style="color: ${episodesColor};">${episodes}</span>
+                    <span style="color: var(--neon-cyan);">${timeInfo}</span>
+                    <span style="color: ${episodesColor}; font-weight: bold;">${episodes}</span>
                 </div>
             </div>
         </div>
@@ -171,7 +168,7 @@ window.showAnimeDetail = (id) => {
     content.innerHTML = `
         <div style="display: grid; grid-template-columns: 300px 1fr; gap: 30px;">
             <div>
-                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=No+Poster'}" style="width: 100%; border: 1px solid var(--neon-blue);">
+                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=No+Poster'}" style="width: 100%; border: 1.5px solid var(--neon-blue);">
             </div>
             <div>
                 <h2 style="color: ${item.name_color || 'var(--neon-cyan)'}; font-family: 'Orbitron', sans-serif; margin-bottom: 15px;">${item.name}</h2>
@@ -207,16 +204,12 @@ window.handleFilter = (key, val) => { filters[key] = val; currentPage = 1; windo
 window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollTo({top: 0, behavior: 'smooth'}); };
 
 window.getFilteredData = () => {
-    const searchLower = filters.search.toLowerCase();
     return animeData.filter(item => {
         if (item.category !== currentCategory) return false;
-        if (filters.search && !item.name.toLowerCase().includes(searchLower)) return false;
+        if (filters.search && !item.name.toLowerCase().includes(filters.search.toLowerCase())) return false;
         if (filters.year && item.year !== filters.year) return false;
         if (filters.season && item.season !== filters.season) return false;
-        if (filters.genre) {
-            const itemGenre = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
-            if (!itemGenre.includes(filters.genre)) return false;
-        }
+        if (filters.genre && !(Array.isArray(item.genre) ? item.genre.includes(filters.genre) : item.genre.includes(filters.genre))) return false;
         return true;
     });
 };
@@ -225,13 +218,9 @@ window.renderPagination = () => {
     const total = window.getFilteredData().length;
     const pages = Math.ceil(total / itemsPerPage);
     if (pages <= 1) return '';
-    return `<div style="display: flex; justify-content: center; gap: 8px; margin-top: 20px;">
-        ${Array.from({length: pages}, (_, i) => i + 1).map(p => `<button class="btn-primary ${currentPage === p ? 'active' : ''}" style="width: 40px; padding: 10px 0;" onclick="window.changePage(${p})">${p}</button>`).join('')}
-    </div>`;
+    return `<div class="pagination">${Array.from({length: pages}, (_, i) => i + 1).map(p => `<button class="${currentPage === p ? 'active' : ''}" onclick="window.changePage(${p})">${p}</button>`).join('')}</div>`;
 };
 
-window.toggleSystemMenu = (e) => { e.stopPropagation(); document.getElementById('systemMenu').classList.toggle('active'); };
-window.refreshSystem = async () => { window.showToast('⏳ 同步中...'); await window.loadData(); if (isAdmin) window.renderAdmin(); else window.renderApp(); window.showToast('✓ 已同步'); };
 window.showToast = (msg, type = 'success') => {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -247,9 +236,25 @@ window.handleLogin = async () => {
     if (error) window.showToast('✗ 失敗', 'error'); else location.reload();
 };
 
+window.toggleSystemMenu = (e) => { e.stopPropagation(); document.getElementById('systemMenu').classList.toggle('active'); };
+window.refreshSystem = async () => { window.showToast('⏳ 同步中...'); await window.loadData(); if (isAdmin) window.renderAdmin(); else window.renderApp(); window.showToast('✓ 已同步'); };
+
 window.renderAdmin = () => {
     const app = document.getElementById('app');
-    app.innerHTML = `<div class="admin-container"><header><h1>⚙ 管理模式</h1><button class="btn-primary" onclick="window.toggleAdminMode(false)">返回</button></header><div id="adminMenuOptions" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;"></div><div id="adminMainContent" style="margin-top: 30px; text-align: center; border: 1px dashed var(--neon-blue); padding: 50px;">請選擇功能</div></div>`;
+    app.innerHTML = `
+        <div class="admin-container">
+            <div class="admin-panel">
+                <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 15px;">
+                    <h2 style="color: var(--neon-cyan);">⚙ 管理控制台</h2>
+                    <button class="btn-primary" onclick="window.toggleAdminMode(false)">返回前台</button>
+                </header>
+                <div class="admin-layout" style="display: flex; gap: 20px;">
+                    <aside id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 10px;"></aside>
+                    <main id="adminMainContent" style="flex: 1; border: 1px dashed var(--neon-blue); padding: 40px; text-align: center;">請選擇功能</main>
+                </div>
+            </div>
+        </div>
+    `;
     window.updateAdminMenu();
 };
 
