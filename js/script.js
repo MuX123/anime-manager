@@ -465,23 +465,23 @@ window.saveAnime = async (editId) => {
     try {
         const name = document.getElementById('form-name').value;
         if (!name) return window.showToast('✗ 請輸入名稱', 'error');
-        const payload = {
-            name,
-            poster_url: document.getElementById('form-poster').value,
-            category: document.getElementById('form-category').value,
-            genre: Array.from(document.querySelectorAll('input[name="form-genre"]:checked')).map(cb => cb.value),
-            links: Array.from(document.querySelectorAll('#links-container > div')).map(row => ({ name: row.querySelector('.link-name').value, url: row.querySelector('.link-url').value })),
-            description: document.getElementById('form-desc').value,
-            year: document.getElementById('form-year')?.value || '',
-            month: document.getElementById('form-month')?.value || '',
-            season: document.getElementById('form-season')?.value || '',
-            episodes: document.getElementById('form-episodes')?.value || '',
-            rating: document.getElementById('form-rating')?.value || '',
-            recommendation: document.getElementById('form-recommendation')?.value || '',
-            star_color: document.getElementById('form-star-color').value,
-            name_color: document.getElementById('form-name-color').value,
-            desc_color: document.getElementById('form-desc-color').value
-        };
+	        const payload = {
+	            name,
+	            poster_url: document.getElementById('form-poster').value,
+	            category: document.getElementById('form-category').value,
+	            genre: Array.from(document.querySelectorAll('input[name="form-genre"]:checked')).map(cb => cb.value),
+	            links: Array.from(document.querySelectorAll('#links-container > div')).map(row => ({ name: row.querySelector('.link-name').value, url: row.querySelector('.link-url').value })),
+	            description: document.getElementById('form-desc').value,
+	            star_color: document.getElementById('form-star-color').value,
+	            name_color: document.getElementById('form-name-color').value,
+	            desc_color: document.getElementById('form-desc-color').value
+	        };
+	        
+	        // 動態獲取所有自定義選項
+	        Object.keys(optionsData).filter(k => !['genre', 'category_colors'].includes(k)).forEach(key => {
+	            const el = document.getElementById(`form-${key}`);
+	            if (el) payload[key] = el.value;
+	        });
         const { error } = (editId && editId !== 'null' && editId !== 'undefined') ? await supabaseClient.from('anime_list').update(payload).eq('id', editId) : await supabaseClient.from('anime_list').insert([payload]);
         if (error) throw error;
         window.showToast('✓ 儲存成功');
