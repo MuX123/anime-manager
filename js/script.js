@@ -411,9 +411,9 @@ window.showAnimeDetail = (id) => {
             
             <div style="flex: 1; min-width: 340px; max-width: 500px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; margin-top: 15px;">
                 
-                <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(176, 38, 255, 0.08)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2); overflow: hidden;">
-                    <div style="overflow-x: auto; overflow-y: hidden; white-space: nowrap; scrollbar-width: thin; scrollbar-color: var(--neon-blue) rgba(0, 212, 255, 0.1);">
-                        <h2 style="color: ${nameColor}; margin: 0; font-size: 16px; text-shadow: 0 0 10px ${nameColor}66; font-weight: 700; display: inline-block; padding-right: 20px;">${item.name}</h2>
+                <div style="width: 100%; padding: 5px 0; overflow: hidden; text-align: center;">
+                    <div style="overflow-x: auto; overflow-y: hidden; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+                        <h2 style="color: ${nameColor}; margin: 0; font-size: 22px; text-shadow: 0 0 15px ${nameColor}, 0 0 30px ${nameColor}44; font-weight: 900; display: inline-block; letter-spacing: 2px; font-family: 'Orbitron', sans-serif;">${item.name}</h2>
                     </div>
                 </div>
 
