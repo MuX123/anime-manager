@@ -298,7 +298,7 @@ window.renderSearchSelectsHTML = () => {
         ...(optionsData.custom_lists || []).map(key => ({
             id: `custom_${key}`,
             label: window.getOptionLabel(key),
-            options: optionsData[key]
+            options: optionsData[key] || []
         }))
     ];
 
