@@ -140,6 +140,7 @@ window.renderAnimeGrid = function() {
         const descColor = item.desc_color || '#00d4ff';
         
         const yearColor = optionsData.category_colors?.year || 'var(--neon-blue)';
+        const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-cyan)';
         
         return `
             <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="animation: float-up 0.6s ease-out ${idx * 0.08}s forwards;">
@@ -152,7 +153,7 @@ window.renderAnimeGrid = function() {
                 
 	                <div style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
 	                    <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;">
-		                    ${item.episodes ? `<div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, transparent 100%); color: ${descColor}; font-size: 11px; padding: 12px 5px 8px 5px; text-align: center; text-shadow: 0 0 5px rgba(0,0,0,1); font-weight: bold;">全${item.episodes}集</div>` : ''}
+		                    ${item.episodes ? `<div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, transparent 100%); color: ${episodesColor}; font-size: 11px; padding: 12px 5px 8px 5px; text-align: center; text-shadow: 0 0 5px rgba(0,0,0,1); font-weight: bold;">全${item.episodes}集</div>` : ''}
 	                </div>
                 <div style="padding: 10px; border-top: 1.5px solid rgba(0, 212, 255, 0.2); background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 212, 255, 0.05));">
                     <h3 style="font-size: 9px; margin: 0 0 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ${nameColor}; text-align: center; text-shadow: 0 0 5px ${nameColor}44;">${item.name}</h3>
@@ -405,7 +406,7 @@ window.showAnimeDetail = (id) => {
                 </div>
                 <div style="width: 280px; padding: 0; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                     ${timeInfo ? `<div style="flex: 1; text-align: left;"><div style="display: inline-block; border: 1.5px solid ${yearColor}; color: ${yearColor}; font-size: 14px; padding: 6px 12px; border-radius: 6px; box-shadow: 0 0 10px ${yearColor}66; font-weight: 700;">${timeInfo}</div></div>` : ''}
-                    ${item.episodes ? `<div style="flex: 1; text-align: right;"><div style="display: inline-block; border: 1.5px solid ${descColor}; color: ${descColor}; font-size: 14px; padding: 6px 12px; border-radius: 6px; box-shadow: 0 0 10px ${descColor}66; font-weight: 700;">全${item.episodes}集</div></div>` : ''}
+                    ${item.episodes ? `<div style="flex: 1; text-align: right;"><div style="display: inline-block; border: 1.5px solid ${optionsData.category_colors?.episodes || 'var(--neon-cyan)'}; color: ${optionsData.category_colors?.episodes || 'var(--neon-cyan)'}; font-size: 14px; padding: 6px 12px; border-radius: 6px; box-shadow: 0 0 10px ${(optionsData.category_colors?.episodes || 'var(--neon-cyan)')}66; font-weight: 700;">全${item.episodes}集</div></div>` : ''}
                 </div>
             </div>
             
