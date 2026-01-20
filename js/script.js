@@ -309,7 +309,7 @@ window.renderSearchSelectsHTML = () => {
         
         html += `
             <select class="auto-width-select" onchange="window.handleFilter('${cat.id}', this.value)" style="border-color: rgba(0, 212, 255, 0.3);">
-                <option value="">${cat.label}</option>
+                <option value="">全部 ${cat.label}</option>
                 ${cat.options.map(opt => `
                     <option value="${opt}" ${activeVal === opt ? 'selected' : ''}>${opt}</option>
                 `).join('')}
