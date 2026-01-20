@@ -119,7 +119,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.4.0-ULTRA</div>
+        <div class="site-version">v3.5.0-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -182,15 +182,16 @@ window.showAnimeDetail = (id) => {
     const links = Array.isArray(item.links) ? item.links : [];
     const starColor = item.star_color || '#ffcc00';
     const ratingColor = optionsData.category_colors?.rating || 'var(--neon-purple)';
+    const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
 
-    // 核心數據面板
-    const dataStats = [
-        { label: '年份', val: item.year, key: 'year' },
-        { label: '季度', val: item.season, key: 'season' },
-        { label: '月份', val: item.month, key: 'month' },
-        { label: '集數', val: item.episodes ? item.episodes + '集' : null, key: 'episodes' },
-        { label: '評分', val: item.rating, key: 'rating' }
-    ].filter(d => d.val);
+    // 核心數據行
+    const coreData = [
+        item.year,
+        item.season,
+        item.month,
+        item.episodes ? item.episodes + '集' : null,
+        item.rating
+    ].filter(v => v);
 
     // 擴充標籤
     const extraTags = [];
@@ -201,58 +202,58 @@ window.showAnimeDetail = (id) => {
     }
 
     content.innerHTML = `
-        <div class="detail-banner">
-            <div class="detail-banner-bg" style="background-image: url('${item.poster_url || ''}')"></div>
-            <div class="detail-header-content">
-                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" class="detail-poster-main">
-                <div class="detail-info-main">
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px; flex-wrap: wrap;">
-                        <h2 style="color: ${item.name_color || '#ffffff'}; font-size: 32px; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 20px ${item.name_color || '#ffffff'}aa; margin: 0;">${item.name}</h2>
-                        <div style="color: ${starColor}; border: 2px solid ${starColor}; padding: 4px 12px; border-radius: 4px; font-size: 16px; font-weight: 900; box-shadow: 0 0 15px ${starColor}66; background: rgba(0,0,0,0.3);">${item.recommendation || ''}</div>
+        <div class="detail-container-v35">
+            <!-- 左側滿版海報 -->
+            <div class="detail-poster-aside">
+                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
+                <div class="poster-badge" style="top: 20px; left: 20px; color: ${starColor};">${item.recommendation || ''}</div>
+                <div class="poster-badge" style="top: 20px; right: 20px; color: ${ratingColor};">${item.rating || ''}</div>
+            </div>
+
+            <!-- 右側資訊流 -->
+            <div class="detail-content-main force-scroll">
+                <div>
+                    <h2 class="detail-title-v35" style="color: ${item.name_color || '#ffffff'};">${item.name}</h2>
+                    <div class="core-data-row" style="color: ${yearColor}; margin-top: 15px;">
+                        ${coreData.map(val => `<div class="core-data-item">${val}</div>`).join('')}
                     </div>
-                    <div class="tag-cloud" style="margin-bottom: 0;">
+                </div>
+
+                <div class="detail-section-v35">
+                    <div class="section-label-v35">[ 作品類型 ]</div>
+                    <div class="scroll-row-v35 force-scroll">
                         ${genres.map(g => {
                             const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-                            return `<span class="tag-pill" style="border-color: ${optionsData.category_colors.genre}; color: ${optionsData.category_colors.genre}; border-radius: 20px;">${cleanG}</span>`;
+                            return `<span class="tag-pill-v35" style="color: ${optionsData.category_colors.genre};">${cleanG}</span>`;
                         }).join('')}
                     </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="detail-body">
-            <div class="detail-main-col">
-                <div class="detail-section-title">作品簡介</div>
-                <div style="background: rgba(0,212,255,0.03); border: 1px solid rgba(0,212,255,0.1); padding: 25px; border-radius: 12px; margin-bottom: 30px;">
-                    <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
-                </div>
-
-                <div class="detail-section-title">相關連結</div>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 30px;">
-                    ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 12px 25px; font-size: 14px; min-width: 120px;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic;">暫無連結</span>'}
-                </div>
-            </div>
-
-            <div class="detail-side-col">
-                <div class="detail-section-title">核心數據</div>
-                <div class="data-grid">
-                    ${dataStats.map(s => `
-                        <div class="data-item">
-                            <div class="data-label">${s.label}</div>
-                            <div class="data-value" style="color: ${optionsData.category_colors[s.key] || 'var(--neon-cyan)'}">${s.val}</div>
-                        </div>
-                    `).join('')}
                 </div>
 
                 ${extraTags.length > 0 ? `
-                    <div class="detail-section-title">擴充屬性</div>
-                    <div class="tag-cloud">
-                        ${extraTags.map(t => {
-                            const color = optionsData.category_colors[t.key] || 'var(--neon-cyan)';
-                            return `<span class="tag-pill" style="border-color: ${color}; color: ${color};">${t.val}</span>`;
-                        }).join('')}
+                    <div class="detail-section-v35">
+                        <div class="section-label-v35">[ 擴充屬性 ]</div>
+                        <div class="scroll-row-v35 force-scroll">
+                            ${extraTags.map(t => {
+                                const color = optionsData.category_colors[t.key] || 'var(--neon-cyan)';
+                                return `<span class="tag-pill-v35" style="color: ${color};">${t.val}</span>`;
+                            }).join('')}
+                        </div>
                     </div>
                 ` : ''}
+
+                <div class="detail-section-v35">
+                    <div class="section-label-v35">[ 作品簡介 ]</div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 8px;">
+                        <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 1.8; font-size: 15px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
+                    </div>
+                </div>
+
+                <div class="detail-section-v35">
+                    <div class="section-label-v35">[ 相關連結 ]</div>
+                    <div class="scroll-row-v35 force-scroll">
+                        ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 10px 20px; font-size: 13px; white-space: nowrap;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic;">暫無連結</span>'}
+                    </div>
+                </div>
             </div>
         </div>
     `;
