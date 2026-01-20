@@ -1,7 +1,7 @@
-// TECH v3.1.8-20260119-2014 ULTRA - ACG Manager Logic
+// TECH v3.1.9 ULTRA - ACG Manager Logic
 let animeData = [];
 let optionsData = { genre: [], year: [], month: [], season: [], episodes: [], rating: [], recommendation: [], category_colors: {} };
-let siteSettings = { site_title: 'TECH v3.1.8-20260119-2014 ULTRA', announcement: '歡迎來到 ACG 收藏庫', title_color: '#00d4ff', announcement_color: '#00d4ff' };
+let siteSettings = { site_title: 'TECH v3.1.9 ULTRA', announcement: '歡迎來到 ACG 收藏庫', title_color: '#00d4ff', announcement_color: '#00d4ff' };
 let currentCategory = 'anime';
 let currentPage = 1;
 let itemsPerPage = 12;
@@ -40,15 +40,26 @@ window.onload = async () => {
 };
 
 window.loadData = async function() {
-    const { data, error } = await supabaseClient.from('anime_list').select('*').order('created_at', { ascending: false });
-    const { data: extraData } = await supabaseClient.from('site_settings').select('value').eq('id', 'extra_assignments').single();
-    const extraMap = extraData ? JSON.parse(extraData.value) : {};
-    
-    if (!error) {
-        animeData = (data || []).map(item => ({
-            ...item,
-            extra_data: extraMap[item.id] || {}
-        }));
+    try {
+        const { data, error } = await supabaseClient.from('anime_list').select('*').order('created_at', { ascending: false });
+        const { data: extraData } = await supabaseClient.from('site_settings').select('value').eq('id', 'extra_assignments').single();
+        let extraMap = {};
+        if (extraData && extraData.value) {
+            try { extraMap = JSON.parse(extraData.value); } catch(e) { console.error('Extra data parse error:', e); }
+        }
+        
+        if (!error) {
+            animeData = (data || []).map(item => {
+                const extra = extraMap[item.id] || {};
+                return {
+                    ...item,
+                    ...extra, // 將 extra_data 直接合併到 item 中以簡化讀取
+                    extra_data: extra
+                };
+            });
+        }
+    } catch (err) {
+        console.error('Load data error:', err);
     }
 };
 
@@ -70,7 +81,7 @@ window.renderApp = () => {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.1.8-20260119-2014</div>
+        <div class="site-version">v3.1.9</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || 'var(--neon-cyan)'}; text-shadow: 0 0 10px ${siteSettings.title_color || 'var(--neon-blue)'};">${siteSettings.site_title}</h1>
@@ -149,7 +160,7 @@ window.renderAdmin = () => {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.1.8-20260119-2014</div>
+        <div class="site-version">v3.1.9</div>
         <div class="admin-container">
             <div class="admin-panel">
                 <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 15px; position: relative;">
@@ -533,11 +544,17 @@ window.saveAnime = async (editId) => {
         
         if (error) throw error;
 
-        const targetId = editId || (savedData && savedData[0]?.id);
-        if (targetId && Object.keys(extraAssignments).length > 0) {
+        const targetId = editId && editId !== 'null' && editId !== 'undefined' ? editId : (savedData && savedData[0]?.id);
+        if (targetId) {
             let { data: currentExtra } = await supabaseClient.from('site_settings').select('value').eq('id', 'extra_assignments').single();
-            let extraMap = currentExtra ? JSON.parse(currentExtra.value) : {};
-            extraMap[targetId] = extraAssignments;
+            let extraMap = currentExtra && currentExtra.value ? JSON.parse(currentExtra.value) : {};
+            
+            if (Object.keys(extraAssignments).length > 0) {
+                extraMap[targetId] = extraAssignments;
+            } else if (extraMap[targetId]) {
+                delete extraMap[targetId]; // 如果沒有 extra data 則清理
+            }
+            
             await supabaseClient.from('site_settings').upsert({ id: 'extra_assignments', value: JSON.stringify(extraMap) });
         }
 
@@ -609,12 +626,16 @@ window.showLoginModal = () => {
 };
 
 window.getFilteredData = () => {
+    const searchLower = filters.search.toLowerCase();
     return animeData.filter(item => {
         if (item.category !== currentCategory) return false;
-        if (filters.search && !item.name.toLowerCase().includes(filters.search.toLowerCase())) return false;
+        if (filters.search && !item.name.toLowerCase().includes(searchLower)) return false;
         if (filters.year && item.year !== filters.year) return false;
         if (filters.season && item.season !== filters.season) return false;
-        if (filters.genre && !(Array.isArray(item.genre) ? item.genre.includes(filters.genre) : item.genre.includes(filters.genre))) return false;
+        if (filters.genre) {
+            const itemGenre = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
+            if (!itemGenre.includes(filters.genre)) return false;
+        }
         return true;
     });
 };
