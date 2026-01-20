@@ -3,6 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 強制清理快取，確保更新後立即生效 -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -12,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/style.css?v=3.2.0">
  </head>
  <body>
   <div id="app"></div>
@@ -25,7 +26,7 @@
 
   <div id="detailModal" class="modal" onclick="if(event.target===this) window.closeAnimeDetail()">
     <div class="modal-content">
-      <button style="position: absolute; top: 15px; right: 15px; background: none; border: 1.5px solid var(--neon-blue); color: var(--neon-cyan); width: 30px; height: 30px; cursor: pointer; border-radius: 4px;" onclick="window.closeAnimeDetail()">✕</button>
+      <button style="position: absolute; top: 15px; right: 15px; background: none; border: 1.5px solid var(--neon-blue); color: var(--neon-cyan); width: 30px; height: 30px; cursor: pointer; border-radius: 4px; z-index: 100;" onclick="window.closeAnimeDetail()">✕</button>
       <div id="detailContent"></div>
     </div>
   </div>
@@ -45,8 +46,8 @@
   <div id="toast" class="toast"></div>
   <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
-  <!-- 依序載入配置與邏輯 -->
-  <script src="./js/supabase.js"></script>
-  <script src="./js/script.js"></script>
+  <!-- 依序載入配置與邏輯，加入版本號防止快取問題 -->
+  <script src="./js/supabase.js?v=3.2.0"></script>
+  <script src="./js/script.js?v=3.2.0"></script>
  </body>
 </html>

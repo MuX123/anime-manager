@@ -1,4 +1,4 @@
-// TECH v3.2.0 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v3.2.1 - ACG Manager Logic (System Admin AI Optimized)
 let animeData = [];
 let optionsData = {
     genre: ['冒險', '奇幻', '熱血', '校園', '戀愛', '喜劇', '科幻', '懸疑', '日常', '異世界'],
@@ -75,9 +75,15 @@ window.initApp = async function() {
 };
 
 window.loadData = async function() {
-    const { data, error } = await supabaseClient.from('anime_list').select('*').order('created_at', { ascending: false });
-    if (!error) {
-        animeData = data || [];
+    try {
+        const { data, error } = await supabaseClient.from('anime_list').select('*').order('created_at', { ascending: false });
+        if (!error) {
+            animeData = data || [];
+        } else {
+            throw error;
+        }
+    } catch (e) {
+        window.showToast('資料讀取失敗', 'error');
     }
 };
 
@@ -97,7 +103,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.2.0-ULTRA</div>
+        <div class="site-version">v3.2.1-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -160,6 +166,13 @@ window.showAnimeDetail = (id) => {
     const starColor = item.star_color || '#ffcc00';
     const ratingColor = optionsData.category_colors?.rating || 'var(--neon-purple)';
 
+    // 獲取除了類型以外的其他標籤
+    const otherTags = [];
+    if (item.year) otherTags.push(item.year);
+    if (item.season) otherTags.push(item.season);
+    if (item.month) otherTags.push(item.month.includes('月') ? item.month : item.month + '月');
+    if (item.episodes) otherTags.push(item.episodes + ' 集');
+
     content.innerHTML = `
         <div style="display: grid; grid-template-columns: 320px 1fr; gap: 30px;">
             <div style="position: relative;">
@@ -167,20 +180,21 @@ window.showAnimeDetail = (id) => {
                 <div style="position: absolute; top: 10px; left: 10px; color: ${starColor}; background: rgba(0,0,0,0.85); padding: 4px 8px; border-radius: 4px; font-size: 12px; border: 1.5px solid ${starColor}; font-weight: bold;">${item.recommendation || ''}</div>
                 <div style="position: absolute; top: 10px; right: 10px; color: ${ratingColor}; background: rgba(0,0,0,0.85); padding: 4px 8px; border-radius: 4px; font-size: 12px; border: 1.5px solid ${ratingColor}; font-weight: bold;">${item.rating || ''}</div>
             </div>
-            <div style="display: flex; flex-direction: column;">
+            <div style="display: flex; flex-direction: column; max-height: 500px;">
                 <h2 style="color: ${item.name_color || '#ffffff'}; margin-bottom: 15px; font-size: 28px; font-family: 'Orbitron', sans-serif;">${item.name}</h2>
                 
-                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 10px; max-width: 100%;">
+                <!-- 類型區塊 (獨立滾動) -->
+                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 10px; padding: 5px 0;">
                     ${genres.map(g => `<span style="border: 1.5px solid var(--neon-blue); color: var(--neon-cyan); padding: 3px 10px; border-radius: 4px; font-size: 13px; font-weight: bold; white-space: nowrap; margin-right: 8px;">${g}</span>`).join('')}
                 </div>
 
-                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 20px; max-width: 100%;">
-                    <span style="background: rgba(0,212,255,0.1); color: var(--neon-cyan); padding: 3px 10px; border-radius: 4px; font-size: 13px; white-space: nowrap; margin-right: 8px;">${item.year || '年份未定'}</span>
-                    <span style="background: rgba(0,212,255,0.1); color: var(--neon-cyan); padding: 3px 10px; border-radius: 4px; font-size: 13px; white-space: nowrap; margin-right: 8px;">${item.season || '季度未定'}</span>
-                    <span style="background: rgba(0,212,255,0.1); color: var(--neon-cyan); padding: 3px 10px; border-radius: 4px; font-size: 13px; white-space: nowrap; margin-right: 8px;">${item.episodes ? item.episodes + ' 集' : '集數未定'}</span>
+                <!-- 其他標籤區塊 (獨立滾動) -->
+                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 20px; padding: 5px 0;">
+                    ${otherTags.map(t => `<span style="background: rgba(0,212,255,0.1); color: var(--neon-cyan); padding: 3px 10px; border-radius: 4px; font-size: 13px; white-space: nowrap; margin-right: 8px;">${t}</span>`).join('')}
                 </div>
 
-                <div style="border: 2px solid ${item.desc_color || '#ffffff'}; padding: 20px; border-radius: 10px; background: rgba(0,0,0,0.2); margin-bottom: 25px; flex: 1;">
+                <!-- 介紹欄 (帶顏色框) -->
+                <div style="border: 2px solid ${item.desc_color || '#ffffff'}; padding: 20px; border-radius: 10px; background: rgba(0,0,0,0.2); margin-bottom: 25px; flex: 1; overflow-y: auto;">
                     <p style="color: ${item.desc_color || '#ffffff'}; font-size: 15px; line-height: 1.8; white-space: pre-wrap;">${item.description || '暫無簡介。'}</p>
                 </div>
 
@@ -191,6 +205,7 @@ window.showAnimeDetail = (id) => {
         </div>
     `;
     modal.classList.add('active');
+    window.initGlobalScroll();
 };
 
 window.getFilteredData = () => {
@@ -574,13 +589,17 @@ window.changeAdminPage = (p) => { adminPage = p; window.renderAdmin(); };
 window.initGlobalScroll = () => {
     const containers = document.querySelectorAll('.force-scroll, .options-scroll-wrapper');
     containers.forEach(container => {
-        container.addEventListener('wheel', (e) => {
-            if (e.deltaY !== 0) {
-                e.preventDefault();
-                container.scrollLeft += e.deltaY;
-            }
-        });
+        // 移除舊的監聽器防止重複
+        container.removeEventListener('wheel', window.handleWheelScroll);
+        container.addEventListener('wheel', window.handleWheelScroll, { passive: false });
     });
+};
+
+window.handleWheelScroll = (e) => {
+    if (e.deltaY !== 0) {
+        e.preventDefault();
+        e.currentTarget.scrollLeft += e.deltaY;
+    }
 };
 
 document.addEventListener('click', () => { const m = document.getElementById('systemMenu'); if (m) m.classList.remove('active'); });
