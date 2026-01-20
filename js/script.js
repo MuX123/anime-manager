@@ -1,4 +1,4 @@
-// TECH v3.2.5 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v3.2.7 - ACG Manager Logic (System Admin AI Optimized)
 let animeData = [];
 let optionsData = {
     genre: ['冒險', '奇幻', '熱血', '校園', '戀愛', '喜劇', '科幻', '懸疑', '日常', '異世界'],
@@ -8,11 +8,15 @@ let optionsData = {
     episodes: ['12集', '24集', '劇場版', 'OVA'],
     rating: ['神', '迷', '優', '普', '劣'],
     recommendation: ['★★★★★', '★★★★', '★★★', '★★', '★'],
-    // 獨立顏色設定存儲：key -> { optionValue: color }
-    option_colors: {},
+    // 按類別統一顏色設定：key -> color
     category_colors: {
-        rating: '#b026ff',
+        genre: '#00ffff',
+        year: '#ffffff',
+        month: '#ffffff',
+        season: '#ffffff',
         episodes: '#00ffff',
+        rating: '#b026ff',
+        recommendation: '#ffcc00',
         btn_bg: '#00d4ff'
     }
 };
@@ -64,7 +68,9 @@ window.initApp = async function() {
                     try { 
                         const parsed = JSON.parse(s.value);
                         optionsData = { ...optionsData, ...parsed };
-                        if (!optionsData.option_colors) optionsData.option_colors = {};
+                        if (!optionsData.category_colors) optionsData.category_colors = {};
+                        const defaultColors = { genre: '#00ffff', year: '#ffffff', month: '#ffffff', season: '#ffffff', episodes: '#00ffff', rating: '#b026ff', recommendation: '#ffcc00', btn_bg: '#00d4ff' };
+                        optionsData.category_colors = { ...defaultColors, ...optionsData.category_colors };
                     } catch(e) {} 
                 }
             });
@@ -111,7 +117,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.2.5-ULTRA</div>
+        <div class="site-version">v3.2.7-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -177,11 +183,11 @@ window.showAnimeDetail = (id) => {
 
     // 獲取標籤與屬性（排除類型）
     const tags = [];
-    if (item.year) tags.push(item.year);
-    if (item.season) tags.push(item.season);
-    if (item.month) tags.push(item.month);
-    if (item.rating) tags.push(item.rating);
-    if (item.episodes) tags.push(item.episodes + '集');
+    if (item.year) tags.push({ val: item.year, key: 'year' });
+    if (item.season) tags.push({ val: item.season, key: 'season' });
+    if (item.month) tags.push({ val: item.month, key: 'month' });
+    if (item.rating) tags.push({ val: item.rating, key: 'rating' });
+    if (item.episodes) tags.push({ val: item.episodes + '集', key: 'episodes' });
 
     content.innerHTML = `
         <div style="display: grid; grid-template-columns: 320px 1fr; gap: 30px;">
@@ -195,19 +201,15 @@ window.showAnimeDetail = (id) => {
                 
                 <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 8px; padding: 5px 0;">
                     ${genres.map(g => {
-                        const color = (optionsData.option_colors.genre && optionsData.option_colors.genre[g]) || 'var(--neon-cyan)';
+                        const color = optionsData.category_colors.genre || 'var(--neon-cyan)';
                         return `<span style="border: 1.5px solid ${color}; color: ${color}; padding: 3px 10px; border-radius: 4px; font-size: 13px; font-weight: bold; white-space: nowrap; margin-right: 8px;">${g}</span>`;
                     }).join('')}
                 </div>
 
                 <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 15px; padding: 5px 0;">
                     ${tags.map(t => {
-                        // 嘗試從各個分類中找顏色
-                        let color = 'var(--text-secondary)';
-                        for (let key in optionsData.option_colors) {
-                            if (optionsData.option_colors[key][t]) { color = optionsData.option_colors[key][t]; break; }
-                        }
-                        return `<span style="border: 1.5px solid ${color}; color: ${color}; padding: 2px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; margin-right: 8px;">${t}</span>`;
+                        const color = optionsData.category_colors[t.key] || 'var(--text-secondary)';
+                        return `<span style="border: 1.5px solid ${color}; color: ${color}; padding: 2px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; margin-right: 8px;">${t.val}</span>`;
                     }).join('')}
                 </div>
 
@@ -356,51 +358,25 @@ window.renderAdminContent = (pagedData, total) => {
         return window.renderOptionsManager();
     } else if (currentAdminTab === 'settings') {
         return `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                <div style="display: flex; flex-direction: column; gap: 20px;">
-                    <h3 style="color: var(--neon-cyan); border-bottom: 1px solid var(--neon-blue); padding-bottom: 10px;">基本設定</h3>
-                    <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">網站標題</label><input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;"></div>
-                    <div>
-                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">標題顏色</label>
-                        <div class="color-input-wrapper">
-                            <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 40px; height: 40px;"></div>
-                            <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
-                        </div>
-                    </div>
-                    <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告內容</label><textarea id="set-announcement" style="width: 100%; height: 100px;">${siteSettings.announcement}</textarea></div>
-                    <div>
-                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告顏色</label>
-                        <div class="color-input-wrapper">
-                            <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 40px; height: 40px;"></div>
-                            <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
-                        </div>
+            <div style="display: flex; flex-direction: column; gap: 20px; max-width: 600px; margin: 0 auto;">
+                <h3 style="color: var(--neon-cyan); border-bottom: 1px solid var(--neon-blue); padding-bottom: 10px;">基本設定</h3>
+                <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">網站標題</label><input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;"></div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">標題顏色</label>
+                    <div class="color-input-wrapper">
+                        <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 40px; height: 40px;"></div>
+                        <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
                     </div>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 20px;">
-                    <h3 style="color: var(--neon-purple); border-bottom: 1px solid var(--neon-purple); padding-bottom: 10px;">全域顏色設定</h3>
-                    <div class="option-item-row" style="flex-direction: column; align-items: flex-start; gap: 10px; height: auto;">
-                        <label style="font-size: 13px;">評級外框顏色</label>
-                        <div class="color-input-wrapper" style="width: 100%;">
-                            <div class="color-swatch" style="background: ${optionsData.category_colors.rating}; width: 100%; height: 35px;"></div>
-                            <input type="color" id="set-rating-color" value="${optionsData.category_colors.rating}" onchange="this.previousElementSibling.style.background = this.value">
-                        </div>
+                <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告內容</label><textarea id="set-announcement" style="width: 100%; height: 100px;">${siteSettings.announcement}</textarea></div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告顏色</label>
+                    <div class="color-input-wrapper">
+                        <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 40px; height: 40px;"></div>
+                        <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
                     </div>
-                    <div class="option-item-row" style="flex-direction: column; align-items: flex-start; gap: 10px; height: auto;">
-                        <label style="font-size: 13px;">集數文字顏色</label>
-                        <div class="color-input-wrapper" style="width: 100%;">
-                            <div class="color-swatch" style="background: ${optionsData.category_colors.episodes}; width: 100%; height: 35px;"></div>
-                            <input type="color" id="set-episodes-color" value="${optionsData.category_colors.episodes}" onchange="this.previousElementSibling.style.background = this.value">
-                        </div>
-                    </div>
-                    <div class="option-item-row" style="flex-direction: column; align-items: flex-start; gap: 10px; height: auto;">
-                        <label style="font-size: 13px;">網站按鈕顏色</label>
-                        <div class="color-input-wrapper" style="width: 100%;">
-                            <div class="color-swatch" style="background: ${optionsData.category_colors.btn_bg || '#00d4ff'}; width: 100%; height: 35px;"></div>
-                            <input type="color" id="set-btn-color" value="${optionsData.category_colors.btn_bg || '#00d4ff'}" onchange="this.previousElementSibling.style.background = this.value">
-                        </div>
-                    </div>
-                    <button class="btn-primary" style="margin-top: 20px; border-color: var(--neon-purple); color: var(--neon-purple);" onclick="window.saveSettings()">💾 儲存所有設定</button>
                 </div>
+                <button class="btn-primary" style="margin-top: 20px;" onclick="window.saveSettings()">💾 儲存設定</button>
             </div>
         `;
     }
@@ -442,6 +418,7 @@ window.renderAnimeForm = (item) => {
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         ${optionsData.genre.map(g => `
                             <label class="option-item-row" style="cursor: pointer;">
+                                <div class="color-swatch" style="background: ${optionsData.category_colors.genre};"></div>
                                 <span>${g}</span>
                                 <input type="checkbox" name="form-genre" value="${g}" ${genres.includes(g) ? 'checked' : ''}>
                             </label>
@@ -499,17 +476,18 @@ window.renderOptionsManager = () => {
             ${keys.map(key => `
                 <div class="options-column">
                     <div class="options-column-header">
-                        <span>${window.getOptionLabel(key)}</span>
+                        <div class="color-input-wrapper">
+                            <div class="color-swatch" style="background: ${optionsData.category_colors[key] || '#ffffff'};"></div>
+                            <input type="color" value="${optionsData.category_colors[key] || '#ffffff'}" onchange="window.updateCategoryColor('${key}', this.value); this.previousElementSibling.style.background = this.value">
+                        </div>
+                        <span style="margin-left: 8px;">${window.getOptionLabel(key)}</span>
                     </div>
                     <div class="options-list force-scroll">
                         ${optionsData[key].map((opt, idx) => {
-                            const color = (optionsData.option_colors[key] && optionsData.option_colors[key][opt]) || '#ffffff';
+                            const color = optionsData.category_colors[key] || '#ffffff';
                             return `
                                 <div class="option-item-row">
-                                    <div class="color-input-wrapper">
-                                        <div class="color-swatch" style="background: ${color};"></div>
-                                        <input type="color" value="${color}" onchange="window.updateOptionColor('${key}', '${opt}', this.value); this.previousElementSibling.style.background = this.value">
-                                    </div>
+                                    <div class="color-swatch" style="background: ${color}; cursor: default;"></div>
                                     <span style="flex: 1;">${opt}</span>
                                     <span style="cursor: pointer; color: #ff4444; font-weight: bold;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</span>
                                 </div>
@@ -569,10 +547,10 @@ window.addLinkRow = () => { const c = document.getElementById('links-list'); con
 window.addOptionItem = async (key) => { const input = document.getElementById(`add-opt-${key}`); if (!input.value) return window.showToast('✗ 請輸入選項名稱', 'error'); optionsData[key].push(input.value); input.value = ''; await window.saveOptionsToDB(); window.renderAdmin(); };
 window.deleteOptionItem = async (key, idx) => { optionsData[key].splice(idx, 1); await window.saveOptionsToDB(); window.renderAdmin(); };
 
-window.updateOptionColor = async (key, opt, color) => {
-    if (!optionsData.option_colors[key]) optionsData.option_colors[key] = {};
-    optionsData.option_colors[key][opt] = color;
+window.updateCategoryColor = async (key, color) => {
+    optionsData.category_colors[key] = color;
     await window.saveOptionsToDB();
+    window.renderAdmin();
 };
 
 window.saveOptionsToDB = async () => { await supabaseClient.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) }); window.showToast('✓ 設定已同步'); };
@@ -642,17 +620,11 @@ window.saveSettings = async () => {
         const titleColor = document.getElementById('set-title-color').value;
         const announcementColor = document.getElementById('set-announcement-color').value;
         
-        // 更新全域顏色
-        optionsData.category_colors.rating = document.getElementById('set-rating-color').value;
-        optionsData.category_colors.episodes = document.getElementById('set-episodes-color').value;
-        optionsData.category_colors.btn_bg = document.getElementById('set-btn-color').value;
-
         await supabaseClient.from('site_settings').upsert([
             { id: 'site_title', value: title }, 
             { id: 'announcement', value: announcement },
             { id: 'title_color', value: titleColor },
-            { id: 'announcement_color', value: announcementColor },
-            { id: 'options_data', value: JSON.stringify(optionsData) }
+            { id: 'announcement_color', value: announcementColor }
         ]);
         
         siteSettings.site_title = title;
@@ -660,7 +632,7 @@ window.saveSettings = async () => {
         siteSettings.title_color = titleColor;
         siteSettings.announcement_color = announcementColor;
         
-        window.showToast('✓ 所有設定已更新');
+        window.showToast('✓ 設定已更新');
         window.renderAdmin();
     } catch (err) { window.showToast('✗ 更新失敗', 'error'); }
 };
