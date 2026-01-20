@@ -740,7 +740,12 @@ window.triggerColorPicker = (el) => {
     if (input && input.type === 'color') input.click();
 };
 
-window.saveOptionsToDB = async () => { await supabaseClient.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) }); window.showToast('✓ 設定已同步'); };
+window.saveOptionsToDB = async () => { 
+    await supabaseClient.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) }); 
+    window.showToast('✓ 設定已同步'); 
+    // 強制重新渲染應用以同步搜尋過濾器
+    if (typeof window.renderApp === 'function') window.renderApp();
+};
 window.getOptionLabel = (key) => {
     const labels = { genre: '類型', year: '年份', month: '月份', season: '季度', episodes: '集數', rating: '評分', recommendation: '推薦' };
     if (labels[key]) return labels[key];
