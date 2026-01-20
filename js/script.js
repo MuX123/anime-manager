@@ -1,4 +1,4 @@
-// TECH v3.2.4 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v3.2.5 - ACG Manager Logic (System Admin AI Optimized)
 let animeData = [];
 let optionsData = {
     genre: ['冒險', '奇幻', '熱血', '校園', '戀愛', '喜劇', '科幻', '懸疑', '日常', '異世界'],
@@ -8,6 +8,8 @@ let optionsData = {
     episodes: ['12集', '24集', '劇場版', 'OVA'],
     rating: ['神', '迷', '優', '普', '劣'],
     recommendation: ['★★★★★', '★★★★', '★★★', '★★', '★'],
+    // 獨立顏色設定存儲：key -> { optionValue: color }
+    option_colors: {},
     category_colors: {
         rating: '#b026ff',
         episodes: '#00ffff',
@@ -62,6 +64,7 @@ window.initApp = async function() {
                     try { 
                         const parsed = JSON.parse(s.value);
                         optionsData = { ...optionsData, ...parsed };
+                        if (!optionsData.option_colors) optionsData.option_colors = {};
                     } catch(e) {} 
                 }
             });
@@ -108,7 +111,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.2.4-ULTRA</div>
+        <div class="site-version">v3.2.5-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -172,6 +175,14 @@ window.showAnimeDetail = (id) => {
     const starColor = item.star_color || '#ffcc00';
     const ratingColor = optionsData.category_colors?.rating || 'var(--neon-purple)';
 
+    // 獲取標籤與屬性（排除類型）
+    const tags = [];
+    if (item.year) tags.push(item.year);
+    if (item.season) tags.push(item.season);
+    if (item.month) tags.push(item.month);
+    if (item.rating) tags.push(item.rating);
+    if (item.episodes) tags.push(item.episodes + '集');
+
     content.innerHTML = `
         <div style="display: grid; grid-template-columns: 320px 1fr; gap: 30px;">
             <div style="position: relative;">
@@ -182,8 +193,22 @@ window.showAnimeDetail = (id) => {
             <div style="display: flex; flex-direction: column; max-height: 500px;">
                 <h2 style="color: ${item.name_color || '#ffffff'}; margin-bottom: 15px; font-size: 28px; font-family: 'Orbitron', sans-serif;">${item.name}</h2>
                 
-                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 10px; padding: 5px 0;">
-                    ${genres.map(g => `<span style="border: 1.5px solid var(--neon-blue); color: var(--neon-cyan); padding: 3px 10px; border-radius: 4px; font-size: 13px; font-weight: bold; white-space: nowrap; margin-right: 8px;">${g}</span>`).join('')}
+                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 8px; padding: 5px 0;">
+                    ${genres.map(g => {
+                        const color = (optionsData.option_colors.genre && optionsData.option_colors.genre[g]) || 'var(--neon-cyan)';
+                        return `<span style="border: 1.5px solid ${color}; color: ${color}; padding: 3px 10px; border-radius: 4px; font-size: 13px; font-weight: bold; white-space: nowrap; margin-right: 8px;">${g}</span>`;
+                    }).join('')}
+                </div>
+
+                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 15px; padding: 5px 0;">
+                    ${tags.map(t => {
+                        // 嘗試從各個分類中找顏色
+                        let color = 'var(--text-secondary)';
+                        for (let key in optionsData.option_colors) {
+                            if (optionsData.option_colors[key][t]) { color = optionsData.option_colors[key][t]; break; }
+                        }
+                        return `<span style="border: 1.5px solid ${color}; color: ${color}; padding: 2px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; margin-right: 8px;">${t}</span>`;
+                    }).join('')}
                 </div>
 
                 <div style="border: 2px solid ${item.desc_color || '#ffffff'}; padding: 20px; border-radius: 10px; background: rgba(0,0,0,0.2); margin-bottom: 25px; flex: 1; overflow-y: auto;">
@@ -331,24 +356,51 @@ window.renderAdminContent = (pagedData, total) => {
         return window.renderOptionsManager();
     } else if (currentAdminTab === 'settings') {
         return `
-            <div style="display: flex; flex-direction: column; gap: 20px; max-width: 600px; margin: 0 auto;">
-                <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">網站標題</label><input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;"></div>
-                <div>
-                    <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">標題顏色</label>
-                    <div class="color-input-wrapper">
-                        <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 40px; height: 40px;"></div>
-                        <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <h3 style="color: var(--neon-cyan); border-bottom: 1px solid var(--neon-blue); padding-bottom: 10px;">基本設定</h3>
+                    <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">網站標題</label><input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;"></div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">標題顏色</label>
+                        <div class="color-input-wrapper">
+                            <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 40px; height: 40px;"></div>
+                            <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                        </div>
+                    </div>
+                    <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告內容</label><textarea id="set-announcement" style="width: 100%; height: 100px;">${siteSettings.announcement}</textarea></div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告顏色</label>
+                        <div class="color-input-wrapper">
+                            <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 40px; height: 40px;"></div>
+                            <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                        </div>
                     </div>
                 </div>
-                <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告內容</label><textarea id="set-announcement" style="width: 100%; height: 100px;">${siteSettings.announcement}</textarea></div>
-                <div>
-                    <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告顏色</label>
-                    <div class="color-input-wrapper">
-                        <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 40px; height: 40px;"></div>
-                        <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <h3 style="color: var(--neon-purple); border-bottom: 1px solid var(--neon-purple); padding-bottom: 10px;">全域顏色設定</h3>
+                    <div class="option-item-row" style="flex-direction: column; align-items: flex-start; gap: 10px; height: auto;">
+                        <label style="font-size: 13px;">評級外框顏色</label>
+                        <div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${optionsData.category_colors.rating}; width: 100%; height: 35px;"></div>
+                            <input type="color" id="set-rating-color" value="${optionsData.category_colors.rating}" onchange="this.previousElementSibling.style.background = this.value">
+                        </div>
                     </div>
+                    <div class="option-item-row" style="flex-direction: column; align-items: flex-start; gap: 10px; height: auto;">
+                        <label style="font-size: 13px;">集數文字顏色</label>
+                        <div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${optionsData.category_colors.episodes}; width: 100%; height: 35px;"></div>
+                            <input type="color" id="set-episodes-color" value="${optionsData.category_colors.episodes}" onchange="this.previousElementSibling.style.background = this.value">
+                        </div>
+                    </div>
+                    <div class="option-item-row" style="flex-direction: column; align-items: flex-start; gap: 10px; height: auto;">
+                        <label style="font-size: 13px;">網站按鈕顏色</label>
+                        <div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${optionsData.category_colors.btn_bg || '#00d4ff'}; width: 100%; height: 35px;"></div>
+                            <input type="color" id="set-btn-color" value="${optionsData.category_colors.btn_bg || '#00d4ff'}" onchange="this.previousElementSibling.style.background = this.value">
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="margin-top: 20px; border-color: var(--neon-purple); color: var(--neon-purple);" onclick="window.saveSettings()">💾 儲存所有設定</button>
                 </div>
-                <button class="btn-primary" style="margin-top: 10px;" onclick="window.saveSettings()">💾 儲存設定</button>
             </div>
         `;
     }
@@ -360,9 +412,9 @@ window.renderAnimeForm = (item) => {
     const links = Array.isArray(item.links) ? item.links : [];
     
     return `
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+        <div style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px;" class="force-scroll">
             <!-- 第一列：基本資訊 -->
-            <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="display: flex; flex-direction: column; gap: 15px; min-width: 350px;">
                 <input type="text" id="form-name" placeholder="作品名稱" value="${item.name || ''}">
                 <input type="text" id="form-poster" placeholder="海報 URL" value="${item.poster_url || ''}">
                 <select id="form-category">
@@ -371,7 +423,7 @@ window.renderAnimeForm = (item) => {
                     <option value="movie" ${item.category === 'movie' ? 'selected' : ''}>電影</option>
                 </select>
                 <textarea id="form-desc" placeholder="作品簡介" style="height: 150px; width: 100%;">${item.description || ''}</textarea>
-                <div id="links-container" class="form-scroll-section" style="height: 200px;">
+                <div id="links-container" class="form-scroll-section" style="height: 200px; width: 100%;">
                     <div class="form-section-header">相關連結</div>
                     <div class="form-section-content">
                         <button class="btn-primary" style="padding: 4px 12px; font-size: 12px; margin-bottom: 10px; width: 100%;" onclick="window.addLinkRow()">+ 新增連結</button>
@@ -383,11 +435,11 @@ window.renderAnimeForm = (item) => {
                 <button class="btn-primary" style="margin-top: 10px; border-color: var(--neon-purple); color: var(--neon-purple); font-size: 16px;" onclick="window.saveAnime()">💾 儲存作品資料</button>
             </div>
 
-            <!-- 第二列：類型選擇 (獨立區塊) -->
+            <!-- 第二列：類型選擇 (自適應寬度) -->
             <div class="form-scroll-section">
                 <div class="form-section-header">類型選擇</div>
                 <div class="form-section-content">
-                    <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
                         ${optionsData.genre.map(g => `
                             <label class="option-item-row" style="cursor: pointer;">
                                 <span>${g}</span>
@@ -398,7 +450,7 @@ window.renderAnimeForm = (item) => {
                 </div>
             </div>
 
-            <!-- 第三列：其他選項 (獨立區塊) -->
+            <!-- 第三列：標籤與屬性 (自適應寬度) -->
             <div class="form-scroll-section">
                 <div class="form-section-header">標籤與屬性</div>
                 <div class="form-section-content">
@@ -450,12 +502,19 @@ window.renderOptionsManager = () => {
                         <span>${window.getOptionLabel(key)}</span>
                     </div>
                     <div class="options-list force-scroll">
-                        ${optionsData[key].map((opt, idx) => `
-                            <div class="option-item-row">
-                                <span>${opt}</span>
-                                <span style="cursor: pointer; color: #ff4444; font-weight: bold;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</span>
-                            </div>
-                        `).join('')}
+                        ${optionsData[key].map((opt, idx) => {
+                            const color = (optionsData.option_colors[key] && optionsData.option_colors[key][opt]) || '#ffffff';
+                            return `
+                                <div class="option-item-row">
+                                    <div class="color-input-wrapper">
+                                        <div class="color-swatch" style="background: ${color};"></div>
+                                        <input type="color" value="${color}" onchange="window.updateOptionColor('${key}', '${opt}', this.value); this.previousElementSibling.style.background = this.value">
+                                    </div>
+                                    <span style="flex: 1;">${opt}</span>
+                                    <span style="cursor: pointer; color: #ff4444; font-weight: bold;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</span>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                     <div style="padding: 15px; border-top: 1px solid rgba(0,212,255,0.1); display: flex; gap: 8px;">
                         <input type="text" id="add-opt-${key}" placeholder="新增..." style="flex: 1; font-size: 13px; padding: 8px !important;">
@@ -463,32 +522,6 @@ window.renderOptionsManager = () => {
                     </div>
                 </div>
             `).join('')}
-            <div class="options-column" style="border-color: var(--neon-purple);">
-                <div class="options-column-header" style="color: var(--neon-purple); border-color: var(--neon-purple);">顏色設定</div>
-                <div class="options-list force-scroll">
-                    <div class="option-item-row" style="flex-direction: column; align-items: flex-start; gap: 10px; height: auto;">
-                        <label style="font-size: 13px;">評級外框顏色</label>
-                        <div class="color-input-wrapper" style="width: 100%;">
-                            <div class="color-swatch" style="background: ${optionsData.category_colors.rating}; width: 100%; height: 35px;"></div>
-                            <input type="color" value="${optionsData.category_colors.rating}" onchange="window.updateCategoryColor('rating', this.value); this.previousElementSibling.style.background = this.value">
-                        </div>
-                    </div>
-                    <div class="option-item-row" style="flex-direction: column; align-items: flex-start; gap: 10px; height: auto;">
-                        <label style="font-size: 13px;">集數文字顏色</label>
-                        <div class="color-input-wrapper" style="width: 100%;">
-                            <div class="color-swatch" style="background: ${optionsData.category_colors.episodes}; width: 100%; height: 35px;"></div>
-                            <input type="color" value="${optionsData.category_colors.episodes}" onchange="window.updateCategoryColor('episodes', this.value); this.previousElementSibling.style.background = this.value">
-                        </div>
-                    </div>
-                    <div class="option-item-row" style="flex-direction: column; align-items: flex-start; gap: 10px; height: auto;">
-                        <label style="font-size: 13px;">網站按鈕顏色</label>
-                        <div class="color-input-wrapper" style="width: 100%;">
-                            <div class="color-swatch" style="background: ${optionsData.category_colors.btn_bg || '#00d4ff'}; width: 100%; height: 35px;"></div>
-                            <input type="color" value="${optionsData.category_colors.btn_bg || '#00d4ff'}" onchange="window.updateCategoryColor('btn_bg', this.value); this.previousElementSibling.style.background = this.value">
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     `;
 };
@@ -535,7 +568,13 @@ window.editAnime = (id) => { window.switchAdminTab('edit', id); };
 window.addLinkRow = () => { const c = document.getElementById('links-list'); const d = document.createElement('div'); d.style.display = 'flex'; d.style.gap = '8px'; d.style.marginBottom = '10px'; d.innerHTML = `<input type="text" placeholder="名" class="link-name" style="flex: 1;"><input type="text" placeholder="網" class="link-url" style="flex: 2;"><button class="btn-primary" style="padding: 8px 12px; border-color: #ff4444; color: #ff4444;" onclick="this.parentElement.remove()">✕</button>`; c.appendChild(d); };
 window.addOptionItem = async (key) => { const input = document.getElementById(`add-opt-${key}`); if (!input.value) return window.showToast('✗ 請輸入選項名稱', 'error'); optionsData[key].push(input.value); input.value = ''; await window.saveOptionsToDB(); window.renderAdmin(); };
 window.deleteOptionItem = async (key, idx) => { optionsData[key].splice(idx, 1); await window.saveOptionsToDB(); window.renderAdmin(); };
-window.updateCategoryColor = async (key, color) => { optionsData.category_colors[key] = color; await window.saveOptionsToDB(); window.renderAdmin(); };
+
+window.updateOptionColor = async (key, opt, color) => {
+    if (!optionsData.option_colors[key]) optionsData.option_colors[key] = {};
+    optionsData.option_colors[key][opt] = color;
+    await window.saveOptionsToDB();
+};
+
 window.saveOptionsToDB = async () => { await supabaseClient.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) }); window.showToast('✓ 設定已同步'); };
 window.getOptionLabel = (key) => ({ genre: '類型', year: '年份', month: '月份', season: '季度', episodes: '集數', rating: '評分', recommendation: '推薦' }[key] || key);
 
@@ -602,17 +641,26 @@ window.saveSettings = async () => {
         const announcement = document.getElementById('set-announcement').value;
         const titleColor = document.getElementById('set-title-color').value;
         const announcementColor = document.getElementById('set-announcement-color').value;
+        
+        // 更新全域顏色
+        optionsData.category_colors.rating = document.getElementById('set-rating-color').value;
+        optionsData.category_colors.episodes = document.getElementById('set-episodes-color').value;
+        optionsData.category_colors.btn_bg = document.getElementById('set-btn-color').value;
+
         await supabaseClient.from('site_settings').upsert([
             { id: 'site_title', value: title }, 
             { id: 'announcement', value: announcement },
             { id: 'title_color', value: titleColor },
-            { id: 'announcement_color', value: announcementColor }
+            { id: 'announcement_color', value: announcementColor },
+            { id: 'options_data', value: JSON.stringify(optionsData) }
         ]);
+        
         siteSettings.site_title = title;
         siteSettings.announcement = announcement;
         siteSettings.title_color = titleColor;
         siteSettings.announcement_color = announcementColor;
-        window.showToast('✓ 設定已更新');
+        
+        window.showToast('✓ 所有設定已更新');
         window.renderAdmin();
     } catch (err) { window.showToast('✗ 更新失敗', 'error'); }
 };

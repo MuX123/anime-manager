@@ -116,7 +116,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
 /* Admin */
 .admin-panel { background: var(--panel-bg); border: 2px solid var(--neon-blue); padding: 30px; border-radius: 12px; }
 
-/* 選項管理直列佈局 */
+/* 選項管理自適應佈局 */
 .options-scroll-wrapper {
     display: flex;
     gap: 20px;
@@ -130,8 +130,8 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     background: rgba(0, 0, 0, 0.3);
     border: 1.5px solid rgba(0, 212, 255, 0.2);
     border-radius: 8px;
-    min-width: 240px;
-    width: fit-content;
+    width: fit-content; /* 寬度取決於內容 */
+    min-width: 180px;
     height: 500px;
 }
 .options-column-header {
@@ -143,6 +143,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     display: flex;
     justify-content: space-between;
     align-items: center;
+    white-space: nowrap;
 }
 .options-list {
     flex: 1;
@@ -154,34 +155,37 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 15px;
+    padding: 8px 12px;
     margin-bottom: 8px;
     background: rgba(0, 212, 255, 0.05);
     border-radius: 4px;
-    font-size: 15px;
+    font-size: 14px;
     white-space: nowrap;
+    gap: 10px;
 }
 .option-item-row:hover { background: rgba(0, 212, 255, 0.15); }
 
 /* 色塊顯示 */
 .color-swatch {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
     border: 1px solid rgba(255,255,255,0.3);
     display: inline-block;
     vertical-align: middle;
-    margin-right: 8px;
+    cursor: pointer;
 }
 
-/* 表單滾動區塊 - 統一風格 */
+/* 表單滾動區塊 - 自適應寬度 */
 .form-scroll-section {
     background: rgba(0, 0, 0, 0.3);
     border: 1.5px solid rgba(0, 212, 255, 0.2);
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    height: 450px; /* 統一高度 */
+    height: 450px;
+    width: fit-content;
+    min-width: 200px;
 }
 
 .form-section-header {
@@ -191,6 +195,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     font-weight: bold;
     font-size: 15px;
     text-align: center;
+    white-space: nowrap;
 }
 
 .form-section-content {
@@ -221,7 +226,8 @@ input:focus, select:focus, textarea:focus {
 
 .color-input-wrapper {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
 }
 .color-input-wrapper input[type="color"] {
     position: absolute;
@@ -229,6 +235,8 @@ input:focus, select:focus, textarea:focus {
     width: 100%;
     height: 100%;
     cursor: pointer;
+    left: 0;
+    top: 0;
 }
 
 .toast {
