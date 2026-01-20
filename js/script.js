@@ -119,7 +119,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.3.2-ULTRA</div>
+        <div class="site-version">v3.3.3-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -210,7 +210,11 @@ window.showAnimeDetail = (id) => {
                 </div>
                 
                 <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 20px; padding-bottom: 10px;">
-                    ${genres.map(g => `<span style="border: 1.5px solid ${optionsData.category_colors.genre}; color: ${optionsData.category_colors.genre}; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; white-space: nowrap;">${g.replace(/[[:punct:]]/g, '')}</span>`).join('')}
+                    ${genres.map(g => {
+                        // 徹底移除引號、括號、逗號等所有標點符號
+                        const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
+                        return `<span style="border: 1.5px solid ${optionsData.category_colors.genre}; color: ${optionsData.category_colors.genre}; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; white-space: nowrap;">${cleanG}</span>`;
+                    }).join('')}
                 </div>
 
                 <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 25px; padding-bottom: 10px;">
