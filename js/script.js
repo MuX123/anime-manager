@@ -186,8 +186,8 @@ window.renderCard = (item) => {
                 <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: ${episodesColor}; font-size: 12px; padding: 10px; text-align: center; font-weight: bold;">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
             </div>
             <div style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4);">
-                <h3 style="color: ${nameColor}; font-size: 16px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
-                <div style="font-size: 12px; color: var(--neon-cyan); opacity: 0.8;">[ ${item.year || ''} ${item.season || ''} ]</div>
+                <h3 style="color: ${nameColor}; font-size: 18px; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
+                <div style="font-size: 14px; color: var(--neon-cyan); opacity: 0.9; font-weight: bold;">[ ${item.year || ''} ${item.season || ''} ${item.month || ''} ]</div>
             </div>
         </div>
     `;
@@ -226,18 +226,20 @@ window.showAnimeDetail = (id) => {
             <!-- 左側滿版海報 -->
             <div class="detail-poster-aside">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
-                <div class="cyber-badge-v361" style="color: ${item.star_color || '#ffcc00'};">
-                    <span class="badge-star-icon">${item.recommendation || '★'}</span>
-                    <span class="badge-rating-text">${item.rating || '0.0'}</span>
-                </div>
             </div>
 
             <!-- 右側資訊流 -->
             <div class="detail-content-main force-scroll">
                 <div>
                     <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'};">${item.name}</h2>
-                    <div class="core-data-row" style="color: ${yearColor}; margin-top: 20px;">
-                        ${coreData.map(val => `<div class="core-data-item">${val}</div>`).join('')}
+                    <div class="core-data-row" style="color: ${yearColor}; margin-top: 20px; justify-content: space-between;">
+                        <div style="display: flex; gap: 20px;">
+                            ${coreData.map(val => `<div class="core-data-item">${val}</div>`).join('')}
+                        </div>
+                        <div class="cyber-badge-v361" style="color: ${item.star_color || '#ffcc00'}; position: static; transform: none; font-size: 16px; padding: 4px 15px;">
+                            <span class="badge-star-icon">${item.recommendation || '★'}</span>
+                            <span class="badge-rating-text">${item.rating || '0.0'}</span>
+                        </div>
                     </div>
                 </div>
 
