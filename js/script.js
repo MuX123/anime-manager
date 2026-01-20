@@ -29,6 +29,7 @@ const itemsPerPage = 20;
 const adminItemsPerPage = 10;
 let adminPage = 1;
 let filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' };
+let gridColumns = localStorage.getItem('gridColumns') || 5;
 let importTarget = 'anime';
 let editId = null;
 let isFirstLoad = true;
@@ -136,7 +137,7 @@ window.renderApp = function() {
     // 僅在初次渲染或非搜尋輸入時更新整個 app
     if (!document.getElementById('search-input')) {
         app.innerHTML = `
-            <div class="site-version">v3.7.3-ULTRA</div>
+            <div class="site-version">v3.7.4-ULTRA</div>
             <div class="app-container">
                 <header>
                     <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -151,11 +152,19 @@ window.renderApp = function() {
                 </div>
                 <div style="margin-bottom: 30px;">
                     <input type="text" id="search-input" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px !important; border-radius: 50px !important;">
-                    <div id="search-filters" class="horizontal-scroll-container force-scroll" style="padding: 10px 0; gap: 15px;">
-                        ${window.renderSearchSelectsHTML()}
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <div id="search-filters" class="horizontal-scroll-container force-scroll" style="padding: 10px 0; gap: 15px; flex: 1;">
+                            ${window.renderSearchSelectsHTML()}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 5px 15px; border-radius: 50px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
+                            <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">佈局</span>
+                            <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 14px !important; cursor: pointer; color: var(--neon-cyan) !important;">
+                                ${[3,4,5,6].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div id="anime-grid-container" class="anime-grid">
+                <div id="anime-grid-container" class="anime-grid" style="grid-template-columns: repeat(${gridColumns}, 1fr);">
                     ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
                 </div>
                 <div id="pagination-container" style="display: flex; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
@@ -295,6 +304,13 @@ window.renderPagination = (total) => {
 
 window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(); };
+
+window.changeGridLayout = (n) => {
+    gridColumns = n;
+    localStorage.setItem('gridColumns', n);
+    const grid = document.getElementById('anime-grid-container');
+    if (grid) grid.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+};
 
 window.renderSearchSelectsHTML = () => {
     let html = '';
