@@ -131,7 +131,42 @@
     /* Utilities */
     .horizontal-scroll-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
     .force-scroll::-webkit-scrollbar { height: 4px; }
-    .auto-width-select { background: rgba(0,0,0,0.5); color: var(--text-main); border: 1.5px solid rgba(0,212,255,0.3); padding: 8px; border-radius: 4px; }
+    /* 輸入框樣式 - 科技感重構 */
+    input[type="text"], input[type="email"], input[type="password"], select, textarea {
+        background: rgba(5, 10, 20, 0.8) !important;
+        border: 1.5px solid rgba(0, 212, 255, 0.2) !important;
+        color: var(--neon-cyan) !important;
+        padding: 10px 15px !important;
+        border-radius: 4px !important;
+        font-family: 'Space Mono', monospace !important;
+        outline: none !important;
+        transition: all 0.3s ease !important;
+        box-shadow: inset 0 0 8px rgba(0, 212, 255, 0.05) !important;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        border-color: var(--neon-blue) !important;
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.3), inset 0 0 10px rgba(0, 212, 255, 0.1) !important;
+        background: rgba(10, 20, 40, 0.9) !important;
+    }
+
+    select option {
+        background: var(--bg-darker) !important;
+        color: var(--neon-cyan) !important;
+    }
+
+    .auto-width-select { 
+        background: rgba(5, 10, 20, 0.8) !important; 
+        color: var(--neon-cyan) !important; 
+        border: 1.5px solid rgba(0, 212, 255, 0.2) !important; 
+        padding: 8px 30px 8px 12px !important; 
+        border-radius: 4px !important;
+        appearance: none !important;
+        background-image: linear-gradient(45deg, transparent 50%, var(--neon-blue) 50%), linear-gradient(135deg, var(--neon-blue) 50%, transparent 50%) !important;
+        background-position: calc(100% - 15px) 50%, calc(100% - 10px) 50% !important;
+        background-size: 5px 5px, 5px 5px !important;
+        background-repeat: no-repeat !important;
+    }
     .site-version { position: fixed; top: 10px; left: 10px; font-size: 10px; color: var(--neon-blue); opacity: 0.6; z-index: 1000; }
     .floating-menu-btn {
         position: fixed; top: 20px; right: 20px; width: 50px; height: 50px;
