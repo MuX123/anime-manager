@@ -91,7 +91,7 @@ window.renderApp = function() {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.0.5</div>
+        <div class="site-version">v3.1.0</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || 'var(--neon-cyan)'}; text-shadow: 0 0 10px ${siteSettings.title_color || 'var(--neon-blue)'};">${siteSettings.site_title}</h1>
@@ -183,7 +183,7 @@ window.renderAdmin = function() {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.0.5</div>
+        <div class="site-version">v3.1.0</div>
         <div class="admin-container">
             <div class="admin-panel">
                 <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 15px; position: relative;">
