@@ -287,30 +287,21 @@ window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.r
 
 window.renderSearchSelectsHTML = () => {
     let html = '';
-    const filterCategories = [
-        { id: 'genre', label: '類型', options: optionsData.genre },
-        { id: 'year', label: '年份', options: optionsData.year },
-        { id: 'season', label: '季度', options: optionsData.season },
-        { id: 'month', label: '月份', options: optionsData.month },
-        { id: 'episodes', label: '集數', options: optionsData.episodes },
-        { id: 'rating', label: '評分', options: optionsData.rating },
-        { id: 'recommendation', label: '推薦', options: optionsData.recommendation },
-        ...(optionsData.custom_lists || []).map(key => ({
-            id: `custom_${key}`,
-            label: window.getOptionLabel(key),
-            options: optionsData[key] || []
-        }))
-    ];
+    const defaultKeys = ['genre', 'year', 'season', 'month', 'episodes', 'rating', 'recommendation'];
+    const customKeys = optionsData.custom_lists || [];
+    const allKeys = [...defaultKeys, ...customKeys];
 
-    filterCategories.forEach(cat => {
-        if (!cat.options || cat.options.length === 0) return;
-        const catId = cat.id.replace('custom_', '');
-        const activeVal = cat.id.startsWith('custom_') ? (filters.extra_data?.[catId] || '') : (filters[cat.id] || '');
+    allKeys.forEach(key => {
+        const options = optionsData[key] || [];
+        if (options.length === 0) return;
+        
+        const label = window.getOptionLabel(key);
+        const activeVal = filters[key] || '';
         
         html += `
-            <select class="auto-width-select" onchange="window.handleFilter('${cat.id}', this.value)" style="border-color: rgba(0, 212, 255, 0.3);">
-                <option value="">全部 ${cat.label}</option>
-                ${cat.options.map(opt => `
+            <select class="auto-width-select" onchange="window.handleFilter('${key}', this.value)" style="border-color: rgba(0, 212, 255, 0.3);">
+                <option value="">全部 ${label}</option>
+                ${options.map(opt => `
                     <option value="${opt}" ${activeVal === opt ? 'selected' : ''}>${opt}</option>
                 `).join('')}
             </select>
@@ -319,15 +310,8 @@ window.renderSearchSelectsHTML = () => {
     return html;
 };
 
-window.handleFilter = (catId, val) => {
-    if (catId.startsWith('custom_')) {
-        const listName = catId.replace('custom_', '');
-        if (!filters.extra_data) filters.extra_data = {};
-        if (!val) delete filters.extra_data[listName];
-        else filters.extra_data[listName] = val;
-    } else {
-        filters[catId] = val;
-    }
+window.handleFilter = (key, val) => {
+    filters[key] = val;
     currentPage = 1;
     window.renderApp();
 };
@@ -336,26 +320,29 @@ window.getFilteredData = () => {
     return animeData.filter(item => {
         if (item.category !== currentCategory) return false;
         if (filters.search && !item.name.toLowerCase().includes(filters.search.toLowerCase())) return false;
-        if (filters.genre && (!item.genre || !item.genre.includes(filters.genre))) return false;
-        if (filters.year && item.year !== filters.year) return false;
-        if (filters.rating && item.rating !== filters.rating) return false;
-        if (filters.season && item.season !== filters.season) return false;
-        if (filters.month && item.month !== filters.month) return false;
-        if (filters.episodes && item.episodes !== filters.episodes) return false;
-        if (filters.recommendation && item.recommendation !== filters.recommendation) return false;
         
-        if (filters.extra_data) {
-            const matchesExtra = Object.entries(filters.extra_data).every(([key, val]) => {
-                if (!val) return true;
-                return item.extra_data && item.extra_data[key] === val;
-            });
-            if (!matchesExtra) return false;
+        // 遍歷所有過濾條件
+        for (const key in filters) {
+            if (key === 'search' || !filters[key]) continue;
+            
+            // 處理類型 (多選陣列)
+            if (key === 'genre') {
+                if (!item.genre || !item.genre.includes(filters.genre)) return false;
+            } 
+            // 處理自定義列表 (存放在 extra_data 中)
+            else if (key.startsWith('custom_')) {
+                if (!item.extra_data || item.extra_data[key] !== filters[key]) return false;
+            }
+            // 處理一般屬性
+            else {
+                if (item[key] !== filters[key]) return false;
+            }
         }
         return true;
     });
 };
 
-window.switchCategory = (cat) => { currentCategory = cat; currentPage = 1; filters = { search: '', genre: '', year: '', rating: '', season: '', month: '', extra_data: {} }; window.renderApp(); };
+window.switchCategory = (cat) => { currentCategory = cat; currentPage = 1; filters = { search: '' }; window.renderApp(); };
 
 window.showLoginModal = () => { document.getElementById('loginModal').classList.add('active'); };
 window.hideLoginModal = () => { document.getElementById('loginModal').classList.remove('active'); };
