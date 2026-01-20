@@ -496,9 +496,9 @@ window.renderOptionsManager = () => {
                             `;
                         }).join('')}
                     </div>
-                    <div style="padding: 15px; border-top: 1px solid rgba(0,212,255,0.1); display: flex; gap: 8px;">
-                        <input type="text" id="add-opt-${key}" placeholder="新增..." style="flex: 1; font-size: 13px; padding: 8px !important;">
-                        <button class="btn-primary" style="padding: 8px 12px; font-size: 12px;" onclick="window.addOptionItem('${key}')">＋</button>
+                    <div style="padding: 15px; border-top: 1px solid rgba(0,212,255,0.1); display: flex; gap: 5px; align-items: center;">
+                        <input type="text" id="add-opt-${key}" placeholder="新增..." style="width: 120px; font-size: 12px; padding: 6px !important; flex-shrink: 0;">
+                        <button class="btn-primary" style="padding: 6px 10px; font-size: 12px; flex-shrink: 0; min-width: 40px;" onclick="window.addOptionItem('${key}')">＋</button>
                     </div>
                 </div>
             `).join('')}

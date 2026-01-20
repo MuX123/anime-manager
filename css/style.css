@@ -131,7 +131,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     border: 1.5px solid rgba(0, 212, 255, 0.2);
     border-radius: 8px;
     width: fit-content; /* 寬度取決於內容 */
-    min-width: 180px;
+    min-width: 220px;
     height: 500px;
 }
 .options-column-header {
@@ -162,6 +162,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     font-size: 14px;
     white-space: nowrap;
     gap: 10px;
+    width: 100%;
 }
 .option-item-row:hover { background: rgba(0, 212, 255, 0.15); }
 
