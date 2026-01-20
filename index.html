@@ -51,10 +51,6 @@
     ::-webkit-scrollbar-thumb { background: rgba(0, 212, 255, 0.3); border-radius: 10px; border: 1px solid rgba(0, 212, 255, 0.1); }
     ::-webkit-scrollbar-thumb:hover { background: rgba(0, 212, 255, 0.6); box-shadow: 0 0 10px rgba(0, 212, 255, 0.4); }
 
-    /* Animations */
-    @keyframes pulse-glow { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-    @keyframes float-up { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0px); opacity: 1; } }
-
     /* Layout */
     .app-container, .admin-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
     header { text-align: center; margin-bottom: 40px; }
@@ -229,7 +225,16 @@
   <div id="toast" class="toast"></div>
   <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
-  <script src="./js/supabase.js"></script>
-  <script src="./js/script.js"></script>
+  <script>
+    // Supabase 初始化
+    const SUPABASE_URL = 'https://twgydqknzdyahgfuamak.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3Z3lkcWtuemR5YWhnZnVhbWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg4NzExMDksImV4cCI6MjA1NDQ0NzEwOX0.0';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 動態載入主程式
+    const script = document.createElement('script');
+    script.src = './js/script.js?v=' + new Date().getTime();
+    document.body.appendChild(script);
+  </script>
  </body>
 </html>
