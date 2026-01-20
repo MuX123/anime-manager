@@ -119,7 +119,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.6.0-ULTRA</div>
+        <div class="site-version">v3.6.1-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -151,17 +151,18 @@ window.renderApp = function() {
 };
 
 window.renderCard = (item) => {
-    const starColor = optionsData.category_colors?.recommendation || '#ffcc00';
+    const starColor = item.star_color || '#ffcc00';
     const nameColor = item.name_color || '#ffffff';
     const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-cyan)';
-    const ratingColor = optionsData.category_colors?.rating || 'var(--neon-purple)';
     
     return `
         <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')">
             <div style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
-                <div class="cyber-badge star" style="color: ${starColor};"><i>★</i> ${item.recommendation || ''}</div>
-                <div class="cyber-badge rating" style="color: ${ratingColor};">${item.rating || ''}</div>
+                <div class="cyber-badge-v361" style="color: ${starColor};">
+                    <span class="badge-star-icon">★</span>
+                    <span class="badge-rating-text">${item.rating || '0.0'}</span>
+                </div>
                 <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: ${episodesColor}; font-size: 12px; padding: 10px; text-align: center; font-weight: bold;">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
             </div>
             <div style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4);">
@@ -205,8 +206,10 @@ window.showAnimeDetail = (id) => {
             <!-- 左側滿版海報 -->
             <div class="detail-poster-aside">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
-                <div class="cyber-badge star" style="color: ${starColor};"><i>★</i> ${item.recommendation || ''}</div>
-                <div class="cyber-badge rating" style="color: ${ratingColor};">${item.rating || ''}</div>
+                <div class="cyber-badge-v361" style="color: ${item.star_color || '#ffcc00'};">
+                    <span class="badge-star-icon">★</span>
+                    <span class="badge-rating-text">${item.rating || '0.0'}</span>
+                </div>
             </div>
 
             <!-- 右側資訊流 -->
