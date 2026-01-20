@@ -1,4 +1,4 @@
-// TECH v3.2.3 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v3.2.4 - ACG Manager Logic (System Admin AI Optimized)
 let animeData = [];
 let optionsData = {
     genre: ['冒險', '奇幻', '熱血', '校園', '戀愛', '喜劇', '科幻', '懸疑', '日常', '異世界'],
@@ -38,20 +38,13 @@ window.initApp = async function() {
             isAdmin = !!session;
             window.updateAdminMenu();
             
-            // 只有在狀態真正改變且不是首次載入時才顯示 Toast
             if (isAdmin && !prevAdmin && !isFirstLoad) {
                 window.showToast('✓ 登入成功');
             }
             
-            // 首次載入後標記
             if (isFirstLoad) {
                 isFirstLoad = false;
-                if (isAdmin) {
-                    // 如果已登入，預設顯示前台，不自動跳轉後台
-                    window.renderApp();
-                } else {
-                    window.renderApp();
-                }
+                window.renderApp();
             }
         });
 
@@ -115,7 +108,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.2.3-ULTRA</div>
+        <div class="site-version">v3.2.4-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -174,16 +167,10 @@ window.showAnimeDetail = (id) => {
     const modal = document.getElementById('detailModal');
     const content = document.getElementById('detailContent');
     
-    // 類型處理：移除標點符號，僅保留選項內容
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
-    
     const links = Array.isArray(item.links) ? item.links : [];
     const starColor = item.star_color || '#ffcc00';
     const ratingColor = optionsData.category_colors?.rating || 'var(--neon-purple)';
-
-    // 獲取除了類型以外的其他標籤 (根據需求：第二列不要顯示 年 月 季度 集數 評級)
-    // 這裡我們只顯示自定義標籤，如果有的話。目前先留空或顯示其他非排除項。
-    const otherTags = []; 
 
     content.innerHTML = `
         <div style="display: grid; grid-template-columns: 320px 1fr; gap: 30px;">
@@ -195,17 +182,10 @@ window.showAnimeDetail = (id) => {
             <div style="display: flex; flex-direction: column; max-height: 500px;">
                 <h2 style="color: ${item.name_color || '#ffffff'}; margin-bottom: 15px; font-size: 28px; font-family: 'Orbitron', sans-serif;">${item.name}</h2>
                 
-                <!-- 類型區塊 (獨立滾動) -->
                 <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 10px; padding: 5px 0;">
                     ${genres.map(g => `<span style="border: 1.5px solid var(--neon-blue); color: var(--neon-cyan); padding: 3px 10px; border-radius: 4px; font-size: 13px; font-weight: bold; white-space: nowrap; margin-right: 8px;">${g}</span>`).join('')}
                 </div>
 
-                <!-- 第二列標籤區塊 (獨立滾動) - 根據需求目前不顯示年月等 -->
-                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 20px; padding: 5px 0; display: ${otherTags.length > 0 ? 'flex' : 'none'};">
-                    ${otherTags.map(t => `<span style="background: rgba(0,212,255,0.1); color: var(--neon-cyan); padding: 3px 10px; border-radius: 4px; font-size: 13px; white-space: nowrap; margin-right: 8px;">${t}</span>`).join('')}
-                </div>
-
-                <!-- 介紹欄 (帶顏色框) -->
                 <div style="border: 2px solid ${item.desc_color || '#ffffff'}; padding: 20px; border-radius: 10px; background: rgba(0,0,0,0.2); margin-bottom: 25px; flex: 1; overflow-y: auto;">
                     <p style="color: ${item.desc_color || '#ffffff'}; font-size: 15px; line-height: 1.8; white-space: pre-wrap;">${item.description || '暫無簡介。'}</p>
                 </div>
@@ -380,7 +360,8 @@ window.renderAnimeForm = (item) => {
     const links = Array.isArray(item.links) ? item.links : [];
     
     return `
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+            <!-- 第一列：基本資訊 -->
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 <input type="text" id="form-name" placeholder="作品名稱" value="${item.name || ''}">
                 <input type="text" id="form-poster" placeholder="海報 URL" value="${item.poster_url || ''}">
@@ -389,57 +370,71 @@ window.renderAnimeForm = (item) => {
                     <option value="manga" ${item.category === 'manga' ? 'selected' : ''}>漫畫</option>
                     <option value="movie" ${item.category === 'movie' ? 'selected' : ''}>電影</option>
                 </select>
-                <div class="form-scroll-section">
-                    <div style="color: var(--neon-cyan); margin-bottom: 10px; font-weight: bold;">類型選擇 (獨立滾動)</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        ${optionsData.genre.map(g => `<label style="font-size: 14px; display: flex; align-items: center; gap: 8px; cursor: pointer;"><input type="checkbox" name="form-genre" value="${g}" ${genres.includes(g) ? 'checked' : ''}> ${g}</label>`).join('')}
+                <textarea id="form-desc" placeholder="作品簡介" style="height: 150px; width: 100%;">${item.description || ''}</textarea>
+                <div id="links-container" class="form-scroll-section" style="height: 200px;">
+                    <div class="form-section-header">相關連結</div>
+                    <div class="form-section-content">
+                        <button class="btn-primary" style="padding: 4px 12px; font-size: 12px; margin-bottom: 10px; width: 100%;" onclick="window.addLinkRow()">+ 新增連結</button>
+                        <div id="links-list">
+                            ${links.map(l => `<div style="display: flex; gap: 8px; margin-bottom: 10px;"><input type="text" placeholder="名" class="link-name" value="${l.name}" style="flex: 1;"><input type="text" placeholder="網" class="link-url" value="${l.url}" style="flex: 2;"><button class="btn-primary" style="padding: 8px 12px; border-color: #ff4444; color: #ff4444;" onclick="this.parentElement.remove()">✕</button></div>`).join('')}
+                        </div>
                     </div>
                 </div>
-                <div id="links-container" class="form-scroll-section">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <span style="color: var(--neon-cyan); font-weight: bold;">相關連結</span>
-                        <button class="btn-primary" style="padding: 4px 12px; font-size: 12px;" onclick="window.addLinkRow()">+ 新增連結</button>
+                <button class="btn-primary" style="margin-top: 10px; border-color: var(--neon-purple); color: var(--neon-purple); font-size: 16px;" onclick="window.saveAnime()">💾 儲存作品資料</button>
+            </div>
+
+            <!-- 第二列：類型選擇 (獨立區塊) -->
+            <div class="form-scroll-section">
+                <div class="form-section-header">類型選擇</div>
+                <div class="form-section-content">
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                        ${optionsData.genre.map(g => `
+                            <label class="option-item-row" style="cursor: pointer;">
+                                <span>${g}</span>
+                                <input type="checkbox" name="form-genre" value="${g}" ${genres.includes(g) ? 'checked' : ''}>
+                            </label>
+                        `).join('')}
                     </div>
-                    ${links.map(l => `<div style="display: flex; gap: 8px; margin-bottom: 10px;"><input type="text" placeholder="名" class="link-name" value="${l.name}" style="flex: 1;"><input type="text" placeholder="網" class="link-url" value="${l.url}" style="flex: 2;"><button class="btn-primary" style="padding: 8px 12px; border-color: #ff4444; color: #ff4444;" onclick="this.parentElement.remove()">✕</button></div>`).join('')}
                 </div>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <div class="form-scroll-section" style="max-height: 400px;">
-                    <div style="color: var(--neon-cyan); margin-bottom: 10px; font-weight: bold;">標籤與屬性 (獨立滾動)</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <select id="form-year"><option value="">年份</option>${optionsData.year.map(y => `<option value="${y}" ${item.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select>
-                        <select id="form-season"><option value="">季度</option>${optionsData.season.map(s => `<option value="${s}" ${item.season === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
-                        <select id="form-month"><option value="">月份</option>${optionsData.month.map(m => `<option value="${m}" ${item.month === m ? 'selected' : ''}>${m}</option>`).join('')}</select>
-                        <select id="form-rating"><option value="">評分</option>${optionsData.rating.map(r => `<option value="${r}" ${item.rating === r ? 'selected' : ''}>${r}</option>`).join('')}</select>
-                        <select id="form-recommendation"><option value="">推薦</option>${optionsData.recommendation.map(r => `<option value="${r}" ${item.recommendation === r ? 'selected' : ''}>${r}</option>`).join('')}</select>
-                        <input type="text" id="form-episodes" placeholder="集數" value="${item.episodes || ''}">
-                    </div>
-                    <textarea id="form-desc" placeholder="作品簡介" style="height: 120px; margin-top: 15px; width: 100%;">${item.description || ''}</textarea>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 15px;">
-                        <div>
-                            <label style="font-size: 12px; color: var(--neon-cyan);">星標顏色</label>
-                            <div class="color-input-wrapper" style="width: 100%;">
-                                <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 100%; height: 35px;"></div>
-                                <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" onchange="this.previousElementSibling.style.background = this.value">
+
+            <!-- 第三列：其他選項 (獨立區塊) -->
+            <div class="form-scroll-section">
+                <div class="form-section-header">標籤與屬性</div>
+                <div class="form-section-content">
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div><label style="font-size: 12px; color: var(--neon-cyan);">年份</label><select id="form-year" style="width: 100%;"><option value="">年份</option>${optionsData.year.map(y => `<option value="${y}" ${item.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
+                        <div><label style="font-size: 12px; color: var(--neon-cyan);">季度</label><select id="form-season" style="width: 100%;"><option value="">季度</option>${optionsData.season.map(s => `<option value="${s}" ${item.season === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                        <div><label style="font-size: 12px; color: var(--neon-cyan);">月份</label><select id="form-month" style="width: 100%;"><option value="">月份</option>${optionsData.month.map(m => `<option value="${m}" ${item.month === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
+                        <div><label style="font-size: 12px; color: var(--neon-cyan);">評分</label><select id="form-rating" style="width: 100%;"><option value="">評分</option>${optionsData.rating.map(r => `<option value="${r}" ${item.rating === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+                        <div><label style="font-size: 12px; color: var(--neon-cyan);">推薦</label><select id="form-recommendation" style="width: 100%;"><option value="">推薦</option>${optionsData.recommendation.map(r => `<option value="${r}" ${item.recommendation === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+                        <div><label style="font-size: 12px; color: var(--neon-cyan);">集數</label><input type="text" id="form-episodes" placeholder="集數" value="${item.episodes || ''}" style="width: 100%;"></div>
+                        
+                        <div style="border-top: 1px solid rgba(0,212,255,0.2); padding-top: 15px; margin-top: 5px;">
+                            <div style="margin-bottom: 15px;">
+                                <label style="font-size: 12px; color: var(--neon-cyan);">星標顏色</label>
+                                <div class="color-input-wrapper" style="width: 100%;">
+                                    <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 100%; height: 35px;"></div>
+                                    <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" onchange="this.previousElementSibling.style.background = this.value">
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: var(--neon-cyan);">名稱顏色</label>
-                            <div class="color-input-wrapper" style="width: 100%;">
-                                <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 35px;"></div>
-                                <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                            <div style="margin-bottom: 15px;">
+                                <label style="font-size: 12px; color: var(--neon-cyan);">名稱顏色</label>
+                                <div class="color-input-wrapper" style="width: 100%;">
+                                    <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 35px;"></div>
+                                    <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: var(--neon-cyan);">簡介顏色</label>
-                            <div class="color-input-wrapper" style="width: 100%;">
-                                <div class="color-swatch" style="background: ${item.desc_color || '#ffffff'}; width: 100%; height: 35px;"></div>
-                                <input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                            <div>
+                                <label style="font-size: 12px; color: var(--neon-cyan);">簡介顏色</label>
+                                <div class="color-input-wrapper" style="width: 100%;">
+                                    <div class="color-swatch" style="background: ${item.desc_color || '#ffffff'}; width: 100%; height: 35px;"></div>
+                                    <input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <button class="btn-primary" style="margin-top: 15px; border-color: var(--neon-purple); color: var(--neon-purple); font-size: 16px;" onclick="window.saveAnime()">💾 儲存作品資料</button>
             </div>
         </div>
     `;
@@ -508,7 +503,7 @@ window.saveAnime = async () => {
             poster_url: document.getElementById('form-poster').value,
             category: document.getElementById('form-category').value,
             genre: Array.from(document.querySelectorAll('input[name="form-genre"]:checked')).map(cb => cb.value),
-            links: Array.from(document.querySelectorAll('#links-container > div')).map(row => {
+            links: Array.from(document.querySelectorAll('#links-list > div')).map(row => {
                 const n = row.querySelector('.link-name');
                 const u = row.querySelector('.link-url');
                 return (n && u) ? { name: n.value, url: u.value } : null;
@@ -537,7 +532,7 @@ window.saveAnime = async () => {
 };
 
 window.editAnime = (id) => { window.switchAdminTab('edit', id); };
-window.addLinkRow = () => { const c = document.getElementById('links-container'); const d = document.createElement('div'); d.style.display = 'flex'; d.style.gap = '8px'; d.style.marginBottom = '10px'; d.innerHTML = `<input type="text" placeholder="名" class="link-name" style="flex: 1;"><input type="text" placeholder="網" class="link-url" style="flex: 2;"><button class="btn-primary" style="padding: 8px 12px; border-color: #ff4444; color: #ff4444;" onclick="this.parentElement.remove()">✕</button>`; c.appendChild(d); };
+window.addLinkRow = () => { const c = document.getElementById('links-list'); const d = document.createElement('div'); d.style.display = 'flex'; d.style.gap = '8px'; d.style.marginBottom = '10px'; d.innerHTML = `<input type="text" placeholder="名" class="link-name" style="flex: 1;"><input type="text" placeholder="網" class="link-url" style="flex: 2;"><button class="btn-primary" style="padding: 8px 12px; border-color: #ff4444; color: #ff4444;" onclick="this.parentElement.remove()">✕</button>`; c.appendChild(d); };
 window.addOptionItem = async (key) => { const input = document.getElementById(`add-opt-${key}`); if (!input.value) return window.showToast('✗ 請輸入選項名稱', 'error'); optionsData[key].push(input.value); input.value = ''; await window.saveOptionsToDB(); window.renderAdmin(); };
 window.deleteOptionItem = async (key, idx) => { optionsData[key].splice(idx, 1); await window.saveOptionsToDB(); window.renderAdmin(); };
 window.updateCategoryColor = async (key, color) => { optionsData.category_colors[key] = color; await window.saveOptionsToDB(); window.renderAdmin(); };
@@ -651,7 +646,6 @@ window.initGlobalScroll = () => {
 };
 
 window.handleWheelScroll = (e) => {
-    // 只有當容器可以橫向捲動時才攔截滾輪
     if (e.currentTarget.scrollWidth > e.currentTarget.clientWidth) {
         if (e.deltaY !== 0) {
             e.preventDefault();
