@@ -390,6 +390,17 @@ window.showAnimeDetail = (id) => {
     const yearColor = optionsData.category_colors?.year || 'var(--neon-blue)';
 
 	    const genres = (Array.isArray(item.genre) ? item.genre : (item.genre ? item.genre.split('|') : [])).map(g => g.replace(/["'\[\]]/g, '').trim());
+    
+    // 獲取擴充選項標籤
+    const extraTags = Object.keys(optionsData)
+        .filter(k => !['genre', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'category_colors'].includes(k))
+        .map(key => {
+            const val = item[key];
+            if (!val) return null;
+            const color = optionsData.category_colors?.[key] || 'var(--neon-blue)';
+            return `<span class="tag-item" style="font-size: 14px; padding: 6px 16px; border-color: ${color}; color: ${color}; white-space: nowrap; background: none; box-shadow: 0 0 8px ${color}44;">${val}</span>`;
+        })
+        .filter(t => t);
 
     const modal = document.getElementById('detailModal');
     document.getElementById('detailContent').innerHTML = `
@@ -418,11 +429,17 @@ window.showAnimeDetail = (id) => {
                     </div>
                 </div>
 
-                <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2);">
-                    <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 8px; padding: 6px 0; justify-content: center;">
-                        ${genres.map(g => `<span class="tag-item" style="font-size: 14px; padding: 6px 16px; border-color: ${genreColor}; color: ${genreColor}; white-space: nowrap; background: rgba(0, 212, 255, 0.08);">${g}</span>`).join('')}
+                <div style="width: 100%; padding: 10px 0; border-bottom: 1px solid rgba(0, 212, 255, 0.1);">
+                    <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 8px; padding: 5px 0; justify-content: center; scrollbar-width: thin;">
+                        ${genres.map(g => `<span class="tag-item" style="font-size: 14px; padding: 6px 16px; border-color: ${genreColor}; color: ${genreColor}; white-space: nowrap; background: none; box-shadow: 0 0 8px ${genreColor}44;">${g}</span>`).join('')}
                     </div>
                 </div>
+                ${extraTags.length > 0 ? `
+                <div style="width: 100%; padding: 10px 0; border-bottom: 1px solid rgba(0, 212, 255, 0.1);">
+                    <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 8px; padding: 5px 0; justify-content: center; scrollbar-width: thin;">
+                        ${extraTags.join('')}
+                    </div>
+                </div>` : ''}
 
 	                <div style="width: 100%; padding: 15px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(0, 212, 255, 0.05)); border: 1.5px solid ${descColor}; border-left: 4px solid ${descColor}; border-radius: 8px; text-align: left; max-height: 180px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: ${descColor} rgba(0, 0, 0, 0.3);">
 	                    <div style="font-size: 13px; color: ${descColor}; line-height: 1.9; padding-right: 10px; font-weight: 500;">
