@@ -1,4 +1,4 @@
-// TECH v3.2.1 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v3.2.2 - ACG Manager Logic (System Admin AI Optimized)
 let animeData = [];
 let optionsData = {
     genre: ['冒險', '奇幻', '熱血', '校園', '戀愛', '喜劇', '科幻', '懸疑', '日常', '異世界'],
@@ -19,7 +19,7 @@ let currentCategory = 'anime';
 let currentAdminTab = 'manage';
 let isAdmin = false;
 let currentPage = 1;
-const itemsPerPage = 16; // 4x4 佈局
+const itemsPerPage = 20; // 5x4 佈局
 const adminItemsPerPage = 10;
 let adminPage = 1;
 let filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' };
@@ -103,7 +103,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.2.1-ULTRA</div>
+        <div class="site-version">v3.2.2-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -172,6 +172,7 @@ window.showAnimeDetail = (id) => {
     if (item.season) otherTags.push(item.season);
     if (item.month) otherTags.push(item.month.includes('月') ? item.month : item.month + '月');
     if (item.episodes) otherTags.push(item.episodes + ' 集');
+    if (item.rating) otherTags.push(item.rating);
 
     content.innerHTML = `
         <div style="display: grid; grid-template-columns: 320px 1fr; gap: 30px;">
@@ -589,7 +590,6 @@ window.changeAdminPage = (p) => { adminPage = p; window.renderAdmin(); };
 window.initGlobalScroll = () => {
     const containers = document.querySelectorAll('.force-scroll, .options-scroll-wrapper');
     containers.forEach(container => {
-        // 移除舊的監聽器防止重複
         container.removeEventListener('wheel', window.handleWheelScroll);
         container.addEventListener('wheel', window.handleWheelScroll, { passive: false });
     });
