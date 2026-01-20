@@ -193,7 +193,7 @@
   </style>
  </head>
  <body>
-  <div class="site-version">v3.1.7-RESTORED</div>
+  <div class="site-version">v3.1.7-FIXED</div>
   
   <div id="app"></div>
 
@@ -230,8 +230,16 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3Z3lkcWtuemR5YWhnZnVhbWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg4NzExMDksImV4cCI6MjA1NDQ0NzEwOX0.0';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // 確保 script.js 加載後執行 initApp
     const script = document.createElement('script');
     script.src = './js/script.js?v=' + new Date().getTime();
+    script.onload = () => {
+        if (typeof window.initApp === 'function') {
+            window.initApp();
+        } else {
+            console.error('initApp function not found in script.js');
+        }
+    };
     document.body.appendChild(script);
   </script>
  </body>
