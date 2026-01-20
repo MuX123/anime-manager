@@ -429,26 +429,26 @@ window.showAnimeDetail = (id) => {
                     </div>
                 </div>
 
-                <div style="width: 100%; padding: 10px 0; border-bottom: 1px solid rgba(0, 212, 255, 0.1);">
-                    <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 8px; padding: 5px 0; justify-content: center; scrollbar-width: thin;">
+                <div style="width: 100%; padding: 8px 0; border-bottom: 1px solid rgba(0, 212, 255, 0.1);">
+                    <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 8px; padding: 4px 0; justify-content: center; scrollbar-width: thin; overflow-y: hidden; height: 45px;">
                         ${genres.map(g => `<span class="tag-item" style="font-size: 14px; padding: 6px 16px; border-color: ${genreColor}; color: ${genreColor}; white-space: nowrap; background: none; box-shadow: 0 0 8px ${genreColor}44;">${g}</span>`).join('')}
                     </div>
                 </div>
                 ${extraTags.length > 0 ? `
-                <div style="width: 100%; padding: 10px 0; border-bottom: 1px solid rgba(0, 212, 255, 0.1);">
-                    <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 8px; padding: 5px 0; justify-content: center; scrollbar-width: thin;">
+                <div style="width: 100%; padding: 8px 0; border-bottom: 1px solid rgba(0, 212, 255, 0.1);">
+                    <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 8px; padding: 4px 0; justify-content: center; scrollbar-width: thin; overflow-y: hidden; height: 45px;">
                         ${extraTags.join('')}
                     </div>
                 </div>` : ''}
 
-	                <div style="width: 100%; padding: 15px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(0, 212, 255, 0.05)); border: 1.5px solid ${descColor}; border-left: 4px solid ${descColor}; border-radius: 8px; text-align: left; max-height: 180px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: ${descColor} rgba(0, 0, 0, 0.3);">
+	                <div style="width: 100%; padding: 15px; background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(0, 212, 255, 0.05)); border: 1.5px solid ${descColor}; border-left: 4px solid ${descColor}; border-radius: 8px; text-align: left; max-height: 150px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: ${descColor} rgba(0, 0, 0, 0.3); margin-top: 10px;">
 	                    <div style="font-size: 13px; color: ${descColor}; line-height: 1.9; padding-right: 10px; font-weight: 500;">
 	                        ${item.description || '[ 系統資料庫中暫無此作品之詳細介紹 ]'}
 	                    </div>
 	                </div>
 
-                <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2);">
-                    <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 12px; padding: 10px 5px; justify-content: flex-start; min-height: 50px;">
+                <div style="width: 100%; padding: 10px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(176, 38, 255, 0.05)); border-radius: 8px; border: 1.5px solid rgba(0, 212, 255, 0.2); margin-top: 5px;">
+                    <div class="horizontal-scroll-container force-scroll" style="width: 100%; max-width: 480px; gap: 12px; padding: 5px; justify-content: flex-start; min-height: 45px; overflow-y: hidden;">
                         ${(item.links || []).map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="font-size: 12px; padding: 8px 22px; white-space: nowrap; display: inline-flex; align-items: center; text-decoration: none;">🔗 ${l.name}</a>`).join('')}
                     </div>
                 </div>
