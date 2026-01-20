@@ -137,7 +137,7 @@ window.renderApp = function() {
     // 僅在初次渲染或非搜尋輸入時更新整個 app
     if (!document.getElementById('search-input')) {
         app.innerHTML = `
-            <div class="site-version">v3.7.5-ULTRA</div>
+            <div class="site-version">v3.7.6-ULTRA</div>
             <div class="app-container">
                 <header>
                     <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -188,15 +188,15 @@ window.renderCard = (item) => {
         <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')">
             <div style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
-                <div class="cyber-badge-v361" style="color: ${starColor};">
-                    <span class="badge-star-icon">${item.recommendation || '★'}</span>
-                    <span class="badge-rating-text">${item.rating || '0.0'}</span>
+                <div style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.85); color: ${starColor}; font-size: 13px; padding: 4px 12px; display: flex; align-items: center; gap: 5px; border-radius: 50px; border: 1.5px solid ${starColor}; font-family: 'Orbitron', sans-serif; font-weight: 900; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
+                    <span>${item.recommendation || '★'}</span>
+                    <span>${item.rating || '0.0'}</span>
                 </div>
                 <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: ${episodesColor}; font-size: 14px; padding: 5px 15px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; box-shadow: 0 0 10px rgba(0,0,0,0.5);">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
             </div>
             <div style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4);">
                 <h3 style="color: ${nameColor}; font-size: 18px; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
-                <div style="font-size: 14px; color: var(--neon-cyan); opacity: 0.9; font-weight: bold;">[ ${item.year || ''} ${item.season || ''} ${item.month || ''} ]</div>
+                <div style="font-size: 14px; color: var(--neon-cyan); opacity: 0.9; font-weight: bold;">[ ${item.year || ''} ${item.season || ''} ${item.month ? item.month + '月' : ''} ]</div>
             </div>
         </div>
     `;
@@ -218,7 +218,7 @@ window.showAnimeDetail = (id) => {
     const coreData = [
         item.year,
         item.season,
-        item.month,
+        item.month ? item.month + '月' : null,
         item.episodes ? item.episodes + '集' : null
     ].filter(v => v);
 
