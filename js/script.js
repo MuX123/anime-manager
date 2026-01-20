@@ -119,7 +119,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.5.1-ULTRA</div>
+        <div class="site-version">v3.5.2-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -180,7 +180,7 @@ window.showAnimeDetail = (id) => {
     
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
     const links = Array.isArray(item.links) ? item.links : [];
-    const starColor = optionsData.category_colors?.recommendation || item.star_color || '#ffcc00';
+    const starColor = optionsData.category_colors?.recommendation || '#ffcc00';
     const ratingColor = optionsData.category_colors?.rating || 'var(--neon-purple)';
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
 
@@ -239,7 +239,7 @@ window.showAnimeDetail = (id) => {
                 ` : ''}
 
                 <div class="detail-section-v35" style="margin-top: 10px;">
-                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 25px; border-radius: 8px; box-shadow: inset 0 0 20px rgba(0,0,0,0.2);">
+                    <div style="padding: 20px 25px; border-radius: 4px; border-left: 4px solid var(--neon-blue); background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent);">
                         <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
                     </div>
                 </div>
