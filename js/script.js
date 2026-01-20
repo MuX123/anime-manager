@@ -191,7 +191,7 @@ window.renderAdmin = function() {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.1.6</div>
+        <div class="site-version">v3.1.7</div>
         <div class="admin-container">
             <div class="admin-panel">
                 <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 15px; position: relative;">
@@ -326,23 +326,23 @@ window.updateFormPreview = function(type, val) {
 window.renderAdminOptions = function() {
     const scrollPos = document.querySelector('.horizontal-scroll-container')?.scrollLeft || 0;
     setTimeout(() => { if(document.querySelector('.horizontal-scroll-container')) document.querySelector('.horizontal-scroll-container').scrollLeft = scrollPos; }, 0);
-    return `
-        <div style="margin-bottom: 20px; display: flex; gap: 12px;"><input type="text" id="new-category-name" placeholder="新類別名稱..." style="flex: 1;"><button class="btn-primary" onclick="window.addNewCategory()">Add</button></div>
-        <div class="horizontal-scroll-container force-scroll" style="padding-bottom: 20px;">
-            ${Object.keys(optionsData).filter(k => k !== 'category_colors').map(key => {
-                const catColor = optionsData.category_colors?.[key] || 'var(--neon-blue)';
-                return `
-                    <div class="vertical-scroll-card" style="border-color: ${catColor};">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"><h4 style="font-size: 13px; color: ${catColor}; margin: 0; font-weight: 700;">${window.getOptionLabel(key)}</h4><input type="color" value="${catColor}" style="width: 40px; height: 40px; border-radius: 4px; cursor: pointer;" onchange="window.updateCategoryColor('${key}', this.value)"></div>
-                        <div class="scroll-list force-scroll" style="height: 280px;">
-                            ${optionsData[key].map((opt, idx) => `<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px; border-bottom: 1px solid rgba(0, 212, 255, 0.08); border-radius: 4px; transition: background 0.2s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.05)'" onmouseout="this.style.background=''"><span style="font-size: 12px; color: ${catColor}; flex: 1;">${opt}</span><button style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 11px; font-weight: bold; padding: 2px 6px;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</button></div>`).join('')}
-                            <div style="display: flex; gap: 6px; margin-top: 12px;"><input type="text" id="add-opt-${key}" placeholder="新增..." style="flex: 1; font-size: 11px;" onkeypress="if(event.key==='Enter') window.addOptionItem('${key}')"><button class="btn-primary" style="padding: 4px 8px; font-size: 10px;" onclick="window.addOptionItem('${key}')">+</button></div>
-                        </div>
-                    </div>
-                `;
-            }).join('')}
-        </div>
-    `;
+	    return `
+	        <div style="margin-bottom: 20px; display: flex; gap: 12px;"><input type="text" id="new-category-name" placeholder="新類別名稱..." style="flex: 1;"><button class="btn-primary" onclick="window.addNewCategory()">Add</button></div>
+	        <div class="horizontal-scroll-container force-scroll" id="options-scroll-container" style="padding-bottom: 20px; gap: 15px;">
+	            ${Object.keys(optionsData).filter(k => k !== 'category_colors').map(key => {
+	                const catColor = optionsData.category_colors?.[key] || 'var(--neon-blue)';
+	                return `
+	                    <div class="vertical-scroll-card" style="border-color: ${catColor}; flex: 0 0 180px; min-width: 180px; padding: 12px;">
+	                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"><h4 style="font-size: 13px; color: ${catColor}; margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${window.getOptionLabel(key)}</h4><input type="color" value="${catColor}" style="width: 24px; height: 24px; border-radius: 4px; cursor: pointer; border: none; background: none;" onchange="window.updateCategoryColor('${key}', this.value)"></div>
+	                        <div class="scroll-list force-scroll" style="height: 280px; overflow-x: hidden;">
+	                            ${optionsData[key].map((opt, idx) => `<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px; border-bottom: 1px solid rgba(0, 212, 255, 0.08); border-radius: 4px; transition: background 0.2s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.05)'" onmouseout="this.style.background=''"><span style="font-size: 12px; color: ${catColor}; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${opt}</span><button style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 11px; font-weight: bold; padding: 2px 6px;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</button></div>`).join('')}
+	                            <div style="display: flex; gap: 6px; margin-top: 12px;"><input type="text" id="add-opt-${key}" placeholder="新增..." style="flex: 1; font-size: 11px; padding: 5px !important;" onkeypress="if(event.key==='Enter') window.addOptionItem('${key}')"><button class="btn-primary" style="padding: 4px 8px; font-size: 10px;" onclick="window.addOptionItem('${key}')">+</button></div>
+	                        </div>
+	                    </div>
+	                `;
+	            }).join('')}
+	        </div>
+	    `;
 };
 
 window.renderAdminData = function() {
@@ -375,9 +375,25 @@ window.renderAdminSettings = function() {
 };
 
 // --- Logic Functions ---
-window.switchCategory = (cat) => { currentCategory = cat; currentPage = 1; if (isAdmin) window.renderAdmin(); else window.renderApp(); };
-window.switchAdminTab = (tab) => { currentAdminTab = tab; window.renderAdmin(); };
-window.toggleAdminMode = (show) => { if (show && !isAdmin) { window.showLoginModal(); return; } if (show) window.renderAdmin(); else window.renderApp(); };
+window.switchCategory = (cat) => { currentCategory = cat; currentPage = 1; if (isAdmin) window.renderAdmin(); else window.renderApp(); }	window.switchAdminTab = (tab) => {
+	    currentAdminTab = tab;
+	    window.renderAdmin();
+	    
+	    // 為選項管理的大區塊橫向滾動加入滾輪支援
+	    if (tab === 'options') {
+	        setTimeout(() => {
+	            const container = document.getElementById('options-scroll-container');
+	            if (container) {
+	                container.addEventListener('wheel', (e) => {
+	                    if (e.deltaY !== 0) {
+	                        e.preventDefault();
+	                        container.scrollLeft += e.deltaY;
+	                    }
+	                });
+	            }
+	        }, 100);
+	    }
+	};ggleAdminMode = (show) => { if (show && !isAdmin) { window.showLoginModal(); return; } if (show) window.renderAdmin(); else window.renderApp(); };
 window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollTo(0, 0); };
 window.changeAdminPage = (p) => { adminPage = p; window.renderAdmin(); };
 window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(); };

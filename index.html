@@ -45,11 +45,11 @@
         overflow-x: hidden;
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-darker); }
-    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #005f73, #4a0e78); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #008ba3; }
+    /* Scrollbar - 水藍色半透明科技感 */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 212, 255, 0.3); border-radius: 10px; border: 1px solid rgba(0, 212, 255, 0.1); }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0, 212, 255, 0.6); box-shadow: 0 0 10px rgba(0, 212, 255, 0.4); }
 
     /* Animations */
     @keyframes pulse-glow { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
@@ -197,7 +197,7 @@
   </style>
  </head>
  <body>
-  <div class="site-version">v3.1.6</div>
+  <div class="site-version">v3.1.7</div>
   <script>
     document.write('<script src="./js/script.js?v=' + new Date().getTime() + '"><\/script>');
   </script>
