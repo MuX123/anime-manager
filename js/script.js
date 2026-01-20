@@ -124,32 +124,41 @@ window.renderApp = function() {
     const filtered = window.getFilteredData();
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
-    app.innerHTML = `
-        <div class="site-version">v3.7.1-ULTRA</div>
-        <div class="app-container">
-            <header>
-                <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
-            </header>
-            <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
-                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
-                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
-                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
-            </div>
-            <div style="border: 2px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 18px; margin-bottom: 30px; font-size: 14px; color: ${siteSettings.announcement_color || '#ffffff'}; text-align: center; border-radius: 10px; background: rgba(0,212,255,0.05); font-weight: bold;">
-                <span>📢 ${siteSettings.announcement}</span>
-            </div>
-            <div style="margin-bottom: 30px;">
-                <input type="text" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px !important; border-radius: 50px !important;">
-                <div class="horizontal-scroll-container force-scroll" style="padding: 10px 0; gap: 15px;">
-                    ${window.renderSearchSelectsHTML()}
+    // 僅在初次渲染或非搜尋輸入時更新整個 app
+    if (!document.getElementById('search-input')) {
+        app.innerHTML = `
+            <div class="site-version">v3.7.1-ULTRA</div>
+            <div class="app-container">
+                <header>
+                    <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
+                </header>
+                <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
+                    <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
+                    <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
+                    <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
                 </div>
+                <div style="border: 2px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 18px; margin-bottom: 30px; font-size: 14px; color: ${siteSettings.announcement_color || '#ffffff'}; text-align: center; border-radius: 10px; background: rgba(0,212,255,0.05); font-weight: bold;">
+                    <span>📢 ${siteSettings.announcement}</span>
+                </div>
+                <div style="margin-bottom: 30px;">
+                    <input type="text" id="search-input" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px !important; border-radius: 50px !important;">
+                    <div id="search-filters" class="horizontal-scroll-container force-scroll" style="padding: 10px 0; gap: 15px;">
+                        ${window.renderSearchSelectsHTML()}
+                    </div>
+                </div>
+                <div id="anime-grid-container" class="anime-grid">
+                    ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
+                </div>
+                <div id="pagination-container" style="display: flex; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
             </div>
-            <div class="anime-grid">
-                ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
-            </div>
-            <div style="display: flex; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
-        </div>
-    `;
+        `;
+    } else {
+        // 局部更新列表與分頁，避免搜尋框失去焦點
+        const grid = document.getElementById('anime-grid-container');
+        const pagination = document.getElementById('pagination-container');
+        if (grid) grid.innerHTML = paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`;
+        if (pagination) pagination.innerHTML = window.renderPagination(filtered.length);
+    }
 };
 
 window.renderCard = (item) => {
@@ -283,7 +292,9 @@ window.renderSearchSelectsHTML = () => {
         { id: 'year', label: '年份', options: optionsData.year },
         { id: 'season', label: '季度', options: optionsData.season },
         { id: 'month', label: '月份', options: optionsData.month },
+        { id: 'episodes', label: '集數', options: optionsData.episodes },
         { id: 'rating', label: '評分', options: optionsData.rating },
+        { id: 'recommendation', label: '推薦', options: optionsData.recommendation },
         ...(optionsData.custom_lists || []).map(key => ({
             id: `custom_${key}`,
             label: window.getOptionLabel(key),
@@ -330,6 +341,8 @@ window.getFilteredData = () => {
         if (filters.rating && item.rating !== filters.rating) return false;
         if (filters.season && item.season !== filters.season) return false;
         if (filters.month && item.month !== filters.month) return false;
+        if (filters.episodes && item.episodes !== filters.episodes) return false;
+        if (filters.recommendation && item.recommendation !== filters.recommendation) return false;
         
         if (filters.extra_data) {
             const matchesExtra = Object.entries(filters.extra_data).every(([key, val]) => {
