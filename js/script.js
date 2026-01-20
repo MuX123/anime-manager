@@ -1,4 +1,4 @@
-// TECH v3.1.7-RESTORED ULTRA - ACG Manager Logic
+// TECH v3.1.7-FIXED ULTRA - ACG Manager Logic
 let animeData = [];
 let optionsData = {
     genre: ['冒險', '奇幻', '熱血', '校園', '戀愛', '喜劇', '科幻', '懸疑', '日常', '異世界'],
@@ -24,9 +24,11 @@ let filters = { search: '', genre: '', year: '', rating: '', season: '', month: 
 
 window.initApp = async function() {
     try {
+        // 偵測登入狀態
         const { data: { session } } = await supabaseClient.auth.getSession();
         isAdmin = !!session;
         
+        // 讀取網站設定
         const { data: settings } = await supabaseClient.from('site_settings').select('*');
         if (settings) {
             settings.forEach(s => {
@@ -34,14 +36,30 @@ window.initApp = async function() {
                 if (s.id === 'announcement') siteSettings.announcement = s.value;
                 if (s.id === 'title_color') siteSettings.title_color = s.value;
                 if (s.id === 'announcement_color') siteSettings.announcement_color = s.value;
-                if (s.id === 'options_data') { try { optionsData = JSON.parse(s.value); } catch(e) {} }
+                if (s.id === 'options_data') { 
+                    try { 
+                        const parsed = JSON.parse(s.value);
+                        optionsData = { ...optionsData, ...parsed };
+                    } catch(e) { console.error('Options parse error:', e); } 
+                }
             });
         }
         document.title = siteSettings.site_title;
         
         await window.loadData();
+        
+        // 確保 UI 正確渲染
         if (isAdmin) window.renderAdmin(); else window.renderApp();
         window.updateAdminMenu();
+        
+        // 監聽登入狀態變化，修復 UI 不同步問題
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            const newIsAdmin = !!session;
+            if (newIsAdmin !== isAdmin) {
+                isAdmin = newIsAdmin;
+                location.reload(); // 狀態改變時重新整理以確保 UI 完整同步
+            }
+        });
         
     } catch (err) { 
         console.error('Init error:', err);
@@ -50,16 +68,27 @@ window.initApp = async function() {
 };
 
 window.loadData = async function() {
-    const { data, error } = await supabaseClient.from('anime_list').select('*').order('created_at', { ascending: false });
-    const { data: extraData } = await supabaseClient.from('site_settings').select('value').eq('id', 'extra_assignments').single();
-    const extraMap = extraData ? JSON.parse(extraData.value) : {};
-    
-    if (!error) {
-        animeData = (data || []).map(item => ({
-            ...item,
-            ...extraMap[item.id], // 合併 extra_data 以確保顏色顯示
-            extra_data: extraMap[item.id] || {}
-        }));
+    try {
+        const { data, error } = await supabaseClient.from('anime_list').select('*').order('created_at', { ascending: false });
+        const { data: extraData } = await supabaseClient.from('site_settings').select('value').eq('id', 'extra_assignments').single();
+        
+        let extraMap = {};
+        if (extraData && extraData.value) {
+            try { extraMap = JSON.parse(extraData.value); } catch(e) { console.error('Extra data parse error:', e); }
+        }
+        
+        if (!error) {
+            animeData = (data || []).map(item => {
+                const extra = extraMap[item.id] || {};
+                return {
+                    ...item,
+                    ...extra, // 合併 extra_data 以確保顏色與標籤顯示
+                    extra_data: extra
+                };
+            });
+        }
+    } catch (err) {
+        console.error('Load data error:', err);
     }
 };
 
@@ -75,8 +104,11 @@ window.renderApp = function() {
     const app = document.getElementById('app');
     if (!app) return;
 
+    const filtered = window.getFilteredData();
+    const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
+
     app.innerHTML = `
-        <div class="site-version">v3.1.7-RESTORED</div>
+        <div class="site-version">v3.1.7-FIXED</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || 'var(--neon-cyan)'}; text-shadow: 0 0 10px ${siteSettings.title_color || 'var(--neon-blue)'};">${siteSettings.site_title}</h1>
@@ -99,45 +131,34 @@ window.renderApp = function() {
                     <select class="auto-width-select" onchange="window.handleFilter('rating', this.value)"><option value="">⭐ 評分</option>${optionsData.rating.map(r => `<option value="${r}" ${filters.rating === r ? 'selected' : ''}>${r}</option>`).join('')}</select>
                 </div>
             </div>
-            <div class="anime-grid">${window.renderAnimeGrid()}</div>
-            <div style="display: flex; justify-content: center; gap: 12px; margin-top: 35px;">${window.renderPagination()}</div>
+            <div class="anime-grid">
+                ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--text-secondary);">[ 未找到相關資料 ]</div>`}
+            </div>
+            <div style="display: flex; justify-content: center; gap: 12px; margin-top: 35px;">${window.renderPagination(filtered.length)}</div>
         </div>
     `;
 };
 
-window.renderAnimeGrid = function() {
-    const filtered = animeData.filter(item => {
-        return item.category === currentCategory && 
-               item.name.toLowerCase().includes(filters.search.toLowerCase()) &&
-               (!filters.genre || (item.genre && (Array.isArray(item.genre) ? item.genre.includes(filters.genre) : item.genre.includes(filters.genre)))) &&
-               (!filters.year || item.year === filters.year) &&
-               (!filters.season || item.season === filters.season) &&
-               (!filters.month || item.month === filters.month) &&
-               (!filters.rating || item.rating === filters.rating);
-    });
-    const start = (currentPage - 1) * itemsPerPage;
-    const pageItems = filtered.slice(start, start + itemsPerPage);
-    if (pageItems.length === 0) return `<div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--text-secondary);">[ 未找到相關資料 ]</div>`;
+window.renderCard = (item) => {
+    const starColor = item.star_color || '#ffcc00';
+    const nameColor = item.name_color || '#ffffff';
+    const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-cyan)';
+    const monthStr = item.month ? (item.month.includes('月') ? item.month : item.month + '月') : '';
+    const timeInfo = [item.year, item.season, monthStr].filter(t => t).join(' ');
     
-    return pageItems.map(item => {
-        const starColor = item.star_color || '#ffcc00';
-        const nameColor = item.name_color || '#ffffff';
-        const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-cyan)';
-        
-        return `
-            <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')">
-                <div style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
-                    <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
-                    <div style="position: absolute; top: 8px; left: 8px; color: ${starColor}; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; font-size: 11px; border: 1px solid ${starColor};">${item.recommendation || ''}</div>
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: ${episodesColor}; font-size: 11px; padding: 4px; text-align: center;">${item.episodes ? '全' + item.episodes + '集' : ''}</div>
-                </div>
-                <div style="padding: 12px; text-align: center;">
-                    <h3 style="color: ${nameColor}; font-size: 14px; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h3>
-                    <div style="font-size: 11px; color: var(--neon-cyan);">[ ${item.year || ''} ${item.season || ''} ${item.month || ''} ]</div>
-                </div>
+    return `
+        <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')">
+            <div style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
+                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
+                <div style="position: absolute; top: 8px; left: 8px; color: ${starColor}; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; font-size: 11px; border: 1px solid ${starColor};">${item.recommendation || ''}</div>
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: ${episodesColor}; font-size: 11px; padding: 4px; text-align: center;">${item.episodes ? '全' + item.episodes + '集' : ''}</div>
             </div>
-        `;
-    }).join('');
+            <div style="padding: 12px; text-align: center;">
+                <h3 style="color: ${nameColor}; font-size: 14px; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h3>
+                <div style="font-size: 11px; color: var(--neon-cyan);">[ ${timeInfo} ]</div>
+            </div>
+        </div>
+    `;
 };
 
 window.showAnimeDetail = (id) => {
@@ -168,9 +189,25 @@ window.showAnimeDetail = (id) => {
     modal.classList.add('active');
 };
 
-window.renderPagination = () => {
-    const filtered = animeData.filter(item => item.category === currentCategory && item.name.toLowerCase().includes(filters.search.toLowerCase()));
-    const pages = Math.ceil(filtered.length / itemsPerPage);
+window.getFilteredData = () => {
+    const searchLower = filters.search.toLowerCase();
+    return animeData.filter(item => {
+        if (item.category !== currentCategory) return false;
+        if (filters.search && !item.name.toLowerCase().includes(searchLower)) return false;
+        if (filters.year && item.year !== filters.year) return false;
+        if (filters.season && item.season !== filters.season) return false;
+        if (filters.month && item.month !== filters.month) return false;
+        if (filters.rating && item.rating !== filters.rating) return false;
+        if (filters.genre) {
+            const itemGenre = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
+            if (!itemGenre.includes(filters.genre)) return false;
+        }
+        return true;
+    });
+};
+
+window.renderPagination = (totalItems) => {
+    const pages = Math.ceil(totalItems / itemsPerPage);
     if (pages <= 1) return '';
     return Array.from({length: pages}, (_, i) => i + 1).map(p => `<button class="btn-primary ${currentPage === p ? 'active' : ''}" style="width: 35px; padding: 8px 0;" onclick="window.changePage(${p})">${p}</button>`).join('');
 };
