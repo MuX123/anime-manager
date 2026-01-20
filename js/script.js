@@ -91,7 +91,7 @@ window.renderApp = function() {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.1.0</div>
+        <div class="site-version">v3.1.3</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || 'var(--neon-cyan)'}; text-shadow: 0 0 10px ${siteSettings.title_color || 'var(--neon-blue)'};">${siteSettings.site_title}</h1>
@@ -183,7 +183,7 @@ window.renderAdmin = function() {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.1.0</div>
+        <div class="site-version">v3.1.3</div>
         <div class="admin-container">
             <div class="admin-panel">
                 <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 15px; position: relative;">
@@ -257,7 +257,7 @@ window.renderAdminForm = function(editId = null) {
                         <h4 style="font-size: 13px; color: var(--neon-blue); margin: 0 0 12px 0; font-weight: 700;">基本選項</h4>
                         <div class="scroll-list force-scroll">
                             <div style="margin-bottom: 10px;"><select id="form-category" class="auto-width-select"><option value="anime" ${item.category === 'anime' ? 'selected' : ''}>動畫</option><option value="manga" ${item.category === 'manga' ? 'selected' : ''}>漫畫</option><option value="movie" ${item.category === 'movie' ? 'selected' : ''}>電影</option></select></div>
-                            ${Object.keys(optionsData).filter(k => !['genre', 'category_colors'].includes(k)).map(key => `<div style="margin-bottom: 10px;"><select id="form-${key}" class="auto-width-select" style="color: ${colors[key] || 'var(--neon-blue)'}; border-color: ${colors[key] || 'rgba(0, 212, 255, 0.3)'};"><option value="">${window.getOptionLabel(key)}...</option>${optionsData[key].map(opt => `<option value="${opt}" ${item[key] === opt ? 'selected' : ''}>${opt}</option>`).join('')}</select></div>`).join('')}
+                            ${Object.keys(optionsData).filter(k => !['genre', 'category_colors'].includes(k)).map(key => `<div style="margin-bottom: 10px;"><select id="form-${key}" class="auto-width-select" style="color: ${colors[key] || 'var(--neon-blue)'}; border-color: ${colors[key] || 'rgba(0, 212, 255, 0.3)'};"><option value="">${window.getOptionLabel(key)}...</option>${optionsData[key].map(opt => `<option value="${opt}" ${((item.extra_data && item.extra_data[key]) || item[key]) === opt ? 'selected' : ''}>${opt}</option>`).join('')}</select></div>`).join('')}
                         </div>
                     </div>
                     <div class="vertical-scroll-card">
@@ -391,11 +391,11 @@ window.showAnimeDetail = (id) => {
 
 	    const genres = (Array.isArray(item.genre) ? item.genre : (item.genre ? item.genre.split('|') : [])).map(g => g.replace(/["'\[\]]/g, '').trim());
     
-    // 獲取擴充選項標籤
+    // 獲取擴充選項標籤 (優先從 extra_data 讀取)
     const extraTags = Object.keys(optionsData)
         .filter(k => !['genre', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'category_colors'].includes(k))
         .map(key => {
-            const val = item[key];
+            const val = (item.extra_data && item.extra_data[key]) || item[key];
             if (!val) return null;
             const color = optionsData.category_colors?.[key] || 'var(--neon-blue)';
             return `<span class="tag-item" style="font-size: 14px; padding: 6px 16px; border-color: ${color}; color: ${color}; white-space: nowrap; background: none; box-shadow: 0 0 8px ${color}44;">${val}</span>`;
@@ -477,10 +477,11 @@ window.saveAnime = async (editId) => {
 	            desc_color: document.getElementById('form-desc-color').value
 	        };
 	        
-	        // 動態獲取所有自定義選項
+	        // 動態獲取所有自定義選項，存入 extra_data 以避免資料庫欄位缺失錯誤
+	        payload.extra_data = {};
 	        Object.keys(optionsData).filter(k => !['genre', 'category_colors'].includes(k)).forEach(key => {
 	            const el = document.getElementById(`form-${key}`);
-	            if (el) payload[key] = el.value;
+	            if (el) payload.extra_data[key] = el.value;
 	        });
         const { error } = (editId && editId !== 'null' && editId !== 'undefined') ? await supabaseClient.from('anime_list').update(payload).eq('id', editId) : await supabaseClient.from('anime_list').insert([payload]);
         if (error) throw error;
