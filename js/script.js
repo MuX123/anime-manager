@@ -73,7 +73,15 @@ window.initApp = async function() {
 
 window.loadData = async function() {
     const { data, error } = await supabaseClient.from('anime_list').select('*').order('created_at', { ascending: false });
-    if (!error) animeData = data || [];
+    const { data: extraData } = await supabaseClient.from('site_settings').select('value').eq('id', 'extra_assignments').single();
+    const extraMap = extraData ? JSON.parse(extraData.value) : {};
+    
+    if (!error) {
+        animeData = (data || []).map(item => ({
+            ...item,
+            extra_data: extraMap[item.id] || {}
+        }));
+    }
 };
 
 window.updateAdminMenu = function() {
@@ -183,7 +191,7 @@ window.renderAdmin = function() {
     if (!app) return;
 
     app.innerHTML = `
-        <div class="site-version">v3.1.4</div>
+        <div class="site-version">v3.1.5</div>
         <div class="admin-container">
             <div class="admin-panel">
                 <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 15px; position: relative;">
@@ -477,17 +485,35 @@ window.saveAnime = async (editId) => {
 	            desc_color: document.getElementById('form-desc-color').value
 	        };
 	        
-		        // 動態獲取所有自定義選項，並嘗試直接存入 payload (如果資料庫欄位存在)
-		        // 注意：如果資料庫沒有 extra_data 欄位，我們將資料直接扁平化存入 payload，
-		        // 但會過濾掉資料庫中不存在的欄位以防止 400 錯誤。
-		        const dbColumns = ['name', 'poster_url', 'category', 'genre', 'links', 'description', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'star_color', 'name_color', 'desc_color'];
-		        Object.keys(optionsData).filter(k => !['genre', 'category_colors'].includes(k)).forEach(key => {
-		            const el = document.getElementById(`form-${key}`);
-		            if (el && dbColumns.includes(key)) payload[key] = el.value;
-		        });
-        const { error } = (editId && editId !== 'null' && editId !== 'undefined') ? await supabaseClient.from('anime_list').update(payload).eq('id', editId) : await supabaseClient.from('anime_list').insert([payload]);
-        if (error) throw error;
-        window.showToast('✓ 儲存成功');
+	        // 處理自定義標籤：由於資料庫欄位限制，將非標準欄位存入 site_settings 的 extra_assignments
+	        const dbColumns = ['name', 'poster_url', 'category', 'genre', 'links', 'description', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'star_color', 'name_color', 'desc_color'];
+	        const extraAssignments = {};
+	        Object.keys(optionsData).filter(k => !['genre', 'category_colors'].includes(k)).forEach(key => {
+	            const el = document.getElementById(`form-${key}`);
+	            if (el) {
+	                if (dbColumns.includes(key)) {
+	                    payload[key] = el.value;
+	                } else {
+	                    extraAssignments[key] = el.value;
+	                }
+	            }
+	        });
+	        const { data: savedData, error } = (editId && editId !== 'null' && editId !== 'undefined') ? 
+	            await supabaseClient.from('anime_list').update(payload).eq('id', editId).select() : 
+	            await supabaseClient.from('anime_list').insert([payload]).select();
+	        
+	        if (error) throw error;
+
+	        // 儲存額外標籤到 site_settings
+	        const targetId = editId || (savedData && savedData[0]?.id);
+	        if (targetId && Object.keys(extraAssignments).length > 0) {
+	            let { data: currentExtra } = await supabaseClient.from('site_settings').select('value').eq('id', 'extra_assignments').single();
+	            let extraMap = currentExtra ? JSON.parse(currentExtra.value) : {};
+	            extraMap[targetId] = extraAssignments;
+	            await supabaseClient.from('site_settings').upsert({ id: 'extra_assignments', value: JSON.stringify(extraMap) });
+	        }
+
+	        window.showToast('✓ 儲存成功');
         await window.loadData();
         window.switchAdminTab('manage');
     } catch (err) { window.showToast('✗ 儲存失敗：' + err.message, 'error'); }
