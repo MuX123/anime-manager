@@ -24,7 +24,24 @@ let filters = { search: '', genre: '', year: '', rating: '', season: '', month: 
 
 window.initApp = async function() {
     try {
-        // 偵測登入狀態
+        console.log('🚀 系統初始化中...');
+        
+        // 監聽登入狀態變化
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            const newIsAdmin = !!session;
+            if (newIsAdmin !== isAdmin) {
+                isAdmin = newIsAdmin;
+                window.updateAdminMenu();
+                if (isAdmin) {
+                    window.showToast('✓ 登入成功');
+                    window.renderAdmin();
+                } else {
+                    window.renderApp();
+                }
+            }
+        });
+
+        // 偵測初始登入狀態
         const { data: { session } } = await supabaseClient.auth.getSession();
         isAdmin = !!session;
         
@@ -52,15 +69,6 @@ window.initApp = async function() {
         if (isAdmin) window.renderAdmin(); else window.renderApp();
         window.updateAdminMenu();
         
-        // 監聽登入狀態變化，修復 UI 不同步問題
-        supabaseClient.auth.onAuthStateChange((event, session) => {
-            const newIsAdmin = !!session;
-            if (newIsAdmin !== isAdmin) {
-                isAdmin = newIsAdmin;
-                location.reload(); // 狀態改變時重新整理以確保 UI 完整同步
-            }
-        });
-        
     } catch (err) { 
         console.error('Init error:', err);
         window.showToast('系統初始化失敗', 'error');
@@ -69,7 +77,15 @@ window.initApp = async function() {
 
 window.loadData = async function() {
     try {
+        console.log('⏳ 正在讀取資料...');
         const { data, error } = await supabaseClient.from('anime_list').select('*').order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('Database error:', error);
+            window.showToast('資料庫讀取失敗: ' + error.message, 'error');
+            return;
+        }
+
         const { data: extraData } = await supabaseClient.from('site_settings').select('value').eq('id', 'extra_assignments').single();
         
         let extraMap = {};
@@ -77,18 +93,18 @@ window.loadData = async function() {
             try { extraMap = JSON.parse(extraData.value); } catch(e) { console.error('Extra data parse error:', e); }
         }
         
-        if (!error) {
-            animeData = (data || []).map(item => {
-                const extra = extraMap[item.id] || {};
-                return {
-                    ...item,
-                    ...extra, // 合併 extra_data 以確保顏色與標籤顯示
-                    extra_data: extra
-                };
-            });
-        }
+        animeData = (data || []).map(item => {
+            const extra = extraMap[item.id] || {};
+            return {
+                ...item,
+                ...extra, // 合併 extra_data 以確保顏色與標籤顯示
+                extra_data: extra
+            };
+        });
+        console.log('✅ 資料讀取完成，共 ' + animeData.length + ' 筆');
     } catch (err) {
         console.error('Load data error:', err);
+        window.showToast('載入資料時發生錯誤', 'error');
     }
 };
 
@@ -212,7 +228,7 @@ window.renderPagination = (totalItems) => {
     return Array.from({length: pages}, (_, i) => i + 1).map(p => `<button class="btn-primary ${currentPage === p ? 'active' : ''}" style="width: 35px; padding: 8px 0;" onclick="window.changePage(${p})">${p}</button>`).join('');
 };
 
-window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollTo({top: 0, behavior: 'smooth'}); };
+window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollTo(0,0); };
 window.switchCategory = (cat) => { currentCategory = cat; currentPage = 1; window.renderApp(); };
 window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(); };
 window.handleFilter = (key, val) => { filters[key] = val; currentPage = 1; window.renderApp(); };
@@ -223,10 +239,18 @@ window.refreshSystem = async () => { window.showToast('⏳ 同步中...'); await
 window.showLoginModal = () => { document.getElementById('loginModal').classList.add('active'); };
 window.hideLoginModal = () => { document.getElementById('loginModal').classList.remove('active'); };
 window.handleLogin = async () => {
-    const email = document.getElementById('login-email').value;
-    const pass = document.getElementById('login-password').value;
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
-    if (error) window.showToast('✗ 失敗', 'error'); else location.reload();
+    try {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-password').value;
+        if (!email || !pass) return window.showToast('✗ 請輸入帳號密碼', 'error');
+        
+        window.showToast('驗證中...', 'info');
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+        if (error) throw error;
+        window.hideLoginModal();
+    } catch (err) {
+        window.showToast('✗ 登入失敗：' + err.message, 'error');
+    }
 };
 window.handleLogout = async () => { await supabaseClient.auth.signOut(); location.reload(); };
 window.toggleAdminMode = (show) => { if (show) window.renderAdmin(); else window.renderApp(); };
@@ -250,3 +274,6 @@ window.renderAdmin = () => {
 };
 
 document.addEventListener('click', () => { const m = document.getElementById('systemMenu'); if (m) m.classList.remove('active'); });
+
+// 啟動應用
+window.initApp();
