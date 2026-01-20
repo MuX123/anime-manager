@@ -1,4 +1,4 @@
-// TECH v3.2.8 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v3.2.9 - ACG Manager Logic (System Admin AI Optimized)
 let animeData = [];
 let optionsData = {
     genre: ['冒險', '奇幻', '熱血', '校園', '戀愛', '喜劇', '科幻', '懸疑', '日常', '異世界'],
@@ -8,7 +8,6 @@ let optionsData = {
     episodes: ['12集', '24集', '劇場版', 'OVA'],
     rating: ['神', '迷', '優', '普', '劣'],
     recommendation: ['★★★★★', '★★★★', '★★★', '★★', '★'],
-    // 按類別統一顏色設定：key -> color
     category_colors: {
         genre: '#00ffff',
         year: '#ffffff',
@@ -16,11 +15,12 @@ let optionsData = {
         season: '#ffffff',
         episodes: '#00ffff',
         rating: '#b026ff',
-        recommendation: '#ffcc00', // 推薦顏色保留在數據中供前台使用，但從選項管理 UI 移除設定
+        recommendation: '#ffcc00',
         btn_bg: '#00d4ff'
-    }
+    },
+    custom_lists: []
 };
-let siteSettings = { site_title: 'ACG 收藏庫', announcement: '⚡ 系統連線中 // 歡迎光臨 ⚡', title_color: '#ffffff', announcement_color: '#ffffff' };
+let siteSettings = { site_title: 'ACG 收藏庫', announcement: '⚡ 系統連線中 // 歡迎光臨 ⚡', title_color: '#ffffff', announcement_color: '#ffffff', custom_labels: {} };
 let currentCategory = 'anime';
 let currentAdminTab = 'manage';
 let isAdmin = false;
@@ -64,11 +64,13 @@ window.initApp = async function() {
                 if (s.id === 'announcement') siteSettings.announcement = s.value;
                 if (s.id === 'title_color') siteSettings.title_color = s.value;
                 if (s.id === 'announcement_color') siteSettings.announcement_color = s.value;
+                if (s.id === 'custom_labels') { try { siteSettings.custom_labels = JSON.parse(s.value); } catch(e) {} }
                 if (s.id === 'options_data') { 
                     try { 
                         const parsed = JSON.parse(s.value);
                         optionsData = { ...optionsData, ...parsed };
                         if (!optionsData.category_colors) optionsData.category_colors = {};
+                        if (!optionsData.custom_lists) optionsData.custom_lists = [];
                         const defaultColors = { genre: '#00ffff', year: '#ffffff', month: '#ffffff', season: '#ffffff', episodes: '#00ffff', rating: '#b026ff', recommendation: '#ffcc00', btn_bg: '#00d4ff' };
                         optionsData.category_colors = { ...defaultColors, ...optionsData.category_colors };
                     } catch(e) {} 
@@ -117,7 +119,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.2.8-ULTRA</div>
+        <div class="site-version">v3.2.9-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -188,37 +190,43 @@ window.showAnimeDetail = (id) => {
     if (item.month) tags.push({ val: item.month, key: 'month' });
     if (item.rating) tags.push({ val: item.rating, key: 'rating' });
     if (item.episodes) tags.push({ val: item.episodes + '集', key: 'episodes' });
+    
+    // 加入自定義標籤
+    if (item.extra_data) {
+        Object.entries(item.extra_data).forEach(([key, val]) => {
+            if (val) tags.push({ val: val, key: key });
+        });
+    }
 
     content.innerHTML = `
-        <div style="display: grid; grid-template-columns: 320px 1fr; gap: 30px;">
-            <div style="position: relative;">
-                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; border: 2px solid var(--neon-blue); border-radius: 10px; box-shadow: 0 0 20px rgba(0,212,255,0.2);">
-                <div style="position: absolute; top: 10px; left: 10px; color: ${starColor}; background: rgba(0,0,0,0.85); padding: 4px 8px; border-radius: 4px; font-size: 12px; border: 1.5px solid ${starColor}; font-weight: bold;">${item.recommendation || ''}</div>
-                <div style="position: absolute; top: 10px; right: 10px; color: ${ratingColor}; background: rgba(0,0,0,0.85); padding: 4px 8px; border-radius: 4px; font-size: 12px; border: 1.5px solid ${ratingColor}; font-weight: bold;">${item.rating || ''}</div>
+        <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 280px;">
+                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; border-radius: 12px; border: 2px solid var(--neon-blue); box-shadow: 0 0 20px rgba(0,212,255,0.2);">
             </div>
-            <div style="display: flex; flex-direction: column; max-height: 500px;">
-                <h2 style="color: ${item.name_color || '#ffffff'}; margin-bottom: 15px; font-size: 28px; font-family: 'Orbitron', sans-serif;">${item.name}</h2>
+            <div style="flex: 2; min-width: 300px;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <h2 style="color: ${item.name_color || '#ffffff'}; font-size: 28px; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 15px ${item.name_color || '#ffffff'}88;">${item.name}</h2>
+                    <div style="color: ${starColor}; border: 1.5px solid ${starColor}; padding: 4px 10px; border-radius: 4px; font-size: 14px; font-weight: bold; box-shadow: 0 0 10px ${starColor}44;">${item.recommendation || ''}</div>
+                </div>
                 
-                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 8px; padding: 5px 0;">
-                    ${genres.map(g => {
-                        const color = optionsData.category_colors.genre || 'var(--neon-cyan)';
-                        return `<span style="border: 1.5px solid ${color}; color: ${color}; padding: 3px 10px; border-radius: 4px; font-size: 13px; font-weight: bold; white-space: nowrap; margin-right: 8px;">${g}</span>`;
-                    }).join('')}
+                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 20px; padding-bottom: 10px;">
+                    ${genres.map(g => `<span style="border: 1.5px solid ${optionsData.category_colors.genre}; color: ${optionsData.category_colors.genre}; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; white-space: nowrap;">${g}</span>`).join('')}
                 </div>
 
-                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 15px; padding: 5px 0;">
+                <div class="horizontal-scroll-container force-scroll" style="margin-bottom: 25px; padding-bottom: 10px;">
                     ${tags.map(t => {
-                        const color = optionsData.category_colors[t.key] || 'var(--text-secondary)';
-                        return `<span style="border: 1.5px solid ${color}; color: ${color}; padding: 2px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; margin-right: 8px;">${t.val}</span>`;
+                        const color = optionsData.category_colors[t.key] || 'var(--neon-cyan)';
+                        return `<span style="border: 1.5px solid ${color}; color: ${color}; padding: 4px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; white-space: nowrap;">${t.val}</span>`;
                     }).join('')}
                 </div>
 
-                <div style="border: 2px solid ${item.desc_color || '#ffffff'}; padding: 20px; border-radius: 10px; background: rgba(0,0,0,0.2); margin-bottom: 25px; flex: 1; overflow-y: auto;">
-                    <p style="color: ${item.desc_color || '#ffffff'}; font-size: 15px; line-height: 1.8; white-space: pre-wrap;">${item.description || '暫無簡介。'}</p>
+                <div style="background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.1); padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+                    <h4 style="color: var(--neon-cyan); margin-bottom: 10px; font-size: 14px; letter-spacing: 2px;">[ 作品簡介 ]</h4>
+                    <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 1.8; font-size: 15px; white-space: pre-wrap;">${item.description || '暫無簡介'}</p>
                 </div>
 
-                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    ${links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="text-decoration: none; font-size: 13px;">🔗 ${l.name}</a>`).join('')}
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    ${links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 10px 20px; font-size: 14px;">${l.name}</a>`).join('')}
                 </div>
             </div>
         </div>
@@ -227,77 +235,83 @@ window.showAnimeDetail = (id) => {
     window.initGlobalScroll();
 };
 
+window.closeAnimeDetail = () => { document.getElementById('detailModal').classList.remove('active'); };
+
+window.renderPagination = (total) => {
+    const pages = Math.ceil(total / itemsPerPage);
+    if (pages <= 1) return '';
+    let btns = '';
+    for (let i = 1; i <= pages; i++) {
+        btns += `<button class="btn-primary ${currentPage === i ? 'active' : ''}" style="width: 45px; padding: 10px 0;" onclick="window.changePage(${i})">${i}</button>`;
+    }
+    return btns;
+};
+
+window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+
+window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(); };
+window.handleFilter = (key, val) => { filters[key] = val; currentPage = 1; window.renderApp(); };
+
 window.getFilteredData = () => {
-    const searchLower = filters.search.toLowerCase();
     return animeData.filter(item => {
         if (item.category !== currentCategory) return false;
-        if (filters.search && !item.name.toLowerCase().includes(searchLower)) return false;
+        if (filters.search && !item.name.toLowerCase().includes(filters.search.toLowerCase())) return false;
+        if (filters.genre && (!item.genre || !item.genre.includes(filters.genre))) return false;
         if (filters.year && item.year !== filters.year) return false;
+        if (filters.rating && item.rating !== filters.rating) return false;
         if (filters.season && item.season !== filters.season) return false;
         if (filters.month && item.month !== filters.month) return false;
-        if (filters.rating && item.rating !== filters.rating) return false;
-        if (filters.genre) {
-            const itemGenre = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
-            if (!itemGenre.includes(filters.genre)) return false;
-        }
         return true;
     });
 };
 
-window.renderPagination = (totalItems) => {
-    const pages = Math.ceil(totalItems / itemsPerPage);
-    if (pages <= 1) return '';
-    return Array.from({length: pages}, (_, i) => i + 1).map(p => `<button class="btn-primary ${currentPage === p ? 'active' : ''}" style="width: 45px; padding: 10px 0;" onclick="window.changePage(${p})">${p}</button>`).join('');
-};
+window.switchCategory = (cat) => { currentCategory = cat; currentPage = 1; filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' }; window.renderApp(); };
 
-window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollTo(0,0); };
-window.switchCategory = (cat) => { currentCategory = cat; currentPage = 1; window.renderApp(); };
-window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(); };
-window.handleFilter = (key, val) => { filters[key] = val; currentPage = 1; window.renderApp(); };
-window.closeAnimeDetail = () => { document.getElementById('detailModal').classList.remove('active'); };
-window.showToast = (msg, type = 'success') => { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast active ' + type; setTimeout(() => t.classList.remove('active'), 3000); };
-window.toggleSystemMenu = (e) => { e.stopPropagation(); document.getElementById('systemMenu').classList.toggle('active'); };
-window.refreshSystem = async () => { window.showToast('⏳ 同步中...'); await window.loadData(); window.renderApp(); window.showToast('✓ 已同步'); };
 window.showLoginModal = () => { document.getElementById('loginModal').classList.add('active'); };
 window.hideLoginModal = () => { document.getElementById('loginModal').classList.remove('active'); };
+
 window.handleLogin = async () => {
-    try {
-        const email = document.getElementById('login-email').value;
-        const pass = document.getElementById('login-password').value;
-        if (!email || !pass) return window.showToast('✗ 請輸入帳號密碼', 'error');
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
-        if (error) throw error;
-        window.hideLoginModal();
-    } catch (err) { window.showToast('✗ 登入失敗：' + err.message, 'error'); }
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) return window.showToast('登入失敗：' + error.message, 'error');
+    window.hideLoginModal();
 };
-window.handleLogout = async () => { await supabaseClient.auth.signOut(); location.reload(); };
-window.toggleAdminMode = (show) => { if (show) window.renderAdmin(); else window.renderApp(); };
+
+window.handleLogout = async () => {
+    await supabaseClient.auth.signOut();
+    isAdmin = false;
+    window.toggleAdminMode(false);
+    window.showToast('✓ 已登出');
+};
+
+window.toggleAdminMode = (show) => {
+    if (show) {
+        window.renderAdmin();
+    } else {
+        window.renderApp();
+    }
+};
 
 window.renderAdmin = () => {
     const app = document.getElementById('app');
-    const data = animeData.filter(item => item.category === currentCategory);
-    const pagedData = data.slice((adminPage-1)*adminItemsPerPage, adminPage*adminItemsPerPage);
-
+    const filtered = animeData.filter(item => item.category === currentCategory);
+    const paged = filtered.slice((adminPage-1)*adminItemsPerPage, adminPage*adminItemsPerPage);
+    
     app.innerHTML = `
         <div class="admin-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2 style="font-family: 'Orbitron', sans-serif; color: var(--neon-cyan);">⚙ 系統管理後台</h2>
+                <button class="btn-primary" onclick="window.toggleAdminMode(false)">↩ 返回前台</button>
+            </div>
+            <div style="display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
+                <button class="btn-primary ${currentAdminTab === 'manage' ? 'active' : ''}" onclick="window.switchAdminTab('manage')">作品管理</button>
+                <button class="btn-primary ${currentAdminTab === 'add' ? 'active' : ''}" onclick="window.switchAdminTab('add')">＋ 新增作品</button>
+                <button class="btn-primary ${currentAdminTab === 'options' ? 'active' : ''}" onclick="window.switchAdminTab('options')">選項管理</button>
+                <button class="btn-primary ${currentAdminTab === 'settings' ? 'active' : ''}" onclick="window.switchAdminTab('settings')">網站設定</button>
+            </div>
             <div class="admin-panel">
-                <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 15px;">
-                    <h2 style="color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">⚙ 管理控制台</h2>
-                    <div style="display: flex; gap: 12px;">
-                        <button class="btn-primary" onclick="window.toggleAdminMode(false)">返回前台</button>
-                        <button class="btn-primary" style="border-color: var(--neon-purple); color: var(--neon-purple);" onclick="window.switchAdminTab('add')">➕ 新增作品</button>
-                    </div>
-                </header>
-                
-                <div style="display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap;">
-                    <button class="btn-primary ${currentAdminTab === 'manage' ? 'active' : ''}" onclick="window.switchAdminTab('manage')">📦 作品管理</button>
-                    <button class="btn-primary ${currentAdminTab === 'options' ? 'active' : ''}" onclick="window.switchAdminTab('options')">🏷 選項管理</button>
-                    <button class="btn-primary ${currentAdminTab === 'settings' ? 'active' : ''}" onclick="window.switchAdminTab('settings')">🔧 網站設定</button>
-                </div>
-
-                <div id="adminContent">
-                    ${window.renderAdminContent(pagedData, data.length)}
-                </div>
+                ${window.renderAdminContent(paged, filtered.length)}
             </div>
         </div>
     `;
@@ -386,20 +400,41 @@ window.renderAdminContent = (pagedData, total) => {
 window.renderAnimeForm = (item) => {
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
     const links = Array.isArray(item.links) ? item.links : [];
+    const extra_data = item.extra_data || {};
     
     return `
         <div style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px;" class="force-scroll">
             <!-- 第一列：基本資訊 -->
             <div style="display: flex; flex-direction: column; gap: 15px; min-width: 350px;">
-                <input type="text" id="form-name" placeholder="作品名稱" value="${item.name || ''}">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="form-name" placeholder="作品名稱" value="${item.name || ''}" style="flex: 2;">
+                    <select id="form-category" style="flex: 1;">
+                        <option value="anime" ${item.category === 'anime' ? 'selected' : ''}>動畫</option>
+                        <option value="manga" ${item.category === 'manga' ? 'selected' : ''}>漫畫</option>
+                        <option value="movie" ${item.category === 'movie' ? 'selected' : ''}>電影</option>
+                    </select>
+                </div>
                 <input type="text" id="form-poster" placeholder="海報 URL" value="${item.poster_url || ''}">
-                <select id="form-category">
-                    <option value="anime" ${item.category === 'anime' ? 'selected' : ''}>動畫</option>
-                    <option value="manga" ${item.category === 'manga' ? 'selected' : ''}>漫畫</option>
-                    <option value="movie" ${item.category === 'movie' ? 'selected' : ''}>電影</option>
-                </select>
-                <textarea id="form-desc" placeholder="作品簡介" style="height: 150px; width: 100%;">${item.description || ''}</textarea>
-                <div id="links-container" class="form-scroll-section" style="height: 200px; width: 100%;">
+                <textarea id="form-desc" placeholder="作品簡介" style="height: 120px; width: 100%;">${item.description || ''}</textarea>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="font-size: 12px; color: var(--neon-cyan); display: block; margin-bottom: 5px;">星標顏色</label>
+                        <div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 100%; height: 35px;"></div>
+                            <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" onchange="this.previousElementSibling.style.background = this.value">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: var(--neon-cyan); display: block; margin-bottom: 5px;">名稱顏色</label>
+                        <div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 35px;"></div>
+                            <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="links-container" class="form-scroll-section" style="height: 180px; width: 100%;">
                     <div class="form-section-header">相關連結</div>
                     <div class="form-section-content">
                         <button class="btn-primary" style="padding: 4px 12px; font-size: 12px; margin-bottom: 10px; width: 100%;" onclick="window.addLinkRow()">+ 新增連結</button>
@@ -408,11 +443,11 @@ window.renderAnimeForm = (item) => {
                         </div>
                     </div>
                 </div>
-                <button class="btn-primary" style="margin-top: 10px; border-color: var(--neon-purple); color: var(--neon-purple); font-size: 16px;" onclick="window.saveAnime()">💾 儲存作品資料</button>
+                <button class="btn-primary" style="margin-top: 5px; border-color: var(--neon-purple); color: var(--neon-purple); font-size: 16px;" onclick="window.saveAnime()">💾 儲存作品資料</button>
             </div>
 
-            <!-- 第二列：類型選擇 (自適應寬度) -->
-            <div class="form-scroll-section">
+            <!-- 第二列：類型選擇 -->
+            <div class="form-scroll-section" style="min-width: 180px;">
                 <div class="form-section-header">類型選擇</div>
                 <div class="form-section-content">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -427,39 +462,31 @@ window.renderAnimeForm = (item) => {
                 </div>
             </div>
 
-            <!-- 第三列：標籤與屬性 (自適應寬度) -->
-            <div class="form-scroll-section">
+            <!-- 第三列：標籤與屬性 -->
+            <div class="form-scroll-section" style="min-width: 220px;">
                 <div class="form-section-header">標籤與屬性</div>
                 <div class="form-section-content">
-                    <div style="display: flex; flex-direction: column; gap: 15px;">
-                        <div><label style="font-size: 12px; color: var(--neon-cyan);">年份</label><select id="form-year" style="width: 100%;"><option value="">年份</option>${optionsData.year.map(y => `<option value="${y}" ${item.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
-                        <div><label style="font-size: 12px; color: var(--neon-cyan);">季度</label><select id="form-season" style="width: 100%;"><option value="">季度</option>${optionsData.season.map(s => `<option value="${s}" ${item.season === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-                        <div><label style="font-size: 12px; color: var(--neon-cyan);">月份</label><select id="form-month" style="width: 100%;"><option value="">月份</option>${optionsData.month.map(m => `<option value="${m}" ${item.month === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
-                        <div><label style="font-size: 12px; color: var(--neon-cyan);">評分</label><select id="form-rating" style="width: 100%;"><option value="">評分</option>${optionsData.rating.map(r => `<option value="${r}" ${item.rating === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
-                        <div><label style="font-size: 12px; color: var(--neon-cyan);">推薦</label><select id="form-recommendation" style="width: 100%;"><option value="">推薦</option>${optionsData.recommendation.map(r => `<option value="${r}" ${item.recommendation === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
-                        <div><label style="font-size: 12px; color: var(--neon-cyan);">集數</label><input type="text" id="form-episodes" placeholder="集數" value="${item.episodes || ''}" style="width: 100%;"></div>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <select id="form-year" style="width: 100%;"><option value="">年份</option>${optionsData.year.map(y => `<option value="${y}" ${item.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select>
+                        <select id="form-season" style="width: 100%;"><option value="">季度</option>${optionsData.season.map(s => `<option value="${s}" ${item.season === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
+                        <select id="form-month" style="width: 100%;"><option value="">月份</option>${optionsData.month.map(m => `<option value="${m}" ${item.month === m ? 'selected' : ''}>${m}</option>`).join('')}</select>
+                        <select id="form-rating" style="width: 100%;"><option value="">評分</option>${optionsData.rating.map(r => `<option value="${r}" ${item.rating === r ? 'selected' : ''}>${r}</option>`).join('')}</select>
+                        <select id="form-recommendation" style="width: 100%;"><option value="">推薦</option>${optionsData.recommendation.map(r => `<option value="${r}" ${item.recommendation === r ? 'selected' : ''}>${r}</option>`).join('')}</select>
+                        <input type="text" id="form-episodes" placeholder="集數" value="${item.episodes || ''}" style="width: 100%;">
                         
-                        <div style="border-top: 1px solid rgba(0,212,255,0.2); padding-top: 15px; margin-top: 5px;">
-                            <div style="margin-bottom: 15px;">
-                                <label style="font-size: 12px; color: var(--neon-cyan);">星標顏色</label>
-                                <div class="color-input-wrapper" style="width: 100%;">
-                                    <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 100%; height: 35px;"></div>
-                                    <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" onchange="this.previousElementSibling.style.background = this.value">
-                                </div>
-                            </div>
-                            <div style="margin-bottom: 15px;">
-                                <label style="font-size: 12px; color: var(--neon-cyan);">名稱顏色</label>
-                                <div class="color-input-wrapper" style="width: 100%;">
-                                    <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 35px;"></div>
-                                    <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
-                                </div>
-                            </div>
-                            <div>
-                                <label style="font-size: 12px; color: var(--neon-cyan);">簡介顏色</label>
-                                <div class="color-input-wrapper" style="width: 100%;">
-                                    <div class="color-swatch" style="background: ${item.desc_color || '#ffffff'}; width: 100%; height: 35px;"></div>
-                                    <input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
-                                </div>
+                        <!-- 動態自定義列表 -->
+                        ${(optionsData.custom_lists || []).map(key => `
+                            <select class="form-custom-list" data-key="${key}" style="width: 100%;">
+                                <option value="">${window.getOptionLabel(key)}</option>
+                                ${(optionsData[key] || []).map(opt => `<option value="${opt}" ${extra_data[key] === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                            </select>
+                        `).join('')}
+
+                        <div style="border-top: 1px solid rgba(0,212,255,0.2); padding-top: 10px; margin-top: 5px;">
+                            <label style="font-size: 12px; color: var(--neon-cyan); display: block; margin-bottom: 5px;">簡介顏色</label>
+                            <div class="color-input-wrapper" style="width: 100%;">
+                                <div class="color-swatch" style="background: ${item.desc_color || '#ffffff'}; width: 100%; height: 35px;"></div>
+                                <input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
                             </div>
                         </div>
                     </div>
@@ -470,22 +497,32 @@ window.renderAnimeForm = (item) => {
 };
 
 window.renderOptionsManager = () => {
-    const keys = ['genre', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation'];
+    const defaultKeys = ['genre', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation'];
+    const customKeys = optionsData.custom_lists || [];
+    const allKeys = [...defaultKeys, ...customKeys];
+
     return `
+        <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center;">
+            <input type="text" id="new-list-name" placeholder="輸入新列表名稱 (如: 載體)" style="width: 250px;">
+            <button class="btn-primary" onclick="window.addNewCustomList()">＋ 新增自定義列表</button>
+        </div>
         <div class="options-scroll-wrapper force-scroll" id="optionsWrapper">
-            ${keys.map(key => `
+            ${allKeys.map(key => `
                 <div class="options-column">
                     <div class="options-column-header">
-                        ${key !== 'recommendation' ? `
+                        ${(key !== 'recommendation' && !customKeys.includes(key)) ? `
                             <div class="color-input-wrapper">
                                 <div class="color-swatch" style="background: ${optionsData.category_colors[key] || '#ffffff'};"></div>
                                 <input type="color" value="${optionsData.category_colors[key] || '#ffffff'}" onchange="window.updateCategoryColor('${key}', this.value); this.previousElementSibling.style.background = this.value">
                             </div>
                         ` : ''}
-                        <span style="${key !== 'recommendation' ? 'margin-left: 8px;' : ''}">${window.getOptionLabel(key)}</span>
+                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center;">
+                            <span style="${(key !== 'recommendation' && !customKeys.includes(key)) ? 'margin-left: 8px;' : ''}">${window.getOptionLabel(key)}</span>
+                            ${customKeys.includes(key) ? `<button style="background:none; border:none; color:#ff4444; cursor:pointer; font-size:12px;" onclick="window.deleteCustomList('${key}')">🗑</button>` : ''}
+                        </div>
                     </div>
                     <div class="options-list force-scroll">
-                        ${optionsData[key].map((opt, idx) => {
+                        ${(optionsData[key] || []).map((opt, idx) => {
                             const color = optionsData.category_colors[key] || '#ffffff';
                             return `
                                 <div class="option-item-row">
@@ -506,11 +543,45 @@ window.renderOptionsManager = () => {
     `;
 };
 
+window.addNewCustomList = async () => {
+    const input = document.getElementById('new-list-name');
+    const name = input.value.trim();
+    if (!name) return window.showToast('✗ 請輸入列表名稱', 'error');
+    
+    const key = 'custom_' + Date.now();
+    if (!optionsData.custom_lists) optionsData.custom_lists = [];
+    optionsData.custom_lists.push(key);
+    optionsData[key] = [];
+    
+    if (!siteSettings.custom_labels) siteSettings.custom_labels = {};
+    siteSettings.custom_labels[key] = name;
+    
+    input.value = '';
+    await window.saveOptionsToDB();
+    await supabaseClient.from('site_settings').upsert({ id: 'custom_labels', value: JSON.stringify(siteSettings.custom_labels) });
+    
+    window.renderAdmin();
+};
+
+window.deleteCustomList = async (key) => {
+    if (!confirm('確定要刪除此列表嗎？相關設定將會消失。')) return;
+    optionsData.custom_lists = optionsData.custom_lists.filter(k => k !== key);
+    delete optionsData[key];
+    await window.saveOptionsToDB();
+    window.renderAdmin();
+};
+
 window.saveAnime = async () => {
     try {
         const nameEl = document.getElementById('form-name');
         if (!nameEl || !nameEl.value) return window.showToast('✗ 請輸入名稱', 'error');
         
+        const extra_data = {};
+        document.querySelectorAll('.form-custom-list').forEach(select => {
+            const key = select.getAttribute('data-key');
+            if (select.value) extra_data[key] = select.value;
+        });
+
         const payload = {
             name: nameEl.value,
             poster_url: document.getElementById('form-poster').value,
@@ -530,7 +601,8 @@ window.saveAnime = async () => {
             episodes: document.getElementById('form-episodes').value,
             star_color: document.getElementById('form-star-color').value,
             name_color: document.getElementById('form-name-color').value,
-            desc_color: document.getElementById('form-desc-color').value
+            desc_color: document.getElementById('form-desc-color').value,
+            extra_data: extra_data
         };
         
         const { error } = editId ? 
@@ -556,18 +628,23 @@ window.updateCategoryColor = async (key, color) => {
 };
 
 window.saveOptionsToDB = async () => { await supabaseClient.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) }); window.showToast('✓ 設定已同步'); };
-window.getOptionLabel = (key) => ({ genre: '類型', year: '年份', month: '月份', season: '季度', episodes: '集數', rating: '評分', recommendation: '推薦' }[key] || key);
+window.getOptionLabel = (key) => {
+    const labels = { genre: '類型', year: '年份', month: '月份', season: '季度', episodes: '集數', rating: '評分', recommendation: '推薦' };
+    if (labels[key]) return labels[key];
+    if (siteSettings.custom_labels && siteSettings.custom_labels[key]) return siteSettings.custom_labels[key];
+    return key;
+};
 
 window.exportCSV = (cat) => {
     const filtered = animeData.filter(item => item.category === cat);
     if (filtered.length === 0) return window.showToast('✗ 無資料可匯出', 'error');
-    const headers = ['name', 'poster_url', 'year', 'month', 'season', 'genre', 'episodes', 'rating', 'recommendation', 'description', 'star_color', 'name_color', 'desc_color', 'links'];
+    const headers = ['name', 'poster_url', 'year', 'month', 'season', 'genre', 'episodes', 'rating', 'recommendation', 'description', 'star_color', 'name_color', 'desc_color', 'links', 'extra_data'];
     const csvRows = [headers.join(',')];
     for (const item of filtered) {
         const row = headers.map(h => {
             let val = item[h] || '';
             if (h === 'genre') val = Array.isArray(val) ? val.join('|') : val;
-            if (h === 'links') val = JSON.stringify(val).replace(/"/g, '""');
+            if (h === 'links' || h === 'extra_data') val = JSON.stringify(val).replace(/"/g, '""');
             return `"${val}"`;
         });
         csvRows.push(row.join(','));
@@ -599,7 +676,7 @@ window.importData = (event) => {
                 headers.forEach((h, idx) => {
                     let val = values[idx];
                     if (h === 'genre') val = val ? val.split('|') : [];
-                    if (h === 'links') { try { val = JSON.parse(val); } catch(e) { val = []; } }
+                    if (h === 'links' || h === 'extra_data') { try { val = JSON.parse(val); } catch(e) { val = (h === 'links' ? [] : {}); } }
                     item[h] = val;
                 });
                 item.category = importTarget;
