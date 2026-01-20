@@ -79,7 +79,12 @@ window.initApp = async function() {
         }
         document.title = siteSettings.site_title;
         
-        await window.loadData();
+        try {
+            await window.loadData();
+        } catch (e) {
+            console.error('Data load error:', e);
+            window.showToast('資料讀取失敗', 'error');
+        }
         window.renderApp();
         window.updateAdminMenu();
         window.initGlobalScroll();
@@ -87,6 +92,7 @@ window.initApp = async function() {
     } catch (err) { 
         console.error('Init error:', err);
         window.showToast('系統初始化失敗', 'error');
+        window.renderApp();
     }
 };
 
@@ -278,10 +284,10 @@ window.renderSearchSelectsHTML = () => {
         { id: 'season', label: '季度', options: optionsData.season },
         { id: 'month', label: '月份', options: optionsData.month },
         { id: 'rating', label: '評分', options: optionsData.rating },
-        ...Object.keys(optionsData.custom_lists || {}).map(key => ({
+        ...(optionsData.custom_lists || []).map(key => ({
             id: `custom_${key}`,
-            label: key,
-            options: optionsData.custom_lists[key]
+            label: window.getOptionLabel(key),
+            options: optionsData[key]
         }))
     ];
 
