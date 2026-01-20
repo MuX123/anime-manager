@@ -388,6 +388,10 @@ window.renderAdmin = () => {
     const filtered = animeData.filter(item => item.category === currentCategory);
     const paged = filtered.slice((adminPage-1)*adminItemsPerPage, adminPage*adminItemsPerPage);
     
+    // 記錄選項管理的滾動位置
+    const optionsWrapper = document.getElementById('optionsWrapper');
+    const scrollLeft = optionsWrapper ? optionsWrapper.scrollLeft : 0;
+
     app.innerHTML = `
         <div class="admin-container">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
@@ -405,6 +409,13 @@ window.renderAdmin = () => {
             </div>
         </div>
     `;
+    
+    // 恢復滾動位置
+    if (currentAdminTab === 'options') {
+        const newOptionsWrapper = document.getElementById('optionsWrapper');
+        if (newOptionsWrapper) newOptionsWrapper.scrollLeft = scrollLeft;
+    }
+
     window.initGlobalScroll();
 };
 
