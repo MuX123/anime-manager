@@ -119,7 +119,7 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     app.innerHTML = `
-        <div class="site-version">v3.6.2-ULTRA</div>
+        <div class="site-version">v3.7.1-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -134,8 +134,8 @@ window.renderApp = function() {
             </div>
             <div style="margin-bottom: 30px;">
                 <input type="text" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px !important; border-radius: 50px !important;">
-                <div id="searchFilters" class="search-filters-container">
-                    ${window.renderSearchFiltersHTML()}
+                <div class="horizontal-scroll-container force-scroll" style="padding: 10px 0; gap: 15px;">
+                    ${window.renderSearchSelectsHTML()}
                 </div>
             </div>
             <div class="anime-grid">
@@ -270,7 +270,7 @@ window.renderPagination = (total) => {
 window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(); };
 
-window.renderSearchFiltersHTML = () => {
+window.renderSearchSelectsHTML = () => {
     let html = '';
     const filterCategories = [
         { id: 'genre', label: '類型', options: optionsData.genre },
@@ -288,23 +288,15 @@ window.renderSearchFiltersHTML = () => {
     filterCategories.forEach(cat => {
         if (!cat.options || cat.options.length === 0) return;
         const catId = cat.id.replace('custom_', '');
-        const catColor = optionsData.category_colors?.[catId] || 'var(--neon-blue)';
         const activeVal = cat.id.startsWith('custom_') ? (filters.extra_data?.[catId] || '') : (filters[cat.id] || '');
         
         html += `
-            <div class="filter-row">
-                <div class="filter-label">${cat.label}</div>
-                <div class="filter-group force-scroll">
-                    <div class="filter-item ${!activeVal ? 'active' : ''}" 
-                         style="color: var(--neon-blue);"
-                         onclick="window.handleFilter('${cat.id}', '')">全部</div>
-                    ${cat.options.map(opt => `
-                        <div class="filter-item ${activeVal === opt ? 'active' : ''}" 
-                             style="color: ${catColor};"
-                             onclick="window.handleFilter('${cat.id}', '${opt}')">${opt}</div>
-                    `).join('')}
-                </div>
-            </div>
+            <select class="auto-width-select" onchange="window.handleFilter('${cat.id}', this.value)" style="border-color: rgba(0, 212, 255, 0.3);">
+                <option value="">${cat.label}</option>
+                ${cat.options.map(opt => `
+                    <option value="${opt}" ${activeVal === opt ? 'selected' : ''}>${opt}</option>
+                `).join('')}
+            </select>
         `;
     });
     return html;
