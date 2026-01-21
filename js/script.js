@@ -172,7 +172,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.2.2-ULTRA</div>
+	            <div class="site-version">v5.2.3-ULTRA</div>
 		        <div class="app-container">
 			            <div style="position: fixed; top: 20px; right: 20px; display: flex; align-items: center; gap: 20px; z-index: 2000;">
                 <!-- 佈局選擇器 -->
@@ -308,23 +308,27 @@ window.renderCard = (item) => {
                     </div>
                     
                     <!-- 第二行：年 季 月 + 分隔線 + 自訂類型 -->
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="display: flex; gap: 6px;">
-                            ${item.year ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
-                            ${item.season ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
-                            ${item.month ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
+                    ${(item.year || item.season || item.month || Object.keys(item.extra_data || {}).length > 0) ? `
+                        <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
+                            ${(item.year || item.season || item.month) ? `
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    ${item.year ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 3px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
+                                    ${item.season ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 3px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
+                                    ${item.month ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 3px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
+                                </div>
+                            ` : ''}
+                            ${Object.keys(item.extra_data || {}).length > 0 ? `
+                                ${(item.year || item.season || item.month) ? `<div style="width: 2px; height: 24px; background: rgba(0,212,255,0.4); border-radius: 2px;"></div>` : ''}
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                                    ${Object.entries(item.extra_data).map(([key, val]) => {
+                                        if (!val) return '';
+                                        const color = optionsData.category_colors?.[key] || 'var(--neon-cyan)';
+                                        return `<span style="font-size: 12px; color: ${color}; border: 1px solid ${color}66; padding: 3px 10px; border-radius: 4px; background: ${color}11; font-weight: 500;">${val}</span>`;
+                                    }).join('')}
+                                </div>
+                            ` : ''}
                         </div>
-                        ${Object.keys(item.extra_data || {}).length > 0 ? `
-                            <div style="width: 1px; height: 20px; background: rgba(0,212,255,0.3);"></div>
-                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                                ${Object.entries(item.extra_data).map(([key, val]) => {
-                                    if (!val) return '';
-                                    const color = optionsData.category_colors?.[key] || 'var(--neon-cyan)';
-                                    return `<span style="font-size: 11px; color: ${color}; border: 1px solid ${color}66; padding: 2px 8px; border-radius: 4px; background: ${color}11;">${val}</span>`;
-                                }).join('')}
-                            </div>
-                        ` : ''}
-                    </div>
+                    ` : ''}
                 ` : `
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
                         <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '12px' : '14px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
