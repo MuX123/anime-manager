@@ -137,7 +137,7 @@ window.renderApp = function() {
     // 僅在初次渲染或非搜尋輸入時更新整個 app
     if (!document.getElementById('search-input')) {
         app.innerHTML = `
-            <div class="site-version">v3.7.9-ULTRA</div>
+            <div class="site-version">v3.8.0-ULTRA</div>
             <div class="app-container">
                 <header>
                     <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -189,9 +189,9 @@ window.renderCard = (item) => {
             <div style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
                 <div style="position: absolute; inset: 0; box-shadow: inset 0 40px 30px -10px rgba(0,0,0,0.9), inset 0 -40px 30px -10px rgba(0,0,0,0.6), inset 40px 0 30px -10px rgba(0,0,0,0.4), inset -40px 0 30px -10px rgba(0,0,0,0.4); pointer-events: none; z-index: 5;"></div>
-                <div style="position: absolute; top: 0; left: 0; right: 0; height: 50px; background: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); color: ${starColor}; font-size: 14px; padding: 8px 15px; display: flex; align-items: center; gap: 8px; font-family: 'Orbitron', sans-serif; font-weight: 900; text-shadow: 1px 1px 4px rgba(0,0,0,1); z-index: 10;">
-                    <span>${item.recommendation || '★'}</span>
-                    <span>${item.rating || '0.0'}</span>
+                <div class="rating-badge-v38" style="position: absolute; top: 0; left: 0; right: 0; height: 50px; background: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); color: ${starColor}; font-size: 14px; padding: 8px 15px; display: flex; align-items: center; gap: 8px; font-family: 'Orbitron', sans-serif; font-weight: 900; z-index: 10; transition: all 0.3s ease;">
+                    <span style="filter: drop-shadow(0 0 5px ${starColor});">${item.recommendation || '★'}</span>
+                    <span style="filter: drop-shadow(0 0 3px ${starColor}); letter-spacing: 1px;">${item.rating || '0.0'}</span>
                 </div>
                 <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: ${episodesColor}; font-size: 14px; padding: 5px 15px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; box-shadow: 0 0 10px rgba(0,0,0,0.5);">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
             </div>
@@ -241,9 +241,9 @@ window.showAnimeDetail = (id) => {
             <div class="detail-poster-aside">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
                 <div style="position: absolute; inset: 0; box-shadow: inset 0 80px 60px -20px rgba(0,0,0,0.95), inset 0 -80px 60px -20px rgba(0,0,0,0.7), inset 80px 0 60px -20px rgba(0,0,0,0.5), inset -80px 0 60px -20px rgba(0,0,0,0.5); pointer-events: none; z-index: 5;"></div>
-                <div style="position: absolute; top: 0; left: 0; right: 0; height: 100px; background: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); color: ${item.star_color || '#ffcc00'}; font-size: 24px; padding: 15px 30px; display: flex; align-items: center; gap: 15px; font-family: 'Orbitron', sans-serif; font-weight: 900; text-shadow: 2px 2px 8px rgba(0,0,0,1); z-index: 10;">
-                    <span>${item.recommendation || '★'}</span>
-                    <span>${item.rating || '0.0'}</span>
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 100px; background: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); color: ${item.star_color || '#ffcc00'}; font-size: 28px; padding: 15px 30px; display: flex; align-items: center; gap: 15px; font-family: 'Orbitron', sans-serif; font-weight: 900; z-index: 10;">
+                    <span style="filter: drop-shadow(0 0 10px ${item.star_color || '#ffcc00'});">${item.recommendation || '★'}</span>
+                    <span style="filter: drop-shadow(0 0 8px ${item.star_color || '#ffcc00'}); letter-spacing: 2px;">${item.rating || '0.0'}</span>
                 </div>
             </div>
 
