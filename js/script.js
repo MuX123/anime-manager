@@ -1,4 +1,4 @@
-// TECH v3.2.9 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v3.3.0 - ACG Manager Logic (System Admin AI Optimized)
 let animeData = [];
 let optionsData = {
     genre: ['冒險', '奇幻', '熱血', '校園', '戀愛', '喜劇', '科幻', '懸疑', '日常', '異世界'],
@@ -137,7 +137,7 @@ window.renderApp = function() {
     // 僅在初次渲染或非搜尋輸入時更新整個 app
     if (!document.getElementById('search-input')) {
         app.innerHTML = `
-            <div class="site-version">v3.9.4-ULTRA</div>
+            <div class="site-version">v3.9.5-ULTRA</div>
             <div class="app-container">
                 <header>
                     <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
