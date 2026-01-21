@@ -172,7 +172,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v2008</div>
+	            <div class="site-version">v5.1.0-ULTRA</div>
 	        <div class="app-container">
 	            <div style="position: relative; width: 100%;">
 	                <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="position: absolute; top: 0; right: 0; z-index: 500; width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 212, 255, 0.1); border: 2px solid var(--neon-blue); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">⚙</button>
