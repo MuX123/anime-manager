@@ -405,38 +405,30 @@ window.showAnimeDetail = (id) => {
 	                    </div>
 	                </div>
 
-	                <!-- 類型標籤區塊 -->
-	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-	                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
-	                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-	                            ${genres.map(g => {
-	                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-	                                return `<span style="${getTagStyle(genreColor)}">${cleanG}</span>`;
-	                            }).join('')}
-	                        </div>
-	                    </div>
-	                </div>
-
-	                <!-- 擴充標籤區塊 -->
-	                ${extraTags.length > 0 ? `
-	                    <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-	                        <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
-	                            <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-	                                ${extraTags.map(t => {
-	                                    const color = t.color || 'var(--neon-cyan)';
-	                                    return `<span style="${getTagStyle(color)}">${t.val}</span>`;
-	                                }).join('')}
-	                            </div>
-	                        </div>
-	                    </div>
-	                ` : ''}
-
-	                <!-- 劇情介紹區塊 -->
-	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-	                    <div style="padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
-	                        <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
-	                    </div>
-	                </div>
+		                <!-- 標籤整合區塊 (類型 + 自訂選項) -->
+		                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+		                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
+		                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+		                            ${genres.map(g => {
+		                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
+		                                return `<span style="${getTagStyle(genreColor)}">${cleanG}</span>`;
+		                            }).join('')}
+		                            ${extraTags.map(t => {
+		                                const color = t.color || 'var(--neon-cyan)';
+		                                return `<span style="${getTagStyle(color)}">${t.val}</span>`;
+		                            }).join('')}
+		                        </div>
+		                    </div>
+		                </div>
+	
+		                <!-- 劇情介紹區塊 (壓縮並增加滾動條) -->
+		                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative; flex: 1; min-height: 0;">
+		                    <div style="padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column;">
+		                        <div class="force-scroll" style="overflow-y: auto; max-height: 200px; padding-right: 10px;">
+		                            <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
+		                        </div>
+		                    </div>
+		                </div>
 
 	                <!-- 連結區塊 -->
 	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
