@@ -623,72 +623,89 @@ input:focus, select:focus, textarea:focus {
     /* 星星顯示切換 */
     .anime-card .desktop-star { display: none !important; }
     .anime-card .mobile-star { display: inline !important; }
+    .mobile-identity-v481 { display: flex !important; }
 
-    /* 詳情頁深度優化 (v4.8.0 修復切除問題) */
+    /* 詳情頁深度優化 (v4.8.1 徹底修復擠壓與切除) */
     .modal-content {
-        width: 96% !important;
-        max-height: 92vh !important;
-        padding: 12px !important;
-        margin: 10px auto !important;
+        width: 98% !important;
+        max-height: 95vh !important;
+        padding: 10px !important;
+        margin: 5px auto !important;
+        overflow-x: hidden !important;
     }
     .detail-container-v35 {
         display: flex !important;
         flex-direction: column !important;
+        width: 100% !important;
     }
     .detail-poster-aside {
-        height: 200px !important;
+        height: 180px !important;
         width: 100% !important;
-        border-radius: 12px !important;
+        border-radius: 10px !important;
+        object-fit: cover !important;
     }
     .detail-content-main {
-        padding: 12px 5px !important;
-        gap: 10px !important;
-        overflow-x: hidden !important;
+        padding: 10px 2px !important;
+        gap: 12px !important;
+        width: 100% !important;
     }
     .detail-title-v35 {
-        font-size: 22px !important;
+        font-size: 20px !important;
         text-align: center !important;
         white-space: normal !important;
         word-break: break-word !important;
         line-height: 1.3 !important;
+        margin-bottom: 5px !important;
     }
     .core-data-row {
-        padding: 6px 10px !important;
-        font-size: 12px !important;
+        padding: 5px !important;
+        font-size: 11px !important;
         overflow-x: auto !important;
         white-space: nowrap !important;
         scrollbar-width: none;
         display: flex !important;
-        gap: 8px !important;
+        gap: 6px !important;
+        justify-content: center !important;
     }
     .core-data-row::-webkit-scrollbar { display: none; }
 
-    .scroll-row-v35 {
-        padding-bottom: 8px !important;
-        -webkit-overflow-scrolling: touch;
-        display: flex !important;
-        gap: 8px !important;
-        overflow-x: auto !important;
-        width: 100% !important;
-        scrollbar-width: none;
-    }
-    .scroll-row-v35::-webkit-scrollbar { display: none; }
-    
-    /* 確保所有區塊都能橫向滾動且不被切除 */
+    /* 類型標籤與按鈕區域修復 */
     .detail-section-v35 {
         width: 100% !important;
-        overflow: hidden !important;
-        margin-bottom: 5px !important;
+        margin-bottom: 8px !important;
+    }
+    .detail-section-v35 h4 {
+        font-size: 14px !important;
+        margin-bottom: 6px !important;
+        text-align: center !important;
+    }
+    .scroll-row-v35 {
+        display: flex !important;
+        flex-wrap: wrap !important; /* 改為自動換行防止擠壓 */
+        justify-content: center !important;
+        gap: 6px !important;
+        width: 100% !important;
+        padding: 0 !important;
     }
     
     .detail-section-v35 .scroll-row-v35 a, 
     .detail-section-v35 .scroll-row-v35 span {
         flex-shrink: 0 !important;
         white-space: nowrap !important;
+        max-width: 100% !important;
     }
 
     .detail-section-v35 a {
-        padding: 8px 15px !important;
-        font-size: 13px !important;
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+        border-radius: 6px !important;
+        background: rgba(0,212,255,0.1) !important;
+        border: 1px solid rgba(0,212,255,0.3) !important;
+    }
+    .detail-section-v35 span {
+        padding: 4px 10px !important;
+        font-size: 11px !important;
+        background: rgba(255,255,255,0.05) !important;
+        border-radius: 4px !important;
     }
 }

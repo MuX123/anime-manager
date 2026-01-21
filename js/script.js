@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.8.0-ULTRA</div>
+        <div class="site-version">v4.8.1-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -230,6 +230,10 @@ window.renderCard = (item) => {
             <div class="card-content-v38" data-info="${infoText}" style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4);">
                 <h3 style="color: ${nameColor}; font-size: 18px; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
                 <div class="card-tags-v38" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="mobile-identity-v481" style="display:none; font-size: 12px; font-weight: bold; gap: 5px; align-items: center;">
+                        <span style="color: ${starColor};">${starText}</span>
+                        <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 0 4px; border-radius: 3px;">${item.rating || '普'}</span>
+                    </span>
                     ${item.year ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
                     ${item.season ? `<span style="font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
                     ${item.month ? `<span style="font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
