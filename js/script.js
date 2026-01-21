@@ -275,7 +275,7 @@ window.renderCard = (item) => {
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
     const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
     const cyanBase = 'rgba(0, 212, 255, 0.1)'; // 水藍色底色
-    const getTagStyle = (color) => `font-size: 11px; color: ${color}; border: 1px solid ${color}66; padding: 2px 8px; border-radius: 50px; background: ${color}11; font-weight: bold; white-space: nowrap;`;
+    const getTagStyle = (color) => `font-size: 11px !important; color: ${color} !important; border: 1px solid ${color}66 !important; padding: 2px 8px !important; border-radius: 50px !important; background: ${color}11 !important; font-weight: bold !important; white-space: nowrap !important; display: inline-block !important;`;
     
     const isMobileLayout = gridColumns === 'mobile' || window.innerWidth <= 768;
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
@@ -311,7 +311,8 @@ window.renderCard = (item) => {
                     <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
                         ${Object.entries(item.extra_data || {}).length > 0 ? Object.entries(item.extra_data).map(([key, val]) => {
                             if (!val) return '';
-                            const color = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : 'var(--neon-cyan)';
+                            const color = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : '#ffffff';
+                            console.log(`[DEBUG] Tag: ${val}, Key: ${key}, Color: ${color}`);
                             return `<span style="${getTagStyle(color)}">${val}</span>`;
                         }).join('') : '<span style="color: rgba(255,255,255,0.2); font-size: 11px; font-style: italic;">無自訂標籤</span>'}
                     </div>
