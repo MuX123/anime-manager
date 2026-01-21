@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.7.4-ULTRA</div>
+        <div class="site-version">v4.7.5-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -923,7 +923,11 @@ window.exportCSV = (cat) => {
     window.showToast('✓ 匯出成功 (中文標題)');
 };
 
-window.triggerImport = (cat) => { importTarget = cat; document.getElementById('importFile').click(); };
+window.triggerImport = (cat) => { 
+    console.log('🎯 設定匯入目標板塊:', cat);
+    importTarget = cat; 
+    document.getElementById('importFile').click(); 
+};
 window.importData = (event) => {
     const file = event.target.files[0];
     if (!file) return;
