@@ -435,7 +435,7 @@ input:focus, select:focus, textarea:focus {
     border-color: transparent;
 }
 
-/* 手機版按鈕排版優化 v4.7.6 */
+/* 手機版深度優化 v4.8.3-ULTRA */
 @media (max-width: 768px) {
     .category-buttons-container {
         display: flex !important;
@@ -445,17 +445,46 @@ input:focus, select:focus, textarea:focus {
         padding-bottom: 10px !important;
         justify-content: flex-start !important;
         -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; /* Firefox */
+        scrollbar-width: none;
     }
-    .category-buttons-container::-webkit-scrollbar {
-        display: none; /* Chrome, Safari, Opera */
-    }
+    .category-buttons-container::-webkit-scrollbar { display: none; }
     .category-buttons-container .btn-primary {
         padding: 8px 16px !important;
         font-size: 13px !important;
         white-space: nowrap !important;
         flex-shrink: 0 !important;
-        min-width: auto !important;
+    }
+
+    /* 作品卡片極簡化：隱藏海報，文字居中 */
+    .card-poster-v38 { display: none !important; }
+    .anime-card {
+        border-left: 4px solid var(--rating-color) !important;
+        background: rgba(15, 20, 35, 0.8) !important;
+        margin-bottom: 5px !important;
+    }
+    .card-content-v38 {
+        padding: 12px 8px !important;
+        text-align: center !important;
+    }
+    .card-content-v38 h3 {
+        font-size: 16px !important;
+        margin-bottom: 6px !important;
+        white-space: normal !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+    }
+    .card-tags-v38 {
+        justify-content: center !important;
+        gap: 5px !important;
+    }
+    .episodes-text-v479 {
+        display: block !important;
+        font-size: 11px !important;
+        color: var(--episodes-color) !important;
+        font-weight: bold !important;
+        margin-top: 4px !important;
     }
 
     /* 星星顯示切換 */
@@ -463,7 +492,7 @@ input:focus, select:focus, textarea:focus {
     .anime-card .mobile-star { display: inline !important; }
     .mobile-identity-v481 { display: flex !important; }
 
-    /* 詳情頁深度優化 (v4.8.2 徹底修復擠壓與切除) */
+    /* 詳情頁彈窗優化 */
     .modal-content {
         width: 98% !important;
         max-height: 95vh !important;
@@ -507,7 +536,7 @@ input:focus, select:focus, textarea:focus {
     }
     .core-data-row::-webkit-scrollbar { display: none; }
 
-    /* 類型標籤與按鈕區域修復 */
+    /* 類型標籤與按鈕區域修復：橫向滾動 */
     .detail-section-v35 {
         width: 100% !important;
         margin-bottom: 8px !important;
@@ -519,36 +548,29 @@ input:focus, select:focus, textarea:focus {
     }
     .scroll-row-v35 {
         display: flex !important;
-        flex-wrap: nowrap !important; /* 強制不換行，恢復滾動 */
-        justify-content: flex-start !important; /* 從頭部開始排列 */
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
         gap: 8px !important;
         width: 100% !important;
-        padding: 5px 2px 10px 2px !important; /* 增加底部空間給滾動條 */
-        overflow-x: auto !important; /* 啟用橫向滾動 */
-        -webkit-overflow-scrolling: touch; /* iOS 流暢滾動 */
-        scrollbar-width: thin; /* Firefox 滾動條樣式 */
-        scrollbar-color: rgba(0, 212, 255, 0.3) transparent; /* Firefox 滾動條顏色 */
+        padding: 5px 2px 10px 2px !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 212, 255, 0.3) transparent;
     }
-
-    /* Webkit 內核瀏覽器滾動條樣式 */
     .scroll-row-v35::-webkit-scrollbar {
         display: block !important;
         height: 4px !important;
-    }
-    .scroll-row-v35::-webkit-scrollbar-track {
-        background: transparent !important;
     }
     .scroll-row-v35::-webkit-scrollbar-thumb {
         background: rgba(0, 212, 255, 0.3) !important;
         border-radius: 10px !important;
     }
-    
     .detail-section-v35 .scroll-row-v35 a, 
     .detail-section-v35 .scroll-row-v35 span {
-        flex-shrink: 0 !important; /* 防止項目被壓縮 */
-        white-space: nowrap !important; /* 強制不換行 */
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
     }
-
     .detail-section-v35 a {
         padding: 6px 12px !important;
         font-size: 12px !important;
