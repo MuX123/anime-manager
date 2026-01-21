@@ -339,8 +339,7 @@ window.renderCard = (item) => {
                             <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: thin;">
                                 ${Object.entries(item.extra_data).map(([key, val]) => {
                                     if (!val) return '';
-                                    const color = optionsData.category_colors?.[key] || 'var(--neon-cyan)';
-                                    return `<span style="font-size: 12px; color: ${color}; border: 1px solid ${color}66; padding: 3px 10px; border-radius: 50px; background: ${color}11; font-weight: bold; white-space: nowrap;">${val}</span>`;
+                                    return `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 3px 10px; border-radius: 50px; background: ${yearColor}11; font-weight: bold; white-space: nowrap;">${val}</span>`;
                                 }).join('')}
                             </div>
                         ` : ''}
@@ -436,10 +435,9 @@ window.showAnimeDetail = (id) => {
 			                    <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
 			                        <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
 			                            <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; flex-wrap: wrap;">
-		                                ${extraTags.map(t => {
-		                                    const color = optionsData.category_colors[t.key] || 'var(--neon-cyan)';
-		                                    return `<span style="background: ${color}11; border: 1px solid ${color}66; color: ${color}; padding: 5px 14px; border-radius: 4px; font-size: 13px; font-weight: 500; white-space: nowrap;">${t.val}</span>`;
-		                                }).join('')}
+			                                ${extraTags.map(t => {
+			                                    return `<span style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 4px; font-size: 13px; font-weight: 500; white-space: nowrap;">${t.val}</span>`;
+			                                }).join('')}
 		                            </div>
 		                        </div>
 		                    </div>
