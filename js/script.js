@@ -150,11 +150,15 @@ window.renderApp = function() {
 
     const isNotice = currentCategory === 'notice';
     
-    // 同步更新 index.html 中的 Discord 區塊顯示狀態
-    const discordSection = document.getElementById('discord-section');
-    if (discordSection) {
-        discordSection.style.display = isNotice ? 'block' : 'none';
-        if (isNotice) window.renderAnnouncements();
+    // 處理公告板塊的特殊顯示
+    let noticeHTML = '';
+    if (isNotice) {
+        noticeHTML = `
+            <div id="discord-section" class="admin-panel-v492" style="margin-top: 20px; min-height: 400px;">
+                <div style="text-align: center; padding: 50px; color: var(--neon-cyan);">⚡ 正在載入永久公告...</div>
+            </div>
+        `;
+        setTimeout(() => window.renderAnnouncements(), 300);
     }
 
     const filtered = window.getFilteredData();
@@ -191,10 +195,12 @@ app.innerHTML = `
                     </div>
                 </div>
             </div>
-            <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}" style="${gridColumns === 'mobile' ? '' : `grid-template-columns: repeat(${gridColumns}, 1fr);`} display: ${isNotice ? 'none' : 'grid'};">
-                ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
-            </div>
-            <div id="pagination-container" style="display: ${isNotice ? 'none' : 'flex'}; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
+            ${isNotice ? noticeHTML : `
+                <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}" style="${gridColumns === 'mobile' ? '' : `grid-template-columns: repeat(${gridColumns}, 1fr);`}">
+                    ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
+                </div>
+                <div id="pagination-container" style="display: flex; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
+            `}
         </div>
     `;
     

@@ -443,6 +443,20 @@ input:focus, select:focus, textarea:focus {
     /* 隱藏手機版佈局切換與系統菜單 */
     .floating-menu-btn, .menu-dropdown-v2 { display: none !important; }
     .grid-layout-selector { display: none !important; }
+
+    /* 強制資料列表佈局為單欄 */
+    .anime-grid.force-mobile-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+
+    .anime-grid.force-mobile-layout .anime-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+    }
     /* 手機版預設佈局 */
     .anime-grid {
         grid-template-columns: 1fr !important;
