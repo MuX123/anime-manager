@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.7.2-ULTRA</div>
+        <div class="site-version">v4.7.3-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -948,9 +948,11 @@ window.importData = (event) => {
             const rawHeaders = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
             const headers = rawHeaders.map(h => labelMap[h] || h);
             
+            // 定義資料庫中實際存在的標準欄位
+            const dbStandardFields = ['name', 'poster_url', 'description', 'star_color', 'name_color', 'desc_color', 'links', 'extra_data', 'year', 'month', 'season', 'genre', 'episodes', 'rating', 'recommendation', 'category'];
+
             const items = [];
             for (let i = 1; i < lines.length; i++) {
-                // 使用正則表達式正確解析 CSV 行，處理引號內的逗號
                 const values = [];
                 let current = '';
                 let inQuotes = false;
@@ -965,24 +967,30 @@ window.importData = (event) => {
                 }
                 values.push(current);
                 
-                const item = {};
+                const item = { extra_data: {} };
                 headers.forEach((h, idx) => {
                     let val = (values[idx] || '').trim().replace(/^"|"$/g, '').replace(/""/g, '"');
                     
-                    // 根據欄位名稱處理資料型別
-                    if (h === 'genre' || h === 'links' || h === 'extra_data') {
+                    if (dbStandardFields.includes(h)) {
+                        // 處理標準欄位
                         if (h === 'genre') {
                             item[h] = val ? val.split('|') : [];
+                        } else if (h === 'links' || h === 'extra_data') {
+                            try { 
+                                const parsed = JSON.parse(val);
+                                if (h === 'extra_data') Object.assign(item.extra_data, parsed);
+                                else item[h] = parsed;
+                            } catch(e) { if (h === 'links') item[h] = []; }
                         } else {
-                            try { item[h] = JSON.parse(val); } catch(e) { item[h] = (h === 'links' ? [] : {}); }
+                            item[h] = val;
                         }
-                    } else {
-                        item[h] = val;
+                    } else if (h) {
+                        // 處理自定義欄位 (如 custom_123)，歸類到 extra_data
+                        item.extra_data[h] = val;
                     }
                 });
                 
                 item.category = importTarget;
-                // 移除可能存在的 id 欄位，讓資料庫自動生成
                 delete item.id;
                 items.push(item);
             }
