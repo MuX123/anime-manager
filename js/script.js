@@ -173,15 +173,15 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.4.4-ULTRA</div>
+	            <div class="site-version">v5.4.5-ULTRA</div>
 		        <div class="app-container">
             <div id="topControlBar" style="position: fixed; top: 50%; right: 20px; transform: translateY(-50%); display: ${isAdminMode ? 'none' : 'flex'}; flex-direction: column; align-items: flex-end; z-index: 2000;">
                 <!-- 系統菜單 -->
-                <div style="display: flex; flex-direction: column; background: rgba(5, 15, 25, 0.85); padding: 12px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); min-width: 180px; gap: 12px;">
+                <div style="display: flex; flex-direction: column; background: rgba(5, 15, 25, 0.9); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.3); backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.4); min-width: 180px; gap: 12px;">
                     <!-- 佈局選擇器 -->
                     <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <label style="font-size: 11px; color: rgba(0,212,255,0.8); font-weight: 600; font-family: 'Noto Sans TC', sans-serif;">佈局</label>
-                        <select onchange="window.changeGridLayout(this.value)" style="background: rgba(0,212,255,0.1) !important; border: 1px solid rgba(0,212,255,0.3) !important; padding: 8px 10px !important; font-size: 12px !important; cursor: pointer; color: var(--neon-cyan) !important; font-weight: 500; outline: none !important; border-radius: 4px; font-family: 'Noto Sans TC', sans-serif;">
+                        <label style="font-size: 12px; color: #00d4ff; font-weight: 600; font-family: 'Noto Sans TC', sans-serif; text-align: center; border-bottom: 1px solid rgba(0,212,255,0.2); padding-bottom: 8px; margin-bottom: 4px;">佈局</label>
+                        <select onchange="window.changeGridLayout(this.value)" style="width: 100%; background: rgba(0,212,255,0.1) !important; border: 1px solid rgba(0,212,255,0.3) !important; padding: 8px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 5px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">
                             ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
                             <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
                         </select>
