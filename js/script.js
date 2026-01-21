@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.9.9-ULTRA</div>
+        <div class="site-version">v5.0.0-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -226,7 +226,7 @@ window.renderCard = (item) => {
     const isMobileLayout = gridColumns === 'mobile' || window.innerWidth <= 768;
 
     return `
-        <div class="anime-card ${isMobileLayout ? 'mobile-layout-card' : ''}" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor}; ${isMobileLayout ? 'width: 100% !important; max-width: 100% !important; display: block !important; margin: 0 0 20px 0 !important;' : ''}">
+        <div class="anime-card ${isMobileLayout ? 'mobile-layout-card' : ''}" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor}; ${isMobileLayout ? 'width: 100% !important; max-width: 100% !important; display: block !important; margin: 0 0 20px 0 !important; flex: 0 0 100% !important;' : ''}">
             <!-- 海報區塊：手機佈局模式下隱藏 -->
             <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative; ${isMobileLayout ? 'display: none !important;' : ''}">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -305,8 +305,8 @@ window.showAnimeDetail = (id) => {
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
                 <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
 <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; backdrop-filter: blur(12px); z-index: 10; mask-image: radial-gradient(circle, black 70%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 70%, transparent 100%);">
-	                    <span class="star-icon" style="color: ${item.star_color || '#ffcc00'}; font-size: 24px; filter: drop-shadow(0 0 8px ${item.star_color || '#ffcc00'});">${item.recommendation || '★'}</span>
-	                    <span style="color: ${optionsData.category_colors?.rating || '#b026ff'}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${optionsData.category_colors?.rating || '#b026ff'});">${item.rating || '0.0'}</span>
+		                    <span class="star-icon" style="color: ${item.star_color || '#ffcc00'}; font-size: 24px; filter: drop-shadow(0 0 8px ${item.star_color || '#ffcc00'});">${item.recommendation || '★'}</span>
+		                    <span style="color: ${optionsData.category_colors?.rating || '#b026ff'}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${optionsData.category_colors?.rating || '#b026ff'});">${item.rating || '普'}</span>
 	                </div>
             </div>
 
@@ -342,11 +342,11 @@ window.showAnimeDetail = (id) => {
                     </div>
                 ` : ''}
 
-                <div class="detail-section-v35" style="margin-top: 10px; position: relative;">
-                    <div style="padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); border-left: 6px solid var(--neon-blue); margin-left: -1px;">
-                        <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
-                    </div>
-                </div>
+	                <div class="detail-section-v35" style="margin-top: 10px; position: relative;">
+	                    <div style="padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+	                        <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
+	                    </div>
+	                </div>
 
                 <div class="detail-section-v35">
                     <div class="scroll-row-v35 force-scroll">
@@ -644,7 +644,7 @@ window.renderAdminContent = (pagedData, total) => {
 window.renderAnimeForm = (item) => {
     // 最終暴力標準化：移除所有非文字字元，確保比對成功
     const genres = (Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/) : []))
-        .map(g => String(g).replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').trim().toLowerCase())
+        .map(g => String(g).replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').trim())
         .filter(g => g);
     const links = Array.isArray(item.links) ? item.links : [];
     const extra_data = item.extra_data || {};
@@ -711,7 +711,7 @@ window.renderAnimeForm = (item) => {
                 <div style="flex: 1; overflow-y: auto; padding-right: 10px; max-height: 600px;" class="force-scroll">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         ${optionsData.genre.map(g => {
-                            const cleanG = String(g).replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').trim().toLowerCase();
+                            const cleanG = String(g).replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').trim();
                             const isChecked = genres.includes(cleanG);
                             return `
                             <label class="option-item-row" style="cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; transition: all 0.2s;">
