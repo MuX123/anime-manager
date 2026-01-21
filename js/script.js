@@ -1448,3 +1448,17 @@ window.deleteAnnouncement = async (id) => {
         window.showToast('✗ 刪除失敗：' + (err.message || '未知錯誤'), 'error');
     }
 };
+
+
+/* 滾輪支持所有滾動軸 */
+document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('wheel', (e) => {
+        const target = e.target.closest('[class*="scroll"], [class*="horizontal"], .horizontal-scroll-container, .scroll-row-v35');
+        if (target && (target.scrollWidth > target.clientWidth || target.scrollHeight > target.clientHeight)) {
+            if (target.scrollWidth > target.clientWidth) {
+                e.preventDefault();
+                target.scrollLeft += e.deltaY > 0 ? 50 : -50;
+            }
+        }
+    }, { passive: false });
+});
