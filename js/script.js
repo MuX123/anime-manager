@@ -181,7 +181,7 @@ window.renderApp = function() {
 
 window.renderCard = (item) => {
     const starColor = item.star_color || '#ffcc00';
-    const ratingColor = optionsData.category_colors?.rating || '#b026ff';
+    const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || '#b026ff');
     const nameColor = item.name_color || '#ffffff';
     const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-cyan)';
     
@@ -219,7 +219,7 @@ window.showAnimeDetail = (id) => {
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
     const links = Array.isArray(item.links) ? item.links : [];
     const starColor = optionsData.category_colors?.recommendation || '#ffcc00';
-    const ratingColor = optionsData.category_colors?.rating || 'var(--neon-purple)';
+    const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
 
     // 核心數據行 (移除評級)
@@ -637,24 +637,33 @@ window.renderOptionsManager = () => {
                 return `
                     <div class="options-column">
                         <div class="options-column-header">
-                            ${key !== 'recommendation' ? `
+                            ${(key !== 'recommendation' && key !== 'rating') ? `
                                 <div class="color-input-wrapper">
                                     <div class="color-swatch" style="background: ${color};"></div>
                                     <input type="color" value="${color}" onchange="window.updateCategoryColor('${key}', this.value); this.previousElementSibling.style.background = this.value">
                                 </div>
                             ` : ''}
                             <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center;">
-                                <span style="${key !== 'recommendation' ? 'margin-left: 8px;' : ''}">${window.getOptionLabel(key)}</span>
+                                <span style="${(key !== 'recommendation' && key !== 'rating') ? 'margin-left: 8px;' : ''}">${window.getOptionLabel(key)}</span>
                                 ${customKeys.includes(key) ? `<button style="background:none; border:none; color:#ff4444; cursor:pointer; font-size:12px;" onclick="window.deleteCustomList('${key}')">🗑</button>` : ''}
                             </div>
                         </div>
                         <div class="options-list force-scroll">
-                            ${(optionsData[key] || []).map((opt, idx) => `
-                                <div class="option-item-row">
-                                    <span style="flex: 1; color: ${color}; font-weight: bold;">${opt}</span>
-                                    <span style="cursor: pointer; color: #ff4444; font-weight: bold;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</span>
-                                </div>
-                            `).join('')}
+                            ${(optionsData[key] || []).map((opt, idx) => {
+                                const itemColor = (key === 'rating') ? (optionsData.rating_colors?.[opt] || color) : color;
+                                return `
+                                    <div class="option-item-row">
+                                        ${key === 'rating' ? `
+                                            <div class="color-input-wrapper">
+                                                <div class="color-swatch" style="background: ${itemColor};"></div>
+                                                <input type="color" value="${itemColor}" onchange="window.updateRatingItemColor('${opt}', this.value); this.previousElementSibling.style.background = this.value">
+                                            </div>
+                                        ` : ''}
+                                        <span style="flex: 1; color: ${itemColor}; font-weight: bold;">${opt}</span>
+                                        <span style="cursor: pointer; color: #ff4444; font-weight: bold;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</span>
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
                         <div style="padding: 15px; border-top: 1px solid rgba(0,212,255,0.1); display: flex; gap: 5px; align-items: center;">
                             <input type="text" id="add-opt-${key}" placeholder="新增..." style="width: 120px; font-size: 12px; padding: 6px !important; flex-shrink: 0;">
@@ -766,6 +775,13 @@ window.deleteOptionItem = async (key, idx) => { optionsData[key].splice(idx, 1);
 window.updateCategoryColor = async (key, color) => {
     if (!optionsData.category_colors) optionsData.category_colors = {};
     optionsData.category_colors[key] = color;
+    await window.saveOptionsToDB();
+    window.renderAdmin();
+};
+
+window.updateRatingItemColor = async (opt, color) => {
+    if (!optionsData.rating_colors) optionsData.rating_colors = {};
+    optionsData.rating_colors[opt] = color;
     await window.saveOptionsToDB();
     window.renderAdmin();
 };
