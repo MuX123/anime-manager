@@ -384,10 +384,10 @@ window.showAnimeDetail = (id) => {
         });
     }
 
-    content.innerHTML = `
-        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; border: 3px solid ${ratingColor}; background: ${cyanBase}; border-radius: 20px; overflow: hidden;">
-            <!-- 左側滿版海報 -->
-            <div class="detail-poster-aside">
+	    content.innerHTML = `
+	        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; border: 3px solid ${ratingColor} !important; background: ${cyanBase}; border-radius: 20px; overflow: hidden;">
+	            <!-- 左側滿版海報 -->
+	            <div class="detail-poster-aside" style="border-right: 1px solid ${ratingColor}66;">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
                 <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
                 <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; backdrop-filter: blur(12px); z-index: 10;">
@@ -398,60 +398,60 @@ window.showAnimeDetail = (id) => {
 
             <!-- 右側資訊流 -->
             <div class="detail-content-main force-scroll">
-                <!-- 標題與核心數據區塊 -->
-                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
-                        <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0;">${item.name}</h2>
+	                <!-- 標題與核心數據區塊 -->
+	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+	                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
+	                        <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0;">${item.name}</h2>
 	                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; margin-top: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
 	                            ${item.year ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${item.year}</div>` : ''}
 	                            ${item.season ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${item.season}</div>` : ''}
 	                            ${item.month ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${item.month}月</div>` : ''}
 	                            ${item.episodes ? `<div class="core-data-item" style="${getTagStyle(episodesColor)}">全 ${item.episodes} 集</div>` : ''}
 	                        </div>
-                    </div>
-                </div>
+	                    </div>
+	                </div>
 
-                <!-- 類型標籤區塊 -->
-                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+	                <!-- 類型標籤區塊 -->
+	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+	                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
 	                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
 	                            ${genres.map(g => {
 	                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
 	                                return `<span style="${getTagStyle(genreColor)}">${cleanG}</span>`;
 	                            }).join('')}
 	                        </div>
-                    </div>
-                </div>
+	                    </div>
+	                </div>
 
-                <!-- 擴充標籤區塊 -->
-                ${extraTags.length > 0 ? `
-                    <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-                        <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+	                <!-- 擴充標籤區塊 -->
+	                ${extraTags.length > 0 ? `
+	                    <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+	                        <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
 	                            <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
 	                                ${extraTags.map(t => {
 	                                    const color = t.color || 'var(--neon-cyan)';
 	                                    return `<span style="${getTagStyle(color)}">${t.val}</span>`;
 	                                }).join('')}
 	                            </div>
-                        </div>
-                    </div>
-                ` : ''}
+	                        </div>
+	                    </div>
+	                ` : ''}
 
-                <!-- 劇情介紹區塊 -->
-                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-                    <div style="padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
-                        <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
-                    </div>
-                </div>
+	                <!-- 劇情介紹區塊 -->
+	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+	                    <div style="padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
+	                        <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
+	                    </div>
+	                </div>
 
-                <!-- 連結區塊 -->
-                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
-                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-                            ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 10px 20px; font-size: 13px; white-space: nowrap; border-color: var(--neon-blue); color: var(--neon-blue); border-radius: 50px;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic;">暫無連結</span>'}
-                        </div>
-                    </div>
-                </div>
+	                <!-- 連結區塊 -->
+	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+	                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
+	                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+	                            ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 10px 20px; font-size: 13px; white-space: nowrap; border-color: ${ratingColor}; color: ${ratingColor}; border-radius: 50px;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic;">暫無連結</span>'}
+	                        </div>
+	                    </div>
+	                </div>
             </div>
         </div>
     `;
