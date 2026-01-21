@@ -171,7 +171,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	        <div class="site-version">v5.0.5-ULTRA</div>
+		        <div class="site-version">v5.0.6-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -638,10 +638,10 @@ window.renderAdminContent = (pagedData, total) => {
         return window.renderAnimeForm(item);
     } else if (currentAdminTab === 'options') {
         return window.renderOptionsManager();
-		    } else if (currentAdminTab === 'settings') {
-		        return `
-		            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1000px; margin: 0 auto; padding-bottom: 50px;">
-                        <div class="admin-panel-v492" style="background: rgba(0,212,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2);">
+			    } else if (currentAdminTab === 'settings') {
+			        return `
+			            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%; margin: 0 auto; padding-bottom: 50px;">
+	                        <div class="admin-panel-v492" style="background: rgba(0,212,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2);">
 		                    <h3 style="color: var(--neon-cyan); border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; margin-bottom: 20px; font-family: 'Orbitron';">🌐 網站基本設定</h3>
 		                    <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">網站標題</label><input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;"></div>
 		                    <div style="margin-bottom: 15px;">
@@ -690,8 +690,8 @@ window.renderAnimeForm = (item) => {
     const links = Array.isArray(item.links) ? item.links : [];
     const extra_data = item.extra_data || {};
     
-    return `
-        <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 25px; padding: 10px; max-width: 100%;" class="admin-form-v492">
+	    return `
+	        <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 25px; padding: 10px; width: 100%;" class="admin-form-v492">
             <!-- 第一列：核心資訊 -->
             <div style="background: rgba(0,212,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,212,255,0.1); display: flex; flex-direction: column; gap: 15px;">
                 <h4 style="color: var(--neon-cyan); margin-bottom: 5px; font-family: 'Orbitron';">📝 核心資訊</h4>
