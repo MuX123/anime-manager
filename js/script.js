@@ -173,21 +173,30 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.4.0-ULTRA</div>
+	            <div class="site-version">v5.4.1-ULTRA</div>
 		        <div class="app-container">
-            <div id="topControlBar" style="position: fixed; top: 20px; right: 20px; display: ${isAdminMode ? 'none' : 'flex'}; flex-direction: column; align-items: flex-end; gap: 12px; z-index: 2000;">
+            <div id="topControlBar" style="position: fixed; top: 20px; right: 20px; display: ${isAdminMode ? 'none' : 'flex'}; flex-direction: column; align-items: flex-end; z-index: 2000;">
                 <!-- 系統菜單 -->
-                <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(0,212,255,0.15); padding: 12px; border-radius: 0px; border: 1px solid rgba(0,212,255,0.5); backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.15); min-width: 180px;">
+                <div style="display: flex; flex-direction: column; background: rgba(5, 15, 25, 0.95); padding: 0; border-radius: 8px; border: 1px solid rgba(0,212,255,0.4); backdrop-filter: blur(15px); box-shadow: 0 8px 32px rgba(0,212,255,0.2), inset 0 1px 0 rgba(0,212,255,0.1); min-width: 200px; overflow: hidden;">
+                    <!-- 標題區 -->
+                    <div style="background: linear-gradient(135deg, rgba(0,212,255,0.15) 0%, rgba(0,150,200,0.1) 100%); padding: 14px 16px; border-bottom: 1px solid rgba(0,212,255,0.25);">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 18px; color: var(--neon-cyan); filter: drop-shadow(0 0 8px rgba(0,212,255,0.6));">⚙️</span>
+                            <span style="font-size: 13px; color: var(--neon-cyan); font-weight: 700; letter-spacing: 1px; font-family: 'Noto Sans TC', sans-serif; text-shadow: 0 0 10px rgba(0,212,255,0.5);">系統菜單</span>
+                        </div>
+                    </div>
                     <!-- 佈局選擇器 -->
-                    <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(0,212,255,0.3);">
-                        <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold; font-family: 'Noto Sans TC', sans-serif;">佈局</span>
-                        <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 4px 8px !important; font-size: 13px !important; cursor: pointer; color: var(--neon-cyan) !important; font-weight: bold; outline: none !important; flex: 1;">
-                            ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
-                            <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
-                        </select>
+                    <div style="padding: 16px; background: rgba(0,212,255,0.03); border-bottom: 1px solid rgba(0,212,255,0.15);">
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <label style="font-size: 11px; color: rgba(0,212,255,0.7); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; font-family: 'Noto Sans TC', sans-serif;">顯示佈局</label>
+                            <select onchange="window.changeGridLayout(this.value)" style="background: rgba(0,212,255,0.08) !important; border: 1px solid rgba(0,212,255,0.3) !important; padding: 10px 12px !important; font-size: 13px !important; cursor: pointer; color: var(--neon-cyan) !important; font-weight: 600; outline: none !important; border-radius: 6px; transition: all 0.3s ease; font-family: 'Noto Sans TC', sans-serif;">
+                                ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
+                                <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
+                            </select>
+                        </div>
                     </div>
                     <!-- 系統菜單選項 -->
-                    <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 0;"></div>
+                    <div id="adminMenuOptions" style="display: flex; flex-direction: column; padding: 8px 0;"></div>
                 </div>
 		            </div>
             <header>
