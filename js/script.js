@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.8.4-ULTRA</div>
+        <div class="site-version">v4.8.5-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -182,7 +182,7 @@ window.renderApp = function() {
                     <div id="search-filters" class="horizontal-scroll-container force-scroll" style="padding: 10px 0; gap: 15px; flex: 1;">
                         ${window.renderSearchSelectsHTML()}
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 5px 15px; border-radius: 50px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
+                    <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 5px 15px; border-radius: 50px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
                         <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">佈局</span>
                         <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 14px !important; cursor: pointer; color: var(--neon-cyan) !important;">
                             ${[3,4,5,6].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
