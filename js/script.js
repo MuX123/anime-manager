@@ -1297,7 +1297,7 @@ window.renderAnnouncements = async function() {
                         let gridStyle = '';
                         if (images.length === 1) gridStyle = 'grid-template-columns: 1fr;';
                         else if (images.length === 2) gridStyle = 'grid-template-columns: 1fr 1fr;';
-                        else if (images.length >= 3) gridStyle = 'grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));';
+                        else if (images.length >= 3) gridStyle = 'grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));';
 
                         return `
                         <div class="announcement-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0,212,255,0.1); border-radius: 12px; padding: 20px; position: relative; transition: all 0.3s ease;">
@@ -1316,10 +1316,10 @@ window.renderAnnouncements = async function() {
                             </div>
                             <div style="color: #ffffff; line-height: 1.8; font-size: 15px; white-space: pre-wrap; word-break: break-word; margin-bottom: 15px;">${item.content}</div>
                             ${images.length > 0 ? `
-                                <div style="display: grid; gap: 10px; ${gridStyle} border-radius: 8px; overflow: hidden;">
+                                <div style="display: grid; gap: 12px; ${gridStyle} border-radius: 8px; overflow: hidden; margin-top: 15px;">
                                     ${images.map(url => `
-                                        <div style="aspect-ratio: 16/9; background: #000; cursor: zoom-in;" onclick="window.openLightbox('${url}')">
-                                            <img src="${url}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <div style="aspect-ratio: 16/9; background: #000; cursor: zoom-in; border: 1px solid rgba(0,212,255,0.2); border-radius: 8px; overflow: hidden;" onclick="window.openLightbox('${url}')" title="點擊查看大圖">
+                                            <img src="${url}" style="width: 100%; height: 100%; object-fit: cover; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.08)'; this.style.filter='brightness(1.1)'" onmouseout="this.style.transform='scale(1)'; this.style.filter='brightness(1)'">
                                         </div>
                                     `).join('')}
                                 </div>
