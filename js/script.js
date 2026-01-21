@@ -158,7 +158,12 @@ window.renderApp = function() {
                 <div style="text-align: center; padding: 50px; color: var(--neon-cyan);">⚡ 正在載入永久公告...</div>
             </div>
         `;
-        setTimeout(() => window.renderAnnouncements(), 300);
+        // 確保在 DOM 更新後執行
+        setTimeout(() => {
+            if (typeof window.renderAnnouncements === 'function') {
+                window.renderAnnouncements();
+            }
+        }, 300);
     }
 
     const filtered = window.getFilteredData();
@@ -166,7 +171,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	        <div class="site-version">v5.0.3-ULTRA</div>
+	        <div class="site-version">v5.0.4-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -195,17 +200,34 @@ app.innerHTML = `
                     </div>
                 </div>
             </div>
-            ${isNotice ? noticeHTML : `
+            <div id="notice-container" style="display: ${isNotice ? 'block' : 'none'};">
+                ${noticeHTML}
+            </div>
+            <div id="main-grid-content" style="display: ${isNotice ? 'none' : 'block'};">
                 <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}" style="${gridColumns === 'mobile' ? '' : `grid-template-columns: repeat(${gridColumns}, 1fr);`}">
                     ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
                 </div>
                 <div id="pagination-container" style="display: flex; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
-            `}
+            </div>
         </div>
     `;
     
     // 重新初始化滾輪捲動監聽
     window.initGlobalScroll();
+    window.updateAdminMenu();
+
+    // 確保詳情彈窗 HTML 存在
+    if (!document.getElementById('detailModal')) {
+        const modalHTML = `
+            <div id="detailModal" class="modal" onclick="if(event.target===this) window.closeAnimeDetail()">
+                <div class="modal-content">
+                    <button class="btn-primary" style="position: absolute; top: 20px; right: 20px; z-index: 1000; width: 40px; height: 40px; padding: 0;" onclick="window.closeAnimeDetail()">×</button>
+                    <div id="detailContent"></div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
 
     // 徹底解決閃爍：內容渲染完成後，顯示 app 並移除遮罩
     app.style.display = 'block';
