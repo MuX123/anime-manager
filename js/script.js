@@ -300,14 +300,20 @@ window.renderCard = (item) => {
                     </div>
                 </div>
 
-                <!-- 右側：標籤流 -->
-                <div style="flex: 1.2; min-width: 0; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; padding-left: 10px; border-left: 1px solid ${ratingColor}33;">
-                    ${genres.map(g => `<span style="font-size: 11px; color: ${genreColor}; border: 1px solid ${genreColor}44; padding: 2px 8px; border-radius: 50px; background: ${genreColor}08; font-weight: bold;">${g.replace(/["'\[\]\(\),，。]/g, '').trim()}</span>`).join('')}
-                    ${Object.entries(item.extra_data || {}).map(([key, val]) => {
-                        if (!val) return '';
-                        const color = optionsData.category_colors?.[key] || 'var(--neon-cyan)';
-                        return `<span style="font-size: 11px; color: ${color}; border: 1px solid ${color}44; padding: 2px 8px; border-radius: 50px; background: ${color}08; font-weight: bold;">${val}</span>`;
-                    }).join('')}
+                <!-- 右側：標籤流 (兩行顯示) -->
+                <div style="flex: 1.5; min-width: 0; display: flex; flex-direction: column; gap: 8px; padding-left: 15px; border-left: 1px solid ${ratingColor}33;">
+                    <!-- 上排：一般作品類型 -->
+                    <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+                        ${genres.length > 0 ? genres.map(g => `<span style="font-size: 11px; color: ${genreColor}; border: 1px solid ${genreColor}44; padding: 2px 8px; border-radius: 50px; background: ${genreColor}08; font-weight: bold;">${g.replace(/["'\[\]\(\),，。]/g, '').trim()}</span>`).join('') : '<span style="color: rgba(255,255,255,0.2); font-size: 11px; font-style: italic;">無類型</span>'}
+                    </div>
+                    <!-- 下排：自訂類型 -->
+                    <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+                        ${Object.entries(item.extra_data || {}).length > 0 ? Object.entries(item.extra_data).map(([key, val]) => {
+                            if (!val) return '';
+                            const color = optionsData.category_colors?.[key] || 'var(--neon-cyan)';
+                            return `<span style="font-size: 11px; color: ${color}; border: 1px solid ${color}44; padding: 2px 8px; border-radius: 50px; background: ${color}08; font-weight: bold;">${val}</span>`;
+                        }).join('') : '<span style="color: rgba(255,255,255,0.2); font-size: 11px; font-style: italic;">無自訂標籤</span>'}
+                    </div>
                 </div>
             </div>
         `;
