@@ -476,14 +476,15 @@ select {
 /* 選項管理區塊樣式 */
 .options-scroll-wrapper {
     display: flex;
-    gap: 30px;
+    gap: 20px;
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 20px 10px;
+    padding: 20px 15px;
     margin-bottom: 30px;
     scroll-behavior: smooth;
     border-radius: 12px;
     background: rgba(0, 212, 255, 0.02);
+    max-height: 600px;
 }
 
 .options-scroll-wrapper::-webkit-scrollbar {
@@ -507,7 +508,7 @@ select {
 }
 
 .options-column {
-    flex: 0 0 300px;
+    flex: 0 0 280px;
     background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(0, 212, 255, 0.03));
     border: 2px solid rgba(0, 212, 255, 0.3);
     border-radius: 14px;
@@ -516,6 +517,8 @@ select {
     flex-direction: column;
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     box-shadow: 0 0 20px rgba(0, 212, 255, 0.1), inset 0 0 20px rgba(0, 212, 255, 0.02);
+    min-height: 400px;
+    max-height: 500px;
 }
 
 .options-column:hover {
@@ -542,8 +545,8 @@ select {
     flex: 1;
     overflow-y: auto;
     padding: 10px 0;
-    min-height: 200px;
-    max-height: 400px;
+    min-height: 250px;
+    max-height: 350px;
 }
 
 .options-list::-webkit-scrollbar {
