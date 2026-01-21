@@ -131,31 +131,31 @@ window.renderApp = function() {
     const app = document.getElementById('app');
     if (!app) return;
 
+    const isNotice = currentCategory === 'notice';
+    
+    // 同步更新 index.html 中的 Discord 區塊顯示狀態
+    const discordSection = document.getElementById('discord-section');
+    if (discordSection) {
+        discordSection.style.display = isNotice ? 'block' : 'none';
+    }
+
     const filtered = window.getFilteredData();
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
-// 僅在初次渲染或非搜尋輸入時更新整個 app
-	    if (!document.getElementById('search-input')) {
-            const isNotice = currentCategory === 'notice';
-            
-            // 同步更新 index.html 中的 Discord 區塊顯示狀態
-            const discordSection = document.getElementById('discord-section');
-            if (discordSection) {
-                discordSection.style.display = isNotice ? 'block' : 'none';
-            }
-
+    // 僅在初次渲染或非搜尋輸入時更新整個 app
+    if (!document.getElementById('search-input') || isNotice) {
         app.innerHTML = `
-	            <div class="site-version">v4.2.3-ULTRA</div>
-	            <div class="app-container">
-	                <header>
-	                    <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
-	                </header>
-<div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
-                        <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">◆ 公告</button>
-	                    <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
-	                    <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
-                        <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
-	                </div>
+		            <div class="site-version">v4.2.4-ULTRA</div>
+		            <div class="app-container">
+		                <header>
+		                    <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
+		                </header>
+                        <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; position: relative; z-index: 100;">
+                            <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">◆ 公告</button>
+                            <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
+                            <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
+                            <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
+		                </div>
 	                <div style="border: 2px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 18px; margin-bottom: 30px; font-size: 14px; color: ${siteSettings.announcement_color || '#ffffff'}; text-align: center; border-radius: 10px; background: rgba(0,212,255,0.05); font-weight: bold;">
 	                    <span>📢 ${siteSettings.announcement}</span>
 	                </div>
