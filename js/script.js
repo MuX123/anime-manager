@@ -149,6 +149,7 @@ window.renderApp = function() {
     const app = document.getElementById('app');
     if (!app) return;
 
+    const isAdminMode = document.querySelector('.admin-container') !== null;
     const isNotice = currentCategory === 'notice';
     
     // 處理公告板塊的特殊顯示
@@ -172,25 +173,25 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.2.3-ULTRA</div>
+	            <div class="site-version">v5.2.4-ULTRA</div>
 		        <div class="app-container">
-			            <div style="position: fixed; top: 20px; right: 20px; display: flex; align-items: center; gap: 20px; z-index: 2000;">
+            <div id="topControlBar" style="position: fixed; top: 20px; right: 20px; display: ${isAdminMode ? 'none' : 'flex'}; align-items: center; gap: 15px; z-index: 2000;">
                 <!-- 佈局選擇器 -->
-                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.15); padding: 8px 12px; border-radius: 0px; border: 1px solid rgba(0,212,255,0.5); white-space: nowrap; backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.15); height: 36px;">
-                    <span style="font-size: 11px; color: var(--neon-cyan); font-weight: bold; font-family: 'Orbitron', sans-serif; letter-spacing: 1px;">LAYOUT</span>
-                    <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 12px !important; cursor: pointer; color: var(--neon-cyan) !important; font-weight: bold; outline: none !important;">
+                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 12px; background: rgba(0,212,255,0.15); padding: 10px 16px; border-radius: 0px; border: 1px solid rgba(0,212,255,0.5); white-space: nowrap; backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.15); height: 44px;">
+                    <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold; font-family: 'Orbitron', sans-serif; letter-spacing: 1.5px;">LAYOUT</span>
+                    <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 4px 8px !important; font-size: 13px !important; cursor: pointer; color: var(--neon-cyan) !important; font-weight: bold; outline: none !important;">
                         ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
                         <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
                     </select>
                 </div>
                 <!-- 系統菜單按鈕 -->
                 <div style="position: relative; display: flex; align-items: center;">
-                    <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="width: 36px; height: 36px; border-radius: 0px !important; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0,212,255,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--neon-cyan); backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.15); transition: all 0.3s ease; outline: none !important;">⚙</button>
-                    <div id="systemMenu" style="position: absolute; top: 45px; right: 0; z-index: 2001; background: var(--panel-bg); border: 1px solid var(--neon-blue); border-radius: 0px; overflow: hidden; min-width: 180px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); display: none; backdrop-filter: blur(15px);">
+                    <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="width: 44px; height: 44px; border-radius: 0px !important; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0,212,255,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--neon-cyan); backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.15); transition: all 0.3s ease; outline: none !important;">⚙</button>
+                    <div id="systemMenu" style="position: absolute; top: 50px; right: 0; z-index: 2001; background: var(--panel-bg); border: 1px solid var(--neon-blue); border-radius: 0px; overflow: hidden; min-width: 180px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); display: none; backdrop-filter: blur(15px);">
                         <div id="adminMenuOptions" style="padding: 8px 0;"></div>
                     </div>
                 </div>
-			            </div>
+		            </div>
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
             </header>
@@ -275,7 +276,7 @@ window.renderCard = (item) => {
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
 
     return `
-        <div class="anime-card ${isMobileLayout ? 'mobile-layout-card' : ''}" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor}; ${isMobileLayout ? 'width: 100% !important; max-width: 100% !important; display: block !important; margin: 0 0 15px 0 !important; flex: 0 0 100% !important; background: rgba(0, 212, 255, 0.05) !important; border: 1px solid rgba(0, 212, 255, 0.4) !important; box-shadow: 0 0 15px rgba(0, 212, 255, 0.1) !important; border-radius: 12px !important; padding: 10px 15px !important;' : ''}">
+        <div class="anime-card ${isMobileLayout ? 'mobile-layout-card' : ''}" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor}; ${isMobileLayout ? `width: 100% !important; max-width: 100% !important; display: block !important; margin: 0 0 15px 0 !important; flex: 0 0 100% !important; background: ${ratingColor}11 !important; border: 1px solid ${ratingColor}66 !important; box-shadow: 0 0 15px ${ratingColor}22 !important; border-radius: 12px !important; padding: 10px 15px !important;` : ''}">
             <!-- 海報區塊：手機佈局模式下隱藏 -->
             <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative; ${isMobileLayout ? 'display: none !important;' : ''}">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -294,15 +295,15 @@ window.renderCard = (item) => {
             <div class="card-content-v38" data-info="${infoText}" style="padding: ${isMobileLayout ? '5px 0' : '15px'}; text-align: ${isMobileLayout ? 'left' : 'center'}; background: ${isMobileLayout ? 'transparent' : 'rgba(0,0,0,0.4)'}; width: 100%;">
                 <!-- 第一行：星星 + 評級 + 名稱 + 分隔線 + 類型 -->
                 ${isMobileLayout ? `
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid rgba(0,212,255,0.2); padding-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid ${ratingColor}33; padding-bottom: 8px;">
                         <span style="color: ${starColor}; font-size: 14px; white-space: nowrap; flex-shrink: 0;">${item.recommendation || '★'}</span>
                         <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${item.rating || '普'}</span>
                         <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
-                        <div style="width: 1px; height: 20px; background: rgba(0,212,255,0.3); flex-shrink: 0;"></div>
+                        <div style="width: 1px; height: 20px; background: ${ratingColor}66; flex-shrink: 0;"></div>
                         <div style="display: flex; gap: 6px; flex-wrap: wrap; max-width: 200px; overflow-x: auto; flex-shrink: 0;">
                             ${genres.slice(0, 3).map(g => {
                                 const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-                                return `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 8px; border-radius: 4px; white-space: nowrap;">${cleanG}</span>`;
+                                return `<span style="font-size: 11px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 2px 8px; border-radius: 4px; white-space: nowrap;">${cleanG}</span>`;
                             }).join('')}
                         </div>
                     </div>
@@ -312,13 +313,13 @@ window.renderCard = (item) => {
                         <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
                             ${(item.year || item.season || item.month) ? `
                                 <div style="display: flex; gap: 8px; align-items: center;">
-                                    ${item.year ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 3px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
-                                    ${item.season ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 3px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
-                                    ${item.month ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 3px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
+                                    ${item.year ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.year}</span>` : ''}
+                                    ${item.season ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.season}</span>` : ''}
+                                    ${item.month ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.month}月</span>` : ''}
                                 </div>
                             ` : ''}
                             ${Object.keys(item.extra_data || {}).length > 0 ? `
-                                ${(item.year || item.season || item.month) ? `<div style="width: 2px; height: 24px; background: rgba(0,212,255,0.4); border-radius: 2px;"></div>` : ''}
+                                ${(item.year || item.season || item.month) ? `<div style="width: 2px; height: 24px; background: ${ratingColor}66; border-radius: 2px;"></div>` : ''}
                                 <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                                     ${Object.entries(item.extra_data).map(([key, val]) => {
                                         if (!val) return '';
@@ -334,9 +335,9 @@ window.renderCard = (item) => {
                         <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '12px' : '14px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
                     </div>
                     <div class="card-tags-v38" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        ${item.year ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
-                        ${item.season ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
-                        ${item.month ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
+                        ${item.year ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 2px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.year}</span>` : ''}
+                        ${item.season ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 2px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.season}</span>` : ''}
+                        ${item.month ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 2px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.month}月</span>` : ''}
                     </div>
                 `}
             </div>
