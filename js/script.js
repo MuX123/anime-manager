@@ -216,18 +216,27 @@ app.innerHTML = `
     window.initGlobalScroll();
     window.updateAdminMenu();
 
-    // 確保詳情彈窗 HTML 存在
-    if (!document.getElementById('detailModal')) {
-        const modalHTML = `
-            <div id="detailModal" class="modal" onclick="if(event.target===this) window.closeAnimeDetail()">
-                <div class="modal-content">
+	    // 確保詳情彈窗 HTML 存在
+	    if (!document.getElementById('detailModal')) {
+	        const modalHTML = `
+	            <div id="detailModal" class="modal" onclick="if(event.target===this) window.closeAnimeDetail()">
+	                <div class="modal-content">
+	                    <button class="btn-primary" style="position: absolute; top: 20px; right: 20px; z-index: 1000; width: 40px; height: 40px; padding: 0;" onclick="window.closeAnimeDetail()">×</button>
+	                    <div id="detailContent"></div>
+	                </div>
+	            </div>
+	        `;
+	        document.body.insertAdjacentHTML('beforeend', modalHTML);
+	    } else {
+            // 確保內容容器存在
+            const modal = document.getElementById('detailModal');
+            if (!modal.querySelector('#detailContent')) {
+                modal.querySelector('.modal-content').innerHTML = `
                     <button class="btn-primary" style="position: absolute; top: 20px; right: 20px; z-index: 1000; width: 40px; height: 40px; padding: 0;" onclick="window.closeAnimeDetail()">×</button>
                     <div id="detailContent"></div>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-    }
+                `;
+            }
+        }
 
     // 徹底解決閃爍：內容渲染完成後，顯示 app 並移除遮罩
     app.style.display = 'block';
@@ -329,17 +338,18 @@ window.showAnimeDetail = (id) => {
         });
     }
 
-    content.innerHTML = `
-	        <div class="detail-container-v35" style="--rating-color: ${ratingColor};">
-            <!-- 左側滿版海報 -->
-            <div class="detail-poster-aside">
-                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
-                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
-<div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; backdrop-filter: blur(12px); z-index: 10; mask-image: radial-gradient(circle, black 70%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 70%, transparent 100%);">
-		                    <span class="star-icon" style="color: ${item.star_color || '#ffcc00'}; font-size: 24px; filter: drop-shadow(0 0 8px ${item.star_color || '#ffcc00'});">${item.recommendation || '★'}</span>
-		                    <span style="color: ${optionsData.category_colors?.rating || '#b026ff'}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${optionsData.category_colors?.rating || '#b026ff'});">${item.rating || '普'}</span>
-	                </div>
-            </div>
+	    content.innerHTML = `
+		        <div class="detail-container-v35" style="--rating-color: ${ratingColor};">
+                    <div class="detail-border-v500" style="background: ${item.star_color || '#00f3ff'};"></div>
+	            <!-- 左側滿版海報 -->
+	            <div class="detail-poster-aside">
+	                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
+	                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
+	<div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; backdrop-filter: blur(12px); z-index: 10; mask-image: radial-gradient(circle, black 70%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 70%, transparent 100%);">
+			                    <span class="star-icon" style="color: ${item.star_color || '#ffcc00'}; font-size: 24px; filter: drop-shadow(0 0 8px ${item.star_color || '#ffcc00'});">${item.recommendation || '★'}</span>
+			                    <span style="color: ${optionsData.category_colors?.rating || '#b026ff'}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${optionsData.category_colors?.rating || '#b026ff'});">${item.rating || '普'}</span>
+		                </div>
+	            </div>
 
             <!-- 右側資訊流 -->
             <div class="detail-content-main force-scroll">
