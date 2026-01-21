@@ -602,6 +602,7 @@ select {
     border: 1px solid rgba(0, 212, 255, 0.3);
     cursor: pointer;
     transition: all 0.2s ease;
+    position: relative;
 }
 
 .color-swatch:hover {
@@ -610,10 +611,11 @@ select {
 }
 
 .color-input-wrapper input[type="color"] {
+    position: absolute;
     width: 0;
     height: 0;
     opacity: 0;
-    cursor: pointer;
+    pointer-events: none;
 }
 
 

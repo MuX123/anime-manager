@@ -172,7 +172,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.2.1-ULTRA</div>
+	            <div class="site-version">v5.2.2-ULTRA</div>
 		        <div class="app-container">
 			            <div style="position: fixed; top: 20px; right: 20px; display: flex; align-items: center; gap: 20px; z-index: 2000;">
                 <!-- 佈局選擇器 -->
@@ -292,48 +292,43 @@ window.renderCard = (item) => {
             </div>
             <!-- 卡片內容 -->
             <div class="card-content-v38" data-info="${infoText}" style="padding: ${isMobileLayout ? '5px 0' : '15px'}; text-align: ${isMobileLayout ? 'left' : 'center'}; background: ${isMobileLayout ? 'transparent' : 'rgba(0,0,0,0.4)'}; width: 100%;">
-                <!-- 第一行：星級 + 評級 + 標題 -->
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                    ${isMobileLayout ? `
-                        <span style="color: ${starColor}; font-size: 14px; white-space: nowrap; flex-shrink: 0;">${item.recommendation || '★'}</span>
-                        <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 0 6px; border-radius: 4px; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${item.rating || '普'}</span>
-                    ` : ''}
-                    <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '12px' : (isMobileLayout ? '15px' : '14px')}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
-                    ${isMobileLayout ? `<span style="font-size: 13px; color: ${episodesColor}; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</span>` : ''}
-                </div>
-                
-                <!-- 第二行：年份/季節/月份 (垂直排列於標題下方) -->
+                <!-- 第一行：星星 + 評級 + 名稱 + 分隔線 + 類型 -->
                 ${isMobileLayout ? `
-                    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
-                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                            ${item.year ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 1px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
-                            ${item.season ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 1px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
-                            ${item.month ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 1px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
-                        </div>
-                        
-                        <!-- 類型與自訂選項 (最多兩排) -->
-                        <div style="display: flex; flex-direction: column; gap: 6px;">
-                            ${genres.length > 0 ? `
-                                <div class="scroll-row-v35" style="padding: 2px 0; max-height: 60px; overflow-y: auto;">
-                                    ${genres.map(g => {
-                                        const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-                                        return `<span class="tag-pill-v35" style="padding: 2px 10px; font-size: 11px; margin-right: 6px; margin-bottom: 4px; display: inline-block;">${cleanG}</span>`;
-                                    }).join('')}
-                                </div>
-                            ` : ''}
-                            
-                            ${Object.keys(item.extra_data || {}).length > 0 ? `
-                                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                    ${Object.entries(item.extra_data).map(([key, val]) => {
-                                        if (!val) return '';
-                                        const color = optionsData.category_colors?.[key] || 'var(--neon-cyan)';
-                                        return `<span style="font-size: 10px; color: ${color}; border: 1px solid ${color}66; padding: 1px 6px; border-radius: 4px; background: ${color}11;">${val}</span>`;
-                                    }).join('')}
-                                </div>
-                            ` : ''}
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid rgba(0,212,255,0.2); padding-bottom: 8px;">
+                        <span style="color: ${starColor}; font-size: 14px; white-space: nowrap; flex-shrink: 0;">${item.recommendation || '★'}</span>
+                        <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${item.rating || '普'}</span>
+                        <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
+                        <div style="width: 1px; height: 20px; background: rgba(0,212,255,0.3); flex-shrink: 0;"></div>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; max-width: 200px; overflow-x: auto; flex-shrink: 0;">
+                            ${genres.slice(0, 3).map(g => {
+                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
+                                return `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 8px; border-radius: 4px; white-space: nowrap;">${cleanG}</span>`;
+                            }).join('')}
                         </div>
                     </div>
+                    
+                    <!-- 第二行：年 季 月 + 分隔線 + 自訂類型 -->
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="display: flex; gap: 6px;">
+                            ${item.year ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
+                            ${item.season ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
+                            ${item.month ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
+                        </div>
+                        ${Object.keys(item.extra_data || {}).length > 0 ? `
+                            <div style="width: 1px; height: 20px; background: rgba(0,212,255,0.3);"></div>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                ${Object.entries(item.extra_data).map(([key, val]) => {
+                                    if (!val) return '';
+                                    const color = optionsData.category_colors?.[key] || 'var(--neon-cyan)';
+                                    return `<span style="font-size: 11px; color: ${color}; border: 1px solid ${color}66; padding: 2px 8px; border-radius: 4px; background: ${color}11;">${val}</span>`;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
                 ` : `
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                        <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '12px' : '14px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
+                    </div>
                     <div class="card-tags-v38" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
                         ${item.year ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
                         ${item.season ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
@@ -711,17 +706,17 @@ window.renderAdminContent = (pagedData, total) => {
 		                    <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">網站標題</label><input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;"></div>
 		                    <div style="margin-bottom: 15px;">
 		                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">標題顏色</label>
-		                        <div class="color-input-wrapper" style="width: 100%;">
-		                            <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 100%; height: 40px; border-radius: 8px;"></div>
-		                            <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                        <div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 100%; height: 40px; border-radius: 8px;" onclick="document.getElementById('set-title-color').click()"></div>
+                            <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
 		                        </div>
 		                    </div>
 		                    <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">公告內容</label><textarea id="set-announcement" style="width: 100%; height: 120px; resize: vertical;">${siteSettings.announcement}</textarea></div>
 		                    <div style="margin-bottom: 15px;">
 		                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">公告顏色</label>
-		                        <div class="color-input-wrapper" style="width: 100%;">
-		                            <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 100%; height: 40px; border-radius: 8px;"></div>
-		                            <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                        <div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 100%; height: 40px; border-radius: 8px;" onclick="document.getElementById('set-announcement-color').click()"></div>
+                            <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
 		                        </div>
 		                    </div>
                         </div>
@@ -732,9 +727,9 @@ window.renderAdminContent = (pagedData, total) => {
 		                    <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">頭像網址</label><input type="text" id="set-admin-avatar" value="${siteSettings.admin_avatar || ''}" style="width: 100%;" placeholder="https://..."></div>
 		                    <div style="margin-bottom: 15px;">
 		                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">名稱顏色</label>
-		                        <div class="color-input-wrapper" style="width: 100%;">
-		                            <div class="color-swatch" style="background: ${siteSettings.admin_color || '#00ffff'}; width: 100%; height: 40px; border-radius: 8px;"></div>
-		                            <input type="color" id="set-admin-color" value="${siteSettings.admin_color || '#00ffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                        <div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${siteSettings.admin_color || '#00ffff'}; width: 100%; height: 40px; border-radius: 8px;" onclick="document.getElementById('set-admin-color').click()"></div>
+                            <input type="color" id="set-admin-color" value="${siteSettings.admin_color || '#00ffff'}" onchange="this.previousElementSibling.style.background = this.value">
 		                        </div>
 		                    </div>
                             <div style="margin-top: 40px; text-align: center;">
@@ -778,21 +773,21 @@ window.renderAnimeForm = (item) => {
                         <div>
                             <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">星標</label>
                             <div class="color-input-wrapper" style="width: 100%;">
-                                <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 100%; height: 30px; border-radius: 4px;"></div>
+                                <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 100%; height: 30px; border-radius: 4px;" onclick="document.getElementById('form-star-color').click()"></div>
                                 <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" onchange="this.previousElementSibling.style.background = this.value">
                             </div>
                         </div>
                         <div>
                             <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">名稱</label>
                             <div class="color-input-wrapper" style="width: 100%;">
-                                <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 30px; border-radius: 4px;"></div>
+                                <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 30px; border-radius: 4px;" onclick="document.getElementById('form-name-color').click()"></div>
                                 <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
                             </div>
                         </div>
                         <div>
                             <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">簡介</label>
                             <div class="color-input-wrapper" style="width: 100%;">
-                                <div class="color-swatch" style="background: ${item.desc_color || '#ffffff'}; width: 100%; height: 30px; border-radius: 4px;"></div>
+                                <div class="color-swatch" style="background: ${item.desc_color || '#ffffff'}; width: 100%; height: 30px; border-radius: 4px;" onclick="document.getElementById('form-desc-color').click()"></div>
                                 <input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
                             </div>
                         </div>
@@ -877,7 +872,7 @@ window.renderOptionsManager = () => {
                         <div class="options-column-header">
                             ${(key !== 'recommendation' && key !== 'rating') ? `
                                 <div class="color-input-wrapper">
-                                    <div class="color-swatch" style="background: ${color};"></div>
+                                    <div class="color-swatch" style="background: ${color};" onclick="this.nextElementSibling.click()"></div>
                                     <input type="color" value="${color}" onchange="window.updateCategoryColor('${key}', this.value); this.previousElementSibling.style.background = this.value">
                                 </div>
                             ` : ''}
@@ -893,7 +888,7 @@ window.renderOptionsManager = () => {
                                     <div class="option-item-row">
                                         ${key === 'rating' ? `
                                             <div class="color-input-wrapper">
-                                                <div class="color-swatch" style="background: ${itemColor};"></div>
+                                                <div class="color-swatch" style="background: ${itemColor};" onclick="this.nextElementSibling.click()"></div>
                                                 <input type="color" value="${itemColor}" onchange="window.updateRatingItemColor('${opt}', this.value); this.previousElementSibling.style.background = this.value">
                                             </div>
                                         ` : ''}
