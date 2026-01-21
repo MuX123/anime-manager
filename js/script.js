@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.9.3-ULTRA</div>
+        <div class="site-version">v4.9.4-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -684,8 +684,7 @@ window.renderAnimeForm = (item) => {
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         ${optionsData.genre.map(g => `
                             <label class="option-item-row" style="cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; transition: all 0.2s;">
-                                <div class="color-swatch" style="background: ${optionsData.category_colors.genre}; width: 10px; height: 10px; border-radius: 2px;"></div>
-                                <span style="flex: 1; font-size: 13px;">${g}</span>
+                                <span style="flex: 1; font-size: 13px; color: ${optionsData.category_colors.genre};">${g}</span>
                                 <input type="checkbox" name="form-genre" value="${g}" ${genres.includes(g) ? 'checked' : ''} style="width: 16px; height: 16px;">
                             </label>
                         `).join('')}
