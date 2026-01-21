@@ -272,6 +272,7 @@ window.renderCard = (item) => {
     const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
     const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
     const nameColor = item.name_color || optionsData.category_colors?.name || '#ffffff';
+    const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
     const infoText = `${item.year || ''} ${item.season || ''} ${item.month ? item.month + '月' : ''}`.trim();
     
     // 判斷是否為手機佈局模式 (無論是真手機還是電腦版切換)
@@ -305,9 +306,9 @@ window.renderCard = (item) => {
                             <h3 style="color: ${nameColor}; font-size: 15px; margin: 0 0 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2;">${item.name}</h3>
                             ${(item.year || item.season || item.month) ? `
                                 <div style="display: flex; gap: 8px; align-items: center;">
-                                    ${item.year ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.year}</span>` : ''}
-                                    ${item.season ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.season}</span>` : ''}
-                                    ${item.month ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.month}月</span>` : ''}
+                                    ${item.year ? `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.year}</span>` : ''}
+                                    ${item.season ? `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.season}</span>` : ''}
+                                    ${item.month ? `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.month}月</span>` : ''}
                                 </div>
                             ` : ''}
                         </div>
@@ -348,11 +349,11 @@ window.renderCard = (item) => {
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
                         <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '12px' : '14px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
                     </div>
-                    <div class="card-tags-v38" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        ${item.year ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 2px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.year}</span>` : ''}
-                        ${item.season ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 2px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.season}</span>` : ''}
-                        ${item.month ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 2px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.month}月</span>` : ''}
-                    </div>
+	                    <div class="card-tags-v38" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
+	                        ${item.year ? `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 10px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.year}</span>` : ''}
+	                        ${item.season ? `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 10px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.season}</span>` : ''}
+	                        ${item.month ? `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 10px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.month}月</span>` : ''}
+	                    </div>
                 `}
             </div>
         </div>
@@ -405,23 +406,23 @@ window.showAnimeDetail = (id) => {
 
 	            <!-- 右側資訊流 -->
 	            <div class="detail-content-main force-scroll">
-	                <!-- 標題與核心數據區塊 -->
-	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-	                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
-	                        <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0;">${item.name}</h2>
-                        <div class="core-data-row" style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-		                            ${item.year ? `<div class="core-data-item" style="background: ${ratingColor}11; border: 1px solid ${ratingColor}66; color: ${ratingColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${ratingColor}88;">${item.year}</div>` : ''}
-		                            ${item.season ? `<div class="core-data-item" style="background: ${ratingColor}11; border: 1px solid ${ratingColor}66; color: ${ratingColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${ratingColor}88;">${item.season}</div>` : ''}
-		                            ${item.month ? `<div class="core-data-item" style="background: ${ratingColor}11; border: 1px solid ${ratingColor}66; color: ${ratingColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${ratingColor}88;">${item.month}月</div>` : ''}
+		                <!-- 標題與核心數據區塊 -->
+		                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+		                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+		                        <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0;">${item.name}</h2>
+		                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
+		                            ${item.year ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88;">${item.year}</div>` : ''}
+		                            ${item.season ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88;">${item.season}</div>` : ''}
+		                            ${item.month ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88;">${item.month}月</div>` : ''}
 		                            ${item.episodes ? `<div class="core-data-item" style="background: #39ff1422; border: 1px solid #39ff1466; color: #39ff14; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px #39ff1488;">全 ${item.episodes} 集</div>` : ''}
 		                        </div>
-	                    </div>
-	                </div>
+		                    </div>
+		                </div>
 
                 <!-- 類型標籤區塊 -->
-		                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-		                    <div style="padding: 15px 25px; background: linear-gradient(90deg, ${ratingColor}11, transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
-		                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; flex-wrap: wrap;">
+			                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+			                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+			                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; flex-wrap: wrap;">
 		                            ${genres.map(g => {
 		                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
 		                                return `<span style="background: ${ratingColor}11; border: 1px solid ${ratingColor}66; color: ${ratingColor}; padding: 5px 14px; border-radius: 4px; font-size: 13px; font-weight: 500; white-space: nowrap;">${cleanG}</span>`;
@@ -431,10 +432,10 @@ window.showAnimeDetail = (id) => {
 		                </div>
 
                 <!-- 擴充標籤區塊 -->
-		                ${extraTags.length > 0 ? `
-		                    <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-		                        <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); border-left: 6px solid var(--neon-cyan); margin-left: -2px; box-sizing: border-box;">
-		                            <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; flex-wrap: wrap;">
+			                ${extraTags.length > 0 ? `
+			                    <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+			                        <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+			                            <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; flex-wrap: wrap;">
 		                                ${extraTags.map(t => {
 		                                    const color = optionsData.category_colors[t.key] || 'var(--neon-cyan)';
 		                                    return `<span style="background: ${color}11; border: 1px solid ${color}66; color: ${color}; padding: 5px 14px; border-radius: 4px; font-size: 13px; font-weight: 500; white-space: nowrap;">${t.val}</span>`;
@@ -445,20 +446,20 @@ window.showAnimeDetail = (id) => {
 		                ` : ''}
 
 	                <!-- 劇情介紹區塊 -->
-	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-	                    <div style="padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
-	                        <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
-	                    </div>
-	                </div>
+		                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+		                    <div style="padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+		                        <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
+		                    </div>
+		                </div>
 
 	                <!-- 連結區塊 -->
-	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-	                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(57, 255, 20, 0.05), transparent); border-left: 6px solid #39ff14; margin-left: -2px; box-sizing: border-box;">
-	                        <div class="scroll-row-v35 force-scroll">
-	                            ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 10px 20px; font-size: 13px; white-space: nowrap; border-color: #39ff14; color: #39ff14;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic;">暫無連結</span>'}
-	                        </div>
-	                    </div>
-	                </div>
+		                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+		                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+		                        <div class="scroll-row-v35 force-scroll">
+		                            ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 10px 20px; font-size: 13px; white-space: nowrap; border-color: var(--neon-blue); color: var(--neon-blue);">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic;">暫無連結</span>'}
+		                        </div>
+		                    </div>
+		                </div>
             </div>
         </div>
     `;
