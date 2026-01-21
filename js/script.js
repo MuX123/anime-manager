@@ -172,9 +172,9 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.1.9-ULTRA</div>
+	            <div class="site-version">v5.2.0-ULTRA</div>
 		        <div class="app-container">
-			            <div style="position: fixed; top: 20px; right: 20px; display: flex; align-items: center; gap: 15px; z-index: 2000;">
+			            <div style="position: fixed; top: 20px; right: 20px; display: flex; align-items: center; gap: 20px; z-index: 2000;">
 			                <!-- 佈局選擇器 -->
 			                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.15); padding: 6px 12px; border-radius: 0px; border: 1px solid rgba(0,212,255,0.5); white-space: nowrap; backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.15);">
 			                    <span style="font-size: 11px; color: var(--neon-cyan); font-weight: bold; font-family: 'Orbitron', sans-serif; letter-spacing: 1px;">LAYOUT</span>
@@ -186,7 +186,7 @@ app.innerHTML = `
 			                <!-- 系統菜單按鈕 (正方形) -->
 			                <div style="position: relative; display: flex; align-items: center;">
 			                    <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="width: 36px; height: 36px; border-radius: 0px !important; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0,212,255,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--neon-cyan); backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.15); transition: all 0.3s ease; outline: none !important;">⚙</button>
-			                    <div id="systemMenu" style="position: absolute; top: 42px; right: 0; z-index: 2001; background: var(--panel-bg); border: 1px solid var(--neon-blue); border-radius: 0px; overflow: hidden; min-width: 180px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); display: none; backdrop-filter: blur(15px);">
+			                    <div id="systemMenu" style="position: absolute; top: 45px; right: 0; z-index: 2001; background: var(--panel-bg); border: 1px solid var(--neon-blue); border-radius: 0px; overflow: hidden; min-width: 180px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); display: none; backdrop-filter: blur(15px);">
 			                        <div id="adminMenuOptions" style="padding: 8px 0;"></div>
 			                    </div>
 			                </div>
