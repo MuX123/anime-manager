@@ -172,12 +172,14 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-            <div class="site-version">v2006</div>
-            <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="position: fixed; top: 20px; right: 20px; z-index: 500; width: 50px; height: 50px; border-radius: 50%; background: rgba(0, 212, 255, 0.1); border: 2px solid var(--neon-blue); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">⚙</button>
-            <div id="systemMenu" style="position: fixed; top: 80px; right: 20px; z-index: 499; background: var(--panel-bg); border: 2px solid var(--neon-blue); border-radius: 12px; overflow: hidden; min-width: 200px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2); display: none;">
-                <div id="adminMenuOptions" style="padding: 10px 0;"></div>
-            </div>
-        <div class="app-container">
+	            <div class="site-version">v2007</div>
+	        <div class="app-container">
+	            <div style="position: relative; width: 100%;">
+	                <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="position: absolute; top: 0; right: 0; z-index: 500; width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 212, 255, 0.1); border: 2px solid var(--neon-blue); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">⚙</button>
+	                <div id="systemMenu" style="position: absolute; top: 50px; right: 0; z-index: 499; background: var(--panel-bg); border: 2px solid var(--neon-blue); border-radius: 12px; overflow: hidden; min-width: 200px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2); display: none;">
+	                    <div id="adminMenuOptions" style="padding: 10px 0;"></div>
+	                </div>
+	            </div>
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
             </header>
@@ -205,17 +207,17 @@ app.innerHTML = `
                     </div>
                 </div>
             </div>
-            <div id="notice-container" style="display: ${isNotice ? 'block' : 'none'};">
-                ${noticeHTML}
-            </div>
-            <div id="main-grid-content" style="display: ${isNotice ? 'none' : 'block'};">
-                <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}" style="${gridColumns === 'mobile' ? '' : `grid-template-columns: repeat(${gridColumns}, 1fr);`}">
-                    ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
-                </div>
-                <div id="pagination-container" style="display: flex; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
-            </div>
-        </div>
-    `;
+	            <div id="notice-container" style="display: ${isNotice ? 'block' : 'none'};">
+	                ${noticeHTML}
+	            </div>
+	            <div id="main-grid-content" style="display: ${isNotice ? 'none' : 'block'};">
+	                <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}" style="${gridColumns === 'mobile' ? '' : `grid-template-columns: repeat(${gridColumns}, 1fr);`}">
+	                    ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
+	                </div>
+	                <div id="pagination-container" style="display: flex; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
+	            </div>
+	        </div>
+	    `;
     
     // 重新初始化滾輪捲動監聽
     window.initGlobalScroll();
