@@ -1193,7 +1193,11 @@ document.addEventListener('click', () => {
 });
 
 // 啟動應用
-window.initApp();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => window.initApp());
+} else {
+    window.initApp();
+}
 
 // --- Discord 公告同步與顯示邏輯 (方案 B) ---
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1463359919452590193/uVmtehjked0vs7rNWUVyqDDROIr8CAfSWhOxEPBt1WkoeAgdIOuPHJyukvBFXfocKT1I';
