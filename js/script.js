@@ -39,6 +39,7 @@ const adminItemsPerPage = 10;
 let adminPage = 1;
 let filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' };
 let gridColumns = localStorage.getItem('gridColumns') || '5';
+window.gridColumns = gridColumns;
 let importTarget = 'anime';
 let editId = null;
 let isFirstLoad = true;
@@ -422,6 +423,7 @@ window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.r
 
 window.changeGridLayout = (n) => {
     gridColumns = n === 'mobile' ? 'mobile' : parseInt(n);
+    window.gridColumns = gridColumns;  // 同步到 window 對象
     localStorage.setItem('gridColumns', gridColumns);
     window.renderApp(); // 重新渲染以套用 class
 };
