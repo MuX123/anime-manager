@@ -361,10 +361,18 @@ window.renderCard = (item) => {
 window.showAnimeDetail = (id) => {
     const item = animeData.find(a => a.id === id);
     if (!item) return;
-    const modal = document.getElementById('detailModal');
-    const content = document.getElementById('detailContent');
-    
-    const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
+	    const modal = document.getElementById('detailModal');
+	    const content = document.getElementById('detailContent');
+	    
+	    // 移除外層原有水藍色框線，改由內部 detail-container-v35 統一控制
+	    const modalContent = modal.querySelector('.modal-content');
+	    if (modalContent) {
+	        modalContent.style.border = 'none';
+	        modalContent.style.boxShadow = 'none';
+	        modalContent.style.background = 'transparent';
+	    }
+
+	    const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
     const links = Array.isArray(item.links) ? item.links : [];
     const starColor = optionsData.category_colors?.recommendation || item.star_color || '#ffcc00';
     const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
@@ -385,11 +393,9 @@ window.showAnimeDetail = (id) => {
 	    }
 
 const btnColor = optionsData.category_colors?.btn_bg || '#00d4ff';
-			    content.innerHTML = `
-			        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; position: relative; background: #050609; border-radius: 20px; overflow: hidden; box-sizing: border-box; border: none !important; box-shadow: none !important;">
-                        <!-- 偽元素邊框層 -->
-                        <div style="position: absolute; inset: 0; border: 4px solid ${ratingColor}; border-radius: 20px; pointer-events: none; z-index: 100; box-shadow: 0 0 20px ${ratingColor}, inset 0 0 10px ${ratingColor}33;"></div>
-			            <!-- 左側滿版海報 -->
+				    content.innerHTML = `
+				        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; position: relative; background: #050609; border-radius: 16px; overflow: hidden; box-sizing: border-box; border: 2px solid ${ratingColor}; box-shadow: 0 0 30px ${ratingColor}44;">
+				            <!-- 左側滿版海報 -->
 			            <div class="detail-poster-aside" style="border-right: 4px solid ${ratingColor}; box-sizing: border-box; background: #000; position: relative; z-index: 1;">
 	                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
 	                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
