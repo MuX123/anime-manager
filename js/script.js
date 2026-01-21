@@ -122,10 +122,9 @@ window.loadData = async function() {
 window.updateAdminMenu = function() {
     const container = document.getElementById('adminMenuOptions');
     if (!container) return;
-container.innerHTML = (isAdmin ? 
+container.innerHTML = isAdmin ? 
 	        `<div class="menu-item-v2" onclick="window.toggleAdminMode(true)">⚙ 管理後台</div><div class="menu-item-v2" onclick="window.handleLogout()">⊗ 登出系統</div>` : 
-	        `<div class="menu-item-v2" onclick="window.showLoginModal()">🔐 管理員登入</div>`) + 
-	        `<div class="menu-item-v2" onclick="document.getElementById('discord-announcement').style.display='block'; window.toggleSystemMenu()">💬 開啟公告板</div>`;
+	        `<div class="menu-item-v2" onclick="window.showLoginModal()">🔐 管理員登入</div>`;
 };
 
 window.renderApp = function() {
@@ -138,7 +137,7 @@ window.renderApp = function() {
     // 僅在初次渲染或非搜尋輸入時更新整個 app
     if (!document.getElementById('search-input')) {
         app.innerHTML = `
-            <div class="site-version">v3.9.6-ULTRA</div>
+            <div class="site-version">v3.9.7-ULTRA</div>
             <div class="app-container">
                 <header>
                     <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
