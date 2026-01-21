@@ -318,3 +318,51 @@ select {
     visibility: visible !important;
     opacity: 1 !important;
 }
+
+
+/* 詳情頁類型標籤樣式 */
+.tag-pill-v35 {
+    display: inline-block;
+    padding: 6px 14px;
+    margin-right: 10px;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.tag-pill-v35:hover {
+    background: rgba(0, 212, 255, 0.2);
+    border-color: rgba(0, 212, 255, 0.6);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+}
+
+/* 橫向滾動容器 */
+.scroll-row-v35 {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 0;
+    white-space: nowrap;
+}
+
+.scroll-row-v35::-webkit-scrollbar {
+    height: 4px;
+}
+
+.scroll-row-v35::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scroll-row-v35::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 255, 0.3);
+    border-radius: 2px;
+}
+
+.scroll-row-v35::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 212, 255, 0.6);
+}
