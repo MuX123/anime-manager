@@ -444,6 +444,11 @@ input:focus, select:focus, textarea:focus {
     div[style*="background: rgba(0,212,255,0.1)"][style*="padding: 5px 15px"] { 
         display: none !important; 
     }
+    /* 強制手機版一行一個作品 */
+    .anime-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
     .category-buttons-container {
         display: flex !important;
         flex-wrap: nowrap !important;
