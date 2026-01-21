@@ -75,6 +75,7 @@ window.initApp = async function() {
                         if (!optionsData.custom_lists) optionsData.custom_lists = [];
                         const defaultColors = { genre: '#00ffff', year: '#ffffff', month: '#ffffff', season: '#ffffff', episodes: '#00ffff', rating: '#b026ff', recommendation: '#ffcc00', btn_bg: '#00d4ff' };
                         optionsData.category_colors = { ...defaultColors, ...optionsData.category_colors };
+                        if (!optionsData.category_colors.btn_bg) optionsData.category_colors.btn_bg = '#00d4ff';
                     } catch(e) {} 
                 }
             });
@@ -149,6 +150,11 @@ container.innerHTML = isAdmin ?
 window.renderApp = function() {
     const app = document.getElementById('app');
     if (!app) return;
+
+    // 動態套用按鈕顏色
+    const btnColor = optionsData.category_colors?.btn_bg || '#00d4ff';
+    document.documentElement.style.setProperty('--btn-bg', btnColor);
+    document.documentElement.style.setProperty('--btn-bg-alpha', btnColor + '22');
 
     const isAdminMode = document.querySelector('.admin-container') !== null;
     const isNotice = currentCategory === 'notice';
@@ -379,9 +385,9 @@ window.showAnimeDetail = (id) => {
 	    }
 
 		    content.innerHTML = `
-		        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; border: 3px solid ${ratingColor} !important; background: rgba(0,0,0,0.95); border-radius: 20px; overflow: hidden; box-shadow: 0 0 30px ${ratingColor}44;">
-		            <!-- 左側滿版海報 -->
-		            <div class="detail-poster-aside" style="border-right: 3px solid ${ratingColor};">
+<div class="detail-container-v35" style="--rating-color: ${ratingColor}; border: 3px solid ${ratingColor} !important; background: rgba(0,0,0,0.95); border-radius: 20px; overflow: hidden; box-shadow: 0 0 30px ${ratingColor}44; box-sizing: border-box;">
+			            <!-- 左側滿版海報 -->
+			            <div class="detail-poster-aside" style="border-right: 3px solid ${ratingColor}; box-sizing: border-box;">
 	                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
 	                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
 	                <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; border-right: 2px solid ${ratingColor}; border-bottom: 2px solid ${ratingColor}; backdrop-filter: blur(12px); z-index: 10;">
@@ -391,10 +397,10 @@ window.showAnimeDetail = (id) => {
 	            </div>
 	
 	            <!-- 右側資訊流 -->
-	            <div class="detail-content-main force-scroll" style="padding: 25px !important; gap: 12px !important;">
-		                <!-- 標題與核心數據區塊 -->
-		                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative;">
-		                    <div style="padding: 12px 20px; background: linear-gradient(90deg, ${ratingColor}11, transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
+<div class="detail-content-main force-scroll" style="padding: 25px !important; gap: 12px !important; background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 212, 255, 0.05)) !important;">
+			                <!-- 標題與核心數據區塊 -->
+			                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative;">
+			                    <div style="padding: 12px 20px; background: rgba(0, 0, 0, 0.4); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
 		                        <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0; font-size: 24px;">${item.name}</h2>
 		                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; margin-top: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
 		                            ${item.year ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${item.year}</div>` : ''}
@@ -405,9 +411,9 @@ window.showAnimeDetail = (id) => {
 		                    </div>
 		                </div>
 	
-			                <!-- 標籤整合區塊 (類型 + 自訂選項) -->
-			                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative;">
-			                    <div style="padding: 10px 20px; background: linear-gradient(90deg, ${ratingColor}11, transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
+<!-- 標籤整合區塊 (類型 + 自訂選項) -->
+				                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative;">
+				                    <div style="padding: 10px 20px; background: rgba(0, 0, 0, 0.4); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
 			                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
 			                            ${genres.map(g => {
 			                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
@@ -421,18 +427,18 @@ window.showAnimeDetail = (id) => {
 			                    </div>
 			                </div>
 		
-			                <!-- 劇情介紹區塊 (壓縮並增加滾動條) -->
-			                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative; flex: 1; min-height: 0;">
-			                    <div style="padding: 15px 20px; background: linear-gradient(90deg, ${ratingColor}11, transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column;">
+<!-- 劇情介紹區塊 (壓縮並增加滾動條) -->
+				                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative; flex: 1; min-height: 0;">
+				                    <div style="padding: 15px 20px; background: rgba(0, 0, 0, 0.4); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column;">
 			                        <div class="force-scroll" style="overflow-y: auto; max-height: 140px; padding-right: 10px;">
 			                            <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 1.8; font-size: 15px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
 			                        </div>
 			                    </div>
 			                </div>
 	
-		                <!-- 連結區塊 -->
-		                <div class="detail-section-v35" style="margin-bottom: 0; position: relative;">
-		                    <div style="padding: 10px 20px; background: linear-gradient(90deg, ${ratingColor}11, transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
+<!-- 連結區塊 -->
+			                <div class="detail-section-v35" style="margin-bottom: 0; position: relative;">
+			                    <div style="padding: 10px 20px; background: rgba(0, 0, 0, 0.4); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
 		                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
 		                            ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 8px 16px; font-size: 12px; white-space: nowrap; border-color: ${ratingColor}; color: ${ratingColor}; border-radius: 50px; height: 32px;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic; font-size: 12px;">暫無連結</span>'}
 		                        </div>
@@ -866,7 +872,7 @@ window.renderAnimeForm = (item) => {
 };
 
 window.renderOptionsManager = () => {
-    const defaultKeys = ['genre', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'name', 'desc'];
+    const defaultKeys = ['genre', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'name', 'desc', 'btn_bg'];
     const customKeys = optionsData.custom_lists || [];
     const allKeys = [...defaultKeys, ...customKeys];
 
@@ -1042,17 +1048,18 @@ window.saveOptionsToDB = async () => {
     if (typeof window.renderApp === 'function') window.renderApp();
 };
 window.getOptionLabel = (key) => {
-    const labels = { 
-        genre: '類型', 
-        year: '年份', 
-        month: '月份', 
-        season: '季度', 
-        episodes: '集數', 
-        rating: '評分', 
-        recommendation: '推薦',
-        name: '名稱',
-        desc: '簡介'
-    };
+const labels = { 
+	        genre: '類型', 
+	        year: '年份', 
+	        month: '月份', 
+	        season: '季度', 
+	        episodes: '集數', 
+	        rating: '評分', 
+	        recommendation: '推薦',
+	        name: '名稱',
+	        desc: '簡介',
+            btn_bg: '按鈕顏色'
+	    };
     if (labels[key]) return labels[key];
     if (siteSettings.custom_labels && siteSettings.custom_labels[key]) return siteSettings.custom_labels[key];
     return key;
