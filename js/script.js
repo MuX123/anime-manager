@@ -20,7 +20,16 @@ let optionsData = {
     },
     custom_lists: []
 };
-let siteSettings = { site_title: 'ACG 收藏庫', announcement: '⚡ 系統連線中 // 歡迎光臨 ⚡', title_color: '#ffffff', announcement_color: '#ffffff', custom_labels: {} };
+let siteSettings = { 
+    site_title: 'ACG 收藏庫', 
+    announcement: '⚡ 系統連線中 // 歡迎光臨 ⚡', 
+    title_color: '#ffffff', 
+    announcement_color: '#ffffff', 
+    admin_name: '管理員',
+    admin_avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
+    admin_color: '#00ffff',
+    custom_labels: {} 
+};
 let currentCategory = 'notice';
 let currentAdminTab = 'manage';
 let isAdmin = false;
@@ -52,6 +61,9 @@ window.initApp = async function() {
                 if (s.id === 'announcement') siteSettings.announcement = s.value;
                 if (s.id === 'title_color') siteSettings.title_color = s.value;
                 if (s.id === 'announcement_color') siteSettings.announcement_color = s.value;
+                if (s.id === 'admin_name') siteSettings.admin_name = s.value;
+                if (s.id === 'admin_avatar') siteSettings.admin_avatar = s.value;
+                if (s.id === 'admin_color') siteSettings.admin_color = s.value;
                 if (s.id === 'custom_labels') { try { siteSettings.custom_labels = JSON.parse(s.value); } catch(e) {} }
                 if (s.id === 'options_data') { 
                     try { 
@@ -525,30 +537,42 @@ window.renderAdminContent = (pagedData, total) => {
         return window.renderAnimeForm(item);
     } else if (currentAdminTab === 'options') {
         return window.renderOptionsManager();
-    } else if (currentAdminTab === 'settings') {
-        return `
-            <div style="display: flex; flex-direction: column; gap: 20px; max-width: 600px; margin: 0 auto;">
-                <h3 style="color: var(--neon-cyan); border-bottom: 1px solid var(--neon-blue); padding-bottom: 10px;">基本設定</h3>
-                <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">網站標題</label><input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;"></div>
-                <div>
-                    <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">標題顏色</label>
-                    <div class="color-input-wrapper">
-                        <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 40px; height: 40px;"></div>
-                        <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+	    } else if (currentAdminTab === 'settings') {
+	        return `
+	            <div style="display: flex; flex-direction: column; gap: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 50px;">
+	                <h3 style="color: var(--neon-cyan); border-bottom: 1px solid var(--neon-blue); padding-bottom: 10px;">基本設定</h3>
+	                <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">網站標題</label><input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;"></div>
+	                <div>
+	                    <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">標題顏色</label>
+	                    <div class="color-input-wrapper">
+	                        <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 40px; height: 40px;"></div>
+	                        <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+	                    </div>
+	                </div>
+	                <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告內容</label><textarea id="set-announcement" style="width: 100%; height: 100px;">${siteSettings.announcement}</textarea></div>
+	                <div>
+	                    <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告顏色</label>
+	                    <div class="color-input-wrapper">
+	                        <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 40px; height: 40px;"></div>
+	                        <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+	                    </div>
+	                </div>
+
+                    <h3 style="color: var(--neon-cyan); border-bottom: 1px solid var(--neon-blue); padding-bottom: 10px; margin-top: 30px;">管理員個人化 (公告顯示)</h3>
+                    <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">顯示名稱</label><input type="text" id="set-admin-name" value="${siteSettings.admin_name || '管理員'}" style="width: 100%;"></div>
+                    <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">頭像網址</label><input type="text" id="set-admin-avatar" value="${siteSettings.admin_avatar || ''}" style="width: 100%;" placeholder="https://..."></div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">名稱顏色</label>
+                        <div class="color-input-wrapper">
+                            <div class="color-swatch" style="background: ${siteSettings.admin_color || '#00ffff'}; width: 40px; height: 40px;"></div>
+                            <input type="color" id="set-admin-color" value="${siteSettings.admin_color || '#00ffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                        </div>
                     </div>
-                </div>
-                <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告內容</label><textarea id="set-announcement" style="width: 100%; height: 100px;">${siteSettings.announcement}</textarea></div>
-                <div>
-                    <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告顏色</label>
-                    <div class="color-input-wrapper">
-                        <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 40px; height: 40px;"></div>
-                        <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
-                    </div>
-                </div>
-                <button class="btn-primary" style="margin-top: 20px;" onclick="window.saveSettings()">💾 儲存設定</button>
-            </div>
-        `;
-    }
+
+	                <button class="btn-primary" style="margin-top: 20px;" onclick="window.saveSettings()">💾 儲存設定</button>
+	            </div>
+	        `;
+	    }
     return '';
 };
 
@@ -897,18 +921,27 @@ window.saveSettings = async () => {
         const announcement = document.getElementById('set-announcement').value;
         const titleColor = document.getElementById('set-title-color').value;
         const announcementColor = document.getElementById('set-announcement-color').value;
+        const adminName = document.getElementById('set-admin-name').value;
+        const adminAvatar = document.getElementById('set-admin-avatar').value;
+        const adminColor = document.getElementById('set-admin-color').value;
         
         await supabaseClient.from('site_settings').upsert([
             { id: 'site_title', value: title }, 
             { id: 'announcement', value: announcement },
             { id: 'title_color', value: titleColor },
-            { id: 'announcement_color', value: announcementColor }
+            { id: 'announcement_color', value: announcementColor },
+            { id: 'admin_name', value: adminName },
+            { id: 'admin_avatar', value: adminAvatar },
+            { id: 'admin_color', value: adminColor }
         ]);
         
         siteSettings.site_title = title;
         siteSettings.announcement = announcement;
         siteSettings.title_color = titleColor;
         siteSettings.announcement_color = announcementColor;
+        siteSettings.admin_name = adminName;
+        siteSettings.admin_avatar = adminAvatar;
+        siteSettings.admin_color = adminColor;
         
         window.showToast('✓ 設定已更新');
         window.renderAdmin();
@@ -1028,38 +1061,45 @@ window.renderAnnouncements = async function() {
         }
 
         container.innerHTML = `
-            <div class="announcement-list" style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 50px;">
-                ${data.map(item => {
-                    const images = item.image_urls || [];
-                    let gridStyle = '';
-                    if (images.length === 1) gridStyle = 'grid-template-columns: 1fr;';
-                    else if (images.length === 2) gridStyle = 'grid-template-columns: 1fr 1fr;';
-                    else if (images.length >= 3) gridStyle = 'grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));';
+            <div class="announcement-wrapper" style="height: 70vh; overflow-y: auto; padding-right: 10px; margin-bottom: 20px;" class="force-scroll">
+                <div class="announcement-list" style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 30px;">
+                    ${data.map(item => {
+                        const images = item.image_urls || [];
+                        let gridStyle = '';
+                        if (images.length === 1) gridStyle = 'grid-template-columns: 1fr;';
+                        else if (images.length === 2) gridStyle = 'grid-template-columns: 1fr 1fr;';
+                        else if (images.length >= 3) gridStyle = 'grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));';
 
-                    return `
-                    <div class="announcement-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0,212,255,0.1); border-radius: 12px; padding: 20px; position: relative; transition: all 0.3s ease;">
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid rgba(0,212,255,0.05); padding-bottom: 10px;">
-                            <img src="${item.author_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--neon-blue);">
-                            <div style="flex: 1;">
-                                <div style="color: var(--neon-cyan); font-weight: bold; font-size: 14px;">${item.author_name || '系統公告'}</div>
-                                <div style="color: var(--text-secondary); font-size: 11px; font-family: 'Space Mono', monospace;">${new Date(item.timestamp).toLocaleString()}</div>
-                            </div>
-                            ${isAdmin ? `<button onclick="window.deleteAnnouncement('${item.id}')" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 12px;">刪除</button>` : ''}
-                        </div>
-                        <div style="color: #ffffff; line-height: 1.8; font-size: 15px; white-space: pre-wrap; word-break: break-word; margin-bottom: 15px;">${item.content}</div>
-                        ${images.length > 0 ? `
-                            <div style="display: grid; gap: 10px; ${gridStyle} border-radius: 8px; overflow: hidden;">
-                                ${images.map(url => `
-                                    <div style="aspect-ratio: 16/9; background: #000; cursor: zoom-in;" onclick="window.openLightbox('${url}')">
-                                        <img src="${url}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        return `
+                        <div class="announcement-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0,212,255,0.1); border-radius: 12px; padding: 20px; position: relative; transition: all 0.3s ease;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid rgba(0,212,255,0.05); padding-bottom: 10px;">
+                                <img src="${item.author_avatar || siteSettings.admin_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--neon-blue);">
+                                <div style="flex: 1;">
+                                    <div style="color: ${item.author_color || siteSettings.admin_color || 'var(--neon-cyan)'}; font-weight: bold; font-size: 14px;">${item.author_name || siteSettings.admin_name || '管理員'}</div>
+                                    <div style="color: var(--text-secondary); font-size: 11px; font-family: 'Space Mono', monospace;">${new Date(item.timestamp).toLocaleString()}</div>
+                                </div>
+                                ${isAdmin ? `
+                                    <div style="display: flex; gap: 10px;">
+                                        <button onclick='window.showEditAnnouncementModal(${JSON.stringify(item).replace(/'/g, "&apos;")})' style="background: none; border: none; color: var(--neon-cyan); cursor: pointer; font-size: 12px;">編輯</button>
+                                        <button onclick="window.deleteAnnouncement('${item.id}')" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 12px;">刪除</button>
                                     </div>
-                                `).join('')}
+                                ` : ''}
                             </div>
-                        ` : ''}
-                    </div>
-                `}).join('')}
-                ${isAdmin ? '<button class="btn-primary" style="align-self: center;" onclick="window.showAddAnnouncementModal()">+ 新增公告</button>' : ''}
+                            <div style="color: #ffffff; line-height: 1.8; font-size: 15px; white-space: pre-wrap; word-break: break-word; margin-bottom: 15px;">${item.content}</div>
+                            ${images.length > 0 ? `
+                                <div style="display: grid; gap: 10px; ${gridStyle} border-radius: 8px; overflow: hidden;">
+                                    ${images.map(url => `
+                                        <div style="aspect-ratio: 16/9; background: #000; cursor: zoom-in;" onclick="window.openLightbox('${url}')">
+                                            <img src="${url}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `}).join('')}
+                </div>
             </div>
+            ${isAdmin ? '<div style="display: flex; justify-content: center;"><button class="btn-primary" onclick="window.showAddAnnouncementModal()">+ 新增公告</button></div>' : ''}
         `;
     } catch (err) {
         container.innerHTML = '<div style="color: #ff4444; text-align: center; padding: 20px;">讀取公告失敗</div>';
@@ -1084,7 +1124,25 @@ window.showAddAnnouncementModal = () => {
     document.body.appendChild(modal);
 };
 
-window.submitAnnouncement = async () => {
+window.showEditAnnouncementModal = (item) => {
+    const modal = document.createElement('div');
+    modal.id = 'announcement-modal';
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <h2 style="color: var(--neon-cyan); margin-bottom: 20px;">📝 編輯公告</h2>
+            <textarea id="ann-content" placeholder="輸入公告內容..." style="width: 100%; height: 150px; margin-bottom: 15px;">${item.content || ''}</textarea>
+            <textarea id="ann-images" placeholder="輸入圖片網址 (多張請用換行分隔)..." style="width: 100%; height: 80px; margin-bottom: 20px; font-size: 12px;">${(item.image_urls || []).join('\n')}</textarea>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" style="flex: 1;" onclick="window.submitAnnouncement('${item.id}')">儲存修改</button>
+                <button class="btn-primary" style="flex: 1; border-color: #ff4444; color: #ff4444;" onclick="document.getElementById('announcement-modal').remove()">取消</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+};
+
+window.submitAnnouncement = async (editId = null) => {
     const content = document.getElementById('ann-content').value;
     const imagesText = document.getElementById('ann-images').value;
     const images = imagesText.split('\n').map(url => url.trim()).filter(url => url !== '');
@@ -1092,18 +1150,30 @@ window.submitAnnouncement = async () => {
     if (!content && images.length === 0) return window.showToast('請輸入內容或圖片', 'error');
 
     try {
-        const { error } = await supabaseClient.from('announcements').insert([{
+        const payload = {
             content: content,
             image_urls: images,
-            author_name: '管理員',
+            author_name: siteSettings.admin_name || '管理員',
+            author_avatar: siteSettings.admin_avatar || '',
+            author_color: siteSettings.admin_color || '#00ffff',
             timestamp: new Date().toISOString()
-        }]);
+        };
+
+        let error;
+        if (editId) {
+            const { error: err } = await supabaseClient.from('announcements').update(payload).eq('id', parseInt(editId));
+            error = err;
+        } else {
+            const { error: err } = await supabaseClient.from('announcements').insert([payload]);
+            error = err;
+        }
+
         if (error) throw error;
-        window.showToast('✓ 公告已發布');
+        window.showToast(editId ? '✓ 公告已更新' : '✓ 公告已發布');
         document.getElementById('announcement-modal').remove();
         window.renderAnnouncements();
     } catch (err) {
-        window.showToast('✗ 發布失敗', 'error');
+        window.showToast('✗ 操作失敗', 'error');
     }
 };
 
