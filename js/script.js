@@ -341,19 +341,11 @@ window.renderCard = (item) => {
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                         <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '13px' : '15px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
                     </div>
-	                    <div class="card-tags-v38" style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; width: 100%; justify-content: center; padding-bottom: 5px;">
-	                        ${item.year ? `<span style="${getTagStyle(yearColor)}">${item.year}</span>` : ''}
-	                        ${item.season ? `<span style="${getTagStyle(yearColor)}">${item.season}</span>` : ''}
-	                        ${item.month ? `<span style="${getTagStyle(yearColor)}">${item.month}月</span>` : ''}
-	                    </div>
-	                    <div class="card-tags-v38" style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; width: 100%; justify-content: center;">
-	                        ${genres.slice(0, 3).map(g => `<span style="${getTagStyle(genreColor)}">${g.replace(/["'\[\]\(\),，。]/g, '').trim()}</span>`).join('')}
-	                        ${Object.entries(item.extra_data || {}).slice(0, 2).map(([key, val]) => {
-	                            if (!val) return '';
-	                            const color = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : '#ffffff';
-	                            return `<span style="${getTagStyle(color)}">${val}</span>`;
-	                        }).join('')}
-	                    </div>
+		                    <div class="card-tags-v38" style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; width: 100%; justify-content: center;">
+		                        ${item.year ? `<span style="${getTagStyle(yearColor)}">${item.year}</span>` : ''}
+		                        ${item.season ? `<span style="${getTagStyle(yearColor)}">${item.season}</span>` : ''}
+		                        ${item.month ? `<span style="${getTagStyle(yearColor)}">${item.month}月</span>` : ''}
+		                    </div>
                 </div>
             </div>
         `;
@@ -375,15 +367,16 @@ window.showAnimeDetail = (id) => {
     const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
     const cyanBase = 'rgba(0, 212, 255, 0.1)';
 
-    const extraTags = [];
-    if (item.extra_data) {
-        Object.entries(item.extra_data).forEach(([key, val]) => {
-            if (val) {
-                const customColor = optionsData.category_colors ? optionsData.category_colors[key] : null;
-                extraTags.push({ val: val, key: key, color: customColor });
-            }
-        });
-    }
+	    const extraTags = [];
+	    if (item.extra_data) {
+	        Object.entries(item.extra_data).forEach(([key, val]) => {
+	            if (val) {
+	                // 修正：優先從 optionsData.category_colors 獲取對應 key 的顏色
+	                const customColor = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : 'var(--neon-cyan)';
+	                extraTags.push({ val: val, key: key, color: customColor });
+	            }
+	        });
+	    }
 
 	    content.innerHTML = `
 	        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; border: 3px solid ${ratingColor} !important; background: ${cyanBase}; border-radius: 20px; overflow: hidden;">
