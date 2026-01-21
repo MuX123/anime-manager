@@ -367,7 +367,7 @@ select {
 }
 
 .anime-grid.force-mobile-layout .card-content-v38 h3 { 
-    font-size: 20px !important; 
+    font-size: 14px !important; 
     margin: 0 !important;
     flex: 2;
     white-space: nowrap;
@@ -379,15 +379,16 @@ select {
     display: flex !important;
     flex: 2;
     justify-content: center;
-    gap: 15px !important;
+    gap: 10px !important;
     margin: 0 !important;
+    font-size: 12px !important;
 }
 
 .anime-grid.force-mobile-layout .episodes-text-v479 { 
     display: block !important; 
     flex: 1;
     text-align: right;
-    font-size: 16px !important;
+    font-size: 12px !important;
     margin: 0 !important;
     white-space: nowrap;
 }
