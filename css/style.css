@@ -148,28 +148,83 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     .floating-menu-btn { display: flex !important; }
 }
 
-/* 資料列表佈局 (強制單欄) */
+/* 資料列表佈局 (強制單欄橫向撐滿) */
 .anime-grid.force-mobile-layout {
     display: flex !important;
     flex-direction: column !important;
     grid-template-columns: 1fr !important;
     width: 100% !important;
     max-width: 100% !important;
-    margin: 0 !important;
-    gap: 20px !important;
+    margin: 0 auto !important;
+    gap: 15px !important;
 }
+
 .anime-grid.force-mobile-layout .anime-card {
-    display: block !important;
+    display: flex !important;
+    flex-direction: row !important;
     width: 100% !important;
     max-width: 100% !important;
+    height: auto !important;
+    min-height: 80px;
     margin: 0 !important;
-    flex: 0 0 100% !important;
+    align-items: center;
+    padding: 10px 25px !important;
 }
+
 .anime-grid.force-mobile-layout .card-poster-v38 { display: none !important; }
-.anime-grid.force-mobile-layout .card-content-v38 { text-align: center !important; padding: 20px !important; }
-.anime-grid.force-mobile-layout .card-content-v38 h3 { font-size: 24px !important; margin-bottom: 15px !important; }
-.anime-grid.force-mobile-layout .card-tags-v38 span { font-size: 16px !important; }
-.anime-grid.force-mobile-layout .episodes-text-v479 { display: block !important; font-size: 18px !important; margin-top: 15px !important; }
+
+.anime-grid.force-mobile-layout .card-content-v38 { 
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    padding: 0 !important;
+    text-align: left !important;
+    gap: 20px;
+}
+
+.anime-grid.force-mobile-layout .card-content-v38 h3 { 
+    font-size: 20px !important; 
+    margin: 0 !important;
+    flex: 2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.anime-grid.force-mobile-layout .mobile-identity-v481 {
+    display: flex !important;
+    flex: 2;
+    justify-content: center;
+    gap: 15px !important;
+    margin: 0 !important;
+}
+
+.anime-grid.force-mobile-layout .episodes-text-v479 { 
+    display: block !important; 
+    flex: 1;
+    text-align: right;
+    font-size: 16px !important;
+    margin: 0 !important;
+    white-space: nowrap;
+}
+
+/* 手機端在資料列表模式下改回垂直排列以利閱讀 */
+@media (max-width: 768px) {
+    .anime-grid.force-mobile-layout .anime-card {
+        flex-direction: column !important;
+        padding: 20px !important;
+    }
+    .anime-grid.force-mobile-layout .card-content-v38 {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 10px;
+    }
+    .anime-grid.force-mobile-layout .card-content-v38 h3 { flex: none; }
+    .anime-grid.force-mobile-layout .mobile-identity-v481 { flex: none; }
+    .anime-grid.force-mobile-layout .episodes-text-v479 { flex: none; text-align: center; }
+}
 
 /* 詳情頁邊條對齊 */
 .detail-border-v500 {
