@@ -169,9 +169,13 @@ window.renderApp = function() {
     const filtered = window.getFilteredData();
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
-    // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
+// 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-		        <div class="site-version">v5.0.6-ULTRA</div>
+			        <div class="site-version">v5.0.6-ULTRA</div>
+            <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="position: fixed; top: 20px; right: 20px; z-index: 500; width: 50px; height: 50px; border-radius: 50%; background: rgba(0, 212, 255, 0.1); border: 2px solid var(--neon-blue); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">⚙</button>
+            <div id="systemMenu" style="position: fixed; top: 80px; right: 20px; z-index: 499; background: var(--panel-bg); border: 2px solid var(--neon-blue); border-radius: 12px; overflow: hidden; min-width: 200px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2); display: none;">
+                <div id="adminMenuOptions" style="padding: 10px 0;"></div>
+            </div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -1205,7 +1209,10 @@ window.handleWheelScroll = (e) => {
 window.toggleSystemMenu = (e) => {
     e.stopPropagation();
     const menu = document.getElementById('systemMenu');
-    if (menu) menu.classList.toggle('active');
+    if (menu) {
+        const isHidden = menu.style.display === 'none' || menu.style.display === '';
+        menu.style.display = isHidden ? 'block' : 'none';
+    }
 };
 
 window.refreshSystem = async () => {
