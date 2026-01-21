@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.6.3-ULTRA</div>
+        <div class="site-version">v4.6.4-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -1174,14 +1174,14 @@ window.submitAnnouncement = async (editId = null) => {
 
         let error;
         if (editId && editId !== 'null') {
-            // 強制轉換為數字，並移除 timestamp 更新以保持原始發布時間（或根據需求保留）
+            // 編輯時強制使用最新的管理員資訊覆蓋舊資料
             const { error: err } = await supabaseClient.from('announcements')
                 .update({
                     content: payload.content,
                     image_urls: payload.image_urls,
-                    author_name: payload.author_name,
-                    author_avatar: payload.author_avatar,
-                    author_color: payload.author_color
+                    author_name: siteSettings.admin_name || '管理員',
+                    author_avatar: siteSettings.admin_avatar || '',
+                    author_color: siteSettings.admin_color || '#00ffff'
                 })
                 .eq('id', Number(editId));
             error = err;
