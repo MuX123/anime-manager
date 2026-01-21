@@ -147,6 +147,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     /* 修正邊條對齊 */
     box-shadow: inset 6px 0 0 0 var(--rating-color, transparent);
     padding-left: 6px;
+    box-sizing: border-box;
 }
 
 .detail-poster-aside {
@@ -450,19 +451,21 @@ input:focus, select:focus, textarea:focus {
         grid-template-columns: 1fr !important;
         gap: 10px !important;
     }
-    /* 當電腦版切換到手機佈局時的樣式 (清單顯示) */
+    /* 當電腦版切換到資料列表佈局時的樣式 (強制單欄清單) */
     .anime-grid.force-mobile-layout {
-        display: block !important;
+        display: flex !important;
+        flex-direction: column !important;
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
+        gap: 20px !important;
     }
     .anime-grid.force-mobile-layout .anime-card {
         display: block !important;
         width: 100% !important;
         max-width: 100% !important;
-        margin-bottom: 15px !important;
-        padding: 15px 0 !important;
+        margin: 0 !important;
+        flex: 0 0 100% !important;
     }
     .anime-grid.force-mobile-layout .card-poster-v38 { display: none !important; }
     .anime-grid.force-mobile-layout .card-content-v38 { 

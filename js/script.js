@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.9.5-ULTRA</div>
+        <div class="site-version">v4.9.6-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -186,7 +186,7 @@ window.renderApp = function() {
                         <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">佈局</span>
                         <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 14px !important; cursor: pointer; color: var(--neon-cyan) !important;">
                             ${[3,4,5,6].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
-                            <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 手機佈局</option>
+                            <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
                         </select>
                     </div>
                 </div>
@@ -333,7 +333,8 @@ window.showAnimeDetail = (id) => {
                 ` : ''}
 
                 <div class="detail-section-v35" style="margin-top: 10px;">
-                    <div style="padding: 20px 25px; border-radius: 4px; border-left: 6px solid var(--neon-blue); background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); margin-left: -2px;">
+                    <div style="position: relative; padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent);">
+                        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--neon-blue); border-radius: 4px 0 0 4px;"></div>
                         <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
                     </div>
                 </div>
@@ -620,7 +621,10 @@ window.renderAdminContent = (pagedData, total) => {
 };
 
 window.renderAnimeForm = (item) => {
-    const genres = Array.isArray(item.genre) ? item.genre.map(g => String(g).trim()) : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
+    // 徹底標準化已選擇的類型，移除所有干擾字元
+    const genres = (Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/) : []))
+        .map(g => String(g).replace(/["'\[\]\(\)]/g, '').trim().toLowerCase())
+        .filter(g => g);
     const links = Array.isArray(item.links) ? item.links : [];
     const extra_data = item.extra_data || {};
     
@@ -686,7 +690,8 @@ window.renderAnimeForm = (item) => {
                 <div style="flex: 1; overflow-y: auto; padding-right: 10px; max-height: 600px;" class="force-scroll">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         ${optionsData.genre.map(g => {
-                            const isChecked = genres.some(genre => String(genre).trim() === String(g).trim());
+                            const cleanG = String(g).trim().toLowerCase();
+                            const isChecked = genres.includes(cleanG);
                             return `
                             <label class="option-item-row" style="cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; transition: all 0.2s;">
                                 <span style="flex: 1; font-size: 13px; color: ${optionsData.category_colors.genre || 'var(--neon-cyan)'};">${g}</span>
