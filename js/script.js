@@ -443,7 +443,7 @@ window.renderSearchSelectsHTML = () => {
         
         html += `
             <select class="auto-width-select" onchange="window.handleFilter('${key}', this.value)" style="border-color: rgba(0, 212, 255, 0.3);">
-                <option value="">全部 ${label}</option>
+                <option value="">${label}</option>
                 ${options.map(opt => `
                     <option value="${opt}" ${activeVal === opt ? 'selected' : ''}>${opt}</option>
                 `).join('')}
