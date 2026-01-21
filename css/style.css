@@ -457,175 +457,13 @@ input:focus, select:focus, textarea:focus {
         flex-shrink: 0 !important;
         min-width: auto !important;
     }
-}
-
-/* 手機版作品卡片與詳情頁優化 v4.7.7 */
-@media (max-width: 600px) {
-    /* 作品卡片優化 */
-    .anime-card .cyber-badge-v361 {
-        font-size: 11px !important;
-        padding: 3px 10px !important;
-        top: 8px !important;
-        left: 8px !important;
-    }
-    .anime-card h3 {
-        font-size: 14px !important;
-        padding: 10px !important;
-    }
-
-    /* 詳情頁彈窗優化 */
-    .modal-content {
-        width: 98% !important;
-        max-height: 95vh !important;
-        border-radius: 12px !important;
-    }
-    .detail-container-v35 {
-        grid-template-columns: 1fr !important;
-        max-height: 95vh !important;
-    }
-    .detail-poster-aside {
-        height: 280px !important; /* 縮小海報高度以留出空間給文字 */
-    }
-    .detail-poster-aside .cyber-badge-v361 {
-        font-size: 14px !important;
-        padding: 6px 14px !important;
-        top: 15px !important;
-        left: 15px !important;
-    }
-    .detail-content-main {
-        padding: 20px !important;
-        gap: 15px !important;
-    }
-    .detail-title-v35 {
-        font-size: 24px !important;
-    }
-    .core-data-row {
-        padding: 10px 15px !important;
-        font-size: 13px !important;
-        flex-wrap: wrap !important;
-        gap: 10px !important;
-    }
-    .core-data-item:not(:last-child)::after {
-        display: none !important; /* 手機版移除分隔線改用 gap */
-    }
-    
-    /* 調整公告區域高度 */
-    .announcement-scroll-area {
-        max-height: 60vh !important;
-    }
-}
-
-/* 手機版極簡清單排版 v4.7.8 */
-@media (max-width: 600px) {
-    /* 隱藏佈局切換與系統菜單 */
-    .floating-menu-btn, 
-    .menu-dropdown-v2,
-    div[style*="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1);"] {
-        display: none !important;
-    }
-
-    /* 搜尋框寬度調整 */
-    #search-input {
-        margin-bottom: 10px !important;
-    }
-
-    /* 改為單欄清單佈局 */
-    .anime-grid {
-        grid-template-columns: 1fr !important;
-        gap: 12px !important;
-    }
-
-    /* 作品卡片轉為清單樣式 v4.7.9 */
-    .anime-card {
-        display: flex !important;
-        flex-direction: row !important;
-        height: 110px !important; /* 增加高度以容納三行資訊 */
-        border-left-width: 4px !important;
-    }
-
-    /* 清單中的海報縮圖 */
-    .anime-card .card-poster-v38 {
-        width: 80px !important;
-        height: 100% !important;
-        flex-shrink: 0 !important;
-    }
-    .anime-card .card-poster-v38 img {
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: cover !important;
-    }
-
-    /* 恢復並優化卡片上的評分標籤 */
-    .anime-card .cyber-core-v39 {
-        display: flex !important;
-        padding: 4px 10px !important;
-        font-size: 11px !important;
-    }
-
-    /* 手機版清單模式優化 (v4.8.0 純文字置中) */
-    .anime-card {
-        display: flex !important;
-        flex-direction: column !important;
-        height: auto !important;
-        padding: 15px !important;
-        gap: 8px !important;
-        align-items: center !important;
-        border-left: 4px solid var(--rating-color) !important;
-        text-align: center !important;
-    }
-
-    .anime-card .card-poster-v38 {
-        display: none !important; /* 隱藏海報 */
-    }
-
-    .anime-card .card-content-v38 {
-        padding: 0 !important;
-        text-align: center !important;
-        background: transparent !important;
-        width: 100% !important;
-        position: relative !important;
-        transform: none !important;
-        opacity: 1 !important;
-        overflow: hidden !important;
-    }
-
-    .anime-card h3 {
-        font-size: 18px !important;
-        padding: 0 !important;
-        margin-bottom: 8px !important;
-        white-space: normal !important;
-        display: block !important;
-        width: 100% !important;
-    }
-
-    /* 標籤區域優化 */
-    .anime-card .card-tags-v38 {
-        justify-content: center !important;
-        gap: 8px !important;
-        margin-bottom: 8px !important;
-        width: 100% !important;
-    }
-    .anime-card .card-tags-v38 span {
-        padding: 2px 10px !important;
-        font-size: 12px !important;
-    }
-
-    /* 集數文字顯示 */
-    .anime-card .episodes-text-v479 {
-        display: block !important;
-        font-size: 13px !important;
-        color: var(--episodes-color) !important; /* 使用動態顏色 */
-        font-weight: bold !important;
-        margin-top: 5px !important;
-        width: 100% !important;
-    }
 
     /* 星星顯示切換 */
     .anime-card .desktop-star { display: none !important; }
     .anime-card .mobile-star { display: inline !important; }
     .mobile-identity-v481 { display: flex !important; }
 
-    /* 詳情頁深度優化 (v4.8.1 徹底修復擠壓與切除) */
+    /* 詳情頁深度優化 (v4.8.2 徹底修復擠壓與切除) */
     .modal-content {
         width: 98% !important;
         max-height: 95vh !important;
@@ -681,18 +519,34 @@ input:focus, select:focus, textarea:focus {
     }
     .scroll-row-v35 {
         display: flex !important;
-        flex-wrap: wrap !important; /* 改為自動換行防止擠壓 */
-        justify-content: center !important;
-        gap: 6px !important;
+        flex-wrap: nowrap !important; /* 強制不換行，恢復滾動 */
+        justify-content: flex-start !important; /* 從頭部開始排列 */
+        gap: 8px !important;
         width: 100% !important;
-        padding: 0 !important;
+        padding: 5px 2px 10px 2px !important; /* 增加底部空間給滾動條 */
+        overflow-x: auto !important; /* 啟用橫向滾動 */
+        -webkit-overflow-scrolling: touch; /* iOS 流暢滾動 */
+        scrollbar-width: thin; /* Firefox 滾動條樣式 */
+        scrollbar-color: rgba(0, 212, 255, 0.3) transparent; /* Firefox 滾動條顏色 */
+    }
+
+    /* Webkit 內核瀏覽器滾動條樣式 */
+    .scroll-row-v35::-webkit-scrollbar {
+        display: block !important;
+        height: 4px !important;
+    }
+    .scroll-row-v35::-webkit-scrollbar-track {
+        background: transparent !important;
+    }
+    .scroll-row-v35::-webkit-scrollbar-thumb {
+        background: rgba(0, 212, 255, 0.3) !important;
+        border-radius: 10px !important;
     }
     
     .detail-section-v35 .scroll-row-v35 a, 
     .detail-section-v35 .scroll-row-v35 span {
-        flex-shrink: 0 !important;
-        white-space: nowrap !important;
-        max-width: 100% !important;
+        flex-shrink: 0 !important; /* 防止項目被壓縮 */
+        white-space: nowrap !important; /* 強制不換行 */
     }
 
     .detail-section-v35 a {
