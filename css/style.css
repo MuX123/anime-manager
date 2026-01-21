@@ -437,6 +437,7 @@ input:focus, select:focus, textarea:focus {
 
 /* 手機版深度優化 v4.8.3-ULTRA */
 @media (max-width: 768px) {
+    .desktop-only { display: none !important; }
     .category-buttons-container {
         display: flex !important;
         flex-wrap: nowrap !important;
