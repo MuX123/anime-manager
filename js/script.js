@@ -137,6 +137,7 @@ window.renderApp = function() {
     const discordSection = document.getElementById('discord-section');
     if (discordSection) {
         discordSection.style.display = isNotice ? 'block' : 'none';
+        if (isNotice) window.renderAnnouncements();
     }
 
     const filtered = window.getFilteredData();
@@ -967,3 +968,103 @@ document.addEventListener('click', () => {
 
 // 啟動應用
 window.initApp();
+
+// --- Discord 公告同步與顯示邏輯 (方案 B) ---
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1463359919452590193/uVmtehjked0vs7rNWUVyqDDROIr8CAfSWhOxEPBt1WkoeAgdIOuPHJyukvBFXfocKT1I';
+
+window.syncDiscordAnnouncements = async function() {
+    if (!isAdmin) return; // 僅管理員登入時執行同步，節省資源
+    
+    try {
+        // 1. 從 Discord 獲取最新訊息 (透過 Webhook URL 的 GET 請求獲取頻道資訊，但 Webhook 不支援直接 GET 訊息)
+        // 注意：標準 Webhook 不支援獲取訊息列表。
+        // 這裡我們改用一種「被動接收」或「手動觸發」的邏輯。
+        // 由於用戶已經提供了 Webhook，最理想的是在 Discord 頻道發送訊息時觸發。
+        // 但為了讓現有訊息出現，我們需要一個「拉取」的動作。
+        // 考慮到安全性與簡便性，我們這裡實作從 Supabase 讀取，並提供一個介面讓用戶手動貼入訊息（或未來自動化）。
+        
+        console.log('Discord 同步功能已就緒，等待訊息存入 Supabase...');
+    } catch (err) {
+        console.error('Sync error:', err);
+    }
+};
+
+window.renderAnnouncements = async function() {
+    const container = document.getElementById('discord-section');
+    if (!container) return;
+
+    // 顯示載入中
+    container.innerHTML = '<div style="text-align: center; padding: 50px; color: var(--neon-cyan);">⚡ 正在載入永久公告...</div>';
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('announcements')
+            .select('*')
+            .order('timestamp', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 80px 20px; color: var(--text-secondary); border: 1px dashed rgba(0,212,255,0.3); border-radius: 10px;">
+                    <p>目前尚無永久公告資料</p>
+                    ${isAdmin ? '<button class="btn-primary" style="margin-top: 20px;" onclick="window.showAddAnnouncementModal()">+ 手動新增公告</button>' : ''}
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="announcement-list" style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 50px;">
+                ${data.map(item => `
+                    <div class="announcement-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0,212,255,0.1); border-radius: 12px; padding: 20px; position: relative; transition: all 0.3s ease;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid rgba(0,212,255,0.05); padding-bottom: 10px;">
+                            <img src="${item.author_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--neon-blue);">
+                            <div style="flex: 1;">
+                                <div style="color: var(--neon-cyan); font-weight: bold; font-size: 14px;">${item.author_name || '系統公告'}</div>
+                                <div style="color: var(--text-secondary); font-size: 11px; font-family: 'Space Mono', monospace;">${new Date(item.timestamp).toLocaleString()}</div>
+                            </div>
+                            ${isAdmin ? `<button onclick="window.deleteAnnouncement('${item.id}')" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 12px;">刪除</button>` : ''}
+                        </div>
+                        <div style="color: #ffffff; line-height: 1.8; font-size: 15px; white-space: pre-wrap; word-break: break-word;">${item.content}</div>
+                    </div>
+                `).join('')}
+                ${isAdmin ? '<button class="btn-primary" style="align-self: center;" onclick="window.showAddAnnouncementModal()">+ 新增公告</button>' : ''}
+            </div>
+        `;
+    } catch (err) {
+        container.innerHTML = '<div style="color: #ff4444; text-align: center; padding: 20px;">讀取公告失敗</div>';
+    }
+};
+
+window.showAddAnnouncementModal = () => {
+    const content = prompt('請輸入公告內容：');
+    if (!content) return;
+    window.addAnnouncement(content);
+};
+
+window.addAnnouncement = async (content) => {
+    try {
+        const { error } = await supabaseClient.from('announcements').insert([{
+            content: content,
+            author_name: '管理員',
+            timestamp: new Date().toISOString()
+        }]);
+        if (error) throw error;
+        window.showToast('✓ 公告已發布');
+        window.renderAnnouncements();
+    } catch (err) {
+        window.showToast('✗ 發布失敗', 'error');
+    }
+};
+
+window.deleteAnnouncement = async (id) => {
+    if (!confirm('確定要刪除此公告嗎？')) return;
+    try {
+        const { error } = await supabaseClient.from('announcements').delete().eq('id', id);
+        if (error) throw error;
+        window.showToast('✓ 已刪除');
+        window.renderAnnouncements();
+    } catch (err) {
+        window.showToast('✗ 刪除失敗', 'error');
+    }
+};
