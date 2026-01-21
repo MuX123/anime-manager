@@ -173,8 +173,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.4.6-ULTRA</div>
-		        <div class="app-container">
+	            <div class="site-version">v5.4.7-ULTRA</div>
             <div id="topControlBar" style="position: fixed !important; top: 50% !important; right: 20px !important; transform: translateY(-50%) !important; display: ${isAdminMode ? 'none' : 'flex'}; flex-direction: column; align-items: flex-end; z-index: 9999 !important;">
                 <!-- 系統菜單 -->
                 <div style="display: flex; flex-direction: column; background: rgba(5, 15, 25, 0.9); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.3); backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.4); min-width: 180px; gap: 12px;">
@@ -190,6 +189,7 @@ app.innerHTML = `
                     <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 4px;"></div>
                 </div>
 		            </div>
+		        <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
             </header>
