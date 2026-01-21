@@ -173,11 +173,11 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.3.1-ULTRA</div>
+	            <div class="site-version">v5.3.2-ULTRA</div>
 		        <div class="app-container">
-            <div id="topControlBar" style="position: fixed; top: 20px; right: 20px; display: ${isAdminMode ? 'none' : 'flex'}; flex-direction: row; align-items: center; gap: 15px; z-index: 2000;">
+            <div id="topControlBar" style="position: fixed; top: 20px; right: 20px; display: ${isAdminMode ? 'none' : 'flex'}; flex-direction: row; align-items: center; gap: 10px; z-index: 2000;">
                 <!-- 佈局選擇器 -->
-                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 12px; background: rgba(0,212,255,0.15); padding: 10px 16px; border-radius: 0px; border: 1px solid rgba(0,212,255,0.5); white-space: nowrap; backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.15); height: 44px;">
+                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.15); padding: 8px 14px; border-radius: 0px; border: 1px solid rgba(0,212,255,0.5); white-space: nowrap; backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.15);">
                     <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold; font-family: 'Noto Sans TC', sans-serif;">佈局</span>
                     <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 4px 8px !important; font-size: 13px !important; cursor: pointer; color: var(--neon-cyan) !important; font-weight: bold; outline: none !important;">
                         ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
