@@ -535,23 +535,42 @@ input:focus, select:focus, textarea:focus {
         gap: 12px !important;
     }
 
-    /* 作品卡片轉為清單樣式 */
+    /* 作品卡片轉為清單樣式 v4.7.9 */
     .anime-card {
         display: flex !important;
         flex-direction: row !important;
-        height: 80px !important;
-        border-left-width: 3px !important;
+        height: 110px !important; /* 增加高度以容納三行資訊 */
+        border-left-width: 4px !important;
     }
 
     /* 清單中的海報縮圖 */
-    .anime-card img {
-        width: 60px !important;
+    .anime-card .card-poster-v38 {
+        width: 80px !important;
+        height: 100% !important;
+        flex-shrink: 0 !important;
+    }
+    .anime-card .card-poster-v38 img {
+        width: 100% !important;
         height: 100% !important;
         object-fit: cover !important;
     }
 
-    /* 隱藏卡片上的評分標籤 */
-    .anime-card .cyber-badge-v361 {
+    /* 恢復並優化卡片上的評分標籤 */
+    .anime-card .cyber-core-v39 {
+        display: flex !important;
+        padding: 2px 8px !important;
+        gap: 5px !important;
+        border-bottom-right-radius: 8px !important;
+    }
+    .anime-card .star-icon {
+        font-size: 12px !important;
+    }
+    .anime-card .cyber-core-v39 div:last-child {
+        font-size: 11px !important;
+    }
+
+    /* 隱藏卡片上的集數標籤（改為文字顯示） */
+    .anime-card .episodes-badge-v38 {
         display: none !important;
     }
 
@@ -560,29 +579,95 @@ input:focus, select:focus, textarea:focus {
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
-        padding: 0 15px !important;
+        padding: 8px 12px !important;
         flex: 1 !important;
         background: transparent !important;
         position: relative !important;
         transform: none !important;
         opacity: 1 !important;
+        text-align: left !important;
+        overflow: hidden !important;
     }
 
     .anime-card h3 {
         font-size: 15px !important;
         padding: 0 !important;
-        margin-bottom: 4px !important;
+        margin-bottom: 6px !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         background: transparent !important;
+        width: 100% !important;
     }
 
-    /* 顯示年度與月份 */
-    .anime-card .card-content-v38::after {
-        content: attr(data-info);
-        font-size: 12px;
-        color: var(--text-secondary);
-        font-family: 'Space Mono', monospace;
+    /* 標籤區域優化 */
+    .anime-card .card-tags-v38 {
+        justify-content: flex-start !important;
+        gap: 5px !important;
+        margin-bottom: 6px !important;
+    }
+    .anime-card .card-tags-v38 span {
+        padding: 1px 8px !important;
+        font-size: 11px !important;
+    }
+
+    /* 集數文字顯示 */
+    .anime-card .episodes-text-v479 {
+        display: block !important;
+        font-size: 11px !important;
+        color: var(--neon-green) !important;
+        font-weight: bold !important;
+        opacity: 0.8;
+    }
+
+    /* 星星顯示切換 */
+    .anime-card .desktop-star { display: none !important; }
+    .anime-card .mobile-star { display: inline !important; }
+
+    /* 詳情頁深度優化 */
+    .modal-content {
+        width: 95% !important;
+        max-height: 90vh !important;
+    }
+    .detail-container-v35 {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .detail-poster-aside {
+        height: 220px !important;
+    }
+    .detail-content-main {
+        padding: 15px !important;
+        gap: 12px !important;
+        overflow-x: hidden !important;
+    }
+    .detail-title-v35 {
+        font-size: 20px !important;
+        white-space: normal !important; /* 允許換行避免切掉 */
+        word-break: break-all !important;
+    }
+    .core-data-row {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+        overflow-x: auto !important; /* 允許橫向滾動 */
+        white-space: nowrap !important;
+        scrollbar-width: none;
+    }
+    .core-data-row::-webkit-scrollbar { display: none; }
+
+    .scroll-row-v35 {
+        padding-bottom: 5px !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* 確保所有區塊都能橫向滾動 */
+    .detail-section-v35 {
+        width: 100% !important;
+        overflow: hidden !important;
+    }
+    .detail-section-v35 .scroll-row-v35 {
+        display: flex !important;
+        overflow-x: auto !important;
+        width: 100% !important;
     }
 }

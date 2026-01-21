@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.7.8-ULTRA</div>
+        <div class="site-version">v4.7.9-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -207,6 +207,9 @@ window.renderCard = (item) => {
     const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
     const nameColor = item.name_color || '#ffffff';
     const infoText = `${item.year || ''} ${item.season || ''} ${item.month ? item.month + '月' : ''}`.trim();
+    
+    // 處理星星縮寫 (手機版顯示 1星-5星)
+    const starText = item.recommendation ? (item.recommendation.includes('★') ? item.recommendation.length + '星' : item.recommendation) : '1星';
 
     return `
         <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor};">
@@ -215,7 +218,10 @@ window.renderCard = (item) => {
                 <div class="card-overlay-v38" style="position: absolute; inset: 0; box-shadow: inset 0 40px 30px -10px rgba(0,0,0,0.8), inset 0 -40px 30px -10px rgba(0,0,0,0.8), inset 40px 0 30px -10px rgba(0,0,0,0.4), inset -40px 0 30px -10px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
                 <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; backdrop-filter: blur(8px); z-index: 10; transition: all 0.3s ease;">
                     <div style="position: relative; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); mask-image: radial-gradient(circle, black 60%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 60%, transparent 100%);">
-                        <span class="star-icon" style="color: ${starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${starColor});">${item.recommendation || '★'}</span>
+                        <span class="star-icon" style="color: ${starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${starColor});">
+                            <span class="desktop-star">${item.recommendation || '★'}</span>
+                            <span class="mobile-star" style="display:none;">${starText}</span>
+                        </span>
                     </div>
                     <div style="color: ${ratingColor}; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 1px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; mask-image: radial-gradient(circle, black 70%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 70%, transparent 100%);">${item.rating || '普'}</div>
                 </div>
@@ -228,6 +234,7 @@ window.renderCard = (item) => {
                     ${item.season ? `<span style="font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
                     ${item.month ? `<span style="font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
                 </div>
+                <div class="episodes-text-v479" style="display:none; margin-top: 5px;">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
             </div>
         </div>
     `;
