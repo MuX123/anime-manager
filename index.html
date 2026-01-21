@@ -13,7 +13,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        /* 終極防閃爍遮罩 */
         #loading-screen {
             position: fixed;
             top: 0;
@@ -36,39 +35,16 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* 初始隱藏所有容器 */
-        #app, #loginModal { display: none !important; }
+        #app { display: none; }
     </style>
-
-    <script>
-        // 動態載入資源並帶上時間戳記
-        function loadResource(type, url) {
-            const ts = new Date().getTime();
-            const finalUrl = url + (url.includes('?') ? '&' : '?') + 'v=' + ts;
-            if (type === 'css') {
-                const link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = finalUrl;
-                document.head.appendChild(link);
-            } else {
-                const script = document.createElement('script');
-                script.src = finalUrl;
-                script.async = false;
-                document.body.appendChild(script);
-            }
-        }
-    </script>
 </head>
 <body style="background-color: #0a0e1a; background-image: radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(176, 38, 255, 0.05) 0%, transparent 50%), linear-gradient(rgba(0, 212, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.02) 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px; background-attachment: fixed; margin: 0;">
-    <!-- 強制遮罩層 -->
     <div id="loading-screen">
         <div class="loader"></div>
     </div>
 
     <div id="app"></div>
 
-    <!-- 登入彈窗 -->
     <div id="loginModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;">
         <div class="modal-content" style="background: #0a0e1a; border: 2px solid #00d4ff; padding: 30px; border-radius: 16px; max-width: 350px; width: 90%;">
             <h2 style="margin-bottom: 20px; text-align: center; color: #00d4ff; font-family: 'Orbitron';">🔐 管理員登入</h2>
@@ -85,23 +61,20 @@
     <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
     <script>
-        loadResource('css', 'css/style.css');
-        
-        // 依序加載 JS 資源
         const ts = new Date().getTime();
-        const s1 = document.createElement('script');
-        s1.src = 'js/supabase.js?v=' + ts;
-        s1.onload = () => {
-            const s2 = document.createElement('script');
-            s2.src = 'js/script.js?v=' + ts;
-            s2.onload = () => {
-                if (typeof window.initApp === 'function') {
-                    window.initApp();
-                }
-            };
-            document.body.appendChild(s2);
-        };
-        document.body.appendChild(s1);
+        document.write('<link rel="stylesheet" href="css/style.css?v=' + ts + '">');
+    </script>
+    <script>
+        const ts2 = new Date().getTime();
+        document.write('<script src="js/supabase.js?v=' + ts2 + '"><\/script>');
+        document.write('<script src="js/script.js?v=' + ts2 + '"><\/script>');
+    </script>
+    <script>
+        window.addEventListener('load', () => {
+            if (typeof window.initApp === 'function') {
+                window.initApp();
+            }
+        });
     </script>
 </body>
 </html>
