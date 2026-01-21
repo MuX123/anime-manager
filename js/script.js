@@ -172,7 +172,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v2007</div>
+	            <div class="site-version">v2008</div>
 	        <div class="app-container">
 	            <div style="position: relative; width: 100%;">
 	                <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="position: absolute; top: 0; right: 0; z-index: 500; width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 212, 255, 0.1); border: 2px solid var(--neon-blue); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">⚙</button>
@@ -266,14 +266,12 @@ window.renderCard = (item) => {
     const nameColor = item.name_color || '#ffffff';
     const infoText = `${item.year || ''} ${item.season || ''} ${item.month ? item.month + '月' : ''}`.trim();
     
-    // 處理星星縮寫 (手機版顯示 1星-5星)
-    const starText = item.recommendation ? (item.recommendation.includes('★') ? item.recommendation.length + '星' : item.recommendation) : '1星';
-    
     // 判斷是否為手機佈局模式 (無論是真手機還是電腦版切換)
     const isMobileLayout = gridColumns === 'mobile' || window.innerWidth <= 768;
+    const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
 
     return `
-        <div class="anime-card ${isMobileLayout ? 'mobile-layout-card' : ''}" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor}; ${isMobileLayout ? 'width: 100% !important; max-width: 100% !important; display: block !important; margin: 0 0 20px 0 !important; flex: 0 0 100% !important;' : ''}">
+        <div class="anime-card ${isMobileLayout ? 'mobile-layout-card' : ''}" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor}; ${isMobileLayout ? 'width: 100% !important; max-width: 100% !important; display: block !important; margin: 0 0 15px 0 !important; flex: 0 0 100% !important; background: transparent !important; border: none !important; box-shadow: none !important;' : ''}">
             <!-- 海報區塊：手機佈局模式下隱藏 -->
             <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative; ${isMobileLayout ? 'display: none !important;' : ''}">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -281,8 +279,7 @@ window.renderCard = (item) => {
                 <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; backdrop-filter: blur(8px); z-index: 10; transition: all 0.3s ease;">
                     <div style="position: relative; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); mask-image: radial-gradient(circle, black 60%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 60%, transparent 100%);">
                         <span class="star-icon" style="color: ${starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${starColor});">
-                            <span class="desktop-star">${item.recommendation || '★'}</span>
-                            <span class="mobile-star" style="display:none;">${starText}</span>
+                            <span>${item.recommendation || '★'}</span>
                         </span>
                     </div>
                     <div style="color: ${ratingColor}; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 1px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; mask-image: radial-gradient(circle, black 70%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 70%, transparent 100%);">${item.rating || '普'}</div>
@@ -290,25 +287,29 @@ window.renderCard = (item) => {
                 <div class="episodes-badge-v38" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: ${episodesColor}; font-size: 14px; padding: 4px 16px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; z-index: 10; box-shadow: 0 0 15px rgba(0,0,0,0.8);">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
             </div>
             <!-- 卡片內容 -->
-            <div class="card-content-v38" data-info="${infoText}" style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4); width: 100%;">
-                <!-- 第一行：標題 -->
-                <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '12px' : (isMobileLayout ? '16px' : '14px')}; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2;">${item.name}</h3>
-                
-                <!-- 第二行：星級 + 評級 + 年份/季節/月份 -->
-                <div class="card-tags-v38" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <!-- 手機佈局模式下顯示：星級 + 評級 -->
-                    <span class="mobile-identity-v481" style="${isMobileLayout ? 'display: flex !important;' : 'display: none;'} font-size: 16px; font-weight: bold; gap: 10px; align-items: center;">
-                        <span style="color: ${starColor};">${starText}</span>
-                        <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 0 6px; border-radius: 4px;">${item.rating || '普'}</span>
-                    </span>
-                    <!-- 年份/季節/月份 -->
-                    ${item.year ? `<span style="font-size: ${isMobileLayout ? '14px' : '12px'}; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
-                    ${item.season ? `<span class="desktop-only" style="${isMobileLayout ? 'display: none !important;' : ''} font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: ${isMobileLayout ? '14px' : '12px'}; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
-                    ${item.month ? `<span class="desktop-only" style="${isMobileLayout ? 'display: none !important;' : ''} font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: ${isMobileLayout ? '14px' : '12px'}; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
+            <div class="card-content-v38" data-info="${infoText}" style="padding: ${isMobileLayout ? '5px 0' : '15px'}; text-align: ${isMobileLayout ? 'left' : 'center'}; background: ${isMobileLayout ? 'transparent' : 'rgba(0,0,0,0.4)'}; width: 100%;">
+                <!-- 第一行：星級 + 評級 + 標題 -->
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    ${isMobileLayout ? `
+                        <span style="color: ${starColor}; font-size: 14px; white-space: nowrap; flex-shrink: 0;">${item.recommendation || '★'}</span>
+                        <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 0 6px; border-radius: 4px; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${item.rating || '普'}</span>
+                    ` : ''}
+                    <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '12px' : (isMobileLayout ? '15px' : '14px')}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
+                    ${isMobileLayout ? `<span style="font-size: 13px; color: ${episodesColor}; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</span>` : ''}
                 </div>
-
-                <!-- 第三行：集數 (手機佈局模式下顯示) -->
-                <div class="episodes-text-v479" style="${isMobileLayout ? 'display: block !important;' : 'display: none;'} margin-top: 12px; font-size: 16px; color: ${episodesColor}; font-weight: bold;">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
+                
+                <!-- 第二行：類型 (不換行滾動) -->
+                ${isMobileLayout && genres.length > 0 ? `
+                    <div class="scroll-row-v35" style="margin-top: 5px; padding: 2px 0;">
+                        ${genres.map(g => `<span class="tag-pill-v35" style="padding: 2px 10px; font-size: 11px; margin-right: 6px;">${g}</span>`).join('')}
+                    </div>
+                ` : `
+                    <div class="card-tags-v38" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        ${item.year ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
+                        ${item.season ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
+                        ${item.month ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
+                    </div>
+                `}
             </div>
         </div>
     `;
