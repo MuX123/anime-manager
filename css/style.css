@@ -458,3 +458,59 @@ input:focus, select:focus, textarea:focus {
         min-width: auto !important;
     }
 }
+
+/* 手機版作品卡片與詳情頁優化 v4.7.7 */
+@media (max-width: 600px) {
+    /* 作品卡片優化 */
+    .anime-card .cyber-badge-v361 {
+        font-size: 11px !important;
+        padding: 3px 10px !important;
+        top: 8px !important;
+        left: 8px !important;
+    }
+    .anime-card h3 {
+        font-size: 14px !important;
+        padding: 10px !important;
+    }
+
+    /* 詳情頁彈窗優化 */
+    .modal-content {
+        width: 98% !important;
+        max-height: 95vh !important;
+        border-radius: 12px !important;
+    }
+    .detail-container-v35 {
+        grid-template-columns: 1fr !important;
+        max-height: 95vh !important;
+    }
+    .detail-poster-aside {
+        height: 280px !important; /* 縮小海報高度以留出空間給文字 */
+    }
+    .detail-poster-aside .cyber-badge-v361 {
+        font-size: 14px !important;
+        padding: 6px 14px !important;
+        top: 15px !important;
+        left: 15px !important;
+    }
+    .detail-content-main {
+        padding: 20px !important;
+        gap: 15px !important;
+    }
+    .detail-title-v35 {
+        font-size: 24px !important;
+    }
+    .core-data-row {
+        padding: 10px 15px !important;
+        font-size: 13px !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+    .core-data-item:not(:last-child)::after {
+        display: none !important; /* 手機版移除分隔線改用 gap */
+    }
+    
+    /* 調整公告區域高度 */
+    .announcement-scroll-area {
+        max-height: 60vh !important;
+    }
+}
