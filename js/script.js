@@ -172,7 +172,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.1.4-ULTRA</div>
+	            <div class="site-version">v5.1.5-ULTRA</div>
 		        <div class="app-container">
 		            <div style="position: relative; width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 15px; margin-bottom: -40px; z-index: 500;">
 		                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
@@ -291,7 +291,7 @@ window.renderCard = (item) => {
             <!-- 卡片內容 -->
             <div class="card-content-v38" data-info="${infoText}" style="padding: ${isMobileLayout ? '5px 0' : '15px'}; text-align: ${isMobileLayout ? 'left' : 'center'}; background: ${isMobileLayout ? 'transparent' : 'rgba(0,0,0,0.4)'}; width: 100%;">
                 <!-- 第一行：星級 + 評級 + 標題 -->
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
                     ${isMobileLayout ? `
                         <span style="color: ${starColor}; font-size: 14px; white-space: nowrap; flex-shrink: 0;">${item.recommendation || '★'}</span>
                         <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 0 6px; border-radius: 4px; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${item.rating || '普'}</span>
@@ -307,10 +307,13 @@ window.renderCard = (item) => {
                         ${item.season ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 1px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
                         ${item.month ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 1px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
                     </div>
-                    <!-- 第三行：類型 (不換行滾動) -->
+                    <!-- 第三行：類型 (不換行滾動，移除標點符號) -->
                     ${genres.length > 0 ? `
                         <div class="scroll-row-v35" style="margin-top: 8px; padding: 2px 0;">
-                            ${genres.map(g => `<span class="tag-pill-v35" style="padding: 2px 10px; font-size: 11px; margin-right: 6px;">${g}</span>`).join('')}
+                            ${genres.map(g => {
+                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
+                                return `<span class="tag-pill-v35" style="padding: 2px 10px; font-size: 11px; margin-right: 6px;">${cleanG}</span>`;
+                            }).join('')}
                         </div>
                     ` : ''}
                 ` : `
