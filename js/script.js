@@ -190,12 +190,12 @@ window.renderCard = (item) => {
             <div style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
                 <div style="position: absolute; inset: 0; box-shadow: inset 0 40px 30px -10px rgba(0,0,0,0.8), inset 0 -40px 30px -10px rgba(0,0,0,0.8), inset 40px 0 30px -10px rgba(0,0,0,0.4), inset -40px 0 30px -10px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
-                <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; border-left: 4px solid ${ratingColor}; backdrop-filter: blur(8px); z-index: 10; transition: all 0.3s ease;">
-                    <div style="position: relative; display: flex; align-items: center; justify-content: center;">
-                        <span class="star-icon" style="color: ${starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${starColor});">${item.recommendation || '★'}</span>
-                    </div>
-                    <span style="color: ${ratingColor}; font-family: 'Space Mono', monospace; font-size: 15px; font-weight: bold; letter-spacing: 1px; filter: drop-shadow(0 0 2px ${ratingColor});">${item.rating || '0.0'}</span>
-                </div>
+<div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 12px 8px; background: rgba(0,0,0,0.4); border-left: 4px solid ${ratingColor}; backdrop-filter: blur(4px); z-index: 10; transition: all 0.3s ease; mask-image: linear-gradient(to right, black 80%, transparent 100%); -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);">
+	                    <div style="position: relative; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); mask-image: radial-gradient(circle, black 60%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 60%, transparent 100%);">
+	                        <span class="star-icon" style="color: ${starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${starColor});">${item.recommendation || '★'}</span>
+	                    </div>
+	                    <div style="color: ${ratingColor}; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 1px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; mask-image: radial-gradient(circle, black 70%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 70%, transparent 100%);">${item.rating || '普'}</div>
+	                </div>
                 <div style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: ${episodesColor}; font-size: 14px; padding: 4px 16px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; z-index: 10; box-shadow: 0 0 15px rgba(0,0,0,0.8);">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
             </div>
             <div style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4);">
@@ -244,10 +244,10 @@ window.showAnimeDetail = (id) => {
             <div class="detail-poster-aside">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
                 <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
-                <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 20px; padding: 15px 30px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; border-left: 6px solid ${optionsData.category_colors?.rating || '#b026ff'}; backdrop-filter: blur(12px); z-index: 10;">
-                    <span class="star-icon" style="color: ${item.star_color || '#ffcc00'}; font-size: 32px; filter: drop-shadow(0 0 10px ${item.star_color || '#ffcc00'});">${item.recommendation || '★'}</span>
-                    <span style="color: ${optionsData.category_colors?.rating || '#b026ff'}; font-family: 'Space Mono', monospace; font-size: 28px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${optionsData.category_colors?.rating || '#b026ff'});">${item.rating || '0.0'}</span>
-                </div>
+<div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; border-left: 6px solid ${optionsData.category_colors?.rating || '#b026ff'}; backdrop-filter: blur(12px); z-index: 10; mask-image: radial-gradient(circle, black 70%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 70%, transparent 100%);">
+	                    <span class="star-icon" style="color: ${item.star_color || '#ffcc00'}; font-size: 24px; filter: drop-shadow(0 0 8px ${item.star_color || '#ffcc00'});">${item.recommendation || '★'}</span>
+	                    <span style="color: ${optionsData.category_colors?.rating || '#b026ff'}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${optionsData.category_colors?.rating || '#b026ff'});">${item.rating || '0.0'}</span>
+	                </div>
             </div>
 
             <!-- 右側資訊流 -->

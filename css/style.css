@@ -91,6 +91,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     transform: scale(1.05);
     background: rgba(0,0,0,0.9);
     box-shadow: 0 0 15px currentColor;
+    opacity: 1 !important;
 }
 
 .anime-card:hover .star-icon, 
@@ -158,6 +159,8 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     border-radius: 50px; z-index: 10; font-family: 'Orbitron', sans-serif;
     box-shadow: 0 0 20px currentColor, inset 0 0 8px currentColor;
     text-shadow: 0 0 10px currentColor; font-weight: 900;
+    mask-image: radial-gradient(circle, black 70%, transparent 100%);
+    -webkit-mask-image: radial-gradient(circle, black 70%, transparent 100%);
 }
 
 .badge-star-icon { font-size: 1.2em; filter: drop-shadow(0 0 5px currentColor); }
@@ -166,7 +169,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
 
 /* 詳情頁大尺寸 */
 .detail-poster-aside .cyber-badge-v361 {
-    font-size: 24px; padding: 10px 25px; top: 30px; left: 30px;
+    font-size: 18px; padding: 8px 20px; top: 30px; left: 30px;
 }
 
 /* 作品卡片小尺寸 */
