@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.9.4-ULTRA</div>
+        <div class="site-version">v4.9.5-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -203,7 +203,7 @@ window.renderApp = function() {
 };
 
 window.renderCard = (item) => {
-    const starColor = optionsData.category_colors?.recommendation || '#ffcc00';
+    const starColor = item.star_color || optionsData.category_colors?.recommendation || '#ffcc00';
     const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
     const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
     const nameColor = item.name_color || '#ffffff';
@@ -216,7 +216,7 @@ window.renderCard = (item) => {
     const isMobileLayout = gridColumns === 'mobile' || window.innerWidth <= 768;
 
     return `
-        <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor};">
+        <div class="anime-card ${isMobileLayout ? 'mobile-layout-card' : ''}" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor}; ${isMobileLayout ? 'width: 100% !important; max-width: 100% !important; display: block !important;' : ''}">
             <!-- 海報區塊：手機佈局模式下隱藏 -->
             <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative; ${isMobileLayout ? 'display: none !important;' : ''}">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -233,25 +233,25 @@ window.renderCard = (item) => {
                 <div class="episodes-badge-v38" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: ${episodesColor}; font-size: 14px; padding: 4px 16px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; z-index: 10; box-shadow: 0 0 15px rgba(0,0,0,0.8);">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
             </div>
             <!-- 卡片內容 -->
-            <div class="card-content-v38" data-info="${infoText}" style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4);">
+            <div class="card-content-v38" data-info="${infoText}" style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4); width: 100%;">
                 <!-- 第一行：標題 -->
-                <h3 style="color: ${nameColor}; font-size: 18px; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
+                <h3 style="color: ${nameColor}; font-size: ${isMobileLayout ? '24px' : '18px'}; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
                 
                 <!-- 第二行：星級 + 評級 + 年份/季節/月份 -->
                 <div class="card-tags-v38" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
                     <!-- 手機佈局模式下顯示：星級 + 評級 -->
-                    <span class="mobile-identity-v481" style="${isMobileLayout ? 'display: flex !important;' : 'display: none;'} font-size: 12px; font-weight: bold; gap: 5px; align-items: center;">
+                    <span class="mobile-identity-v481" style="${isMobileLayout ? 'display: flex !important;' : 'display: none;'} font-size: 16px; font-weight: bold; gap: 10px; align-items: center;">
                         <span style="color: ${starColor};">${starText}</span>
-                        <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 0 4px; border-radius: 3px;">${item.rating || '普'}</span>
+                        <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 0 6px; border-radius: 4px;">${item.rating || '普'}</span>
                     </span>
                     <!-- 年份/季節/月份 -->
-                    ${item.year ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
-                    ${item.season ? `<span class="desktop-only" style="${isMobileLayout ? 'display: none !important;' : ''} font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
-                    ${item.month ? `<span class="desktop-only" style="${isMobileLayout ? 'display: none !important;' : ''} font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
+                    ${item.year ? `<span style="font-size: ${isMobileLayout ? '14px' : '12px'}; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
+                    ${item.season ? `<span class="desktop-only" style="${isMobileLayout ? 'display: none !important;' : ''} font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: ${isMobileLayout ? '14px' : '12px'}; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
+                    ${item.month ? `<span class="desktop-only" style="${isMobileLayout ? 'display: none !important;' : ''} font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: ${isMobileLayout ? '14px' : '12px'}; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
                 </div>
 
                 <!-- 第三行：集數 (手機佈局模式下顯示) -->
-                <div class="episodes-text-v479" style="${isMobileLayout ? 'display: block !important;' : 'display: none;'} margin-top: 8px; font-size: 12px; color: ${episodesColor}; font-weight: bold;">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
+                <div class="episodes-text-v479" style="${isMobileLayout ? 'display: block !important;' : 'display: none;'} margin-top: 12px; font-size: 16px; color: ${episodesColor}; font-weight: bold;">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
             </div>
         </div>
     `;
@@ -281,7 +281,10 @@ window.showAnimeDetail = (id) => {
     const extraTags = [];
     if (item.extra_data) {
         Object.entries(item.extra_data).forEach(([key, val]) => {
-            if (val) extraTags.push({ val: val, key: key });
+            if (val) {
+                const customColor = optionsData.category_colors ? optionsData.category_colors[key] : null;
+                extraTags.push({ val: val, key: key, color: customColor });
+            }
         });
     }
 
@@ -330,7 +333,7 @@ window.showAnimeDetail = (id) => {
                 ` : ''}
 
                 <div class="detail-section-v35" style="margin-top: 10px;">
-                    <div style="padding: 20px 25px; border-radius: 4px; border-left: 4px solid var(--neon-blue); background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent);">
+                    <div style="padding: 20px 25px; border-radius: 4px; border-left: 6px solid var(--neon-blue); background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); margin-left: -2px;">
                         <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
                     </div>
                 </div>
@@ -617,7 +620,7 @@ window.renderAdminContent = (pagedData, total) => {
 };
 
 window.renderAnimeForm = (item) => {
-    const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
+    const genres = Array.isArray(item.genre) ? item.genre.map(g => String(g).trim()) : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
     const links = Array.isArray(item.links) ? item.links : [];
     const extra_data = item.extra_data || {};
     
@@ -682,12 +685,15 @@ window.renderAnimeForm = (item) => {
                 <h4 style="color: var(--neon-cyan); margin-bottom: 15px; font-family: 'Orbitron';">🏷️ 類型選擇</h4>
                 <div style="flex: 1; overflow-y: auto; padding-right: 10px; max-height: 600px;" class="force-scroll">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
-                        ${optionsData.genre.map(g => `
+                        ${optionsData.genre.map(g => {
+                            const isChecked = genres.some(genre => String(genre).trim() === String(g).trim());
+                            return `
                             <label class="option-item-row" style="cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; transition: all 0.2s;">
-                                <span style="flex: 1; font-size: 13px; color: ${optionsData.category_colors.genre};">${g}</span>
-                                <input type="checkbox" name="form-genre" value="${g}" ${genres.includes(g) ? 'checked' : ''} style="width: 16px; height: 16px;">
+                                <span style="flex: 1; font-size: 13px; color: ${optionsData.category_colors.genre || 'var(--neon-cyan)'};">${g}</span>
+                                <input type="checkbox" name="form-genre" value="${g}" ${isChecked ? 'checked' : ''} style="width: 16px; height: 16px;">
                             </label>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             </div>
