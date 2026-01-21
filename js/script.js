@@ -504,9 +504,22 @@ window.switchCategory = async (cat) => {
     // 只有在前台模式才顯示載入中提示
     if (!isAdminMode) {
         const grid = document.getElementById('anime-grid-container');
-        if (grid) grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--neon-cyan);">⚡ 正在同步資料...</div>';
+        const mainContent = document.getElementById('main-grid-content');
+        if (mainContent) {
+            mainContent.style.opacity = '0';
+            mainContent.style.transition = 'opacity 0.3s ease';
+        }
+        if (grid) grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--neon-cyan); animation: pulse 1.5s ease-in-out infinite;">⚡ 正在同步資料...</div>';
     }
 
+    // 確保資料載入完成後淡入
+    setTimeout(() => {
+        const mainContent = document.getElementById('main-grid-content');
+        if (mainContent) {
+            mainContent.style.opacity = '1';
+        }
+    }, 100);
+    
     // 確保資料載入完成
     await window.loadData();
     
