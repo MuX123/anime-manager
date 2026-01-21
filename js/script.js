@@ -180,21 +180,18 @@ window.renderApp = function() {
     }
     topControlBar.style.cssText = `position: fixed !important; top: 50% !important; right: 20px !important; transform: translateY(-50%) !important; display: ${isAdminMode ? 'none' : 'flex'}; flex-direction: column; align-items: flex-end; z-index: 9999 !important;`;
     topControlBar.innerHTML = `
-        <div style="display: flex; flex-direction: column; background: rgba(5, 15, 25, 0.9); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.3); backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.4); min-width: 180px; gap: 12px;">
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-size: 12px; color: #00d4ff; font-weight: 600; font-family: 'Noto Sans TC', sans-serif; text-align: center; border-bottom: 1px solid rgba(0,212,255,0.2); padding-bottom: 8px; margin-bottom: 4px;">佈局</label>
-                <select onchange="window.changeGridLayout(this.value)" style="width: 100%; background: rgba(0,212,255,0.1) !important; border: 1px solid rgba(0,212,255,0.3) !important; padding: 8px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 5px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">
-                    ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
-                    <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
-                </select>
-            </div>
-            <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 4px;"></div>
+        <div style="display: flex; flex-direction: column; background: rgba(5, 15, 25, 0.5); padding: 12px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.2); backdrop-filter: blur(15px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); min-width: 160px; gap: 8px;">
+            <select onchange="window.changeGridLayout(this.value)" style="width: 100%; background: rgba(0,212,255,0.05) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">
+                ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
+                <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
+            </select>
+            <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 6px;"></div>
         </div>
     `;
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.5.0-ULTRA</div>
+	            <div class="site-version">v5.5.1-ULTRA</div>
 		        <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
