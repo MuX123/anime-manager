@@ -173,9 +173,9 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.2.7-ULTRA</div>
+	            <div class="site-version">v5.2.8-ULTRA</div>
 		        <div class="app-container">
-            <div id="topControlBar" style="position: fixed; top: 20px; right: 20px; display: ${isAdminMode ? 'none' : 'flex'}; align-items: center; gap: 15px; z-index: 2000;">
+            <div id="topControlBar" style="position: fixed; top: 20px; right: 20px; display: ${isAdminMode ? 'none' : 'flex'}; flex-direction: column; align-items: flex-end; gap: 15px; z-index: 2000;">
                 <!-- 佈局選擇器 -->
                 <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 12px; background: rgba(0,212,255,0.15); padding: 10px 16px; border-radius: 0px; border: 1px solid rgba(0,212,255,0.5); white-space: nowrap; backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.15); height: 44px;">
                     <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold; font-family: 'Orbitron', sans-serif; letter-spacing: 1.5px;">LAYOUT</span>
