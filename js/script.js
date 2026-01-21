@@ -173,7 +173,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.2.5-ULTRA</div>
+	            <div class="site-version">v5.2.6-ULTRA</div>
 		        <div class="app-container">
             <div id="topControlBar" style="position: fixed; top: 20px; right: 20px; display: ${isAdminMode ? 'none' : 'flex'}; align-items: center; gap: 15px; z-index: 2000;">
                 <!-- 佈局選擇器 -->
@@ -298,7 +298,16 @@ window.renderCard = (item) => {
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid ${ratingColor}33; padding-bottom: 8px;">
                         <span style="color: ${starColor}; font-size: 14px; white-space: nowrap; flex-shrink: 0;">${item.recommendation || '★'}</span>
                         <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${item.rating || '普'}</span>
-                        <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
+                        <div style="flex: 1; min-width: 0;">
+                            <h3 style="color: ${nameColor}; font-size: 15px; margin: 0 0 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2;">${item.name}</h3>
+                            ${(item.year || item.season || item.month) ? `
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    ${item.year ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.year}</span>` : ''}
+                                    ${item.season ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.season}</span>` : ''}
+                                    ${item.month ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.month}月</span>` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
                         <div style="width: 1px; height: 20px; background: ${ratingColor}66; flex-shrink: 0;"></div>
                         <div style="display: flex; gap: 6px; flex-wrap: wrap; max-width: 200px; overflow-x: auto; flex-shrink: 0;">
                             ${genres.slice(0, 3).map(g => {
@@ -308,18 +317,9 @@ window.renderCard = (item) => {
                         </div>
                     </div>
                     
-                    <!-- 第二行：年 季 月 + 分隔線 + 自訂類型 -->
-                    ${(item.year || item.season || item.month || Object.keys(item.extra_data || {}).length > 0) ? `
+                    <!-- 第二行：自訂類型 -->
+                    ${Object.keys(item.extra_data || {}).length > 0 ? `
                         <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
-                            ${(item.year || item.season || item.month) ? `
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    ${item.year ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.year}</span>` : ''}
-                                    ${item.season ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.season}</span>` : ''}
-                                    ${item.month ? `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11;">${item.month}月</span>` : ''}
-                                </div>
-                            ` : ''}
-                            ${Object.keys(item.extra_data || {}).length > 0 ? `
-                                ${(item.year || item.season || item.month) ? `<div style="width: 2px; height: 24px; background: ${ratingColor}66; border-radius: 2px;"></div>` : ''}
                                 <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                                     ${Object.entries(item.extra_data).map(([key, val]) => {
                                         if (!val) return '';
@@ -327,7 +327,6 @@ window.renderCard = (item) => {
                                         return `<span style="font-size: 12px; color: ${color}; border: 1px solid ${color}66; padding: 3px 10px; border-radius: 4px; background: ${color}11; font-weight: 500;">${val}</span>`;
                                     }).join('')}
                                 </div>
-                            ` : ''}
                         </div>
                     ` : ''}
                 ` : `
