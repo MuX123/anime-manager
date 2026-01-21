@@ -266,6 +266,8 @@ app.innerHTML = `
     }
 };
 
+const getTagStyle = (color) => `font-size: 11px !important; color: ${color} !important; border: 1.5px solid ${color} !important; padding: 2px 10px !important; border-radius: 50px !important; background: ${color}22 !important; font-weight: bold !important; white-space: nowrap !important; display: inline-block !important; font-family: 'Microsoft JhengHei', sans-serif !important; box-shadow: 0 0 5px ${color}44 !important;`;
+
 window.renderCard = (item) => {
     // 顏色優先級：1. 作品個別設定 (item) > 2. 選項管理設定 (optionsData) > 3. 預設值
     const starColor = item.star_color || optionsData.category_colors?.recommendation || '#ffcc00';
@@ -275,7 +277,6 @@ window.renderCard = (item) => {
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
     const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
     const cyanBase = 'rgba(0, 212, 255, 0.1)'; // 水藍色底色
-    const getTagStyle = (color) => `font-size: 11px !important; color: ${color} !important; border: 1.5px solid ${color} !important; padding: 2px 10px !important; border-radius: 50px !important; background: ${color}22 !important; font-weight: bold !important; white-space: nowrap !important; display: inline-block !important; font-family: 'Microsoft JhengHei', sans-serif !important; box-shadow: 0 0 5px ${color}44 !important;`;
     
     const isMobileLayout = gridColumns === 'mobile' || window.innerWidth <= 768;
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
