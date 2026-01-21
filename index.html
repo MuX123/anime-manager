@@ -6,12 +6,12 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Anime Manager</title>
+    <title>ACG 收藏庫</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=501">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
         #loading-screen {
             position: fixed;
@@ -60,21 +60,7 @@
     <div id="toast" class="toast"></div>
     <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
-    <script>
-        const ts = new Date().getTime();
-        document.write('<link rel="stylesheet" href="css/style.css?v=' + ts + '">');
-    </script>
-    <script>
-        const ts2 = new Date().getTime();
-        document.write('<script src="js/supabase.js?v=' + ts2 + '"><\/script>');
-        document.write('<script src="js/script.js?v=' + ts2 + '"><\/script>');
-    </script>
-    <script>
-        window.addEventListener('load', () => {
-            if (typeof window.initApp === 'function') {
-                window.initApp();
-            }
-        });
-    </script>
+    <script src="js/supabase.js?v=501"></script>
+    <script src="js/script.js?v=501"></script>
 </body>
 </html>
