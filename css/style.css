@@ -143,7 +143,9 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
 /* 3.5.0 滿版海報佈局 */
 .detail-container-v35 {
     display: grid; grid-template-columns: 380px 1fr; max-height: 85vh; overflow: hidden;
-    border-left: 6px solid var(--rating-color, transparent);
+    /* 修正邊條對齊 */
+    box-shadow: inset 6px 0 0 0 var(--rating-color, transparent);
+    padding-left: 6px;
 }
 
 .detail-poster-aside {
@@ -444,11 +446,24 @@ input:focus, select:focus, textarea:focus {
     div[style*="background: rgba(0,212,255,0.1)"][style*="padding: 5px 15px"] { 
         display: none !important; 
     }
-    /* 強制手機版一行一個作品 */
+    /* 手機版預設佈局 */
     .anime-grid {
         grid-template-columns: 1fr !important;
         gap: 10px !important;
     }
+    /* 當電腦版切換到手機佈局時的樣式 */
+    .anime-grid.force-mobile-layout {
+        grid-template-columns: 1fr !important;
+        max-width: 600px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+    .anime-grid.force-mobile-layout .card-poster-v38 { display: none !important; }
+    .anime-grid.force-mobile-layout .card-content-v38 { text-align: center !important; }
+    .anime-grid.force-mobile-layout .episodes-text-v479 { display: block !important; }
+    .anime-grid.force-mobile-layout .mobile-identity-v481 { display: flex !important; }
+    .anime-grid.force-mobile-layout .desktop-star { display: none !important; }
+    .anime-grid.force-mobile-layout .mobile-star { display: inline !important; }
     .category-buttons-container {
         display: flex !important;
         flex-wrap: nowrap !important;

@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.8.7-ULTRA</div>
+        <div class="site-version">v4.8.8-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -186,11 +186,12 @@ window.renderApp = function() {
                         <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">佈局</span>
                         <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 14px !important; cursor: pointer; color: var(--neon-cyan) !important;">
                             ${[3,4,5,6].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
+                            <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 手機佈局</option>
                         </select>
                     </div>
                 </div>
             </div>
-            <div id="anime-grid-container" class="anime-grid" style="grid-template-columns: repeat(${gridColumns}, 1fr); display: ${isNotice ? 'none' : 'grid'};">
+            <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}" style="${gridColumns === 'mobile' ? '' : `grid-template-columns: repeat(${gridColumns}, 1fr);`} display: ${isNotice ? 'none' : 'grid'};">
                 ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
             </div>
             <div id="pagination-container" style="display: ${isNotice ? 'none' : 'flex'}; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
@@ -359,10 +360,9 @@ window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollT
 window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(); };
 
 window.changeGridLayout = (n) => {
-    gridColumns = n;
-    localStorage.setItem('gridColumns', n);
-    const grid = document.getElementById('anime-grid-container');
-    if (grid) grid.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+    gridColumns = n === 'mobile' ? 'mobile' : parseInt(n);
+    localStorage.setItem('gridColumns', gridColumns);
+    window.renderApp(); // 重新渲染以套用 class
 };
 
 window.renderSearchSelectsHTML = () => {
