@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.7.9-ULTRA</div>
+        <div class="site-version">v4.8.0-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -212,7 +212,7 @@ window.renderCard = (item) => {
     const starText = item.recommendation ? (item.recommendation.includes('★') ? item.recommendation.length + '星' : item.recommendation) : '1星';
 
     return `
-        <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor};">
+        <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor};">
             <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
                 <div class="card-overlay-v38" style="position: absolute; inset: 0; box-shadow: inset 0 40px 30px -10px rgba(0,0,0,0.8), inset 0 -40px 30px -10px rgba(0,0,0,0.8), inset 40px 0 30px -10px rgba(0,0,0,0.4), inset -40px 0 30px -10px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>

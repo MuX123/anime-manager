@@ -558,116 +558,137 @@ input:focus, select:focus, textarea:focus {
     /* 恢復並優化卡片上的評分標籤 */
     .anime-card .cyber-core-v39 {
         display: flex !important;
-        padding: 2px 8px !important;
-        gap: 5px !important;
-        border-bottom-right-radius: 8px !important;
-    }
-    .anime-card .star-icon {
-        font-size: 12px !important;
-    }
-    .anime-card .cyber-core-v39 div:last-child {
+        padding: 4px 10px !important;
         font-size: 11px !important;
     }
 
-    /* 隱藏卡片上的集數標籤（改為文字顯示） */
-    .anime-card .episodes-badge-v38 {
-        display: none !important;
-    }
-
-    /* 清單文字區域 */
-    .anime-card .card-content-v38 {
+    /* 手機版清單模式優化 (v4.8.0 純文字置中) */
+    .anime-card {
         display: flex !important;
         flex-direction: column !important;
-        justify-content: center !important;
-        padding: 8px 12px !important;
-        flex: 1 !important;
+        height: auto !important;
+        padding: 15px !important;
+        gap: 8px !important;
+        align-items: center !important;
+        border-left: 4px solid var(--rating-color) !important;
+        text-align: center !important;
+    }
+
+    .anime-card .card-poster-v38 {
+        display: none !important; /* 隱藏海報 */
+    }
+
+    .anime-card .card-content-v38 {
+        padding: 0 !important;
+        text-align: center !important;
         background: transparent !important;
+        width: 100% !important;
         position: relative !important;
         transform: none !important;
         opacity: 1 !important;
-        text-align: left !important;
         overflow: hidden !important;
     }
 
     .anime-card h3 {
-        font-size: 15px !important;
+        font-size: 18px !important;
         padding: 0 !important;
-        margin-bottom: 6px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        background: transparent !important;
+        margin-bottom: 8px !important;
+        white-space: normal !important;
+        display: block !important;
         width: 100% !important;
     }
 
     /* 標籤區域優化 */
     .anime-card .card-tags-v38 {
-        justify-content: flex-start !important;
-        gap: 5px !important;
-        margin-bottom: 6px !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        margin-bottom: 8px !important;
+        width: 100% !important;
     }
     .anime-card .card-tags-v38 span {
-        padding: 1px 8px !important;
-        font-size: 11px !important;
+        padding: 2px 10px !important;
+        font-size: 12px !important;
     }
 
     /* 集數文字顯示 */
     .anime-card .episodes-text-v479 {
         display: block !important;
-        font-size: 11px !important;
-        color: var(--neon-green) !important;
+        font-size: 13px !important;
+        color: var(--episodes-color) !important; /* 使用動態顏色 */
         font-weight: bold !important;
-        opacity: 0.8;
+        margin-top: 5px !important;
+        width: 100% !important;
     }
 
     /* 星星顯示切換 */
     .anime-card .desktop-star { display: none !important; }
     .anime-card .mobile-star { display: inline !important; }
 
-    /* 詳情頁深度優化 */
+    /* 詳情頁深度優化 (v4.8.0 修復切除問題) */
     .modal-content {
-        width: 95% !important;
-        max-height: 90vh !important;
+        width: 96% !important;
+        max-height: 92vh !important;
+        padding: 12px !important;
+        margin: 10px auto !important;
     }
     .detail-container-v35 {
         display: flex !important;
         flex-direction: column !important;
     }
     .detail-poster-aside {
-        height: 220px !important;
+        height: 200px !important;
+        width: 100% !important;
+        border-radius: 12px !important;
     }
     .detail-content-main {
-        padding: 15px !important;
-        gap: 12px !important;
+        padding: 12px 5px !important;
+        gap: 10px !important;
         overflow-x: hidden !important;
     }
     .detail-title-v35 {
-        font-size: 20px !important;
-        white-space: normal !important; /* 允許換行避免切掉 */
-        word-break: break-all !important;
+        font-size: 22px !important;
+        text-align: center !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        line-height: 1.3 !important;
     }
     .core-data-row {
-        padding: 8px 12px !important;
+        padding: 6px 10px !important;
         font-size: 12px !important;
-        overflow-x: auto !important; /* 允許橫向滾動 */
+        overflow-x: auto !important;
         white-space: nowrap !important;
         scrollbar-width: none;
+        display: flex !important;
+        gap: 8px !important;
     }
     .core-data-row::-webkit-scrollbar { display: none; }
 
     .scroll-row-v35 {
-        padding-bottom: 5px !important;
+        padding-bottom: 8px !important;
         -webkit-overflow-scrolling: touch;
+        display: flex !important;
+        gap: 8px !important;
+        overflow-x: auto !important;
+        width: 100% !important;
+        scrollbar-width: none;
     }
+    .scroll-row-v35::-webkit-scrollbar { display: none; }
     
-    /* 確保所有區塊都能橫向滾動 */
+    /* 確保所有區塊都能橫向滾動且不被切除 */
     .detail-section-v35 {
         width: 100% !important;
         overflow: hidden !important;
+        margin-bottom: 5px !important;
     }
-    .detail-section-v35 .scroll-row-v35 {
-        display: flex !important;
-        overflow-x: auto !important;
-        width: 100% !important;
+    
+    .detail-section-v35 .scroll-row-v35 a, 
+    .detail-section-v35 .scroll-row-v35 span {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+    }
+
+    .detail-section-v35 a {
+        padding: 8px 15px !important;
+        font-size: 13px !important;
     }
 }
