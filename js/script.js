@@ -173,7 +173,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.2.6-ULTRA</div>
+	            <div class="site-version">v5.2.7-ULTRA</div>
 		        <div class="app-container">
             <div id="topControlBar" style="position: fixed; top: 20px; right: 20px; display: ${isAdminMode ? 'none' : 'flex'}; align-items: center; gap: 15px; z-index: 2000;">
                 <!-- 佈局選擇器 -->
@@ -265,7 +265,7 @@ app.innerHTML = `
 };
 
 window.renderCard = (item) => {
-    const starColor = item.star_color || optionsData.category_colors?.recommendation || '#ffcc00';
+    const starColor = optionsData.category_colors?.recommendation || item.star_color || '#ffcc00';
     const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
     const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
     const nameColor = item.name_color || '#ffffff';
@@ -293,9 +293,9 @@ window.renderCard = (item) => {
             </div>
             <!-- 卡片內容 -->
             <div class="card-content-v38" data-info="${infoText}" style="padding: ${isMobileLayout ? '5px 0' : '15px'}; text-align: ${isMobileLayout ? 'left' : 'center'}; background: ${isMobileLayout ? 'transparent' : 'rgba(0,0,0,0.4)'}; width: 100%;">
-                <!-- 第一行：星星 + 評級 + 名稱 + 分隔線 + 類型 -->
+                <!-- 第一行：星星 + 評級 + 名稱 -->
                 ${isMobileLayout ? `
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid ${ratingColor}33; padding-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding-bottom: 8px;">
                         <span style="color: ${starColor}; font-size: 14px; white-space: nowrap; flex-shrink: 0;">${item.recommendation || '★'}</span>
                         <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${item.rating || '普'}</span>
                         <div style="flex: 1; min-width: 0;">
@@ -308,27 +308,39 @@ window.renderCard = (item) => {
                                 </div>
                             ` : ''}
                         </div>
-                        <div style="width: 1px; height: 20px; background: ${ratingColor}66; flex-shrink: 0;"></div>
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap; max-width: 200px; overflow-x: auto; flex-shrink: 0;">
-                            ${genres.slice(0, 3).map(g => {
-                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-                                return `<span style="font-size: 11px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 2px 8px; border-radius: 4px; white-space: nowrap;">${cleanG}</span>`;
-                            }).join('')}
-                        </div>
                     </div>
                     
-                    <!-- 第二行：自訂類型 -->
-                    ${Object.keys(item.extra_data || {}).length > 0 ? `
-                        <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
-                                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                                    ${Object.entries(item.extra_data).map(([key, val]) => {
-                                        if (!val) return '';
-                                        const color = optionsData.category_colors?.[key] || 'var(--neon-cyan)';
-                                        return `<span style="font-size: 12px; color: ${color}; border: 1px solid ${color}66; padding: 3px 10px; border-radius: 4px; background: ${color}11; font-weight: 500;">${val}</span>`;
-                                    }).join('')}
-                                </div>
-                        </div>
-                    ` : ''}
+                    <!-- 分隔線延伸整行 -->
+                    <div style="width: 100%; height: 1px; background: ${ratingColor}33; margin: 8px 0;"></div>
+                    
+                    <!-- 第二行：類型與自訂類型並排 -->
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <!-- 左區：類型 -->
+                        ${genres.length > 0 ? `
+                            <div style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: thin;">
+                                ${genres.map(g => {
+                                    const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
+                                    return `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11; white-space: nowrap;">${cleanG}</span>`;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        <!-- 中間分隔線 -->
+                        ${genres.length > 0 && Object.keys(item.extra_data || {}).length > 0 ? `
+                            <div style="width: 2px; height: 24px; background: ${ratingColor}66; border-radius: 2px; flex-shrink: 0;"></div>
+                        ` : ''}
+                        
+                        <!-- 右區：自訂類型 -->
+                        ${Object.keys(item.extra_data || {}).length > 0 ? `
+                            <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: thin;">
+                                ${Object.entries(item.extra_data).map(([key, val]) => {
+                                    if (!val) return '';
+                                    const color = optionsData.category_colors?.[key] || 'var(--neon-cyan)';
+                                    return `<span style="font-size: 12px; color: ${color}; border: 1px solid ${color}66; padding: 3px 10px; border-radius: 50px; background: ${color}11; font-weight: bold; white-space: nowrap;">${val}</span>`;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
                 ` : `
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
                         <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '12px' : '14px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
@@ -352,7 +364,7 @@ window.showAnimeDetail = (id) => {
     
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
     const links = Array.isArray(item.links) ? item.links : [];
-    const starColor = optionsData.category_colors?.recommendation || '#ffcc00';
+    const starColor = optionsData.category_colors?.recommendation || item.star_color || '#ffcc00';
     const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
 
@@ -377,13 +389,13 @@ window.showAnimeDetail = (id) => {
 
 	    content.innerHTML = `
 		        <div class="detail-container-v35" style="--rating-color: ${ratingColor};">
-                    <div class="detail-border-v500" style="background: ${item.star_color || '#00f3ff'};"></div>
+                    <div class="detail-border-v500" style="background: ${ratingColor};"></div>
 	            <!-- 左側滿版海報 -->
 	            <div class="detail-poster-aside">
 	                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
 	                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
 	<div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; backdrop-filter: blur(12px); z-index: 10; mask-image: radial-gradient(circle, black 70%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 70%, transparent 100%);">
-			                    <span class="star-icon" style="color: ${item.star_color || '#ffcc00'}; font-size: 24px; filter: drop-shadow(0 0 8px ${item.star_color || '#ffcc00'});">${item.recommendation || '★'}</span>
+			                    <span class="star-icon" style="color: ${starColor}; font-size: 24px; filter: drop-shadow(0 0 8px ${starColor});">${item.recommendation || '★'}</span>
 			                    <span style="color: ${optionsData.category_colors?.rating || '#b026ff'}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${optionsData.category_colors?.rating || '#b026ff'});">${item.rating || '普'}</span>
 		                </div>
 	            </div>
