@@ -173,7 +173,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.2.4-ULTRA</div>
+	            <div class="site-version">v5.2.5-ULTRA</div>
 		        <div class="app-container">
             <div id="topControlBar" style="position: fixed; top: 20px; right: 20px; display: ${isAdminMode ? 'none' : 'flex'}; align-items: center; gap: 15px; z-index: 2000;">
                 <!-- 佈局選擇器 -->
@@ -395,40 +395,40 @@ window.showAnimeDetail = (id) => {
 	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
 	                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
 	                        <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0;">${item.name}</h2>
-	                        <div class="core-data-row" style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-	                            ${item.year ? `<div class="core-data-item" style="background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--neon-cyan); padding: 3px 10px; border-radius: 50px; font-size: 12px; font-weight: bold; text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);">${item.year}</div>` : ''}
-	                            ${item.season ? `<div class="core-data-item" style="background: rgba(176, 38, 255, 0.1); border: 1px solid rgba(176, 38, 255, 0.3); color: #b026ff; padding: 3px 10px; border-radius: 50px; font-size: 12px; font-weight: bold; text-shadow: 0 0 5px rgba(176, 38, 255, 0.5);">${item.season}</div>` : ''}
-	                            ${item.month ? `<div class="core-data-item" style="background: rgba(255, 0, 110, 0.1); border: 1px solid rgba(255, 0, 110, 0.3); color: #ff006e; padding: 3px 10px; border-radius: 50px; font-size: 12px; font-weight: bold; text-shadow: 0 0 5px rgba(255, 0, 110, 0.5);">${item.month}月</div>` : ''}
-	                            ${item.episodes ? `<div class="core-data-item" style="background: rgba(57, 255, 20, 0.1); border: 1px solid rgba(57, 255, 20, 0.3); color: #39ff14; padding: 3px 10px; border-radius: 50px; font-size: 12px; font-weight: bold; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5);">全 ${item.episodes} 集</div>` : ''}
-	                        </div>
+                        <div class="core-data-row" style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+		                            ${item.year ? `<div class="core-data-item" style="background: ${ratingColor}11; border: 1px solid ${ratingColor}66; color: ${ratingColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${ratingColor}88;">${item.year}</div>` : ''}
+		                            ${item.season ? `<div class="core-data-item" style="background: ${ratingColor}11; border: 1px solid ${ratingColor}66; color: ${ratingColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${ratingColor}88;">${item.season}</div>` : ''}
+		                            ${item.month ? `<div class="core-data-item" style="background: ${ratingColor}11; border: 1px solid ${ratingColor}66; color: ${ratingColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${ratingColor}88;">${item.month}月</div>` : ''}
+		                            ${item.episodes ? `<div class="core-data-item" style="background: #39ff1422; border: 1px solid #39ff1466; color: #39ff14; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px #39ff1488;">全 ${item.episodes} 集</div>` : ''}
+		                        </div>
 	                    </div>
 	                </div>
 
-	                <!-- 類型標籤區塊 -->
-	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-	                    <div style="padding: 12px 25px; background: linear-gradient(90deg, rgba(176, 38, 255, 0.05), transparent); border-left: 6px solid #b026ff; margin-left: -2px; box-sizing: border-box;">
-	                        <div class="scroll-row-v35 force-scroll">
-	                            ${genres.map(g => {
-	                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-	                                return `<span class="tag-pill-v35" style="color: ${optionsData.category_colors.genre}; border-color: rgba(176, 38, 255, 0.3);">${cleanG}</span>`;
-	                            }).join('')}
-	                        </div>
-	                    </div>
-	                </div>
+                <!-- 類型標籤區塊 -->
+		                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+		                    <div style="padding: 15px 25px; background: linear-gradient(90deg, ${ratingColor}11, transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
+		                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; flex-wrap: wrap;">
+		                            ${genres.map(g => {
+		                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
+		                                return `<span style="background: ${ratingColor}11; border: 1px solid ${ratingColor}66; color: ${ratingColor}; padding: 5px 14px; border-radius: 4px; font-size: 13px; font-weight: 500; white-space: nowrap;">${cleanG}</span>`;
+		                            }).join('')}
+		                        </div>
+		                    </div>
+		                </div>
 
-	                <!-- 擴充標籤區塊 -->
-	                ${extraTags.length > 0 ? `
-	                    <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-	                        <div style="padding: 12px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); border-left: 6px solid var(--neon-cyan); margin-left: -2px; box-sizing: border-box;">
-	                            <div class="scroll-row-v35 force-scroll">
-	                                ${extraTags.map(t => {
-	                                    const color = optionsData.category_colors[t.key] || 'var(--neon-cyan)';
-	                                    return `<span class="tag-pill-v35" style="color: ${color}; border-color: rgba(0, 212, 255, 0.3);">${t.val}</span>`;
-	                                }).join('')}
-	                            </div>
-	                        </div>
-	                    </div>
-	                ` : ''}
+                <!-- 擴充標籤區塊 -->
+		                ${extraTags.length > 0 ? `
+		                    <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+		                        <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); border-left: 6px solid var(--neon-cyan); margin-left: -2px; box-sizing: border-box;">
+		                            <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; flex-wrap: wrap;">
+		                                ${extraTags.map(t => {
+		                                    const color = optionsData.category_colors[t.key] || 'var(--neon-cyan)';
+		                                    return `<span style="background: ${color}11; border: 1px solid ${color}66; color: ${color}; padding: 5px 14px; border-radius: 4px; font-size: 13px; font-weight: 500; white-space: nowrap;">${t.val}</span>`;
+		                                }).join('')}
+		                            </div>
+		                        </div>
+		                    </div>
+		                ` : ''}
 
 	                <!-- 劇情介紹區塊 -->
 	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
