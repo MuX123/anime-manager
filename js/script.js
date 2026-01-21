@@ -108,14 +108,19 @@ window.initApp = async function() {
 
 window.loadData = async function() {
     try {
+        console.log('📡 正在從 Supabase 抓取資料...');
         const { data, error } = await supabaseClient.from('anime_list').select('*').order('created_at', { ascending: false });
         if (!error) {
             animeData = data || [];
+            console.log('✅ 資料抓取成功，共', animeData.length, '筆');
+            return animeData;
         } else {
             throw error;
         }
     } catch (e) {
+        console.error('Data load error:', e);
         window.showToast('資料讀取失敗', 'error');
+        return [];
     }
 };
 
@@ -146,7 +151,7 @@ window.renderApp = function() {
     // 僅在初次渲染或非搜尋輸入時更新整個 app
     if (!document.getElementById('search-input') || isNotice) {
         app.innerHTML = `
-		            <div class="site-version">v4.5.0-ULTRA</div>
+		            <div class="site-version">v4.5.1-ULTRA</div>
 		            <div class="app-container">
 		                <header>
 		                    <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -390,15 +395,24 @@ window.getFilteredData = () => {
 };
 
 window.switchCategory = async (cat) => { 
+    console.log('🔄 切換分類至:', cat);
     currentCategory = cat; 
     currentPage = 1; 
     filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' }; 
     
-    // 強制重新載入資料，確保切換時內容是最新的
-    if (cat !== 'notice') {
-        await window.loadData();
+    // 如果是公告，直接渲染
+    if (cat === 'notice') {
+        window.renderApp();
+        return;
     }
-    
+
+    // 顯示載入中狀態，避免畫面卡死
+    const grid = document.getElementById('anime-grid-container');
+    if (grid) grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--neon-cyan);">⚡ 正在同步資料...</div>';
+
+    // 確保資料載入完成後再執行渲染
+    await window.loadData();
+    console.log('🎨 執行渲染...');
     window.renderApp(); 
 };
 
