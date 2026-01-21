@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.6.1-ULTRA</div>
+        <div class="site-version">v4.6.2-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -1150,6 +1150,7 @@ window.submitAnnouncement = async (editId = null) => {
     if (!content && images.length === 0) return window.showToast('請輸入內容或圖片', 'error');
 
     try {
+        // 確保抓取到最新的設定值
         const payload = {
             content: content,
             image_urls: images,
@@ -1158,6 +1159,8 @@ window.submitAnnouncement = async (editId = null) => {
             author_color: siteSettings.admin_color || '#00ffff',
             timestamp: new Date().toISOString()
         };
+        
+        console.log('🚀 發布公告，使用身分:', payload.author_name);
 
         let error;
         if (editId && editId !== 'null') {
