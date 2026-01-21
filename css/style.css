@@ -81,20 +81,16 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     padding-top: 12px !important;
 }
 
-@keyframes star-rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
-@keyframes star-rotate-rev {
-    from { transform: rotate(360deg); }
-    to { transform: rotate(0deg); }
-}
-
-.anime-card:hover .star-aura {
-    opacity: 0.8 !important;
-    border-width: 2px !important;
-    transform: scale(1.2);
+.anime-card:hover .cyber-core-v39 {
+    transform: scale(1.1);
+    background: rgba(0,0,0,0.9);
+    box-shadow: 0 0 15px currentColor;
 }
 
 /* Buttons */
