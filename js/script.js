@@ -137,7 +137,7 @@ window.renderApp = function() {
     // 僅在初次渲染或非搜尋輸入時更新整個 app
     if (!document.getElementById('search-input')) {
         app.innerHTML = `
-            <div class="site-version">v3.9.7-ULTRA</div>
+            <div class="site-version">v3.9.8-ULTRA</div>
             <div class="app-container">
                 <header>
                     <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -145,8 +145,9 @@ window.renderApp = function() {
                 <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
                     <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
                     <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
-                    <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
-                </div>
+<button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
+                    <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">◆ 公告</button>
+	                </div>
                 <div style="border: 2px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 18px; margin-bottom: 30px; font-size: 14px; color: ${siteSettings.announcement_color || '#ffffff'}; text-align: center; border-radius: 10px; background: rgba(0,212,255,0.05); font-weight: bold;">
                     <span>📢 ${siteSettings.announcement}</span>
                 </div>
@@ -379,7 +380,26 @@ window.getFilteredData = () => {
     });
 };
 
-window.switchCategory = (cat) => { currentCategory = cat; currentPage = 1; filters = { search: '' }; window.renderApp(); };
+window.switchCategory = (cat) => { 
+    currentCategory = cat; 
+    currentPage = 1; 
+    filters = { search: '' }; 
+    window.renderApp(); 
+    
+    const discordSection = document.getElementById('discord-section');
+    if (discordSection) {
+        discordSection.style.display = (cat === 'notice') ? 'block' : 'none';
+    }
+    
+    const appContainer = document.querySelector('.app-container');
+    if (appContainer) {
+        // 當切換到公告時，隱藏搜尋和列表
+        const elementsToToggle = appContainer.querySelectorAll('div[style*="margin-bottom: 30px"], #anime-grid-container, #pagination-container');
+        elementsToToggle.forEach(el => {
+            el.style.display = (cat === 'notice') ? 'none' : '';
+        });
+    }
+};
 
 window.showLoginModal = () => { document.getElementById('loginModal').classList.add('active'); };
 window.hideLoginModal = () => { document.getElementById('loginModal').classList.remove('active'); };

@@ -13,13 +13,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css/style.css?v=3.9.7">
+  <link rel="stylesheet" href="./css/style.css?v=3.9.8">
  </head>
  <body>
   <div id="app"></div>
 	  
 	  <!-- Discord 區塊 -->
-	  <div id="discord-section" style="max-width: 1600px; margin: 40px auto; padding: 0 20px;">
+	  <div id="discord-section" style="max-width: 1600px; margin: 40px auto; padding: 0 20px; display: none;">
 	    <div style="border: 2px solid var(--neon-blue); border-radius: 12px; overflow: hidden; background: var(--panel-bg); box-shadow: 0 0 30px rgba(0, 212, 255, 0.1);">
 	      <div style="padding: 15px; background: rgba(0, 212, 255, 0.1); border-bottom: 1px solid var(--neon-blue); color: var(--neon-cyan); font-family: 'Orbitron', sans-serif; font-weight: bold;">
 	        <span>📡 DISCORD 實時公告板</span>
@@ -67,7 +67,7 @@
   <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
   <!-- 依序載入配置與邏輯，加入版本號防止快取問題 -->
-  <script src="./js/supabase.js?v=3.9.7"></script>
-  <script src="./js/script.js?v=3.9.7"></script>
+  <script src="./js/supabase.js?v=3.9.8"></script>
+  <script src="./js/script.js?v=3.9.8"></script>
  </body>
 </html>
