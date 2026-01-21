@@ -275,6 +275,7 @@ window.renderCard = (item) => {
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
     const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
     const cyanBase = 'rgba(0, 212, 255, 0.1)'; // 水藍色底色
+    const getTagStyle = (color) => `font-size: 11px; color: ${color}; border: 1px solid ${color}66; padding: 2px 8px; border-radius: 50px; background: ${color}11; font-weight: bold; white-space: nowrap;`;
     
     const isMobileLayout = gridColumns === 'mobile' || window.innerWidth <= 768;
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
@@ -304,15 +305,14 @@ window.renderCard = (item) => {
                 <div style="flex: 1.5; min-width: 0; display: flex; flex-direction: column; gap: 8px; padding-left: 15px; border-left: 1px solid ${ratingColor}33;">
                     <!-- 上排：一般作品類型 -->
                     <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-                        ${genres.length > 0 ? genres.map(g => `<span style="font-size: 11px; color: ${genreColor}; border: 1px solid ${genreColor}44; padding: 2px 8px; border-radius: 50px; background: ${genreColor}08; font-weight: bold;">${g.replace(/["'\[\]\(\),，。]/g, '').trim()}</span>`).join('') : '<span style="color: rgba(255,255,255,0.2); font-size: 11px; font-style: italic;">無類型</span>'}
+                        ${genres.length > 0 ? genres.map(g => `<span style="${getTagStyle(genreColor)}">${g.replace(/["'\[\]\(\),，。]/g, '').trim()}</span>`).join('') : '<span style="color: rgba(255,255,255,0.2); font-size: 11px; font-style: italic;">無類型</span>'}
                     </div>
                     <!-- 下排：自訂類型 -->
                     <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
                         ${Object.entries(item.extra_data || {}).length > 0 ? Object.entries(item.extra_data).map(([key, val]) => {
                             if (!val) return '';
-                            // 修正：確保 key 能正確對應到 optionsData.category_colors
                             const color = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : 'var(--neon-cyan)';
-                            return `<span style="font-size: 11px; color: ${color}; border: 1px solid ${color}66; padding: 2px 8px; border-radius: 50px; background: ${color}11; font-weight: bold; white-space: nowrap;">${val}</span>`;
+                            return `<span style="${getTagStyle(color)}">${val}</span>`;
                         }).join('') : '<span style="color: rgba(255,255,255,0.2); font-size: 11px; font-style: italic;">無自訂標籤</span>'}
                     </div>
                 </div>
@@ -394,10 +394,10 @@ window.showAnimeDetail = (id) => {
                     <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
                         <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0;">${item.name}</h2>
                         <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; margin-top: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-                            ${item.year ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88;">${item.year}</div>` : ''}
-                            ${item.season ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88;">${item.season}</div>` : ''}
-                            ${item.month ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88;">${item.month}月</div>` : ''}
-                            ${item.episodes ? `<div class="core-data-item" style="background: ${episodesColor}11; border: 1px solid ${episodesColor}66; color: ${episodesColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${episodesColor}88;">全 ${item.episodes} 集</div>` : ''}
+                            ${item.year ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88; white-space: nowrap;">${item.year}</div>` : ''}
+                            ${item.season ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88; white-space: nowrap;">${item.season}</div>` : ''}
+                            ${item.month ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88; white-space: nowrap;">${item.month}月</div>` : ''}
+                            ${item.episodes ? `<div class="core-data-item" style="background: ${episodesColor}11; border: 1px solid ${episodesColor}66; color: ${episodesColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${episodesColor}88; white-space: nowrap;">全 ${item.episodes} 集</div>` : ''}
                         </div>
                     </div>
                 </div>
@@ -408,7 +408,7 @@ window.showAnimeDetail = (id) => {
                         <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
                             ${genres.map(g => {
                                 const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-                                return `<span style="background: ${genreColor}11; border: 1px solid ${genreColor}66; color: ${genreColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; white-space: nowrap;">${cleanG}</span>`;
+                                return `<span style="background: ${genreColor}11; border: 1px solid ${genreColor}66; color: ${genreColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; white-space: nowrap; box-shadow: 0 0 10px ${genreColor}22;">${cleanG}</span>`;
                             }).join('')}
                         </div>
                     </div>
@@ -421,7 +421,7 @@ window.showAnimeDetail = (id) => {
                             <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
                                 ${extraTags.map(t => {
                                     const color = t.color || 'var(--neon-cyan)';
-                                    return `<span style="background: ${color}11; border: 1px solid ${color}66; color: ${color}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; white-space: nowrap;">${t.val}</span>`;
+                                    return `<span style="background: ${color}11; border: 1px solid ${color}66; color: ${color}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; white-space: nowrap; box-shadow: 0 0 10px ${color}22;">${t.val}</span>`;
                                 }).join('')}
                             </div>
                         </div>
