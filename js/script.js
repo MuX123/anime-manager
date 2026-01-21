@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.7.1-ULTRA</div>
+        <div class="site-version">v4.7.2-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -405,22 +405,33 @@ window.switchCategory = async (cat) => {
     console.log('🔄 切換分類至:', cat);
     currentCategory = cat; 
     currentPage = 1; 
+    adminPage = 1; // 同步重置後台分頁
     filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' }; 
     
-    // 如果是公告，直接渲染
+    // 判斷目前是否在後台模式
+    const isAdminMode = document.querySelector('.admin-container') !== null;
+
+    // 如果是公告，直接渲染前台
     if (cat === 'notice') {
         window.renderApp();
         return;
     }
 
-    // 顯示載入中狀態，避免畫面卡死
-    const grid = document.getElementById('anime-grid-container');
-    if (grid) grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--neon-cyan);">⚡ 正在同步資料...</div>';
+    // 只有在前台模式才顯示載入中提示
+    if (!isAdminMode) {
+        const grid = document.getElementById('anime-grid-container');
+        if (grid) grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--neon-cyan);">⚡ 正在同步資料...</div>';
+    }
 
-    // 確保資料載入完成後再執行渲染
+    // 確保資料載入完成
     await window.loadData();
-    console.log('🎨 執行渲染...');
-    window.renderApp(); 
+    
+    // 根據目前模式決定渲染哪個介面
+    if (isAdminMode) {
+        window.renderAdmin();
+    } else {
+        window.renderApp(); 
+    }
 };
 
 window.showLoginModal = () => { document.getElementById('loginModal').classList.add('active'); };
@@ -495,9 +506,9 @@ window.renderAdminContent = (pagedData, total) => {
     if (currentAdminTab === 'manage') {
         return `
             <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
-                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime'); window.renderAdmin();">動畫板塊</button>
-                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga'); window.renderAdmin();">漫畫板塊</button>
-                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie'); window.renderAdmin();">電影板塊</button>
+                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">動畫板塊</button>
+                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">漫畫板塊</button>
+                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">電影板塊</button>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 20px;">
                 <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.exportCSV('${currentCategory}')">📥 匯出 ${currentCategory} CSV</button>
