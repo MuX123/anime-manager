@@ -21,7 +21,7 @@ let optionsData = {
     custom_lists: []
 };
 let siteSettings = { site_title: 'ACG 收藏庫', announcement: '⚡ 系統連線中 // 歡迎光臨 ⚡', title_color: '#ffffff', announcement_color: '#ffffff', custom_labels: {} };
-let currentCategory = 'anime';
+let currentCategory = 'notice';
 let currentAdminTab = 'manage';
 let isAdmin = false;
 let currentPage = 1;
@@ -131,44 +131,51 @@ window.renderApp = function() {
     const app = document.getElementById('app');
     if (!app) return;
 
+    // 初始進入時確保公告板顯示狀態正確
+    const discordSection = document.getElementById('discord-section');
+    if (discordSection) {
+        discordSection.style.display = (currentCategory === 'notice') ? 'block' : 'none';
+    }
+
     const filtered = window.getFilteredData();
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
-    // 僅在初次渲染或非搜尋輸入時更新整個 app
-    if (!document.getElementById('search-input')) {
+// 僅在初次渲染或非搜尋輸入時更新整個 app
+	    if (!document.getElementById('search-input')) {
+            const isNotice = currentCategory === 'notice';
         app.innerHTML = `
-            <div class="site-version">v3.9.8-ULTRA</div>
+            <div class="site-version">v3.9.9-ULTRA</div>
             <div class="app-container">
                 <header>
                     <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
                 </header>
-                <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
-                    <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
-                    <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
-<button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
-                    <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">◆ 公告</button>
+<div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
+                        <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">◆ 公告</button>
+	                    <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
+	                    <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
+                        <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
 	                </div>
                 <div style="border: 2px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 18px; margin-bottom: 30px; font-size: 14px; color: ${siteSettings.announcement_color || '#ffffff'}; text-align: center; border-radius: 10px; background: rgba(0,212,255,0.05); font-weight: bold;">
                     <span>📢 ${siteSettings.announcement}</span>
                 </div>
-                <div style="margin-bottom: 30px;">
-                    <input type="text" id="search-input" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px !important; border-radius: 50px !important;">
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                        <div id="search-filters" class="horizontal-scroll-container force-scroll" style="padding: 10px 0; gap: 15px; flex: 1;">
-                            ${window.renderSearchSelectsHTML()}
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 5px 15px; border-radius: 50px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
-                            <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">佈局</span>
-                            <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 14px !important; cursor: pointer; color: var(--neon-cyan) !important;">
-                                ${[3,4,5,6].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div id="anime-grid-container" class="anime-grid" style="grid-template-columns: repeat(${gridColumns}, 1fr);">
-                    ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
-                </div>
-                <div id="pagination-container" style="display: flex; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
+<div style="margin-bottom: 30px; display: ${isNotice ? 'none' : 'block'};">
+	                    <input type="text" id="search-input" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px !important; border-radius: 50px !important;">
+	                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+	                        <div id="search-filters" class="horizontal-scroll-container force-scroll" style="padding: 10px 0; gap: 15px; flex: 1;">
+	                            ${window.renderSearchSelectsHTML()}
+	                        </div>
+	                        <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 5px 15px; border-radius: 50px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
+	                            <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">佈局</span>
+	                            <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 14px !important; cursor: pointer; color: var(--neon-cyan) !important;">
+	                                ${[3,4,5,6].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
+	                            </select>
+	                        </div>
+	                    </div>
+	                </div>
+	                <div id="anime-grid-container" class="anime-grid" style="grid-template-columns: repeat(${gridColumns}, 1fr); display: ${isNotice ? 'none' : 'grid'};">
+	                    ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
+	                </div>
+	                <div id="pagination-container" style="display: ${isNotice ? 'none' : 'flex'}; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
             </div>
         `;
     } else {
