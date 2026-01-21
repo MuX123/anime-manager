@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.8.9-ULTRA</div>
+        <div class="site-version">v4.9.0-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -211,11 +211,14 @@ window.renderCard = (item) => {
     
     // 處理星星縮寫 (手機版顯示 1星-5星)
     const starText = item.recommendation ? (item.recommendation.includes('★') ? item.recommendation.length + '星' : item.recommendation) : '1星';
+    
+    // 判斷是否為手機佈局模式 (無論是真手機還是電腦版切換)
+    const isMobileLayout = gridColumns === 'mobile' || window.innerWidth <= 768;
 
     return `
         <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor};">
-            <!-- 電腦版海報 -->
-            <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
+            <!-- 海報區塊：手機佈局模式下隱藏 -->
+            <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative; ${isMobileLayout ? 'display: none !important;' : ''}">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
                 <div class="card-overlay-v38" style="position: absolute; inset: 0; box-shadow: inset 0 40px 30px -10px rgba(0,0,0,0.8), inset 0 -40px 30px -10px rgba(0,0,0,0.8), inset 40px 0 30px -10px rgba(0,0,0,0.4), inset -40px 0 30px -10px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
                 <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; backdrop-filter: blur(8px); z-index: 10; transition: all 0.3s ease;">
@@ -236,19 +239,19 @@ window.renderCard = (item) => {
                 
                 <!-- 第二行：星級 + 評級 + 年份/季節/月份 -->
                 <div class="card-tags-v38" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <!-- 手機版專屬：星級 + 評級 -->
-                    <span class="mobile-identity-v481" style="display:none; font-size: 12px; font-weight: bold; gap: 5px; align-items: center;">
+                    <!-- 手機佈局模式下顯示：星級 + 評級 -->
+                    <span class="mobile-identity-v481" style="${isMobileLayout ? 'display: flex !important;' : 'display: none;'} font-size: 12px; font-weight: bold; gap: 5px; align-items: center;">
                         <span style="color: ${starColor};">${starText}</span>
                         <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 0 4px; border-radius: 3px;">${item.rating || '普'}</span>
                     </span>
                     <!-- 年份/季節/月份 -->
                     ${item.year ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
-                    ${item.season ? `<span class="desktop-only" style="font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
-                    ${item.month ? `<span class="desktop-only" style="font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
+                    ${item.season ? `<span class="desktop-only" style="${isMobileLayout ? 'display: none !important;' : ''} font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
+                    ${item.month ? `<span class="desktop-only" style="${isMobileLayout ? 'display: none !important;' : ''} font-size: 12px; color: var(--neon-cyan); opacity: 0.4;">|</span><span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
                 </div>
 
-                <!-- 第三行：集數 (手機版顯示) -->
-                <div class="episodes-text-v479" style="display:none; margin-top: 8px; font-size: 12px; color: ${episodesColor}; font-weight: bold;">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
+                <!-- 第三行：集數 (手機佈局模式下顯示) -->
+                <div class="episodes-text-v479" style="${isMobileLayout ? 'display: block !important;' : 'display: none;'} margin-top: 8px; font-size: 12px; color: ${episodesColor}; font-weight: bold;">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
             </div>
         </div>
     `;
