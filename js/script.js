@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.6.2-ULTRA</div>
+        <div class="site-version">v4.6.3-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -925,7 +925,7 @@ window.saveSettings = async () => {
         const adminAvatar = document.getElementById('set-admin-avatar').value;
         const adminColor = document.getElementById('set-admin-color').value;
         
-        await supabaseClient.from('site_settings').upsert([
+        const { error } = await supabaseClient.from('site_settings').upsert([
             { id: 'site_title', value: title }, 
             { id: 'announcement', value: announcement },
             { id: 'title_color', value: titleColor },
@@ -935,17 +935,27 @@ window.saveSettings = async () => {
             { id: 'admin_color', value: adminColor }
         ]);
         
-        siteSettings.site_title = title;
-        siteSettings.announcement = announcement;
-        siteSettings.title_color = titleColor;
-        siteSettings.announcement_color = announcementColor;
-        siteSettings.admin_name = adminName;
-        siteSettings.admin_avatar = adminAvatar;
-        siteSettings.admin_color = adminColor;
+        if (error) throw error;
+
+        siteSettings = {
+            ...siteSettings,
+            site_title: title,
+            announcement: announcement,
+            title_color: titleColor,
+            announcement_color: announcementColor,
+            admin_name: adminName,
+            admin_avatar: adminAvatar,
+            admin_color: adminColor
+        };
         
+        document.title = title;
         window.showToast('✓ 設定已更新');
         window.renderAdmin();
-    } catch (err) { window.showToast('✗ 更新失敗', 'error'); }
+        window.renderApp(); // 強制刷新主介面
+    } catch (err) { 
+        console.error('Save settings error:', err);
+        window.showToast('✗ 更新失敗', 'error'); 
+    }
 };
 
 window.deleteAnime = async (id) => {
