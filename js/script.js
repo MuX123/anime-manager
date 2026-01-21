@@ -172,7 +172,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.1.5-ULTRA</div>
+	            <div class="site-version">v5.1.6-ULTRA</div>
 		        <div class="app-container">
 		            <div style="position: relative; width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 15px; margin-bottom: -40px; z-index: 500;">
 		                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
@@ -273,7 +273,7 @@ window.renderCard = (item) => {
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
 
     return `
-        <div class="anime-card ${isMobileLayout ? 'mobile-layout-card' : ''}" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor}; ${isMobileLayout ? 'width: 100% !important; max-width: 100% !important; display: block !important; margin: 0 0 15px 0 !important; flex: 0 0 100% !important; background: transparent !important; border: none !important; box-shadow: none !important;' : ''}">
+        <div class="anime-card ${isMobileLayout ? 'mobile-layout-card' : ''}" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor}; ${isMobileLayout ? 'width: 100% !important; max-width: 100% !important; display: block !important; margin: 0 0 15px 0 !important; flex: 0 0 100% !important; background: rgba(0, 212, 255, 0.05) !important; border: 1px solid rgba(0, 212, 255, 0.4) !important; box-shadow: 0 0 15px rgba(0, 212, 255, 0.1) !important; border-radius: 12px !important; padding: 10px 15px !important;' : ''}">
             <!-- 海報區塊：手機佈局模式下隱藏 -->
             <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative; ${isMobileLayout ? 'display: none !important;' : ''}">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
