@@ -454,9 +454,13 @@ input:focus, select:focus, textarea:focus {
     /* 當電腦版切換到手機佈局時的樣式 */
     .anime-grid.force-mobile-layout {
         grid-template-columns: 1fr !important;
-        max-width: 600px !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+    .anime-grid.force-mobile-layout .anime-card {
+        width: 100% !important;
+        max-width: 100% !important;
     }
     .anime-grid.force-mobile-layout .card-poster-v38 { display: none !important; }
     .anime-grid.force-mobile-layout .card-content-v38 { text-align: center !important; }
