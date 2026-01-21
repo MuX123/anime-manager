@@ -267,10 +267,11 @@ app.innerHTML = `
 };
 
 window.renderCard = (item) => {
-    const starColor = optionsData.category_colors?.recommendation || item.star_color || '#ffcc00';
+    // 顏色優先級：1. 作品個別設定 (item) > 2. 選項管理設定 (optionsData) > 3. 預設值
+    const starColor = item.star_color || optionsData.category_colors?.recommendation || '#ffcc00';
     const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
     const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
-    const nameColor = item.name_color || '#ffffff';
+    const nameColor = item.name_color || optionsData.category_colors?.name || '#ffffff';
     const infoText = `${item.year || ''} ${item.season || ''} ${item.month ? item.month + '月' : ''}`.trim();
     
     // 判斷是否為手機佈局模式 (無論是真手機還是電腦版切換)
@@ -484,7 +485,14 @@ window.changeGridLayout = (n) => {
     gridColumns = n === 'mobile' ? 'mobile' : parseInt(n);
     window.gridColumns = gridColumns;  // 同步到 window 對象
     localStorage.setItem('gridColumns', gridColumns);
-    window.renderApp(); // 重新渲染以套用 class
+    
+    // 強制更新 CSS 變數以修復 4 欄佈局 Bug
+    const gridContainer = document.getElementById('anime-grid-container');
+    if (gridContainer && n !== 'mobile') {
+        gridContainer.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+    }
+    
+    window.renderApp(); // 重新渲染以套用所有變更
 };
 
 window.renderSearchSelectsHTML = () => {
@@ -623,9 +631,12 @@ window.handleLogout = async () => {
 
 window.toggleAdminMode = (show) => {
     currentSection = show ? 'admin' : currentCategory;
+    const topControlBar = document.getElementById('topControlBar');
     if (show) {
+        if (topControlBar) topControlBar.style.display = 'none';
         window.renderAdmin();
     } else {
+        if (topControlBar) topControlBar.style.display = 'flex';
         window.renderApp();
     }
 };
@@ -875,7 +886,7 @@ window.renderAnimeForm = (item) => {
 };
 
 window.renderOptionsManager = () => {
-    const defaultKeys = ['genre', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation'];
+    const defaultKeys = ['genre', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'name', 'desc'];
     const customKeys = optionsData.custom_lists || [];
     const allKeys = [...defaultKeys, ...customKeys];
 
@@ -1051,7 +1062,17 @@ window.saveOptionsToDB = async () => {
     if (typeof window.renderApp === 'function') window.renderApp();
 };
 window.getOptionLabel = (key) => {
-    const labels = { genre: '類型', year: '年份', month: '月份', season: '季度', episodes: '集數', rating: '評分', recommendation: '推薦' };
+    const labels = { 
+        genre: '類型', 
+        year: '年份', 
+        month: '月份', 
+        season: '季度', 
+        episodes: '集數', 
+        rating: '評分', 
+        recommendation: '推薦',
+        name: '名稱',
+        desc: '簡介'
+    };
     if (labels[key]) return labels[key];
     if (siteSettings.custom_labels && siteSettings.custom_labels[key]) return siteSettings.custom_labels[key];
     return key;
@@ -1356,7 +1377,14 @@ window.renderAnnouncements = async function() {
     const container = document.getElementById('discord-section');
     if (!container) return;
 
-    container.innerHTML = '<div style="text-align: center; padding: 50px; color: var(--neon-cyan);">⚡ 正在載入永久公告...</div>';
+    container.innerHTML = `
+        <div style="text-align: center; padding: 80px 20px; color: var(--neon-cyan); display: flex; flex-direction: column; align-items: center; gap: 20px;">
+            <div class="loading-spinner" style="width: 40px; height: 40px; border: 3px solid rgba(0,212,255,0.1); border-top: 3px solid var(--neon-cyan); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <div style="font-family: 'Orbitron', sans-serif; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-cyan);">⚡ 正在載入永久公告...</div>
+            <style>
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
+        </div>`;
 
     try {
         const { data, error } = await supabaseClient
@@ -1386,7 +1414,7 @@ window.renderAnnouncements = async function() {
                         else if (images.length >= 3) gridStyle = 'grid-template-columns: repeat(auto-fit, minmax(250px, 350px)); justify-content: start;';
 
                         return `
-                        <div class="announcement-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0,212,255,0.1); border-radius: 12px; padding: 20px; position: relative; transition: all 0.3s ease;">
+                        <div class="announcement-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0,212,255,0.1); border-radius: 12px; padding: 20px; position: relative; transition: all 0.3s ease; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid rgba(0,212,255,0.05); padding-bottom: 10px;">
                                 <img src="${item.author_avatar || siteSettings.admin_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--neon-blue);">
                                 <div style="flex: 1;">
