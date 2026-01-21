@@ -88,9 +88,14 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
 }
 
 .anime-card:hover .cyber-core-v39 {
-    transform: scale(1.1);
+    transform: scale(1.05);
     background: rgba(0,0,0,0.9);
     box-shadow: 0 0 15px currentColor;
+}
+
+.anime-card:hover .star-icon, 
+.detail-poster-aside:hover .star-icon {
+    animation: pulse 1.5s infinite;
 }
 
 /* Buttons */
