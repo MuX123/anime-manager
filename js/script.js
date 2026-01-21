@@ -148,50 +148,45 @@ window.renderApp = function() {
     const filtered = window.getFilteredData();
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
-    // 僅在初次渲染或非搜尋輸入時更新整個 app
-    if (!document.getElementById('search-input') || isNotice) {
-        app.innerHTML = `
-		            <div class="site-version">v4.5.1-ULTRA</div>
-		            <div class="app-container">
-		                <header>
-		                    <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
-		                </header>
-                        <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; position: relative; z-index: 100;">
-                            <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">◆ 公告</button>
-                            <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
-                            <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
-                            <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
-		                </div>
-	                <div style="border: 2px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 18px; margin-bottom: 30px; font-size: 14px; color: ${siteSettings.announcement_color || '#ffffff'}; text-align: center; border-radius: 10px; background: rgba(0,212,255,0.05); font-weight: bold;">
-	                    <span>📢 ${siteSettings.announcement}</span>
-	                </div>
-<div style="margin-bottom: 30px; display: ${isNotice ? 'none' : 'block'};">
-	                    <input type="text" id="search-input" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px !important; border-radius: 50px !important;">
-	                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-	                        <div id="search-filters" class="horizontal-scroll-container force-scroll" style="padding: 10px 0; gap: 15px; flex: 1;">
-	                            ${window.renderSearchSelectsHTML()}
-	                        </div>
-	                        <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 5px 15px; border-radius: 50px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
-	                            <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">佈局</span>
-	                            <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 14px !important; cursor: pointer; color: var(--neon-cyan) !important;">
-	                                ${[3,4,5,6].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
-	                            </select>
-	                        </div>
-	                    </div>
-	                </div>
-	                <div id="anime-grid-container" class="anime-grid" style="grid-template-columns: repeat(${gridColumns}, 1fr); display: ${isNotice ? 'none' : 'grid'};">
-	                    ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
-	                </div>
-	                <div id="pagination-container" style="display: ${isNotice ? 'none' : 'flex'}; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
-	            </div>
-	        `;
-    } else {
-        // 局部更新列表與分頁，避免搜尋框失去焦點
-        const grid = document.getElementById('anime-grid-container');
-        const pagination = document.getElementById('pagination-container');
-        if (grid) grid.innerHTML = paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`;
-        if (pagination) pagination.innerHTML = window.renderPagination(filtered.length);
-    }
+    // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
+    app.innerHTML = `
+        <div class="site-version">v4.5.2-ULTRA</div>
+        <div class="app-container">
+            <header>
+                <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
+            </header>
+            <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; position: relative; z-index: 100;">
+                <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">◆ 公告</button>
+                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
+                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
+                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
+            </div>
+            <div style="border: 2px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 18px; margin-bottom: 30px; font-size: 14px; color: ${siteSettings.announcement_color || '#ffffff'}; text-align: center; border-radius: 10px; background: rgba(0,212,255,0.05); font-weight: bold;">
+                <span>📢 ${siteSettings.announcement}</span>
+            </div>
+            <div style="margin-bottom: 30px; display: ${isNotice ? 'none' : 'block'};">
+                <input type="text" id="search-input" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px !important; border-radius: 50px !important;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <div id="search-filters" class="horizontal-scroll-container force-scroll" style="padding: 10px 0; gap: 15px; flex: 1;">
+                        ${window.renderSearchSelectsHTML()}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 5px 15px; border-radius: 50px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
+                        <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">佈局</span>
+                        <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 14px !important; cursor: pointer; color: var(--neon-cyan) !important;">
+                            ${[3,4,5,6].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="anime-grid-container" class="anime-grid" style="grid-template-columns: repeat(${gridColumns}, 1fr); display: ${isNotice ? 'none' : 'grid'};">
+                ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
+            </div>
+            <div id="pagination-container" style="display: ${isNotice ? 'none' : 'flex'}; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
+        </div>
+    `;
+    
+    // 重新初始化滾輪捲動監聽
+    window.initGlobalScroll();
 };
 
 window.renderCard = (item) => {
