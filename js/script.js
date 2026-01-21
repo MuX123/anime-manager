@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.7.0-ULTRA</div>
+        <div class="site-version">v4.7.1-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -862,30 +862,41 @@ window.exportCSV = (cat) => {
     const filtered = animeData.filter(item => item.category === cat);
     if (filtered.length === 0) return window.showToast('✗ 無資料可匯出', 'error');
     
-    // 1. 定義基礎欄位
-    const baseHeaders = ['name', 'poster_url', 'description', 'star_color', 'name_color', 'desc_color', 'links', 'extra_data'];
+    const baseFields = [
+        { key: 'name', label: '作品名稱' },
+        { key: 'poster_url', label: '海報網址' },
+        { key: 'description', label: '簡介內容' },
+        { key: 'star_color', label: '星星顏色' },
+        { key: 'name_color', label: '名稱顏色' },
+        { key: 'desc_color', label: '簡介顏色' },
+        { key: 'links', label: '相關連結' },
+        { key: 'extra_data', label: '額外資料' }
+    ];
     
-    // 2. 動態獲取所有自定義選項欄位 (確保順序統一)
-    const optionHeaders = ['year', 'month', 'season', 'genre', 'episodes', 'rating', 'recommendation'];
+    const optionFields = [
+        { key: 'year', label: '年份' },
+        { key: 'month', label: '月份' },
+        { key: 'season', label: '季度' },
+        { key: 'genre', label: '類型' },
+        { key: 'episodes', label: '集數' },
+        { key: 'rating', label: '評分' },
+        { key: 'recommendation', label: '推薦度' }
+    ];
+
     if (siteSettings.custom_labels) {
-        Object.keys(siteSettings.custom_labels).forEach(key => {
-            if (!optionHeaders.includes(key)) optionHeaders.push(key);
+        Object.entries(siteSettings.custom_labels).forEach(([key, label]) => {
+            if (!optionFields.find(f => f.key === key)) optionFields.push({ key, label });
         });
     }
     
-    // 3. 合併所有欄位，形成標準化標頭
-    const headers = [...baseHeaders, ...optionHeaders];
-    const csvRows = [headers.join(',')];
+    const allFields = [...baseFields, ...optionFields];
+    const csvRows = [allFields.map(f => f.label).join(',')];
     
     for (const item of filtered) {
-        const row = headers.map(h => {
-            let val = item[h] || '';
-            // 處理陣列 (如類型)
+        const row = allFields.map(f => {
+            let val = item[f.key] || '';
             if (Array.isArray(val)) val = val.join('|');
-            // 處理 JSON 物件 (如連結、額外資料)
             if (typeof val === 'object' && val !== null) val = JSON.stringify(val);
-            
-            // 處理 CSV 轉義
             const cleanVal = String(val).replace(/"/g, '""');
             return `"${cleanVal}"`;
         });
@@ -898,7 +909,7 @@ window.exportCSV = (cat) => {
     a.href = url;
     a.download = `acg_${cat}_${new Date().getTime()}.csv`;
     a.click();
-    window.showToast('✓ 匯出成功 (標準化格式)');
+    window.showToast('✓ 匯出成功 (中文標題)');
 };
 
 window.triggerImport = (cat) => { importTarget = cat; document.getElementById('importFile').click(); };
@@ -912,9 +923,21 @@ window.importData = (event) => {
             const lines = csv.split('\n').filter(l => l.trim());
             if (lines.length < 2) return window.showToast('✗ CSV 檔案無內容', 'error');
             
-            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-            const items = [];
+            const labelMap = {
+                '作品名稱': 'name', '海報網址': 'poster_url', '簡介內容': 'description',
+                '星星顏色': 'star_color', '名稱顏色': 'name_color', '簡介顏色': 'desc_color',
+                '相關連結': 'links', '額外資料': 'extra_data',
+                '年份': 'year', '月份': 'month', '季度': 'season', '類型': 'genre',
+                '集數': 'episodes', '評分': 'rating', '推薦度': 'recommendation'
+            };
+            if (siteSettings.custom_labels) {
+                Object.entries(siteSettings.custom_labels).forEach(([key, label]) => { labelMap[label] = key; });
+            }
+
+            const rawHeaders = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            const headers = rawHeaders.map(h => labelMap[h] || h);
             
+            const items = [];
             for (let i = 1; i < lines.length; i++) {
                 // 使用正則表達式正確解析 CSV 行，處理引號內的逗號
                 const values = [];
