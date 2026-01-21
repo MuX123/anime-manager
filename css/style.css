@@ -63,6 +63,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
 .anime-card {
     background: var(--glass-bg);
     border: 1.5px solid rgba(0, 212, 255, 0.2);
+    border-left: 4px solid var(--rating-color, rgba(0, 212, 255, 0.2));
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
@@ -142,6 +143,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
 /* 3.5.0 滿版海報佈局 */
 .detail-container-v35 {
     display: grid; grid-template-columns: 380px 1fr; max-height: 85vh; overflow: hidden;
+    border-left: 6px solid var(--rating-color, transparent);
 }
 
 .detail-poster-aside {
