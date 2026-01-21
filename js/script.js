@@ -137,7 +137,7 @@ window.renderApp = function() {
     // 僅在初次渲染或非搜尋輸入時更新整個 app
     if (!document.getElementById('search-input')) {
         app.innerHTML = `
-            <div class="site-version">v3.7.7-ULTRA</div>
+            <div class="site-version">v3.7.8-ULTRA</div>
             <div class="app-container">
                 <header>
                     <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -188,7 +188,7 @@ window.renderCard = (item) => {
         <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')">
             <div style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
-                <div style="position: absolute; top: 0; left: 0; right: 0; background: linear-gradient(rgba(0,0,0,0.8), transparent); color: ${starColor}; font-size: 14px; padding: 10px 15px; display: flex; align-items: center; gap: 8px; font-family: 'Orbitron', sans-serif; font-weight: 900; text-shadow: 0 0 5px rgba(0,0,0,0.8);">
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 40px; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 60%, transparent 100%); color: ${starColor}; font-size: 14px; padding: 5px 15px; display: flex; align-items: center; gap: 8px; font-family: 'Orbitron', sans-serif; font-weight: 900; text-shadow: 1px 1px 3px rgba(0,0,0,1); z-index: 10;">
                     <span>${item.recommendation || '★'}</span>
                     <span>${item.rating || '0.0'}</span>
                 </div>
@@ -239,7 +239,7 @@ window.showAnimeDetail = (id) => {
             <!-- 左側滿版海報 -->
             <div class="detail-poster-aside">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
-                <div style="position: absolute; top: 0; left: 0; right: 0; background: linear-gradient(rgba(0,0,0,0.8), transparent); color: ${item.star_color || '#ffcc00'}; font-size: 24px; padding: 20px 30px; display: flex; align-items: center; gap: 15px; font-family: 'Orbitron', sans-serif; font-weight: 900; text-shadow: 0 0 10px rgba(0,0,0,0.8);">
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 80px; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 60%, transparent 100%); color: ${item.star_color || '#ffcc00'}; font-size: 24px; padding: 10px 30px; display: flex; align-items: center; gap: 15px; font-family: 'Orbitron', sans-serif; font-weight: 900; text-shadow: 2px 2px 5px rgba(0,0,0,1); z-index: 10;">
                     <span>${item.recommendation || '★'}</span>
                     <span>${item.rating || '0.0'}</span>
                 </div>
