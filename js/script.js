@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.9.7-ULTRA</div>
+        <div class="site-version">v4.9.8-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -200,6 +200,16 @@ window.renderApp = function() {
     
     // 重新初始化滾輪捲動監聽
     window.initGlobalScroll();
+
+    // 徹底解決閃爍：內容渲染完成後，顯示 app 並移除遮罩
+    app.style.display = 'block';
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+        }, 500);
+    }
 };
 
 window.renderCard = (item) => {
@@ -461,8 +471,20 @@ window.switchCategory = async (cat) => {
     }
 };
 
-window.showLoginModal = () => { document.getElementById('loginModal').classList.add('active'); };
-window.hideLoginModal = () => { document.getElementById('loginModal').classList.remove('active'); };
+window.showLoginModal = () => { 
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+    }
+};
+window.hideLoginModal = () => { 
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+    }
+};
 
 window.handleLogin = async () => {
     const email = document.getElementById('login-email').value;
