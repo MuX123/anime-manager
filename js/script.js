@@ -173,23 +173,21 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.3.3-ULTRA</div>
+	            <div class="site-version">v5.4.0-ULTRA</div>
 		        <div class="app-container">
-            <div id="topControlBar" style="position: fixed; top: 20px; right: 20px; display: ${isAdminMode ? 'none' : 'flex'}; flex-direction: row; align-items: center; gap: 20px; z-index: 2000;">
-                <!-- 佈局選擇器 -->
-                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.15); padding: 8px 14px; border-radius: 0px; border: 1px solid rgba(0,212,255,0.5); white-space: nowrap; backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.15);">
-                    <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold; font-family: 'Noto Sans TC', sans-serif;">佈局</span>
-                    <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 4px 8px !important; font-size: 13px !important; cursor: pointer; color: var(--neon-cyan) !important; font-weight: bold; outline: none !important;">
-                        ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
-                        <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
-                    </select>
-                </div>
-                <!-- 系統菜單按鈕 -->
-                <div style="position: relative; display: flex; align-items: center;">
-                    <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="width: 44px; height: 44px; border-radius: 0px !important; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0,212,255,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--neon-cyan); backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.15); transition: all 0.3s ease; outline: none !important;">⚙</button>
-                    <div id="systemMenu" style="position: absolute; top: 54px; left: 0; z-index: 2001; background: var(--panel-bg); border: 1px solid var(--neon-blue); border-radius: 0px; overflow: hidden; min-width: 180px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); display: none; backdrop-filter: blur(15px);">
-                        <div id="adminMenuOptions" style="padding: 8px 0;"></div>
+            <div id="topControlBar" style="position: fixed; top: 20px; right: 20px; display: ${isAdminMode ? 'none' : 'flex'}; flex-direction: column; align-items: flex-end; gap: 12px; z-index: 2000;">
+                <!-- 系統菜單 -->
+                <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(0,212,255,0.15); padding: 12px; border-radius: 0px; border: 1px solid rgba(0,212,255,0.5); backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.15); min-width: 180px;">
+                    <!-- 佈局選擇器 -->
+                    <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(0,212,255,0.3);">
+                        <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold; font-family: 'Noto Sans TC', sans-serif;">佈局</span>
+                        <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 4px 8px !important; font-size: 13px !important; cursor: pointer; color: var(--neon-cyan) !important; font-weight: bold; outline: none !important; flex: 1;">
+                            ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
+                            <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
+                        </select>
                     </div>
+                    <!-- 系統菜單選項 -->
+                    <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 0;"></div>
                 </div>
 		            </div>
             <header>
