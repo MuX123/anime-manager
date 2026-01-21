@@ -324,7 +324,7 @@ window.renderCard = (item) => {
                             <div style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: thin;">
                                 ${genres.map(g => {
                                     const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-                                    return `<span style="font-size: 12px; color: ${ratingColor}; border: 1px solid ${ratingColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${ratingColor}11; white-space: nowrap;">${cleanG}</span>`;
+                                    return `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${yearColor}11; white-space: nowrap;">${cleanG}</span>`;
                                 }).join('')}
                             </div>
                         ` : ''}
@@ -423,10 +423,10 @@ window.showAnimeDetail = (id) => {
 			                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
 			                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
 			                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; flex-wrap: wrap;">
-		                            ${genres.map(g => {
-		                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-		                                return `<span style="background: ${ratingColor}11; border: 1px solid ${ratingColor}66; color: ${ratingColor}; padding: 5px 14px; border-radius: 4px; font-size: 13px; font-weight: 500; white-space: nowrap;">${cleanG}</span>`;
-		                            }).join('')}
+			                            ${genres.map(g => {
+			                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
+			                                return `<span style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 4px; font-size: 13px; font-weight: 500; white-space: nowrap;">${cleanG}</span>`;
+			                            }).join('')}
 		                        </div>
 		                    </div>
 		                </div>
