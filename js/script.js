@@ -1189,8 +1189,8 @@ document.addEventListener('click', () => {
     if (m) m.classList.remove('active'); 
 });
 
-// 啟動應用
-window.initApp();
+// 啟動應用 (由 index.html 載入後自動執行或手動調用)
+// window.initApp(); // 暫時註解，由 index.html 確保順序後執行
 
 // --- Discord 公告同步與顯示邏輯 (方案 B) ---
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1463359919452590193/uVmtehjked0vs7rNWUVyqDDROIr8CAfSWhOxEPBt1WkoeAgdIOuPHJyukvBFXfocKT1I';

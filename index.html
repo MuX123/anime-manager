@@ -86,10 +86,22 @@
 
     <script>
         loadResource('css', 'css/style.css');
-        window.addEventListener('DOMContentLoaded', () => {
-            loadResource('js', 'js/supabase.js');
-            loadResource('js', 'js/script.js');
-        });
+        
+        // 依序加載 JS 資源
+        const ts = new Date().getTime();
+        const s1 = document.createElement('script');
+        s1.src = 'js/supabase.js?v=' + ts;
+        s1.onload = () => {
+            const s2 = document.createElement('script');
+            s2.src = 'js/script.js?v=' + ts;
+            s2.onload = () => {
+                if (typeof window.initApp === 'function') {
+                    window.initApp();
+                }
+            };
+            document.body.appendChild(s2);
+        };
+        document.body.appendChild(s1);
     </script>
 </body>
 </html>
