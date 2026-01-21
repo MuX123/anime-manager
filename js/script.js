@@ -394,8 +394,8 @@ window.switchCategory = async (cat) => {
     currentPage = 1; 
     filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' }; 
     
-    // 如果切換到非公告板塊，確保資料已載入
-    if (cat !== 'notice' && animeData.length === 0) {
+    // 強制重新載入資料，確保切換時內容是最新的
+    if (cat !== 'notice') {
         await window.loadData();
     }
     
@@ -1109,11 +1109,20 @@ window.openLightbox = (url) => {
 window.deleteAnnouncement = async (id) => {
     if (!confirm('確定要刪除此公告嗎？')) return;
     try {
-        const { error } = await supabaseClient.from('announcements').delete().eq('id', id);
-        if (error) throw error;
+        // 確保 id 是數字類型（如果資料庫 id 是 BIGINT）
+        const numericId = parseInt(id);
+        const { error } = await supabaseClient.from('announcements').delete().eq('id', numericId);
+        
+        if (error) {
+            console.error('Delete error:', error);
+            throw error;
+        }
+        
         window.showToast('✓ 已刪除');
-        window.renderAnnouncements();
+        // 延遲一下再重新渲染，確保資料庫已更新
+        setTimeout(() => window.renderAnnouncements(), 300);
     } catch (err) {
-        window.showToast('✗ 刪除失敗', 'error');
+        console.error('Delete failed:', err);
+        window.showToast('✗ 刪除失敗：' + (err.message || '未知錯誤'), 'error');
     }
 };
