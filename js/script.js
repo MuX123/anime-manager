@@ -384,10 +384,11 @@ window.showAnimeDetail = (id) => {
 		        });
 	    }
 
-		    content.innerHTML = `
-<div class="detail-container-v35" style="--rating-color: ${ratingColor}; border: 3px solid ${ratingColor} !important; background: #050609; border-radius: 20px; overflow: hidden; box-shadow: 0 0 30px ${ratingColor}44; box-sizing: border-box;">
+const btnColor = optionsData.category_colors?.btn_bg || '#00d4ff';
+			    content.innerHTML = `
+			        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; border: 4px solid ${ratingColor} !important; background: #050609; border-radius: 20px; overflow: hidden; box-shadow: 0 0 20px ${ratingColor}, 0 0 40px ${ratingColor}66; box-sizing: border-box;">
 			            <!-- 左側滿版海報 -->
-			            <div class="detail-poster-aside" style="border-right: 3px solid ${ratingColor}; box-sizing: border-box; background: #000;">
+			            <div class="detail-poster-aside" style="border-right: 4px solid ${ratingColor}; box-sizing: border-box; background: #000;">
 	                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
 	                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
 	                <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; border-right: 2px solid ${ratingColor}; border-bottom: 2px solid ${ratingColor}; backdrop-filter: blur(12px); z-index: 10;">
@@ -440,7 +441,7 @@ window.showAnimeDetail = (id) => {
 			                <div class="detail-section-v35" style="margin-bottom: 0; position: relative;">
 			                    <div style="padding: 10px 20px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.15), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
 		                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-		                            ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 8px 16px; font-size: 12px; white-space: nowrap; border-color: ${ratingColor}; color: ${ratingColor}; border-radius: 50px; height: 32px;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic; font-size: 12px;">暫無連結</span>'}
+		                           ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 8px 16px; font-size: 12px; white-space: nowrap; border-color: ${btnColor}; color: ${btnColor}; background: ${btnColor}22; border-radius: 50px; height: 32px;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic; font-size: 12px;">暫無連結</span>'}
 		                        </div>
 		                    </div>
 		                </div>
