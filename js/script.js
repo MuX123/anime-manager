@@ -310,8 +310,9 @@ window.renderCard = (item) => {
                     <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
                         ${Object.entries(item.extra_data || {}).length > 0 ? Object.entries(item.extra_data).map(([key, val]) => {
                             if (!val) return '';
-                            const color = optionsData.category_colors?.[key] || 'var(--neon-cyan)';
-                            return `<span style="font-size: 11px; color: ${color}; border: 1px solid ${color}44; padding: 2px 8px; border-radius: 50px; background: ${color}08; font-weight: bold;">${val}</span>`;
+                            // 修正：確保 key 能正確對應到 optionsData.category_colors
+                            const color = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : 'var(--neon-cyan)';
+                            return `<span style="font-size: 11px; color: ${color}; border: 1px solid ${color}66; padding: 2px 8px; border-radius: 50px; background: ${color}11; font-weight: bold; white-space: nowrap;">${val}</span>`;
                         }).join('') : '<span style="color: rgba(255,255,255,0.2); font-size: 11px; font-style: italic;">無自訂標籤</span>'}
                     </div>
                 </div>
