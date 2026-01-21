@@ -172,7 +172,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.1.3-ULTRA</div>
+	            <div class="site-version">v5.1.4-ULTRA</div>
 		        <div class="app-container">
 		            <div style="position: relative; width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 15px; margin-bottom: -40px; z-index: 500;">
 		                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
@@ -369,49 +369,62 @@ window.showAnimeDetail = (id) => {
 		                </div>
 	            </div>
 
-            <!-- 右側資訊流 -->
-            <div class="detail-content-main force-scroll">
-                <div>
-                    <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'};">${item.name}</h2>
-	                    <div class="core-data-row" style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
-	                        ${item.year ? `<div class="core-data-item" style="background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--neon-cyan); padding: 4px 12px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px rgba(0, 212, 255, 0.5); box-shadow: 0 0 10px rgba(0, 212, 255, 0.1);">${item.year}</div>` : ''}
-	                        ${item.season ? `<div class="core-data-item" style="background: rgba(176, 38, 255, 0.1); border: 1px solid rgba(176, 38, 255, 0.3); color: #b026ff; padding: 4px 12px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px rgba(176, 38, 255, 0.5); box-shadow: 0 0 10px rgba(176, 38, 255, 0.1);">${item.season}</div>` : ''}
-	                        ${item.month ? `<div class="core-data-item" style="background: rgba(255, 0, 110, 0.1); border: 1px solid rgba(255, 0, 110, 0.3); color: #ff006e; padding: 4px 12px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px rgba(255, 0, 110, 0.5); box-shadow: 0 0 10px rgba(255, 0, 110, 0.1);">${item.month}月</div>` : ''}
-	                        ${item.episodes ? `<div class="core-data-item" style="background: rgba(57, 255, 20, 0.1); border: 1px solid rgba(57, 255, 20, 0.3); color: #39ff14; padding: 4px 12px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); box-shadow: 0 0 10px rgba(57, 255, 20, 0.1);">全 ${item.episodes} 集</div>` : ''}
+	            <!-- 右側資訊流 -->
+	            <div class="detail-content-main force-scroll">
+	                <!-- 標題與核心數據區塊 -->
+	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+	                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+	                        <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0;">${item.name}</h2>
+	                        <div class="core-data-row" style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+	                            ${item.year ? `<div class="core-data-item" style="background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--neon-cyan); padding: 3px 10px; border-radius: 50px; font-size: 12px; font-weight: bold; text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);">${item.year}</div>` : ''}
+	                            ${item.season ? `<div class="core-data-item" style="background: rgba(176, 38, 255, 0.1); border: 1px solid rgba(176, 38, 255, 0.3); color: #b026ff; padding: 3px 10px; border-radius: 50px; font-size: 12px; font-weight: bold; text-shadow: 0 0 5px rgba(176, 38, 255, 0.5);">${item.season}</div>` : ''}
+	                            ${item.month ? `<div class="core-data-item" style="background: rgba(255, 0, 110, 0.1); border: 1px solid rgba(255, 0, 110, 0.3); color: #ff006e; padding: 3px 10px; border-radius: 50px; font-size: 12px; font-weight: bold; text-shadow: 0 0 5px rgba(255, 0, 110, 0.5);">${item.month}月</div>` : ''}
+	                            ${item.episodes ? `<div class="core-data-item" style="background: rgba(57, 255, 20, 0.1); border: 1px solid rgba(57, 255, 20, 0.3); color: #39ff14; padding: 3px 10px; border-radius: 50px; font-size: 12px; font-weight: bold; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5);">全 ${item.episodes} 集</div>` : ''}
+	                        </div>
 	                    </div>
-                </div>
+	                </div>
 
-                <div class="detail-section-v35" style="margin-top: 10px;">
-                    <div class="scroll-row-v35 force-scroll">
-                        ${genres.map(g => {
-                            const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-                            return `<span class="tag-pill-v35" style="color: ${optionsData.category_colors.genre};">${cleanG}</span>`;
-                        }).join('')}
-                    </div>
-                </div>
+	                <!-- 類型標籤區塊 -->
+	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+	                    <div style="padding: 12px 25px; background: linear-gradient(90deg, rgba(176, 38, 255, 0.05), transparent); border-left: 6px solid #b026ff; margin-left: -2px; box-sizing: border-box;">
+	                        <div class="scroll-row-v35 force-scroll">
+	                            ${genres.map(g => {
+	                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
+	                                return `<span class="tag-pill-v35" style="color: ${optionsData.category_colors.genre}; border-color: rgba(176, 38, 255, 0.3);">${cleanG}</span>`;
+	                            }).join('')}
+	                        </div>
+	                    </div>
+	                </div>
 
-                ${extraTags.length > 0 ? `
-                    <div class="detail-section-v35">
-                        <div class="scroll-row-v35 force-scroll">
-                            ${extraTags.map(t => {
-                                const color = optionsData.category_colors[t.key] || 'var(--neon-cyan)';
-                                return `<span class="tag-pill-v35" style="color: ${color};">${t.val}</span>`;
-                            }).join('')}
-                        </div>
-                    </div>
-                ` : ''}
+	                <!-- 擴充標籤區塊 -->
+	                ${extraTags.length > 0 ? `
+	                    <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+	                        <div style="padding: 12px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); border-left: 6px solid var(--neon-cyan); margin-left: -2px; box-sizing: border-box;">
+	                            <div class="scroll-row-v35 force-scroll">
+	                                ${extraTags.map(t => {
+	                                    const color = optionsData.category_colors[t.key] || 'var(--neon-cyan)';
+	                                    return `<span class="tag-pill-v35" style="color: ${color}; border-color: rgba(0, 212, 255, 0.3);">${t.val}</span>`;
+	                                }).join('')}
+	                            </div>
+	                        </div>
+	                    </div>
+	                ` : ''}
 
-	                <div class="detail-section-v35" style="margin-top: 10px; position: relative;">
+	                <!-- 劇情介紹區塊 -->
+	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
 	                    <div style="padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
 	                        <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
 	                    </div>
 	                </div>
 
-                <div class="detail-section-v35">
-                    <div class="scroll-row-v35 force-scroll">
-                        ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 12px 25px; font-size: 14px; white-space: nowrap;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic;">暫無連結</span>'}
-                    </div>
-                </div>
+	                <!-- 連結區塊 -->
+	                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+	                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(57, 255, 20, 0.05), transparent); border-left: 6px solid #39ff14; margin-left: -2px; box-sizing: border-box;">
+	                        <div class="scroll-row-v35 force-scroll">
+	                            ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 10px 20px; font-size: 13px; white-space: nowrap; border-color: #39ff14; color: #39ff14;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic;">暫無連結</span>'}
+	                        </div>
+	                    </div>
+	                </div>
             </div>
         </div>
     `;
