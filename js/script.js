@@ -203,6 +203,9 @@ window.renderApp = function() {
 
     // 徹底解決閃爍：內容渲染完成後，顯示 app 並移除遮罩
     app.style.display = 'block';
+    app.style.visibility = 'visible';
+    app.style.opacity = '1';
+    
     const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen) {
         loadingScreen.style.opacity = '0';
