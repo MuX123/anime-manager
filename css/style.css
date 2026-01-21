@@ -434,3 +434,27 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 0 15px currentColor;
     border-color: transparent;
 }
+
+/* 手機版按鈕排版優化 v4.7.6 */
+@media (max-width: 768px) {
+    .category-buttons-container {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        gap: 8px !important;
+        padding-bottom: 10px !important;
+        justify-content: flex-start !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+    }
+    .category-buttons-container::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+    .category-buttons-container .btn-primary {
+        padding: 8px 16px !important;
+        font-size: 13px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        min-width: auto !important;
+    }
+}
