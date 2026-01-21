@@ -172,7 +172,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.1.7-ULTRA</div>
+	            <div class="site-version">v5.1.8-ULTRA</div>
 		        <div class="app-container">
 			            <div style="position: fixed; top: 20px; right: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; z-index: 2000;">
 			                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.15); padding: 6px 12px; border-radius: 4px; border: 1px solid rgba(0,212,255,0.4); white-space: nowrap; backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.1);">
@@ -300,22 +300,37 @@ window.renderCard = (item) => {
                     ${isMobileLayout ? `<span style="font-size: 13px; color: ${episodesColor}; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</span>` : ''}
                 </div>
                 
-                <!-- 第二行：年份/季節/月份 (與資料卡一致的設計) -->
+                <!-- 第二行：年份/季節/月份 (垂直排列於標題下方) -->
                 ${isMobileLayout ? `
-                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap;">
-                        ${item.year ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 1px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
-                        ${item.season ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 1px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
-                        ${item.month ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 1px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
-                    </div>
-                    <!-- 第三行：類型 (不換行滾動，移除標點符號) -->
-                    ${genres.length > 0 ? `
-                        <div class="scroll-row-v35" style="margin-top: 8px; padding: 2px 0;">
-                            ${genres.map(g => {
-                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-                                return `<span class="tag-pill-v35" style="padding: 2px 10px; font-size: 11px; margin-right: 6px;">${cleanG}</span>`;
-                            }).join('')}
+                    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            ${item.year ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 1px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
+                            ${item.season ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 1px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.season}</span>` : ''}
+                            ${item.month ? `<span style="font-size: 11px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 1px 8px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.month}月</span>` : ''}
                         </div>
-                    ` : ''}
+                        
+                        <!-- 類型與自訂選項 (最多兩排) -->
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            ${genres.length > 0 ? `
+                                <div class="scroll-row-v35" style="padding: 2px 0; max-height: 60px; overflow-y: auto;">
+                                    ${genres.map(g => {
+                                        const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
+                                        return `<span class="tag-pill-v35" style="padding: 2px 10px; font-size: 11px; margin-right: 6px; margin-bottom: 4px; display: inline-block;">${cleanG}</span>`;
+                                    }).join('')}
+                                </div>
+                            ` : ''}
+                            
+                            ${Object.keys(item.extra_data || {}).length > 0 ? `
+                                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                    ${Object.entries(item.extra_data).map(([key, val]) => {
+                                        if (!val) return '';
+                                        const color = optionsData.category_colors?.[key] || 'var(--neon-cyan)';
+                                        return `<span style="font-size: 10px; color: ${color}; border: 1px solid ${color}66; padding: 1px 6px; border-radius: 4px; background: ${color}11;">${val}</span>`;
+                                    }).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
                 ` : `
                     <div class="card-tags-v38" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
                         ${item.year ? `<span style="font-size: 12px; color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.4); padding: 2px 10px; border-radius: 50px; font-weight: bold; background: rgba(0,212,255,0.05);">${item.year}</span>` : ''}
