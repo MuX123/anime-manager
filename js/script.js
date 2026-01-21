@@ -275,7 +275,7 @@ window.renderCard = (item) => {
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
     const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
     const cyanBase = 'rgba(0, 212, 255, 0.1)'; // 水藍色底色
-    const getTagStyle = (color) => `font-size: 11px !important; color: ${color} !important; border: 1px solid ${color}66 !important; padding: 2px 8px !important; border-radius: 50px !important; background: ${color}11 !important; font-weight: bold !important; white-space: nowrap !important; display: inline-block !important;`;
+    const getTagStyle = (color) => `font-size: 11px !important; color: ${color} !important; border: 1.5px solid ${color} !important; padding: 2px 10px !important; border-radius: 50px !important; background: ${color}22 !important; font-weight: bold !important; white-space: nowrap !important; display: inline-block !important; font-family: 'Microsoft JhengHei', sans-serif !important; box-shadow: 0 0 5px ${color}44 !important;`;
     
     const isMobileLayout = gridColumns === 'mobile' || window.innerWidth <= 768;
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
@@ -293,12 +293,12 @@ window.renderCard = (item) => {
                 <!-- 中間：名稱與時間 -->
                 <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
                     <h3 style="color: ${nameColor}; font-size: 16px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
-                    <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-                        ${item.year ? `<span style="font-size: 11px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.year}</span>` : ''}
-                        ${item.season ? `<span style="font-size: 11px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.season}</span>` : ''}
-                        ${item.month ? `<span style="font-size: 11px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.month}月</span>` : ''}
-                        ${item.episodes ? `<span style="font-size: 11px; color: ${episodesColor}; border: 1px solid ${episodesColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${episodesColor}11;">全 ${item.episodes} 集</span>` : ''}
-                    </div>
+	                    <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+	                        ${item.year ? `<span style="${getTagStyle(yearColor)}">${item.year}</span>` : ''}
+	                        ${item.season ? `<span style="${getTagStyle(yearColor)}">${item.season}</span>` : ''}
+	                        ${item.month ? `<span style="${getTagStyle(yearColor)}">${item.month}月</span>` : ''}
+	                        ${item.episodes ? `<span style="${getTagStyle(episodesColor)}">全 ${item.episodes} 集</span>` : ''}
+	                    </div>
                 </div>
 
                 <!-- 右側：標籤流 (兩行顯示) -->
@@ -340,11 +340,19 @@ window.renderCard = (item) => {
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                         <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '13px' : '15px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
                     </div>
-                    <div class="card-tags-v38" style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; width: 100%; justify-content: center;">
-                        ${item.year ? `<span style="font-size: 11px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.year}</span>` : ''}
-                        ${item.season ? `<span style="font-size: 11px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.season}</span>` : ''}
-                        ${item.month ? `<span style="font-size: 11px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.month}月</span>` : ''}
-                    </div>
+	                    <div class="card-tags-v38" style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; width: 100%; justify-content: center; padding-bottom: 5px;">
+	                        ${item.year ? `<span style="${getTagStyle(yearColor)}">${item.year}</span>` : ''}
+	                        ${item.season ? `<span style="${getTagStyle(yearColor)}">${item.season}</span>` : ''}
+	                        ${item.month ? `<span style="${getTagStyle(yearColor)}">${item.month}月</span>` : ''}
+	                    </div>
+	                    <div class="card-tags-v38" style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; width: 100%; justify-content: center;">
+	                        ${genres.slice(0, 3).map(g => `<span style="${getTagStyle(genreColor)}">${g.replace(/["'\[\]\(\),，。]/g, '').trim()}</span>`).join('')}
+	                        ${Object.entries(item.extra_data || {}).slice(0, 2).map(([key, val]) => {
+	                            if (!val) return '';
+	                            const color = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : '#ffffff';
+	                            return `<span style="${getTagStyle(color)}">${val}</span>`;
+	                        }).join('')}
+	                    </div>
                 </div>
             </div>
         `;
@@ -394,24 +402,24 @@ window.showAnimeDetail = (id) => {
                 <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
                     <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
                         <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0;">${item.name}</h2>
-                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; margin-top: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-                            ${item.year ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88; white-space: nowrap;">${item.year}</div>` : ''}
-                            ${item.season ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88; white-space: nowrap;">${item.season}</div>` : ''}
-                            ${item.month ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88; white-space: nowrap;">${item.month}月</div>` : ''}
-                            ${item.episodes ? `<div class="core-data-item" style="background: ${episodesColor}11; border: 1px solid ${episodesColor}66; color: ${episodesColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${episodesColor}88; white-space: nowrap;">全 ${item.episodes} 集</div>` : ''}
-                        </div>
+	                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; margin-top: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+	                            ${item.year ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${item.year}</div>` : ''}
+	                            ${item.season ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${item.season}</div>` : ''}
+	                            ${item.month ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${item.month}月</div>` : ''}
+	                            ${item.episodes ? `<div class="core-data-item" style="${getTagStyle(episodesColor)}">全 ${item.episodes} 集</div>` : ''}
+	                        </div>
                     </div>
                 </div>
 
                 <!-- 類型標籤區塊 -->
                 <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
                     <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
-                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-                            ${genres.map(g => {
-                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-                                return `<span style="background: ${genreColor}11; border: 1px solid ${genreColor}66; color: ${genreColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; white-space: nowrap; box-shadow: 0 0 10px ${genreColor}22;">${cleanG}</span>`;
-                            }).join('')}
-                        </div>
+	                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+	                            ${genres.map(g => {
+	                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
+	                                return `<span style="${getTagStyle(genreColor)}">${cleanG}</span>`;
+	                            }).join('')}
+	                        </div>
                     </div>
                 </div>
 
@@ -419,12 +427,12 @@ window.showAnimeDetail = (id) => {
                 ${extraTags.length > 0 ? `
                     <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
                         <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
-                            <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-                                ${extraTags.map(t => {
-                                    const color = t.color || 'var(--neon-cyan)';
-                                    return `<span style="background: ${color}11; border: 1px solid ${color}66; color: ${color}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; white-space: nowrap; box-shadow: 0 0 10px ${color}22;">${t.val}</span>`;
-                                }).join('')}
-                            </div>
+	                            <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+	                                ${extraTags.map(t => {
+	                                    const color = t.color || 'var(--neon-cyan)';
+	                                    return `<span style="${getTagStyle(color)}">${t.val}</span>`;
+	                                }).join('')}
+	                            </div>
                         </div>
                     </div>
                 ` : ''}
@@ -902,16 +910,16 @@ window.renderOptionsManager = () => {
                             ${(optionsData[key] || []).map((opt, idx) => {
                                 const itemColor = (key === 'rating') ? (optionsData.rating_colors?.[opt] || color) : color;
                                 return `
-                                    <div class="option-item-row">
-                                        ${key === 'rating' ? `
-                                            <div class="color-input-wrapper">
-                                                <div class="color-swatch" style="background: ${itemColor};" onclick="this.nextElementSibling.click()"></div>
-                                                <input type="color" value="${itemColor}" onchange="window.updateRatingItemColor('${opt}', this.value); this.previousElementSibling.style.background = this.value">
-                                            </div>
-                                        ` : ''}
-                                        <span style="flex: 1; color: ${itemColor}; font-weight: bold;">${opt}</span>
-                                        <span style="cursor: pointer; color: #ff4444; font-weight: bold;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</span>
-                                    </div>
+	                                    <div class="option-item-row" style="display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid rgba(0,212,255,0.05);">
+	                                        ${key === 'rating' ? `
+	                                            <div class="color-input-wrapper">
+	                                                <div class="color-swatch" style="background: ${itemColor}; width: 20px; height: 20px; border-radius: 4px;" onclick="this.nextElementSibling.click()"></div>
+	                                                <input type="color" value="${itemColor}" onchange="window.updateRatingItemColor('${opt}', this.value); this.previousElementSibling.style.background = this.value">
+	                                            </div>
+	                                        ` : ''}
+	                                        <span style="flex: 1; ${getTagStyle(itemColor)}">${opt}</span>
+	                                        <span style="cursor: pointer; color: #ff4444; font-weight: bold; padding: 5px;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</span>
+	                                    </div>
                                 `;
                             }).join('')}
                         </div>
