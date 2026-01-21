@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.9.6-ULTRA</div>
+        <div class="site-version">v4.9.7-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -216,7 +216,7 @@ window.renderCard = (item) => {
     const isMobileLayout = gridColumns === 'mobile' || window.innerWidth <= 768;
 
     return `
-        <div class="anime-card ${isMobileLayout ? 'mobile-layout-card' : ''}" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor}; ${isMobileLayout ? 'width: 100% !important; max-width: 100% !important; display: block !important;' : ''}">
+        <div class="anime-card ${isMobileLayout ? 'mobile-layout-card' : ''}" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor}; ${isMobileLayout ? 'width: 100% !important; max-width: 100% !important; display: block !important; margin: 0 0 20px 0 !important;' : ''}">
             <!-- 海報區塊：手機佈局模式下隱藏 -->
             <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative; ${isMobileLayout ? 'display: none !important;' : ''}">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -332,9 +332,8 @@ window.showAnimeDetail = (id) => {
                     </div>
                 ` : ''}
 
-                <div class="detail-section-v35" style="margin-top: 10px;">
-                    <div style="position: relative; padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent);">
-                        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--neon-blue); border-radius: 4px 0 0 4px;"></div>
+                <div class="detail-section-v35" style="margin-top: 10px; position: relative;">
+                    <div style="padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), transparent); border-left: 6px solid var(--neon-blue); margin-left: -1px;">
                         <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
                     </div>
                 </div>
@@ -621,9 +620,9 @@ window.renderAdminContent = (pagedData, total) => {
 };
 
 window.renderAnimeForm = (item) => {
-    // 徹底標準化已選擇的類型，移除所有干擾字元
+    // 最終暴力標準化：移除所有非文字字元，確保比對成功
     const genres = (Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/) : []))
-        .map(g => String(g).replace(/["'\[\]\(\)]/g, '').trim().toLowerCase())
+        .map(g => String(g).replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').trim().toLowerCase())
         .filter(g => g);
     const links = Array.isArray(item.links) ? item.links : [];
     const extra_data = item.extra_data || {};
@@ -690,7 +689,7 @@ window.renderAnimeForm = (item) => {
                 <div style="flex: 1; overflow-y: auto; padding-right: 10px; max-height: 600px;" class="force-scroll">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         ${optionsData.genre.map(g => {
-                            const cleanG = String(g).trim().toLowerCase();
+                            const cleanG = String(g).replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').trim().toLowerCase();
                             const isChecked = genres.includes(cleanG);
                             return `
                             <label class="option-item-row" style="cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; transition: all 0.2s;">
