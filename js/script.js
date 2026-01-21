@@ -369,13 +369,13 @@ window.showAnimeDetail = (id) => {
 
 	    const extraTags = [];
 	    if (item.extra_data) {
-	        Object.entries(item.extra_data).forEach(([key, val]) => {
-	            if (val) {
-	                // 修正：優先從 optionsData.category_colors 獲取對應 key 的顏色
-	                const customColor = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : 'var(--neon-cyan)';
-	                extraTags.push({ val: val, key: key, color: customColor });
-	            }
-	        });
+		        Object.entries(item.extra_data).forEach(([key, val]) => {
+		            if (val) {
+		                // 修正：從 optionsData 獲取對應 key 的顏色設定
+		                const customColor = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : '#ffffff';
+		                extraTags.push({ val: val, key: key, color: customColor });
+		            }
+		        });
 	    }
 
 	    content.innerHTML = `
