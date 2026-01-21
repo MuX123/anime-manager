@@ -13,11 +13,17 @@
     --transition-smooth: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* 全局比例縮小 20% */
+/* 移除全局 zoom，改用響應式設計 */
 html {
-    zoom: 0.8;
-    -moz-transform: scale(0.8);
-    -moz-transform-origin: top center;
+    font-size: 16px;
+}
+
+@media (max-width: 1200px) {
+    html { font-size: 15px; }
+}
+
+@media (max-width: 768px) {
+    html { font-size: 14px; }
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -77,23 +83,62 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
 }
 
+/* Input and Select */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+    background: rgba(5, 6, 9, 0.8) !important;
+    border: 1px solid var(--neon-blue) !important;
+    color: var(--text-main) !important;
+    border-radius: 6px !important;
+    padding: 10px 12px !important;
+    font-family: 'Space Mono', monospace !important;
+    transition: var(--transition-smooth);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.1) !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+    outline: none !important;
+    border-color: var(--neon-cyan) !important;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4) !important;
+    background: rgba(5, 6, 9, 0.95) !important;
+}
+
+select {
+    cursor: pointer !important;
+    appearance: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300d4ff' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    padding-right: 30px !important;
+}
+
 /* Buttons */
 .btn-primary {
     background: rgba(0, 212, 255, 0.1);
     border: 2px solid var(--neon-blue);
     color: var(--neon-cyan);
-    padding: 14px 28px;
+    padding: 12px 24px;
     cursor: pointer;
     border-radius: 6px;
     font-family: 'Orbitron', sans-serif;
-    font-weight: 900;
-    font-size: 16px;
+    font-weight: 700;
+    font-size: 14px;
     transition: var(--transition-smooth);
     text-transform: uppercase;
     letter-spacing: 1px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    height: 44px;
+    min-width: 100px;
+    white-space: nowrap;
 }
 .btn-primary:hover:not(:disabled) { 
     background: rgba(0, 212, 255, 0.3); 
@@ -119,8 +164,28 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
 
 /* 詳情頁佈局 */
 .detail-container-v35 {
-    display: grid; grid-template-columns: 380px 1fr; max-height: 85vh; overflow: hidden;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    max-height: 85vh;
+    overflow: hidden;
     position: relative;
+}
+
+@media (max-width: 768px) {
+    .detail-container-v35 {
+        grid-template-columns: 1fr;
+        max-height: auto;
+        max-width: 100vw;
+    }
+    .detail-poster-aside {
+        height: 300px !important;
+        border-right: none !important;
+        border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+    }
+    .detail-content-main {
+        padding: 20px !important;
+        gap: 15px !important;
+    }
 }
 
 .detail-poster-aside {
@@ -141,6 +206,19 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     .floating-menu-btn, .menu-dropdown-v2 { display: none !important; }
     .grid-layout-selector { display: none !important; }
     .anime-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+    
+    .category-buttons-container {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+        max-width: 100% !important;
+    }
+    
+    .btn-primary {
+        padding: 10px 12px !important;
+        font-size: 12px !important;
+        white-space: nowrap;
+    }
 }
 
 /* 電腦版顯示系統菜單 */
