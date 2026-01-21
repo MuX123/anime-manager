@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.5.2-ULTRA</div>
+        <div class="site-version">v4.6.1-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -1160,8 +1160,17 @@ window.submitAnnouncement = async (editId = null) => {
         };
 
         let error;
-        if (editId) {
-            const { error: err } = await supabaseClient.from('announcements').update(payload).eq('id', parseInt(editId));
+        if (editId && editId !== 'null') {
+            // 強制轉換為數字，並移除 timestamp 更新以保持原始發布時間（或根據需求保留）
+            const { error: err } = await supabaseClient.from('announcements')
+                .update({
+                    content: payload.content,
+                    image_urls: payload.image_urls,
+                    author_name: payload.author_name,
+                    author_avatar: payload.author_avatar,
+                    author_color: payload.author_color
+                })
+                .eq('id', Number(editId));
             error = err;
         } else {
             const { error: err } = await supabaseClient.from('announcements').insert([payload]);
@@ -1169,9 +1178,11 @@ window.submitAnnouncement = async (editId = null) => {
         }
 
         if (error) throw error;
-        window.showToast(editId ? '✓ 公告已更新' : '✓ 公告已發布');
+        window.showToast(editId && editId !== 'null' ? '✓ 公告已更新' : '✓ 公告已發布');
         document.getElementById('announcement-modal').remove();
-        window.renderAnnouncements();
+        
+        // 延遲一下再重新渲染，確保資料庫已完成寫入
+        setTimeout(() => window.renderAnnouncements(), 300);
     } catch (err) {
         window.showToast('✗ 操作失敗', 'error');
     }
