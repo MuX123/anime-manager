@@ -137,7 +137,7 @@ window.renderApp = function() {
     // 僅在初次渲染或非搜尋輸入時更新整個 app
     if (!document.getElementById('search-input')) {
         app.innerHTML = `
-            <div class="site-version">v3.9.2-ULTRA</div>
+            <div class="site-version">v3.9.3-ULTRA</div>
             <div class="app-container">
                 <header>
                     <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -180,7 +180,7 @@ window.renderApp = function() {
 };
 
 window.renderCard = (item) => {
-    const starColor = item.star_color || '#ffcc00';
+    const ratingColor = optionsData.category_colors?.rating || '#b026ff';
     const nameColor = item.name_color || '#ffffff';
     const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-cyan)';
     
@@ -189,11 +189,11 @@ window.renderCard = (item) => {
             <div style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
                 <div style="position: absolute; inset: 0; box-shadow: inset 0 40px 30px -10px rgba(0,0,0,0.8), inset 0 -40px 30px -10px rgba(0,0,0,0.8), inset 40px 0 30px -10px rgba(0,0,0,0.4), inset -40px 0 30px -10px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
-                <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; border-left: 4px solid ${starColor}; backdrop-filter: blur(8px); z-index: 10; transition: all 0.3s ease;">
+                <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; border-left: 4px solid ${ratingColor}; backdrop-filter: blur(8px); z-index: 10; transition: all 0.3s ease;">
                     <div style="position: relative; display: flex; align-items: center; justify-content: center;">
-                        <span class="star-icon" style="color: ${starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${starColor});">${item.recommendation || '★'}</span>
+                        <span class="star-icon" style="color: ${ratingColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${ratingColor});">${item.recommendation || '★'}</span>
                     </div>
-                    <span style="color: ${starColor}; font-family: 'Space Mono', monospace; font-size: 15px; font-weight: bold; letter-spacing: 1px; filter: drop-shadow(0 0 2px ${starColor});">${item.rating || '0.0'}</span>
+                    <span style="color: ${ratingColor}; font-family: 'Space Mono', monospace; font-size: 15px; font-weight: bold; letter-spacing: 1px; filter: drop-shadow(0 0 2px ${ratingColor});">${item.rating || '0.0'}</span>
                 </div>
                 <div style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: ${episodesColor}; font-size: 14px; padding: 4px 16px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; z-index: 10; box-shadow: 0 0 15px rgba(0,0,0,0.8);">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
             </div>
@@ -243,9 +243,9 @@ window.showAnimeDetail = (id) => {
             <div class="detail-poster-aside">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
                 <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
-                <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 20px; padding: 15px 30px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; border-left: 6px solid ${item.star_color || '#ffcc00'}; backdrop-filter: blur(12px); z-index: 10;">
-                    <span class="star-icon" style="color: ${item.star_color || '#ffcc00'}; font-size: 32px; filter: drop-shadow(0 0 10px ${item.star_color || '#ffcc00'});">${item.recommendation || '★'}</span>
-                    <span style="color: ${item.star_color || '#ffcc00'}; font-family: 'Space Mono', monospace; font-size: 28px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${item.star_color || '#ffcc00'});">${item.rating || '0.0'}</span>
+                <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 20px; padding: 15px 30px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; border-left: 6px solid ${optionsData.category_colors?.rating || '#b026ff'}; backdrop-filter: blur(12px); z-index: 10;">
+                    <span class="star-icon" style="color: ${optionsData.category_colors?.rating || '#b026ff'}; font-size: 32px; filter: drop-shadow(0 0 10px ${optionsData.category_colors?.rating || '#b026ff'});">${item.recommendation || '★'}</span>
+                    <span style="color: ${optionsData.category_colors?.rating || '#b026ff'}; font-family: 'Space Mono', monospace; font-size: 28px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${optionsData.category_colors?.rating || '#b026ff'});">${item.rating || '0.0'}</span>
                 </div>
             </div>
 
