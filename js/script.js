@@ -274,91 +274,73 @@ window.renderCard = (item) => {
     const nameColor = item.name_color || optionsData.category_colors?.name || '#ffffff';
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
     const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
-    const infoText = `${item.year || ''} ${item.season || ''} ${item.month ? item.month + '月' : ''}`.trim();
+    const cyanBase = 'rgba(0, 212, 255, 0.1)'; // 水藍色底色
     
-    // 判斷是否為手機佈局模式 (無論是真手機還是電腦版切換)
     const isMobileLayout = gridColumns === 'mobile' || window.innerWidth <= 768;
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
 
-    return `
-        <div class="anime-card ${isMobileLayout ? 'mobile-layout-card' : ''}" onclick="window.showAnimeDetail('${item.id}')" style="--rating-color: ${ratingColor}; --episodes-color: ${episodesColor}; ${isMobileLayout ? `width: 100% !important; max-width: 100% !important; display: block !important; margin: 0 0 15px 0 !important; flex: 0 0 100% !important; background: ${ratingColor}11 !important; border: 1px solid ${ratingColor}66 !important; box-shadow: 0 0 15px ${ratingColor}22 !important; border-radius: 12px !important; padding: 10px 15px !important;` : ''}">
-            <!-- 海報區塊：手機佈局模式下隱藏 -->
-            <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative; ${isMobileLayout ? 'display: none !important;' : ''}">
-                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
-                <div class="card-overlay-v38" style="position: absolute; inset: 0; box-shadow: inset 0 40px 30px -10px rgba(0,0,0,0.8), inset 0 -40px 30px -10px rgba(0,0,0,0.8), inset 40px 0 30px -10px rgba(0,0,0,0.4), inset -40px 0 30px -10px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
-                <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; backdrop-filter: blur(8px); z-index: 10; transition: all 0.3s ease;">
-                    <div style="position: relative; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); mask-image: radial-gradient(circle, black 60%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 60%, transparent 100%);">
-                        <span class="star-icon" style="color: ${starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${starColor});">
-                            <span>${item.recommendation || '★'}</span>
-                        </span>
-                    </div>
-                    <div style="color: ${ratingColor}; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 1px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; mask-image: radial-gradient(circle, black 70%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 70%, transparent 100%);">${item.rating || '普'}</div>
+    if (isMobileLayout) {
+        // 資料列表排版重構
+        return `
+            <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 12px 0 !important; background: ${cyanBase} !important; border: 2px solid ${ratingColor} !important; box-shadow: 0 0 15px ${ratingColor}33 !important; border-radius: 12px !important; padding: 12px 20px !important; gap: 20px; overflow: hidden; width: 100%;">
+                <!-- 左側：評分與評級 -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 60px; flex-shrink: 0;">
+                    <span style="color: ${starColor}; font-size: 16px; text-shadow: 0 0 5px ${starColor}88;">${item.recommendation || '★'}</span>
+                    <span style="color: ${ratingColor}; border: 1.5px solid ${ratingColor}; padding: 2px 10px; border-radius: 50px; font-size: 12px; font-weight: 900; background: ${ratingColor}22;">${item.rating || '普'}</span>
                 </div>
-                <div class="episodes-badge-v38" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: ${episodesColor}; font-size: 14px; padding: 4px 16px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; z-index: 10; box-shadow: 0 0 15px rgba(0,0,0,0.8);">${item.episodes ? '全 ' + item.episodes + ' 集' : ''}</div>
+
+                <!-- 中間：名稱與時間 -->
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+                    <h3 style="color: ${nameColor}; font-size: 16px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
+                    <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+                        ${item.year ? `<span style="font-size: 11px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.year}</span>` : ''}
+                        ${item.season ? `<span style="font-size: 11px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.season}</span>` : ''}
+                        ${item.month ? `<span style="font-size: 11px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.month}月</span>` : ''}
+                        ${item.episodes ? `<span style="font-size: 11px; color: ${episodesColor}; border: 1px solid ${episodesColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${episodesColor}11;">全 ${item.episodes} 集</span>` : ''}
+                    </div>
+                </div>
+
+                <!-- 右側：標籤流 -->
+                <div style="flex: 1.2; min-width: 0; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; padding-left: 10px; border-left: 1px solid ${ratingColor}33;">
+                    ${genres.map(g => `<span style="font-size: 11px; color: ${genreColor}; border: 1px solid ${genreColor}44; padding: 2px 8px; border-radius: 50px; background: ${genreColor}08; font-weight: bold;">${g.replace(/["'\[\]\(\),，。]/g, '').trim()}</span>`).join('')}
+                    ${Object.entries(item.extra_data || {}).map(([key, val]) => {
+                        if (!val) return '';
+                        const color = optionsData.category_colors?.[key] || 'var(--neon-cyan)';
+                        return `<span style="font-size: 11px; color: ${color}; border: 1px solid ${color}44; padding: 2px 8px; border-radius: 50px; background: ${color}08; font-weight: bold;">${val}</span>`;
+                    }).join('')}
+                </div>
             </div>
-            <!-- 卡片內容 -->
-            <div class="card-content-v38" data-info="${infoText}" style="padding: ${isMobileLayout ? '5px 0' : '15px'}; text-align: ${isMobileLayout ? 'left' : 'center'}; background: ${isMobileLayout ? 'transparent' : 'rgba(0,0,0,0.4)'}; width: 100%;">
-                <!-- 第一行：星星 + 評級 + 名稱 -->
-                ${isMobileLayout ? `
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding-bottom: 8px;">
-                        <span style="color: ${starColor}; font-size: 14px; white-space: nowrap; flex-shrink: 0;">${item.recommendation || '★'}</span>
-                        <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${item.rating || '普'}</span>
-                        <div style="flex: 1; min-width: 0;">
-                            <h3 style="color: ${nameColor}; font-size: 15px; margin: 0 0 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2;">${item.name}</h3>
-                            ${(item.year || item.season || item.month) ? `
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    ${item.year ? `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.year}</span>` : ''}
-                                    ${item.season ? `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.season}</span>` : ''}
-                                    ${item.month ? `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.month}月</span>` : ''}
-                                </div>
-                            ` : ''}
+        `;
+    } else {
+        // 網格佈局
+        return `
+            <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="border: 2px solid ${ratingColor}; background: ${cyanBase};">
+                <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
+                    <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <div class="card-overlay-v38" style="position: absolute; inset: 0; box-shadow: inset 0 40px 30px -10px rgba(0,0,0,0.8), inset 0 -40px 30px -10px rgba(0,0,0,0.8), inset 40px 0 30px -10px rgba(0,0,0,0.4), inset -40px 0 30px -10px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
+                    <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; backdrop-filter: blur(8px); z-index: 10;">
+                        <div style="position: relative; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 50%;">
+                            <span class="star-icon" style="color: ${starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${starColor});">
+                                <span>${item.recommendation || '★'}</span>
+                            </span>
                         </div>
+                        <div style="color: ${ratingColor}; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 1px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px;">${item.rating || '普'}</div>
                     </div>
-                    
-                    <!-- 分隔線延伸整行 -->
-                    <div style="width: 100%; height: 1px; background: ${ratingColor}33; margin: 8px 0;"></div>
-                    
-                    <!-- 第二行：類型與自訂類型並排 -->
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <!-- 左區：類型 -->
-                        ${genres.length > 0 ? `
-                            <div style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: thin;">
-                                ${genres.map(g => {
-                                    const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-                                    return `<span style="font-size: 12px; color: ${genreColor}; border: 1px solid ${genreColor}66; padding: 3px 10px; border-radius: 50px; font-weight: bold; background: ${genreColor}11; white-space: nowrap;">${cleanG}</span>`;
-                                }).join('')}
-                            </div>
-                        ` : ''}
-                        
-                        <!-- 中間分隔線 -->
-                        ${genres.length > 0 && Object.keys(item.extra_data || {}).length > 0 ? `
-                            <div style="width: 2px; height: 24px; background: ${ratingColor}66; border-radius: 2px; flex-shrink: 0;"></div>
-                        ` : ''}
-                        
-                        <!-- 右區：自訂類型 -->
-                        ${Object.keys(item.extra_data || {}).length > 0 ? `
-                            <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: thin;">
-                                ${Object.entries(item.extra_data).map(([key, val]) => {
-                                    if (!val) return '';
-                                    const color = optionsData.category_colors?.[key] || 'var(--neon-cyan)';
-                                    return `<span style="font-size: 12px; color: ${color}; border: 1px solid ${color}66; padding: 3px 10px; border-radius: 50px; background: ${color}11; font-weight: bold; white-space: nowrap;">${val}</span>`;
-                                }).join('')}
-                            </div>
-                        ` : ''}
+                    <div class="episodes-badge-v38" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: ${episodesColor}; font-size: 14px; padding: 4px 16px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; z-index: 10; box-shadow: 0 0 15px rgba(0,0,0,0.8);">全 ${item.episodes || '0'} 集</div>
+                </div>
+                <div class="card-content-v38" style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4); width: 100%;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '13px' : '15px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
                     </div>
-                ` : `
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                        <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '12px' : '14px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
+                    <div class="card-tags-v38" style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; width: 100%; justify-content: center;">
+                        ${item.year ? `<span style="font-size: 11px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.year}</span>` : ''}
+                        ${item.season ? `<span style="font-size: 11px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.season}</span>` : ''}
+                        ${item.month ? `<span style="font-size: 11px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 8px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.month}月</span>` : ''}
                     </div>
-	                    <div class="card-tags-v38" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
-	                        ${item.year ? `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 10px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.year}</span>` : ''}
-	                        ${item.season ? `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 10px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.season}</span>` : ''}
-	                        ${item.month ? `<span style="font-size: 12px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 10px; border-radius: 50px; font-weight: bold; background: ${yearColor}11;">${item.month}月</span>` : ''}
-	                    </div>
-                `}
+                </div>
             </div>
-        </div>
-    `;
+        `;
+    }
 };
 
 window.showAnimeDetail = (id) => {
@@ -373,16 +355,9 @@ window.showAnimeDetail = (id) => {
     const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
     const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
+    const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
+    const cyanBase = 'rgba(0, 212, 255, 0.1)';
 
-    // 核心數據行 (移除評級)
-    const coreData = [
-        item.year,
-        item.season,
-        item.month ? item.month + '月' : null,
-        item.episodes ? item.episodes + '集' : null
-    ].filter(v => v);
-
-    // 擴充標籤
     const extraTags = [];
     if (item.extra_data) {
         Object.entries(item.extra_data).forEach(([key, val]) => {
@@ -393,81 +368,81 @@ window.showAnimeDetail = (id) => {
         });
     }
 
-	    content.innerHTML = `
-		        <div class="detail-container-v35" style="--rating-color: ${ratingColor};">
-                    <div class="detail-border-v500" style="background: ${ratingColor};"></div>
-	            <!-- 左側滿版海報 -->
-	            <div class="detail-poster-aside">
-	                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
-	                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
-	<div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; backdrop-filter: blur(12px); z-index: 10; mask-image: radial-gradient(circle, black 70%, transparent 100%); -webkit-mask-image: radial-gradient(circle, black 70%, transparent 100%);">
-			                    <span class="star-icon" style="color: ${starColor}; font-size: 24px; filter: drop-shadow(0 0 8px ${starColor});">${item.recommendation || '★'}</span>
-			                    <span style="color: ${optionsData.category_colors?.rating || '#b026ff'}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${optionsData.category_colors?.rating || '#b026ff'});">${item.rating || '普'}</span>
-		                </div>
-	            </div>
+    content.innerHTML = `
+        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; border: 3px solid ${ratingColor}; background: ${cyanBase}; border-radius: 20px; overflow: hidden;">
+            <!-- 左側滿版海報 -->
+            <div class="detail-poster-aside">
+                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
+                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
+                <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; backdrop-filter: blur(12px); z-index: 10;">
+                    <span class="star-icon" style="color: ${starColor}; font-size: 24px; filter: drop-shadow(0 0 8px ${starColor});">${item.recommendation || '★'}</span>
+                    <span style="color: ${ratingColor}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${ratingColor});">${item.rating || '普'}</span>
+                </div>
+            </div>
 
-	            <!-- 右側資訊流 -->
-	            <div class="detail-content-main force-scroll">
-		                <!-- 標題與核心數據區塊 -->
-		                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-		                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
-		                        <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0;">${item.name}</h2>
-		                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
-		                            ${item.year ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88;">${item.year}</div>` : ''}
-		                            ${item.season ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88;">${item.season}</div>` : ''}
-		                            ${item.month ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88;">${item.month}月</div>` : ''}
-		                            ${item.episodes ? `<div class="core-data-item" style="background: #39ff1422; border: 1px solid #39ff1466; color: #39ff14; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px #39ff1488;">全 ${item.episodes} 集</div>` : ''}
-		                        </div>
-		                    </div>
-		                </div>
+            <!-- 右側資訊流 -->
+            <div class="detail-content-main force-scroll">
+                <!-- 標題與核心數據區塊 -->
+                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+                        <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0;">${item.name}</h2>
+                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; margin-top: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+                            ${item.year ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88;">${item.year}</div>` : ''}
+                            ${item.season ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88;">${item.season}</div>` : ''}
+                            ${item.month ? `<div class="core-data-item" style="background: ${yearColor}11; border: 1px solid ${yearColor}66; color: ${yearColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${yearColor}88;">${item.month}月</div>` : ''}
+                            ${item.episodes ? `<div class="core-data-item" style="background: ${episodesColor}11; border: 1px solid ${episodesColor}66; color: ${episodesColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px ${episodesColor}88;">全 ${item.episodes} 集</div>` : ''}
+                        </div>
+                    </div>
+                </div>
 
                 <!-- 類型標籤區塊 -->
-			                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-			                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
-			                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; flex-wrap: wrap;">
-				                            ${genres.map(g => {
-				                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-				                                return `<span style="background: ${genreColor}11; border: 1px solid ${genreColor}66; color: ${genreColor}; padding: 5px 14px; border-radius: 4px; font-size: 13px; font-weight: 500; white-space: nowrap;">${cleanG}</span>`;
-				                            }).join('')}
-		                        </div>
-		                    </div>
-		                </div>
+                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+                            ${genres.map(g => {
+                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
+                                return `<span style="background: ${genreColor}11; border: 1px solid ${genreColor}66; color: ${genreColor}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; white-space: nowrap;">${cleanG}</span>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
 
                 <!-- 擴充標籤區塊 -->
-			                ${extraTags.length > 0 ? `
-			                    <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-			                        <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
-			                            <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; flex-wrap: wrap;">
-				                                ${extraTags.map(t => {
-				                                    const color = t.color || 'var(--neon-cyan)';
-				                                    return `<span style="background: ${color}11; border: 1px solid ${color}66; color: ${color}; padding: 5px 14px; border-radius: 4px; font-size: 13px; font-weight: 500; white-space: nowrap;">${t.val}</span>`;
-				                                }).join('')}
-		                            </div>
-		                        </div>
-		                    </div>
-		                ` : ''}
+                ${extraTags.length > 0 ? `
+                    <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+                        <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+                            <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+                                ${extraTags.map(t => {
+                                    const color = t.color || 'var(--neon-cyan)';
+                                    return `<span style="background: ${color}11; border: 1px solid ${color}66; color: ${color}; padding: 5px 14px; border-radius: 50px; font-size: 13px; font-weight: bold; white-space: nowrap;">${t.val}</span>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
 
-	                <!-- 劇情介紹區塊 -->
-		                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-		                    <div style="padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
-		                        <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
-		                    </div>
-		                </div>
+                <!-- 劇情介紹區塊 -->
+                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+                    <div style="padding: 20px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+                        <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 2; font-size: 16px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
+                    </div>
+                </div>
 
-	                <!-- 連結區塊 -->
-		                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
-		                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
-		                        <div class="scroll-row-v35 force-scroll">
-		                            ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 10px 20px; font-size: 13px; white-space: nowrap; border-color: var(--neon-blue); color: var(--neon-blue);">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic;">暫無連結</span>'}
-		                        </div>
-		                    </div>
-		                </div>
+                <!-- 連結區塊 -->
+                <div class="detail-section-v35" style="margin-bottom: 15px; position: relative;">
+                    <div style="padding: 15px 25px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); border-left: 6px solid var(--neon-blue); margin-left: -2px; box-sizing: border-box;">
+                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+                            ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 10px 20px; font-size: 13px; white-space: nowrap; border-color: var(--neon-blue); color: var(--neon-blue); border-radius: 50px;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic;">暫無連結</span>'}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     `;
     modal.classList.add('active');
     window.initGlobalScroll();
 };
+
 
 window.closeAnimeDetail = () => { document.getElementById('detailModal').classList.remove('active'); };
 
