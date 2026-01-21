@@ -1,4 +1,5 @@
 // TECH v3.3.0 - ACG Manager Logic (System Admin AI Optimized)
+let currentSection = 'notice';
 let animeData = [];
 let optionsData = {
     genre: ['冒險', '奇幻', '熱血', '校園', '戀愛', '喜劇', '科幻', '懸疑', '日常', '異世界'],
@@ -178,7 +179,7 @@ window.renderApp = function() {
         topControlBar.id = 'topControlBar';
         document.body.appendChild(topControlBar);
     }
-    topControlBar.style.cssText = `position: fixed !important; top: 50% !important; right: 20px !important; transform: translateY(-50%) !important; display: ${isAdminMode ? 'none' : 'flex'}; flex-direction: column; align-items: flex-end; z-index: 9999 !important;`;
+    topControlBar.style.cssText = `position: fixed !important; top: 50% !important; right: 20px !important; transform: translateY(-50%) !important; display: ${currentSection === 'admin' ? 'none' : 'flex'}; flex-direction: column; align-items: flex-end; z-index: 9999 !important;`;
     topControlBar.innerHTML = `
         <div style="display: flex; flex-direction: column; background: rgba(5, 15, 25, 0.5); padding: 12px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.2); backdrop-filter: blur(15px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); min-width: 160px; gap: 8px;">
             <select onchange="window.changeGridLayout(this.value)" style="width: 100%; background: rgba(0,212,255,0.05) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">
@@ -191,7 +192,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.5.1-ULTRA</div>
+	            <div class="site-version">v5.5.2-ULTRA</div>
 		        <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -545,7 +546,8 @@ window.getFilteredData = () => {
 
 window.switchCategory = async (cat) => { 
     console.log('🔄 切換分類至:', cat);
-    currentCategory = cat; 
+    currentCategory = cat;
+    currentSection = cat; 
     currentPage = 1; 
     adminPage = 1; // 同步重置後台分頁
     filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' }; 
@@ -620,6 +622,7 @@ window.handleLogout = async () => {
 };
 
 window.toggleAdminMode = (show) => {
+    currentSection = show ? 'admin' : currentCategory;
     if (show) {
         window.renderAdmin();
     } else {
