@@ -192,11 +192,11 @@ app.innerHTML = `
             </div>
             <div style="margin-bottom: 30px; display: ${isNotice ? 'none' : 'block'};">
                 <input type="text" id="search-input" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px !important; border-radius: 50px !important;">
-                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                    <div id="search-filters" class="horizontal-scroll-container force-scroll" style="padding: 10px 0; gap: 15px; flex: 1;">
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;">
+                    <div id="search-filters" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
                         ${window.renderSearchSelectsHTML()}
                     </div>
-                    <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 5px 15px; border-radius: 50px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
+                    <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 8px 16px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
                         <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">佈局</span>
                         <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 14px !important; cursor: pointer; color: var(--neon-cyan) !important;">
                             ${[3,4,5,6].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
