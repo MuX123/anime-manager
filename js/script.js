@@ -172,7 +172,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.1.1-ULTRA</div>
+	            <div class="site-version">v5.1.2-ULTRA</div>
 		        <div class="app-container">
 		            <div style="position: relative; width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 15px; margin-bottom: -40px; z-index: 500;">
 		                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
@@ -365,12 +365,12 @@ window.showAnimeDetail = (id) => {
             <div class="detail-content-main force-scroll">
                 <div>
                     <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'};">${item.name}</h2>
-                    <div class="core-data-row" style="color: ${yearColor}; margin-top: 20px; justify-content: space-between;">
-                        <div style="display: flex; gap: 20px;">
-                            ${coreData.map(val => `<div class="core-data-item">${val}</div>`).join('')}
-                        </div>
-                        <div></div>
-                    </div>
+	                    <div class="core-data-row" style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+	                        ${item.year ? `<div class="core-data-item" style="background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--neon-cyan); padding: 4px 12px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px rgba(0, 212, 255, 0.5); box-shadow: 0 0 10px rgba(0, 212, 255, 0.1);">${item.year}</div>` : ''}
+	                        ${item.season ? `<div class="core-data-item" style="background: rgba(176, 38, 255, 0.1); border: 1px solid rgba(176, 38, 255, 0.3); color: #b026ff; padding: 4px 12px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px rgba(176, 38, 255, 0.5); box-shadow: 0 0 10px rgba(176, 38, 255, 0.1);">${item.season}</div>` : ''}
+	                        ${item.month ? `<div class="core-data-item" style="background: rgba(255, 0, 110, 0.1); border: 1px solid rgba(255, 0, 110, 0.3); color: #ff006e; padding: 4px 12px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px rgba(255, 0, 110, 0.5); box-shadow: 0 0 10px rgba(255, 0, 110, 0.1);">${item.month}月</div>` : ''}
+	                        ${item.episodes ? `<div class="core-data-item" style="background: rgba(57, 255, 20, 0.1); border: 1px solid rgba(57, 255, 20, 0.3); color: #39ff14; padding: 4px 12px; border-radius: 50px; font-size: 13px; font-weight: bold; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); box-shadow: 0 0 10px rgba(57, 255, 20, 0.1);">全 ${item.episodes} 集</div>` : ''}
+	                    </div>
                 </div>
 
                 <div class="detail-section-v35" style="margin-top: 10px;">
