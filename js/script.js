@@ -172,14 +172,23 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.1.0-ULTRA</div>
-	        <div class="app-container">
-	            <div style="position: relative; width: 100%;">
-	                <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="position: absolute; top: 0; right: 0; z-index: 500; width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 212, 255, 0.1); border: 2px solid var(--neon-blue); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">⚙</button>
-	                <div id="systemMenu" style="position: absolute; top: 50px; right: 0; z-index: 499; background: var(--panel-bg); border: 2px solid var(--neon-blue); border-radius: 12px; overflow: hidden; min-width: 200px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2); display: none;">
-	                    <div id="adminMenuOptions" style="padding: 10px 0;"></div>
-	                </div>
-	            </div>
+	            <div class="site-version">v5.1.1-ULTRA</div>
+		        <div class="app-container">
+		            <div style="position: relative; width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 15px; margin-bottom: -40px; z-index: 500;">
+		                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
+		                    <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">佈局</span>
+		                    <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 13px !important; cursor: pointer; color: var(--neon-cyan) !important;">
+		                        ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
+		                        <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
+		                    </select>
+		                </div>
+		                <div style="position: relative;">
+		                    <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 212, 255, 0.1); border: 2px solid var(--neon-blue); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">⚙</button>
+		                    <div id="systemMenu" style="position: absolute; top: 50px; right: 0; z-index: 499; background: var(--panel-bg); border: 2px solid var(--neon-blue); border-radius: 12px; overflow: hidden; min-width: 200px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2); display: none;">
+		                        <div id="adminMenuOptions" style="padding: 10px 0;"></div>
+		                    </div>
+		                </div>
+		            </div>
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
             </header>
@@ -192,21 +201,14 @@ app.innerHTML = `
             <div style="border: 2px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 18px; margin-bottom: 30px; font-size: 14px; color: ${siteSettings.announcement_color || '#ffffff'}; text-align: center; border-radius: 10px; background: rgba(0,212,255,0.05); font-weight: bold;">
                 <span>📢 ${siteSettings.announcement}</span>
             </div>
-            <div style="margin-bottom: 30px; display: ${isNotice ? 'none' : 'block'};">
-                <input type="text" id="search-input" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px !important; border-radius: 50px !important;">
-                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                    <div id="search-filters" class="horizontal-scroll-container" style="display: flex; gap: 12px; flex: 1; overflow-x: auto; overflow-y: hidden; padding: 8px 0; white-space: nowrap;">
-                        ${window.renderSearchSelectsHTML()}
-                    </div>
-                    <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 8px 16px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap; flex-shrink: 0;">
-                        <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">佈局</span>
-                        <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 14px !important; cursor: pointer; color: var(--neon-cyan) !important;">
-                            ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
-                            <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+	            <div style="margin-bottom: 30px; display: ${isNotice ? 'none' : 'block'};">
+	                <input type="text" id="search-input" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px !important; border-radius: 50px !important;">
+	                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+	                    <div id="search-filters" class="horizontal-scroll-container" style="display: flex; gap: 12px; flex: 1; overflow-x: auto; overflow-y: hidden; padding: 8px 0; white-space: nowrap;">
+	                        ${window.renderSearchSelectsHTML()}
+	                    </div>
+	                </div>
+	            </div>
 	            <div id="notice-container" style="display: ${isNotice ? 'block' : 'none'};">
 	                ${noticeHTML}
 	            </div>
