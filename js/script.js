@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.6.4-ULTRA</div>
+        <div class="site-version">v4.7.0-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -861,24 +861,44 @@ window.getOptionLabel = (key) => {
 window.exportCSV = (cat) => {
     const filtered = animeData.filter(item => item.category === cat);
     if (filtered.length === 0) return window.showToast('✗ 無資料可匯出', 'error');
-    const headers = ['name', 'poster_url', 'year', 'month', 'season', 'genre', 'episodes', 'rating', 'recommendation', 'description', 'star_color', 'name_color', 'desc_color', 'links', 'extra_data'];
+    
+    // 1. 定義基礎欄位
+    const baseHeaders = ['name', 'poster_url', 'description', 'star_color', 'name_color', 'desc_color', 'links', 'extra_data'];
+    
+    // 2. 動態獲取所有自定義選項欄位 (確保順序統一)
+    const optionHeaders = ['year', 'month', 'season', 'genre', 'episodes', 'rating', 'recommendation'];
+    if (siteSettings.custom_labels) {
+        Object.keys(siteSettings.custom_labels).forEach(key => {
+            if (!optionHeaders.includes(key)) optionHeaders.push(key);
+        });
+    }
+    
+    // 3. 合併所有欄位，形成標準化標頭
+    const headers = [...baseHeaders, ...optionHeaders];
     const csvRows = [headers.join(',')];
+    
     for (const item of filtered) {
         const row = headers.map(h => {
             let val = item[h] || '';
-            if (h === 'genre') val = Array.isArray(val) ? val.join('|') : val;
-            if (h === 'links' || h === 'extra_data') val = JSON.stringify(val).replace(/"/g, '""');
-            return `"${val}"`;
+            // 處理陣列 (如類型)
+            if (Array.isArray(val)) val = val.join('|');
+            // 處理 JSON 物件 (如連結、額外資料)
+            if (typeof val === 'object' && val !== null) val = JSON.stringify(val);
+            
+            // 處理 CSV 轉義
+            const cleanVal = String(val).replace(/"/g, '""');
+            return `"${cleanVal}"`;
         });
         csvRows.push(row.join(','));
     }
+    
     const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `acg_${cat}_${new Date().getTime()}.csv`;
     a.click();
-    window.showToast('✓ 匯出成功');
+    window.showToast('✓ 匯出成功 (標準化格式)');
 };
 
 window.triggerImport = (cat) => { importTarget = cat; document.getElementById('importFile').click(); };
@@ -889,28 +909,60 @@ window.importData = (event) => {
     reader.onload = async (e) => {
         try {
             const csv = e.target.result;
-            const lines = csv.split('\n');
+            const lines = csv.split('\n').filter(l => l.trim());
+            if (lines.length < 2) return window.showToast('✗ CSV 檔案無內容', 'error');
+            
             const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
             const items = [];
+            
             for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
-                const values = lines[i].match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g).map(v => v.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+                // 使用正則表達式正確解析 CSV 行，處理引號內的逗號
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                for (let char of lines[i]) {
+                    if (char === '"') inQuotes = !inQuotes;
+                    else if (char === ',' && !inQuotes) {
+                        values.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current);
+                
                 const item = {};
                 headers.forEach((h, idx) => {
-                    let val = values[idx];
-                    if (h === 'genre') val = val ? val.split('|') : [];
-                    if (h === 'links' || h === 'extra_data') { try { val = JSON.parse(val); } catch(e) { val = (h === 'links' ? [] : {}); } }
-                    item[h] = val;
+                    let val = (values[idx] || '').trim().replace(/^"|"$/g, '').replace(/""/g, '"');
+                    
+                    // 根據欄位名稱處理資料型別
+                    if (h === 'genre' || h === 'links' || h === 'extra_data') {
+                        if (h === 'genre') {
+                            item[h] = val ? val.split('|') : [];
+                        } else {
+                            try { item[h] = JSON.parse(val); } catch(e) { item[h] = (h === 'links' ? [] : {}); }
+                        }
+                    } else {
+                        item[h] = val;
+                    }
                 });
+                
                 item.category = importTarget;
+                // 移除可能存在的 id 欄位，讓資料庫自動生成
+                delete item.id;
                 items.push(item);
             }
+            
             const { error } = await supabaseClient.from('anime_list').insert(items);
             if (error) throw error;
+            
             window.showToast(`✓ 成功匯入 ${items.length} 筆資料`);
             await window.loadData();
             window.renderAdmin();
-        } catch (err) { window.showToast('✗ 匯入失敗：' + err.message, 'error'); }
+        } catch (err) { 
+            console.error('Import error:', err);
+            window.showToast('✗ 匯入失敗：' + err.message, 'error'); 
+        }
     };
     reader.readAsText(file);
 };
