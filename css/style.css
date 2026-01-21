@@ -226,6 +226,84 @@ select {
     .floating-menu-btn { display: flex !important; }
 }
 
+/* 系統菜單按鈕樣式 */
+.floating-menu-btn {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    z-index: 500 !important;
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50% !important;
+    background: rgba(0, 212, 255, 0.1) !important;
+    border: 2px solid var(--neon-blue) !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 24px !important;
+    color: var(--neon-cyan) !important;
+    font-family: 'Orbitron', sans-serif !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2) !important;
+    padding: 0 !important;
+}
+
+.floating-menu-btn:hover {
+    background: rgba(0, 212, 255, 0.2) !important;
+    box-shadow: 0 0 25px rgba(0, 212, 255, 0.5) !important;
+    transform: scale(1.1) !important;
+}
+
+.floating-menu-btn:active {
+    transform: scale(0.95) !important;
+}
+
+/* 系統菜單下拉框 */
+#systemMenu {
+    position: fixed !important;
+    top: 80px !important;
+    right: 20px !important;
+    z-index: 499 !important;
+    background: var(--panel-bg) !important;
+    border: 2px solid var(--neon-blue) !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    min-width: 220px !important;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.3) !important;
+    display: none !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+#systemMenu.active {
+    display: block !important;
+}
+
+.menu-item-v2 {
+    padding: 14px 18px !important;
+    cursor: pointer !important;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1) !important;
+    color: var(--text-main) !important;
+    font-family: 'Space Mono', monospace !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    white-space: nowrap !important;
+}
+
+.menu-item-v2:last-child {
+    border-bottom: none !important;
+}
+
+.menu-item-v2:hover {
+    background: rgba(0, 212, 255, 0.15) !important;
+    color: var(--neon-cyan) !important;
+    box-shadow: inset 0 0 10px rgba(0, 212, 255, 0.1) !important;
+}
+
 /* 資料列表佈局 (強制單欄橫向撐滿) */
 .anime-grid.force-mobile-layout {
     display: flex !important;
