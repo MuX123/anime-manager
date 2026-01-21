@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	        <div class="site-version">v5.0.2-ULTRA</div>
+	        <div class="site-version">v5.0.3-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -302,7 +302,7 @@ window.showAnimeDetail = (id) => {
     }
 
     content.innerHTML = `
-        <div class="detail-container-v35" style="--rating-color: ${optionsData.category_colors?.rating || '#b026ff'};">
+	        <div class="detail-container-v35" style="--rating-color: ${ratingColor};">
             <!-- 左側滿版海報 -->
             <div class="detail-poster-aside">
                 <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">

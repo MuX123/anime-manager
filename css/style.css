@@ -442,10 +442,7 @@ input:focus, select:focus, textarea:focus {
     .desktop-only { display: none !important; }
     /* 隱藏手機版佈局切換與系統菜單 */
     .floating-menu-btn, .menu-dropdown-v2 { display: none !important; }
-    .grid-layout-selector, 
-    div[style*="background: rgba(0,212,255,0.1)"][style*="padding: 5px 15px"] { 
-        display: none !important; 
-    }
+    .grid-layout-selector { display: none !important; }
     /* 手機版預設佈局 */
     .anime-grid {
         grid-template-columns: 1fr !important;
@@ -549,6 +546,7 @@ input:focus, select:focus, textarea:focus {
         padding: 10px !important;
         margin: 5px auto !important;
         overflow-x: hidden !important;
+        display: block !important;
     }
     .detail-container-v35 {
         display: flex !important;
