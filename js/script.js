@@ -172,7 +172,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-            <div class="site-version">v2005</div>
+            <div class="site-version">v2006</div>
             <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="position: fixed; top: 20px; right: 20px; z-index: 500; width: 50px; height: 50px; border-radius: 50%; background: rgba(0, 212, 255, 0.1); border: 2px solid var(--neon-blue); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">⚙</button>
             <div id="systemMenu" style="position: fixed; top: 80px; right: 20px; z-index: 499; background: var(--panel-bg); border: 2px solid var(--neon-blue); border-radius: 12px; overflow: hidden; min-width: 200px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2); display: none;">
                 <div id="adminMenuOptions" style="padding: 10px 0;"></div>
@@ -199,7 +199,7 @@ app.innerHTML = `
                     <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 8px 16px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap; flex-shrink: 0;">
                         <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">佈局</span>
                         <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 14px !important; cursor: pointer; color: var(--neon-cyan) !important;">
-                            ${[3,4,5,6].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
+                            ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
                             <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
                         </select>
                     </div>
@@ -290,7 +290,7 @@ window.renderCard = (item) => {
             <!-- 卡片內容 -->
             <div class="card-content-v38" data-info="${infoText}" style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4); width: 100%;">
                 <!-- 第一行：標題 -->
-                <h3 style="color: ${nameColor}; font-size: ${isMobileLayout ? '16px' : '14px'}; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2;">${item.name}</h3>
+                <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '12px' : (isMobileLayout ? '16px' : '14px')}; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2;">${item.name}</h3>
                 
                 <!-- 第二行：星級 + 評級 + 年份/季節/月份 -->
                 <div class="card-tags-v38" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -1222,13 +1222,25 @@ window.handleWheelScroll = (e) => {
 
 // --- UI Helpers ---
 window.toggleSystemMenu = (e) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     const menu = document.getElementById('systemMenu');
     if (menu) {
-        const isHidden = menu.style.display === 'none' || menu.style.display === '';
-        menu.style.display = isHidden ? 'block' : 'none';
+        const isHidden = window.getComputedStyle(menu).display === 'none';
+        if (isHidden) {
+            menu.style.setProperty('display', 'block', 'important');
+        } else {
+            menu.style.setProperty('display', 'none', 'important');
+        }
     }
 };
+
+// 點擊頁面其他地方關閉菜單
+document.addEventListener('click', () => {
+    const menu = document.getElementById('systemMenu');
+    if (menu && window.getComputedStyle(menu).display !== 'none') {
+        menu.style.setProperty('display', 'none', 'important');
+    }
+});
 
 window.refreshSystem = async () => {
     window.showToast('⚡ 同步資料中...');
