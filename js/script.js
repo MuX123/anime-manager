@@ -389,10 +389,16 @@ window.getFilteredData = () => {
     });
 };
 
-window.switchCategory = (cat) => { 
+window.switchCategory = async (cat) => { 
     currentCategory = cat; 
     currentPage = 1; 
-    filters = { search: '' }; 
+    filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' }; 
+    
+    // 如果切換到非公告板塊，確保資料已載入
+    if (cat !== 'notice' && animeData.length === 0) {
+        await window.loadData();
+    }
+    
     window.renderApp(); 
 };
 
@@ -993,7 +999,6 @@ window.renderAnnouncements = async function() {
     const container = document.getElementById('discord-section');
     if (!container) return;
 
-    // 顯示載入中
     container.innerHTML = '<div style="text-align: center; padding: 50px; color: var(--neon-cyan);">⚡ 正在載入永久公告...</div>';
 
     try {
@@ -1015,7 +1020,14 @@ window.renderAnnouncements = async function() {
 
         container.innerHTML = `
             <div class="announcement-list" style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 50px;">
-                ${data.map(item => `
+                ${data.map(item => {
+                    const images = item.image_urls || [];
+                    let gridStyle = '';
+                    if (images.length === 1) gridStyle = 'grid-template-columns: 1fr;';
+                    else if (images.length === 2) gridStyle = 'grid-template-columns: 1fr 1fr;';
+                    else if (images.length >= 3) gridStyle = 'grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));';
+
+                    return `
                     <div class="announcement-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0,212,255,0.1); border-radius: 12px; padding: 20px; position: relative; transition: all 0.3s ease;">
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid rgba(0,212,255,0.05); padding-bottom: 10px;">
                             <img src="${item.author_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--neon-blue);">
@@ -1025,9 +1037,18 @@ window.renderAnnouncements = async function() {
                             </div>
                             ${isAdmin ? `<button onclick="window.deleteAnnouncement('${item.id}')" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 12px;">刪除</button>` : ''}
                         </div>
-                        <div style="color: #ffffff; line-height: 1.8; font-size: 15px; white-space: pre-wrap; word-break: break-word;">${item.content}</div>
+                        <div style="color: #ffffff; line-height: 1.8; font-size: 15px; white-space: pre-wrap; word-break: break-word; margin-bottom: 15px;">${item.content}</div>
+                        ${images.length > 0 ? `
+                            <div style="display: grid; gap: 10px; ${gridStyle} border-radius: 8px; overflow: hidden;">
+                                ${images.map(url => `
+                                    <div style="aspect-ratio: 16/9; background: #000; cursor: zoom-in;" onclick="window.openLightbox('${url}')">
+                                        <img src="${url}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
                     </div>
-                `).join('')}
+                `}).join('')}
                 ${isAdmin ? '<button class="btn-primary" style="align-self: center;" onclick="window.showAddAnnouncementModal()">+ 新增公告</button>' : ''}
             </div>
         `;
@@ -1037,24 +1058,52 @@ window.renderAnnouncements = async function() {
 };
 
 window.showAddAnnouncementModal = () => {
-    const content = prompt('請輸入公告內容：');
-    if (!content) return;
-    window.addAnnouncement(content);
+    const modal = document.createElement('div');
+    modal.id = 'announcement-modal';
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <h2 style="color: var(--neon-cyan); margin-bottom: 20px;">📢 發布新公告</h2>
+            <textarea id="ann-content" placeholder="輸入公告內容..." style="width: 100%; height: 150px; margin-bottom: 15px;"></textarea>
+            <textarea id="ann-images" placeholder="輸入圖片網址 (多張請用換行分隔)..." style="width: 100%; height: 80px; margin-bottom: 20px; font-size: 12px;"></textarea>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" style="flex: 1;" onclick="window.submitAnnouncement()">發布</button>
+                <button class="btn-primary" style="flex: 1; border-color: #ff4444; color: #ff4444;" onclick="document.getElementById('announcement-modal').remove()">取消</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
 };
 
-window.addAnnouncement = async (content) => {
+window.submitAnnouncement = async () => {
+    const content = document.getElementById('ann-content').value;
+    const imagesText = document.getElementById('ann-images').value;
+    const images = imagesText.split('\n').map(url => url.trim()).filter(url => url !== '');
+
+    if (!content && images.length === 0) return window.showToast('請輸入內容或圖片', 'error');
+
     try {
         const { error } = await supabaseClient.from('announcements').insert([{
             content: content,
+            image_urls: images,
             author_name: '管理員',
             timestamp: new Date().toISOString()
         }]);
         if (error) throw error;
         window.showToast('✓ 公告已發布');
+        document.getElementById('announcement-modal').remove();
         window.renderAnnouncements();
     } catch (err) {
         window.showToast('✗ 發布失敗', 'error');
     }
+};
+
+window.openLightbox = (url) => {
+    const lb = document.createElement('div');
+    lb.style = 'position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; cursor: zoom-out;';
+    lb.onclick = () => lb.remove();
+    lb.innerHTML = `<img src="${url}" style="max-width: 95%; max-height: 95%; object-fit: contain; box-shadow: 0 0 30px rgba(0,212,255,0.3); border-radius: 4px;">`;
+    document.body.appendChild(lb);
 };
 
 window.deleteAnnouncement = async (id) => {
