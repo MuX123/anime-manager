@@ -172,23 +172,23 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.1.6-ULTRA</div>
+	            <div class="site-version">v5.1.7-ULTRA</div>
 		        <div class="app-container">
-		            <div style="position: relative; width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 15px; margin-bottom: -40px; z-index: 500;">
-		                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); white-space: nowrap;">
-		                    <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">佈局</span>
-		                    <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 13px !important; cursor: pointer; color: var(--neon-cyan) !important;">
-		                        ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
-		                        <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
-		                    </select>
-		                </div>
-		                <div style="position: relative;">
-		                    <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 212, 255, 0.1); border: 2px solid var(--neon-blue); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">⚙</button>
-		                    <div id="systemMenu" style="position: absolute; top: 50px; right: 0; z-index: 499; background: var(--panel-bg); border: 2px solid var(--neon-blue); border-radius: 12px; overflow: hidden; min-width: 200px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2); display: none;">
-		                        <div id="adminMenuOptions" style="padding: 10px 0;"></div>
-		                    </div>
-		                </div>
-		            </div>
+			            <div style="position: fixed; top: 20px; right: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; z-index: 2000;">
+			                <div class="grid-layout-selector" style="display: flex; align-items: center; gap: 8px; background: rgba(0,212,255,0.15); padding: 6px 12px; border-radius: 4px; border: 1px solid rgba(0,212,255,0.4); white-space: nowrap; backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.1);">
+			                    <span style="font-size: 12px; color: var(--neon-cyan); font-weight: bold; font-family: 'Orbitron', sans-serif;">LAYOUT</span>
+			                    <select onchange="window.changeGridLayout(this.value)" style="background: transparent !important; border: none !important; padding: 2px 5px !important; font-size: 13px !important; cursor: pointer; color: var(--neon-cyan) !important; font-weight: bold;">
+			                        ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
+			                        <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
+			                    </select>
+			                </div>
+			                <div style="position: relative;">
+			                    <button class="floating-menu-btn" onclick="window.toggleSystemMenu(event)" style="width: 38px; height: 38px; border-radius: 4px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0,212,255,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--neon-cyan); backdrop-filter: blur(10px); box-shadow: 0 0 15px rgba(0,212,255,0.1); transition: all 0.3s ease;">⚙</button>
+			                    <div id="systemMenu" style="position: absolute; top: 45px; right: 0; z-index: 2001; background: var(--panel-bg); border: 1px solid var(--neon-blue); border-radius: 8px; overflow: hidden; min-width: 180px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); display: none; backdrop-filter: blur(15px);">
+			                        <div id="adminMenuOptions" style="padding: 8px 0;"></div>
+			                    </div>
+			                </div>
+			            </div>
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
             </header>
