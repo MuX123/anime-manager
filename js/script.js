@@ -290,7 +290,7 @@ window.renderCard = (item) => {
             <!-- 卡片內容 -->
             <div class="card-content-v38" data-info="${infoText}" style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4); width: 100%;">
                 <!-- 第一行：標題 -->
-                <h3 style="color: ${nameColor}; font-size: ${isMobileLayout ? '24px' : '18px'}; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
+                <h3 style="color: ${nameColor}; font-size: ${isMobileLayout ? '16px' : '14px'}; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2;">${item.name}</h3>
                 
                 <!-- 第二行：星級 + 評級 + 年份/季節/月份 -->
                 <div class="card-tags-v38" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
