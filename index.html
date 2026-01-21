@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- 強制清理快取，確保更新後立即生效 -->
+  <!-- 徹底禁用快取：強制瀏覽器每次都抓取最新版 -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -13,19 +13,28 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css/style.css?v=4.8.7">
+  
+  <script>
+    // 動態載入 CSS 與 JS，附加時間戳記徹底解決快取問題
+    (function() {
+      const v = new Date().getTime();
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = './css/style.css?v=' + v;
+      document.head.appendChild(css);
+    })();
+  </script>
  </head>
  <body>
   <div id="app"></div>
-	  
-	  <!-- Discord 區塊 -->
-		<div id="discord-section" style="width: 100%; max-width: 900px; margin: 0 auto; display: none; padding: 0 20px; box-sizing: border-box;">
-					    <!-- 公告內容將由 JavaScript 動態渲染 -->
-					  </div>
+		  
+  <!-- Discord 區塊 -->
+  <div id="discord-section" style="width: 100%; max-width: 900px; margin: 0 auto; display: none; padding: 0 20px; box-sizing: border-box;">
+    <!-- 公告內容將由 JavaScript 動態渲染 -->
+  </div>
 
-	  <script src="https://cdn.jsdelivr.net/npm/@widgetbot/html-embed"></script>
-	  
-
+  <script src="https://cdn.jsdelivr.net/npm/@widgetbot/html-embed"></script>
+  
   <div class="floating-menu-btn" id="gearBtn" onclick="window.toggleSystemMenu(event)"></div>
   <div class="menu-dropdown-v2" id="systemMenu">
     <div class="menu-item-v2" onclick="window.refreshSystem()">⟳ 同步資料</div>
@@ -54,8 +63,18 @@
   <div id="toast" class="toast"></div>
   <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
-  <!-- 依序載入配置與邏輯，加入版本號防止快取問題 -->
-  <script src="./js/supabase.js?v=4.8.7"></script>
-  <script src="./js/script.js?v=4.8.7"></script>
+  <script>
+    // 動態載入 JS，附加時間戳記徹底解決快取問題
+    (function() {
+      const v = new Date().getTime();
+      const scripts = ['./js/supabase.js', './js/script.js'];
+      scripts.forEach(src => {
+        const s = document.createElement('script');
+        s.src = src + '?v=' + v;
+        s.async = false; // 確保依序執行
+        document.body.appendChild(s);
+      });
+    })();
+  </script>
  </body>
 </html>
