@@ -233,7 +233,10 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     top: 0;
     bottom: 0;
     width: 6px;
-    background: var(--rating-color, var(--neon-blue));
+    background: var(--rating-color, var(--neon-blue)) !important;
     z-index: 100;
-    box-shadow: 0 0 15px var(--rating-color, var(--neon-blue));
+    box-shadow: 0 0 15px var(--rating-color, var(--neon-blue)) !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
