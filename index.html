@@ -25,8 +25,9 @@
     })();
   </script>
  </head>
- <body>
-  <div id="app"></div>
+ <body style="background: #0a0a0a;">
+  <!-- 初始隱藏，由 JS 載入完成後顯示 -->
+  <div id="app" style="opacity: 0; transition: opacity 0.5s ease;"></div>
 		  
   <!-- Discord 區塊 -->
   <div id="discord-section" style="width: 100%; max-width: 900px; margin: 0 auto; display: none; padding: 0 20px; box-sizing: border-box;">
@@ -68,10 +69,22 @@
     (function() {
       const v = new Date().getTime();
       const scripts = ['./js/supabase.js', './js/script.js'];
+      let loadedCount = 0;
+      
       scripts.forEach(src => {
         const s = document.createElement('script');
         s.src = src + '?v=' + v;
-        s.async = false; // 確保依序執行
+        s.async = false;
+        s.onload = () => {
+          loadedCount++;
+          if (loadedCount === scripts.length) {
+            // 所有腳本載入完成後，顯示內容
+            setTimeout(() => {
+              const app = document.getElementById('app');
+              if (app) app.style.opacity = '1';
+            }, 100);
+          }
+        };
         document.body.appendChild(s);
       });
     })();

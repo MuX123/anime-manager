@@ -130,8 +130,9 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center;
     z-index: 10000; backdrop-filter: blur(10px);
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
 }
-.modal.active { display: flex; }
+.modal.active { display: flex !important; opacity: 1; pointer-events: auto; }
 .modal-content {
     background: var(--panel-bg); border: 2px solid var(--neon-blue);
     padding: 0; border-radius: 16px; position: relative;
@@ -457,15 +458,33 @@ input:focus, select:focus, textarea:focus {
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 20px !important;
     }
     .anime-grid.force-mobile-layout .anime-card {
         width: 100% !important;
         max-width: 100% !important;
+        padding: 20px 0 !important;
     }
     .anime-grid.force-mobile-layout .card-poster-v38 { display: none !important; }
-    .anime-grid.force-mobile-layout .card-content-v38 { text-align: center !important; }
-    .anime-grid.force-mobile-layout .episodes-text-v479 { display: block !important; }
-    .anime-grid.force-mobile-layout .mobile-identity-v481 { display: flex !important; }
+    .anime-grid.force-mobile-layout .card-content-v38 { 
+        text-align: center !important; 
+        padding: 20px !important;
+    }
+    .anime-grid.force-mobile-layout .card-content-v38 h3 {
+        font-size: 24px !important;
+        margin-bottom: 15px !important;
+    }
+    .anime-grid.force-mobile-layout .card-tags-v38 span {
+        font-size: 16px !important;
+    }
+    .anime-grid.force-mobile-layout .episodes-text-v479 { 
+        display: block !important; 
+        font-size: 18px !important;
+        margin-top: 15px !important;
+    }
+    .anime-grid.force-mobile-layout .mobile-identity-v481 { display: flex !important; gap: 10px !important; }
     .anime-grid.force-mobile-layout .desktop-star { display: none !important; }
     .anime-grid.force-mobile-layout .mobile-star { display: inline !important; }
     .category-buttons-container {

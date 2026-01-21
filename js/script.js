@@ -572,41 +572,46 @@ window.renderAdminContent = (pagedData, total) => {
         return window.renderAnimeForm(item);
     } else if (currentAdminTab === 'options') {
         return window.renderOptionsManager();
-	    } else if (currentAdminTab === 'settings') {
-	        return `
-	            <div style="display: flex; flex-direction: column; gap: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 50px;">
-	                <h3 style="color: var(--neon-cyan); border-bottom: 1px solid var(--neon-blue); padding-bottom: 10px;">基本設定</h3>
-	                <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">網站標題</label><input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;"></div>
-	                <div>
-	                    <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">標題顏色</label>
-	                    <div class="color-input-wrapper">
-	                        <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 40px; height: 40px;"></div>
-	                        <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
-	                    </div>
-	                </div>
-	                <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告內容</label><textarea id="set-announcement" style="width: 100%; height: 100px;">${siteSettings.announcement}</textarea></div>
-	                <div>
-	                    <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">公告顏色</label>
-	                    <div class="color-input-wrapper">
-	                        <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 40px; height: 40px;"></div>
-	                        <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
-	                    </div>
-	                </div>
-
-                    <h3 style="color: var(--neon-cyan); border-bottom: 1px solid var(--neon-blue); padding-bottom: 10px; margin-top: 30px;">管理員個人化 (公告顯示)</h3>
-                    <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">顯示名稱</label><input type="text" id="set-admin-name" value="${siteSettings.admin_name || '管理員'}" style="width: 100%;"></div>
-                    <div><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">頭像網址</label><input type="text" id="set-admin-avatar" value="${siteSettings.admin_avatar || ''}" style="width: 100%;" placeholder="https://..."></div>
-                    <div>
-                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">名稱顏色</label>
-                        <div class="color-input-wrapper">
-                            <div class="color-swatch" style="background: ${siteSettings.admin_color || '#00ffff'}; width: 40px; height: 40px;"></div>
-                            <input type="color" id="set-admin-color" value="${siteSettings.admin_color || '#00ffff'}" onchange="this.previousElementSibling.style.background = this.value">
+		    } else if (currentAdminTab === 'settings') {
+		        return `
+		            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1000px; margin: 0 auto; padding-bottom: 50px;">
+                        <div class="admin-panel-v492" style="background: rgba(0,212,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2);">
+		                    <h3 style="color: var(--neon-cyan); border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; margin-bottom: 20px; font-family: 'Orbitron';">🌐 網站基本設定</h3>
+		                    <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">網站標題</label><input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;"></div>
+		                    <div style="margin-bottom: 15px;">
+		                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">標題顏色</label>
+		                        <div class="color-input-wrapper" style="width: 100%;">
+		                            <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 100%; height: 40px; border-radius: 8px;"></div>
+		                            <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+		                        </div>
+		                    </div>
+		                    <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">公告內容</label><textarea id="set-announcement" style="width: 100%; height: 120px; resize: vertical;">${siteSettings.announcement}</textarea></div>
+		                    <div style="margin-bottom: 15px;">
+		                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">公告顏色</label>
+		                        <div class="color-input-wrapper" style="width: 100%;">
+		                            <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 100%; height: 40px; border-radius: 8px;"></div>
+		                            <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+		                        </div>
+		                    </div>
                         </div>
-                    </div>
-
-	                <button class="btn-primary" style="margin-top: 20px;" onclick="window.saveSettings()">💾 儲存設定</button>
-	            </div>
-	        `;
+	
+                        <div class="admin-panel-v492" style="background: rgba(0,212,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2);">
+		                    <h3 style="color: var(--neon-cyan); border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; margin-bottom: 20px; font-family: 'Orbitron';">👤 管理員個人化</h3>
+		                    <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">顯示名稱</label><input type="text" id="set-admin-name" value="${siteSettings.admin_name || '管理員'}" style="width: 100%;"></div>
+		                    <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">頭像網址</label><input type="text" id="set-admin-avatar" value="${siteSettings.admin_avatar || ''}" style="width: 100%;" placeholder="https://..."></div>
+		                    <div style="margin-bottom: 15px;">
+		                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">名稱顏色</label>
+		                        <div class="color-input-wrapper" style="width: 100%;">
+		                            <div class="color-swatch" style="background: ${siteSettings.admin_color || '#00ffff'}; width: 100%; height: 40px; border-radius: 8px;"></div>
+		                            <input type="color" id="set-admin-color" value="${siteSettings.admin_color || '#00ffff'}" onchange="this.previousElementSibling.style.background = this.value">
+		                        </div>
+		                    </div>
+                            <div style="margin-top: 40px; text-align: center;">
+		                        <button class="btn-primary" style="width: 100%; padding: 20px; font-size: 18px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,212,255,0.2);" onclick="window.saveSettings()">💾 儲存所有設定</button>
+                            </div>
+                        </div>
+		            </div>
+		        `;
 	    }
     return '';
 };
@@ -617,87 +622,90 @@ window.renderAnimeForm = (item) => {
     const extra_data = item.extra_data || {};
     
     return `
-        <div style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px;" class="force-scroll">
-            <!-- 第一列：基本資訊 -->
-            <div style="display: flex; flex-direction: column; gap: 15px; min-width: 350px;">
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 25px; padding: 10px;" class="admin-form-v492">
+            <!-- 第一列：核心資訊 -->
+            <div style="background: rgba(0,212,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,212,255,0.1); display: flex; flex-direction: column; gap: 15px;">
+                <h4 style="color: var(--neon-cyan); margin-bottom: 5px; font-family: 'Orbitron';">📝 核心資訊</h4>
                 <div style="display: flex; gap: 10px;">
-                    <input type="text" id="form-name" placeholder="作品名稱" value="${item.name || ''}" style="flex: 2;">
+                    <input type="text" id="form-name" placeholder="作品名稱" value="${item.name || ''}" style="flex: 2; font-size: 16px; font-weight: bold;">
                     <select id="form-category" style="flex: 1;">
                         <option value="anime" ${item.category === 'anime' ? 'selected' : ''}>動畫</option>
                         <option value="manga" ${item.category === 'manga' ? 'selected' : ''}>漫畫</option>
                         <option value="movie" ${item.category === 'movie' ? 'selected' : ''}>電影</option>
                     </select>
                 </div>
-                <input type="text" id="form-poster" placeholder="海報 URL" value="${item.poster_url || ''}">
-                <textarea id="form-desc" placeholder="作品簡介" style="height: 120px; width: 100%;">${item.description || ''}</textarea>
+                <input type="text" id="form-poster" placeholder="海報 URL (https://...)" value="${item.poster_url || ''}">
+                <textarea id="form-desc" placeholder="作品簡介內容..." style="height: 150px; width: 100%; line-height: 1.6;">${item.description || ''}</textarea>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan); display: block; margin-bottom: 5px;">星標顏色</label>
+                        <label style="font-size: 12px; color: var(--neon-cyan); display: block; margin-bottom: 5px; font-weight: bold;">星標顏色</label>
                         <div class="color-input-wrapper" style="width: 100%;">
-                            <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 100%; height: 35px;"></div>
+                            <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 100%; height: 35px; border-radius: 6px;"></div>
                             <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" onchange="this.previousElementSibling.style.background = this.value">
                         </div>
                     </div>
                     <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan); display: block; margin-bottom: 5px;">名稱顏色</label>
+                        <label style="font-size: 12px; color: var(--neon-cyan); display: block; margin-bottom: 5px; font-weight: bold;">名稱顏色</label>
                         <div class="color-input-wrapper" style="width: 100%;">
-                            <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 35px;"></div>
+                            <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 35px; border-radius: 6px;"></div>
                             <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
                         </div>
                     </div>
                 </div>
 
-                <div id="links-container" class="form-scroll-section" style="height: 180px; width: 100%;">
-                    <div class="form-section-header">相關連結</div>
-                    <div class="form-section-content">
-                        <button class="btn-primary" style="padding: 4px 12px; font-size: 12px; margin-bottom: 10px; width: 100%;" onclick="window.addLinkRow()">+ 新增連結</button>
-                        <div id="links-list">
-                            ${links.map(l => `<div style="display: flex; gap: 8px; margin-bottom: 10px;"><input type="text" placeholder="名" class="link-name" value="${l.name}" style="flex: 1;"><input type="text" placeholder="網" class="link-url" value="${l.url}" style="flex: 2;"><button class="btn-primary" style="padding: 8px 12px; border-color: #ff4444; color: #ff4444;" onclick="this.parentElement.remove()">✕</button></div>`).join('')}
-                        </div>
+                <div id="links-container" style="background: rgba(0,0,0,0.3); border-radius: 10px; padding: 15px; border: 1px solid rgba(0,212,255,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <span style="color: var(--neon-cyan); font-weight: bold;">🔗 相關連結</span>
+                        <button class="btn-primary" style="padding: 5px 15px; font-size: 12px;" onclick="window.addLinkRow()">+ 新增</button>
+                    </div>
+                    <div id="links-list" style="max-height: 200px; overflow-y: auto; padding-right: 5px;">
+                        ${links.map(l => `<div style="display: flex; gap: 8px; margin-bottom: 10px;"><input type="text" placeholder="名稱" class="link-name" value="${l.name}" style="flex: 1;"><input type="text" placeholder="網址" class="link-url" value="${l.url}" style="flex: 2;"><button class="btn-primary" style="padding: 8px 12px; border-color: #ff4444; color: #ff4444;" onclick="this.parentElement.remove()">✕</button></div>`).join('')}
                     </div>
                 </div>
-                <button class="btn-primary" style="margin-top: 5px; border-color: var(--neon-purple); color: var(--neon-purple); font-size: 16px;" onclick="window.saveAnime()">💾 儲存作品資料</button>
+                <button class="btn-primary" style="margin-top: 10px; padding: 18px; font-size: 18px; border-color: var(--neon-purple); color: var(--neon-purple); box-shadow: 0 0 15px rgba(180,0,255,0.2);" onclick="window.saveAnime()">🚀 儲存作品資料</button>
             </div>
 
-            <!-- 第二列：類型選擇 -->
-            <div class="form-scroll-section" style="min-width: 180px;">
-                <div class="form-section-header">類型選擇</div>
-                <div class="form-section-content">
+            <!-- 第二列：分類標籤 -->
+            <div style="background: rgba(0,212,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,212,255,0.1);">
+                <h4 style="color: var(--neon-cyan); margin-bottom: 15px; font-family: 'Orbitron';">🏷️ 類型選擇</h4>
+                <div style="max-height: 700px; overflow-y: auto; padding-right: 10px;" class="force-scroll">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         ${optionsData.genre.map(g => `
-                            <label class="option-item-row" style="cursor: pointer;">
-                                <div class="color-swatch" style="background: ${optionsData.category_colors.genre};"></div>
-                                <span>${g}</span>
-                                <input type="checkbox" name="form-genre" value="${g}" ${genres.includes(g) ? 'checked' : ''}>
+                            <label class="option-item-row" style="cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; transition: all 0.2s;">
+                                <div class="color-swatch" style="background: ${optionsData.category_colors.genre}; width: 12px; height: 12px; border-radius: 50%;"></div>
+                                <span style="flex: 1;">${g}</span>
+                                <input type="checkbox" name="form-genre" value="${g}" ${genres.includes(g) ? 'checked' : ''} style="width: 18px; height: 18px;">
                             </label>
                         `).join('')}
                     </div>
                 </div>
             </div>
 
-            <!-- 第三列：標籤與屬性 -->
-            <div class="form-scroll-section" style="min-width: 220px;">
-                <div class="form-section-header">標籤與屬性</div>
-                <div class="form-section-content">
-                    <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <select id="form-year" style="width: 100%;"><option value="">年份</option>${optionsData.year.map(y => `<option value="${y}" ${item.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select>
-                        <select id="form-season" style="width: 100%;"><option value="">季度</option>${optionsData.season.map(s => `<option value="${s}" ${item.season === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
-                        <select id="form-month" style="width: 100%;"><option value="">月份</option>${optionsData.month.map(m => `<option value="${m}" ${item.month === m ? 'selected' : ''}>${m}</option>`).join('')}</select>
-                        <select id="form-rating" style="width: 100%;"><option value="">評分</option>${optionsData.rating.map(r => `<option value="${r}" ${item.rating === r ? 'selected' : ''}>${r}</option>`).join('')}</select>
-                        <select id="form-recommendation" style="width: 100%;"><option value="">推薦</option>${optionsData.recommendation.map(r => `<option value="${r}" ${item.recommendation === r ? 'selected' : ''}>${r}</option>`).join('')}</select>
-                        <input type="text" id="form-episodes" placeholder="集數" value="${item.episodes || ''}" style="width: 100%;">
-                        
-                        <!-- 動態自定義列表 -->
-                        ${(optionsData.custom_lists || []).map(key => `
+            <!-- 第三列：詳細屬性 -->
+            <div style="background: rgba(0,212,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,212,255,0.1); display: flex; flex-direction: column; gap: 15px;">
+                <h4 style="color: var(--neon-cyan); margin-bottom: 5px; font-family: 'Orbitron';">📊 詳細屬性</h4>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">發行年份</label><select id="form-year" style="width: 100%;"><option value="">選擇年份</option>${optionsData.year.map(y => `<option value="${y}" ${item.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
+                    <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">播放季度</label><select id="form-season" style="width: 100%;"><option value="">選擇季度</option>${optionsData.season.map(s => `<option value="${s}" ${item.season === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                    <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">發行月份</label><select id="form-month" style="width: 100%;"><option value="">選擇月份</option>${optionsData.month.map(m => `<option value="${m}" ${item.month === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
+                    <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">分級評分</label><select id="form-rating" style="width: 100%;"><option value="">選擇評分</option>${optionsData.rating.map(r => `<option value="${r}" ${item.rating === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+                    <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">推薦指數</label><select id="form-recommendation" style="width: 100%;"><option value="">選擇推薦</option>${optionsData.recommendation.map(r => `<option value="${r}" ${item.recommendation === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+                    <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">總集數</label><input type="text" id="form-episodes" placeholder="例如: 12" value="${item.episodes || ''}" style="width: 100%;"></div>
+                    
+                    <!-- 動態自定義列表 -->
+                    ${(optionsData.custom_lists || []).map(key => `
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">${window.getOptionLabel(key)}</label>
                             <select class="form-custom-list" data-key="${key}" style="width: 100%;">
-                                <option value="">${window.getOptionLabel(key)}</option>
+                                <option value="">選擇${window.getOptionLabel(key)}</option>
                                 ${(optionsData[key] || []).map(opt => `<option value="${opt}" ${extra_data[key] === opt ? 'selected' : ''}>${opt}</option>`).join('')}
                             </select>
-                        `).join('')}
+                        </div>
+                    `).join('')}
 
-                        <div style="border-top: 1px solid rgba(0,212,255,0.2); padding-top: 10px; margin-top: 5px;">
-                            <label style="font-size: 12px; color: var(--neon-cyan); display: block; margin-bottom: 5px;">簡介顏色</label>
+                    <div style="border-top: 1px solid rgba(0,212,255,0.2); padding-top: 15px; margin-top: 10px;">
+                        <label style="font-size: 12px; color: var(--neon-cyan); display: block; margin-bottom: 8px; font-weight: bold;">簡介文字顏色</label>
                             <div class="color-input-wrapper" style="width: 100%;">
                                 <div class="color-swatch" style="background: ${item.desc_color || '#ffffff'}; width: 100%; height: 35px;"></div>
                                 <input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
