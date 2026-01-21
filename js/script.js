@@ -162,7 +162,7 @@ window.renderApp = function() {
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
     app.innerHTML = `
-        <div class="site-version">v4.9.1-ULTRA</div>
+        <div class="site-version">v4.9.3-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -534,10 +534,10 @@ window.renderAdminContent = (pagedData, total) => {
                 <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">漫畫板塊</button>
                 <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">電影板塊</button>
             </div>
-            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 20px;">
-                <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.exportCSV('${currentCategory}')">📥 匯出 ${currentCategory} CSV</button>
-                <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.triggerImport('${currentCategory}')">📤 匯入 ${currentCategory} CSV</button>
-            </div>
+	            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 20px;">
+	                <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.exportCSV('${currentCategory}')">📥 匯出資料 (CSV)</button>
+	                <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.triggerImport('${currentCategory}')">📤 匯入資料 (CSV)</button>
+	            </div>
             <div class="admin-table-container" style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                     <thead>
@@ -622,7 +622,7 @@ window.renderAnimeForm = (item) => {
     const extra_data = item.extra_data || {};
     
     return `
-        <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 25px; padding: 10px;" class="admin-form-v492">
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 25px; padding: 10px; max-width: 100%;" class="admin-form-v492">
             <!-- 第一列：核心資訊 -->
             <div style="background: rgba(0,212,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,212,255,0.1); display: flex; flex-direction: column; gap: 15px;">
                 <h4 style="color: var(--neon-cyan); margin-bottom: 5px; font-family: 'Orbitron';">📝 核心資訊</h4>
@@ -635,82 +635,86 @@ window.renderAnimeForm = (item) => {
                     </select>
                 </div>
                 <input type="text" id="form-poster" placeholder="海報 URL (https://...)" value="${item.poster_url || ''}">
-                <textarea id="form-desc" placeholder="作品簡介內容..." style="height: 150px; width: 100%; line-height: 1.6;">${item.description || ''}</textarea>
+                <textarea id="form-desc" placeholder="作品簡介內容..." style="height: 120px; width: 100%; line-height: 1.6;">${item.description || ''}</textarea>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan); display: block; margin-bottom: 5px; font-weight: bold;">星標顏色</label>
-                        <div class="color-input-wrapper" style="width: 100%;">
-                            <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 100%; height: 35px; border-radius: 6px;"></div>
-                            <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" onchange="this.previousElementSibling.style.background = this.value">
+                <!-- 整合顏色設定區塊 -->
+                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; border: 1px solid rgba(0,212,255,0.1);">
+                    <div style="color: var(--neon-cyan); font-size: 12px; font-weight: bold; margin-bottom: 10px;">🎨 顏色整合設定</div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        <div>
+                            <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">星標</label>
+                            <div class="color-input-wrapper" style="width: 100%;">
+                                <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 100%; height: 30px; border-radius: 4px;"></div>
+                                <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" onchange="this.previousElementSibling.style.background = this.value">
+                            </div>
                         </div>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan); display: block; margin-bottom: 5px; font-weight: bold;">名稱顏色</label>
-                        <div class="color-input-wrapper" style="width: 100%;">
-                            <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 35px; border-radius: 6px;"></div>
-                            <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                        <div>
+                            <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">名稱</label>
+                            <div class="color-input-wrapper" style="width: 100%;">
+                                <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 30px; border-radius: 4px;"></div>
+                                <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">簡介</label>
+                            <div class="color-input-wrapper" style="width: 100%;">
+                                <div class="color-swatch" style="background: ${item.desc_color || '#ffffff'}; width: 100%; height: 30px; border-radius: 4px;"></div>
+                                <input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div id="links-container" style="background: rgba(0,0,0,0.3); border-radius: 10px; padding: 15px; border: 1px solid rgba(0,212,255,0.1);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <span style="color: var(--neon-cyan); font-weight: bold;">🔗 相關連結</span>
-                        <button class="btn-primary" style="padding: 5px 15px; font-size: 12px;" onclick="window.addLinkRow()">+ 新增</button>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="color: var(--neon-cyan); font-weight: bold; font-size: 13px;">🔗 相關連結</span>
+                        <button class="btn-primary" style="padding: 4px 12px; font-size: 11px;" onclick="window.addLinkRow()">+ 新增</button>
                     </div>
-                    <div id="links-list" style="max-height: 200px; overflow-y: auto; padding-right: 5px;">
-                        ${links.map(l => `<div style="display: flex; gap: 8px; margin-bottom: 10px;"><input type="text" placeholder="名稱" class="link-name" value="${l.name}" style="flex: 1;"><input type="text" placeholder="網址" class="link-url" value="${l.url}" style="flex: 2;"><button class="btn-primary" style="padding: 8px 12px; border-color: #ff4444; color: #ff4444;" onclick="this.parentElement.remove()">✕</button></div>`).join('')}
+                    <div id="links-list" style="max-height: 120px; overflow-y: auto; padding-right: 5px;" class="force-scroll">
+                        ${links.map(l => `<div style="display: flex; gap: 8px; margin-bottom: 8px;"><input type="text" placeholder="名" class="link-name" value="${l.name}" style="flex: 1; font-size: 12px;"><input type="text" placeholder="網" class="link-url" value="${l.url}" style="flex: 2; font-size: 12px;"><button class="btn-primary" style="padding: 5px 10px; border-color: #ff4444; color: #ff4444; font-size: 10px;" onclick="this.parentElement.remove()">✕</button></div>`).join('')}
                     </div>
                 </div>
-                <button class="btn-primary" style="margin-top: 10px; padding: 18px; font-size: 18px; border-color: var(--neon-purple); color: var(--neon-purple); box-shadow: 0 0 15px rgba(180,0,255,0.2);" onclick="window.saveAnime()">🚀 儲存作品資料</button>
+                <button class="btn-primary" style="margin-top: 5px; padding: 15px; font-size: 16px; border-color: var(--neon-purple); color: var(--neon-purple); box-shadow: 0 0 15px rgba(180,0,255,0.2);" onclick="window.saveAnime()">🚀 儲存作品資料</button>
             </div>
 
-            <!-- 第二列：分類標籤 -->
-            <div style="background: rgba(0,212,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,212,255,0.1);">
+            <!-- 第二列：分類標籤 (添加獨立滾動條) -->
+            <div style="background: rgba(0,212,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,212,255,0.1); display: flex; flex-direction: column;">
                 <h4 style="color: var(--neon-cyan); margin-bottom: 15px; font-family: 'Orbitron';">🏷️ 類型選擇</h4>
-                <div style="max-height: 700px; overflow-y: auto; padding-right: 10px;" class="force-scroll">
+                <div style="flex: 1; overflow-y: auto; padding-right: 10px; max-height: 600px;" class="force-scroll">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         ${optionsData.genre.map(g => `
-                            <label class="option-item-row" style="cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; transition: all 0.2s;">
-                                <div class="color-swatch" style="background: ${optionsData.category_colors.genre}; width: 12px; height: 12px; border-radius: 50%;"></div>
-                                <span style="flex: 1;">${g}</span>
-                                <input type="checkbox" name="form-genre" value="${g}" ${genres.includes(g) ? 'checked' : ''} style="width: 18px; height: 18px;">
+                            <label class="option-item-row" style="cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; transition: all 0.2s;">
+                                <div class="color-swatch" style="background: ${optionsData.category_colors.genre}; width: 10px; height: 10px; border-radius: 2px;"></div>
+                                <span style="flex: 1; font-size: 13px;">${g}</span>
+                                <input type="checkbox" name="form-genre" value="${g}" ${genres.includes(g) ? 'checked' : ''} style="width: 16px; height: 16px;">
                             </label>
                         `).join('')}
                     </div>
                 </div>
             </div>
 
-            <!-- 第三列：詳細屬性 -->
-            <div style="background: rgba(0,212,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,212,255,0.1); display: flex; flex-direction: column; gap: 15px;">
-                <h4 style="color: var(--neon-cyan); margin-bottom: 5px; font-family: 'Orbitron';">📊 詳細屬性</h4>
-                <div style="display: flex; flex-direction: column; gap: 15px;">
-                    <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">發行年份</label><select id="form-year" style="width: 100%;"><option value="">選擇年份</option>${optionsData.year.map(y => `<option value="${y}" ${item.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
-                    <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">播放季度</label><select id="form-season" style="width: 100%;"><option value="">選擇季度</option>${optionsData.season.map(s => `<option value="${s}" ${item.season === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-                    <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">發行月份</label><select id="form-month" style="width: 100%;"><option value="">選擇月份</option>${optionsData.month.map(m => `<option value="${m}" ${item.month === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
-                    <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">分級評分</label><select id="form-rating" style="width: 100%;"><option value="">選擇評分</option>${optionsData.rating.map(r => `<option value="${r}" ${item.rating === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
-                    <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">推薦指數</label><select id="form-recommendation" style="width: 100%;"><option value="">選擇推薦</option>${optionsData.recommendation.map(r => `<option value="${r}" ${item.recommendation === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
-                    <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">總集數</label><input type="text" id="form-episodes" placeholder="例如: 12" value="${item.episodes || ''}" style="width: 100%;"></div>
-                    
-                    <!-- 動態自定義列表 -->
-                    ${(optionsData.custom_lists || []).map(key => `
-                        <div style="display: flex; flex-direction: column; gap: 5px;">
-                            <label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">${window.getOptionLabel(key)}</label>
-                            <select class="form-custom-list" data-key="${key}" style="width: 100%;">
-                                <option value="">選擇${window.getOptionLabel(key)}</option>
-                                ${(optionsData[key] || []).map(opt => `<option value="${opt}" ${extra_data[key] === opt ? 'selected' : ''}>${opt}</option>`).join('')}
-                            </select>
-                        </div>
-                    `).join('')}
-
-                    <div style="border-top: 1px solid rgba(0,212,255,0.2); padding-top: 15px; margin-top: 10px;">
-                        <label style="font-size: 12px; color: var(--neon-cyan); display: block; margin-bottom: 8px; font-weight: bold;">簡介文字顏色</label>
-                            <div class="color-input-wrapper" style="width: 100%;">
-                                <div class="color-swatch" style="background: ${item.desc_color || '#ffffff'}; width: 100%; height: 35px;"></div>
-                                <input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+            <!-- 第三列：詳細屬性 (添加獨立滾動條) -->
+            <div style="background: rgba(0,212,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,212,255,0.1); display: flex; flex-direction: column;">
+                <h4 style="color: var(--neon-cyan); margin-bottom: 15px; font-family: 'Orbitron';">📊 詳細屬性</h4>
+                <div style="flex: 1; overflow-y: auto; padding-right: 10px; max-height: 600px;" class="force-scroll">
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">發行年份</label><select id="form-year" style="width: 100%;">${optionsData.year.map(y => `<option value="${y}" ${item.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
+                        <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">播放季度</label><select id="form-season" style="width: 100%;">${optionsData.season.map(s => `<option value="${s}" ${item.season === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                        <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">發行月份</label><select id="form-month" style="width: 100%;">${optionsData.month.map(m => `<option value="${m}" ${item.month === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
+                        <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">分級評分</label><select id="form-rating" style="width: 100%;">${optionsData.rating.map(r => `<option value="${r}" ${item.rating === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+                        <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">推薦指數</label><select id="form-recommendation" style="width: 100%;">${optionsData.recommendation.map(r => `<option value="${r}" ${item.recommendation === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+                        <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">總集數</label><input type="text" id="form-episodes" placeholder="例如: 12" value="${item.episodes || ''}" style="width: 100%;"></div>
+                        
+                        <!-- 動態自定義列表 -->
+                        ${(optionsData.custom_lists || []).map(key => `
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">${window.getOptionLabel(key)}</label>
+                                <select class="form-custom-list" data-key="${key}" style="width: 100%;">
+                                    <option value="">選擇${window.getOptionLabel(key)}</option>
+                                    ${(optionsData[key] || []).map(opt => `<option value="${opt}" ${extra_data[key] === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                                </select>
                             </div>
-                        </div>
+                        `).join('')}
                     </div>
                 </div>
             </div>
