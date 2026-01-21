@@ -161,8 +161,8 @@ window.renderApp = function() {
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
     // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
-    app.innerHTML = `
-        <div class="site-version">v5.0.0-ULTRA</div>
+app.innerHTML = `
+	        <div class="site-version">v5.0.2-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -647,7 +647,7 @@ window.renderAdminContent = (pagedData, total) => {
 window.renderAnimeForm = (item) => {
     // 最終暴力標準化：移除所有非文字字元，確保比對成功
     const genres = (Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/) : []))
-        .map(g => String(g).replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').trim())
+        .map(g => String(g).replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').replace(/\s+/g, '').trim())
         .filter(g => g);
     const links = Array.isArray(item.links) ? item.links : [];
     const extra_data = item.extra_data || {};
@@ -714,7 +714,7 @@ window.renderAnimeForm = (item) => {
                 <div style="flex: 1; overflow-y: auto; padding-right: 10px; max-height: 600px;" class="force-scroll">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         ${optionsData.genre.map(g => {
-                            const cleanG = String(g).replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').trim();
+                            const cleanG = String(g).replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').replace(/\s+/g, '').trim();
                             const isChecked = genres.includes(cleanG);
                             return `
                             <label class="option-item-row" style="cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; transition: all 0.2s;">
