@@ -39,7 +39,7 @@ const itemsPerPage = 20;
 const adminItemsPerPage = 10;
 let adminPage = 1;
 let filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' };
-let gridColumns = localStorage.getItem('gridColumns') || '5';
+let gridColumns = localStorage.getItem('gridColumns') || (window.innerWidth <= 768 ? 'mobile' : '5');
 window.gridColumns = gridColumns;
 let importTarget = 'anime';
 let editId = null;
@@ -288,40 +288,21 @@ window.renderCard = (item) => {
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
 
     if (isMobileLayout) {
-        // 資料列表排版重構
+        const starCount = (item.recommendation || '').split('★').length - 1;
+        const starText = `星X${starCount || 1}`;
         return `
-            <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 12px 0 !important; background: ${cyanBase} !important; border: 2px solid ${ratingColor} !important; box-shadow: 0 0 15px ${ratingColor}33 !important; border-radius: 12px !important; padding: 12px 20px !important; gap: 20px; overflow: hidden; width: 100%;">
-                <!-- 左側：評分與評級 -->
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 60px; flex-shrink: 0;">
-                    <span style="color: ${starColor}; font-size: 16px; text-shadow: 0 0 5px ${starColor}88;">${item.recommendation || '★'}</span>
-                    <span style="color: ${ratingColor}; border: 1.5px solid ${ratingColor}; padding: 2px 10px; border-radius: 50px; font-size: 12px; font-weight: 900; background: ${ratingColor}22;">${item.rating || '普'}</span>
+            <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 10px 15px !important; gap: 15px; width: 100%;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 50px;">
+                    <span style="color: ${starColor}; font-size: 13px; font-weight: bold;">${starText}</span>
+                    <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 900; background: ${ratingColor}22;">${item.rating || '普'}</span>
                 </div>
-
-                <!-- 中間：名稱與時間 -->
-                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
-                    <h3 style="color: ${nameColor}; font-size: 16px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
-	                    <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-${item.year ? `<span style="${getTagStyle(yearColor)}">${item.year}</span>` : ''}
-			                        ${(item.season && gridColumns != 5) ? `<span style="${getTagStyle(yearColor)}">${item.season}</span>` : ''}
-			                        ${item.month ? `<span style="${getTagStyle(yearColor)}">${item.month}月</span>` : ''}
-	                        ${item.episodes ? `<span style="${getTagStyle(episodesColor)}">全 ${item.episodes} 集</span>` : ''}
-	                    </div>
-                </div>
-
-                <!-- 右側：標籤流 (兩行顯示) -->
-                <div style="flex: 1.5; min-width: 0; display: flex; flex-direction: column; gap: 8px; padding-left: 15px; border-left: 1px solid ${ratingColor}33;">
-                    <!-- 上排：一般作品類型 -->
-                    <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-                        ${genres.length > 0 ? genres.map(g => `<span style="${getTagStyle(genreColor)}">${g.replace(/["'\[\]\(\),，。]/g, '').trim()}</span>`).join('') : '<span style="color: rgba(255,255,255,0.2); font-size: 11px; font-style: italic;">無類型</span>'}
-                    </div>
-                    <!-- 下排：自訂類型 -->
-                    <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-                        ${Object.entries(item.extra_data || {}).length > 0 ? Object.entries(item.extra_data).map(([key, val]) => {
-                            if (!val) return '';
-                            const color = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : '#ffffff';
-                            console.log(`[DEBUG] Tag: ${val}, Key: ${key}, Color: ${color}`);
-                            return `<span style="${getTagStyle(color)}">${val}</span>`;
-                        }).join('') : '<span style="color: rgba(255,255,255,0.2); font-size: 11px; font-style: italic;">無自訂標籤</span>'}
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+                    <h3 style="color: ${nameColor}; font-size: 14px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
+                    <div style="display: flex; gap: 6px; font-size: 11px; color: var(--text-secondary);">
+                        ${item.year ? `<span>${item.year}</span>` : ''}
+                        ${item.month ? `<span>${item.month}月</span>` : ''}
+                        ${item.season ? `<span>${item.season}</span>` : ''}
+                        ${item.episodes ? `<span style="color: ${episodesColor};">全 ${item.episodes} 集</span>` : ''}
                     </div>
                 </div>
             </div>
