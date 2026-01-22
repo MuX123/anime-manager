@@ -375,7 +375,7 @@ window.showAnimeDetail = (id) => {
 	    const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
     const links = Array.isArray(item.links) ? item.links : [];
 	    const starColor = optionsData.category_colors?.recommendation || item.star_color || '#ffcc00';
-	    const btnColor = item.btn_bg || optionsData.category_colors?.btn_bg || '#00d4ff';
+		    const btnColor = item.extra_data?.btn_bg || optionsData.category_colors?.btn_bg || '#00d4ff';
 	    const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
     const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
@@ -825,8 +825,8 @@ window.renderAnimeForm = (item) => {
 	                        <div style="display: flex; align-items: center; gap: 10px;">
                                 <span style="color: var(--neon-cyan); font-weight: bold; font-size: 13px;">🔗 相關連結</span>
 	                                <div class="color-input-wrapper">
-	                                    <div class="color-swatch" style="background: ${item.btn_bg || optionsData.category_colors?.btn_bg || '#00d4ff'}; width: 20px; height: 20px; border-radius: 0px;" onclick="this.nextElementSibling.click()"></div>
-	                                    <input type="color" id="form-btn-bg" value="${item.btn_bg || optionsData.category_colors?.btn_bg || '#00d4ff'}" onchange="this.previousElementSibling.style.background = this.value">
+	                                <div class="color-swatch" style="background: ${item.extra_data?.btn_bg || optionsData.category_colors?.btn_bg || '#00d4ff'}; width: 20px; height: 20px; border-radius: 0px;" onclick="this.nextElementSibling.click()"></div>
+		                                    <input type="color" id="form-btn-bg" value="${item.extra_data?.btn_bg || optionsData.category_colors?.btn_bg || '#00d4ff'}" onchange="this.previousElementSibling.style.background = this.value">
 	                                </div>
                             </div>
 	                        <button class="btn-primary" style="padding: 4px 12px; font-size: 11px;" onclick="window.addLinkRow()">+ 新增</button>
@@ -1000,9 +1000,8 @@ window.saveAnime = async () => {
             star_color: document.getElementById('form-star-color').value,
             name_color: document.getElementById('form-name-color').value,
 	            desc_color: document.getElementById('form-desc-color').value,
-	            btn_bg: document.getElementById('form-btn-bg').value,
-	            extra_data: extra_data
-	        };
+		            extra_data: { ...extra_data, btn_bg: document.getElementById('form-btn-bg').value }
+		        };
         
         let { error } = editId ? 
             await supabaseClient.from('anime_list').update(payload).eq('id', editId) : 
