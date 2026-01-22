@@ -427,13 +427,13 @@ window.showAnimeDetail = (id) => {
 			                </div>
 	
 <!-- 連結區塊 -->
-			                <div class="detail-section-v35" style="margin-bottom: 0; position: relative;">
-			                    <div style="padding: 10px 20px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.15), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
-		                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-			                           ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 8px 16px; font-size: 12px; white-space: nowrap; border-color: ${btnColor} !important; color: ${btnColor} !important; background: ${btnColor}22 !important; border-radius: 50px; height: 32px;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic; font-size: 12px;">暫無連結</span>'}
-		                        </div>
-		                    </div>
-		                </div>
+				                <div class="detail-section-v35" style="margin-top: 10px; position: relative;">
+				                    <div style="padding: 10px 20px; box-sizing: border-box;">
+			                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+				                           ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 6px 12px; font-size: 11px; white-space: nowrap; border-color: ${btnColor} !important; color: ${btnColor} !important; background: ${btnColor}22 !important; border-radius: 50px; height: 28px;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic; font-size: 11px;">暫無連結</span>'}
+			                        </div>
+			                    </div>
+			                </div>
             </div>
         </div>
     `;
