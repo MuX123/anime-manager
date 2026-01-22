@@ -406,7 +406,7 @@ window.showAnimeDetail = (id) => {
 	            </div>
 	
 	            <!-- 右側資訊流 -->
-<div class="detail-content-main force-scroll" style="padding: 25px !important; gap: 12px !important; background: #0a0e1a !important;">
+<div class="detail-content-main force-scroll" style="padding: 25px !important; gap: 12px !important; background: #0a0e1a !important; border-left: 2px solid ${ratingColor} !important;">
 			                <!-- 標題與核心數據區塊 -->
 			                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative;">
 			                    <div style="padding: 12px 20px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.15), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
