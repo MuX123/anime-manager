@@ -39,7 +39,12 @@ const itemsPerPage = 20;
 const adminItemsPerPage = 10;
 let adminPage = 1;
 let filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' };
-let gridColumns = localStorage.getItem('gridColumns') || (window.innerWidth <= 768 ? 'mobile' : '5');
+let gridColumns = (() => {
+    const stored = localStorage.getItem('gridColumns');
+    if (stored === 'mobile') return 'mobile';
+    if (['3', '4', '5'].includes(stored)) return parseInt(stored);
+    return window.innerWidth <= 768 ? 'mobile' : 5;
+})();
 window.gridColumns = gridColumns;
 let importTarget = 'anime';
 let editId = null;
@@ -218,8 +223,8 @@ app.innerHTML = `
 	                ${noticeHTML}
 	            </div>
 	            <div id="main-grid-content" style="display: ${isNotice ? 'none' : 'block'};">
-	                <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}" style="${gridColumns === 'mobile' ? '' : `grid-template-columns: repeat(${gridColumns}, 1fr);`}">
-	                    ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
+	                <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}" style="display: ${gridColumns === 'mobile' ? 'flex' : 'grid'}; ${gridColumns === 'mobile' ? 'flex-direction: column; gap: 10px;' : `grid-template-columns: repeat(${gridColumns}, 1fr); gap: 20px;`}">
+	                    ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
 	                </div>
 	                <div id="pagination-container" style="display: flex; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
 	            </div>
@@ -458,15 +463,17 @@ window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollT
 window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(); };
 
 window.changeGridLayout = (n) => {
-    gridColumns = n === 'mobile' ? 'mobile' : parseInt(n);
+    if (n === 'mobile') {
+        gridColumns = 'mobile';
+    } else {
+        const cols = parseInt(n);
+        if ([3, 4, 5].includes(cols)) {
+            gridColumns = cols;
+            document.documentElement.style.setProperty('--grid-columns', cols);
+        }
+    }
     window.gridColumns = gridColumns;
     localStorage.setItem('gridColumns', gridColumns);
-    
-    // 立即更新全域 CSS 變數
-    if (n !== 'mobile') {
-        document.documentElement.style.setProperty('--grid-columns', n);
-    }
-    
     window.renderApp();
 };
 
