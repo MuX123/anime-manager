@@ -374,7 +374,7 @@ window.showAnimeDetail = (id) => {
 
 	    const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
     const links = Array.isArray(item.links) ? item.links : [];
-	    const starColor = optionsData.category_colors?.recommendation || item.star_color || '#ffcc00';
+	    const starColor = item.star_color || optionsData.category_colors?.recommendation || '#ffcc00';
 		    const btnColor = item.extra_data?.btn_bg || optionsData.category_colors?.btn_bg || '#00d4ff';
 	    const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
