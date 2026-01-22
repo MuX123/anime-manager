@@ -300,8 +300,8 @@ window.renderCard = (item) => {
                     <h3 style="color: ${nameColor}; font-size: 14px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
                     <div style="display: flex; gap: 6px; font-size: 11px; color: var(--text-secondary);">
                         ${item.year ? `<span>${item.year}</span>` : ''}
-                        ${item.month ? `<span>${item.month}月</span>` : ''}
                         ${item.season ? `<span>${item.season}</span>` : ''}
+                        ${item.month ? `<span>${item.month}月</span>` : ''}
                         ${item.episodes ? `<span style="color: ${episodesColor};">全 ${item.episodes} 集</span>` : ''}
                     </div>
                 </div>
@@ -328,11 +328,13 @@ window.renderCard = (item) => {
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                         <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '13px' : '15px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
                     </div>
-		                    <div class="card-tags-v38" style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; width: 100%; justify-content: center;">
-${item.year ? `<span style="${getTagStyle(yearColor)}">${item.year}</span>` : ''}
-			                        ${(item.season && gridColumns != 5) ? `<span style="${getTagStyle(yearColor)}">${item.season}</span>` : ''}
-			                        ${item.month ? `<span style="${getTagStyle(yearColor)}">${item.month}月</span>` : ''}
-		                    </div>
+			                    <div class="card-tags-v38" style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; width: 100%; justify-content: center; flex-wrap: wrap;">
+	${item.year ? `<span style="${getTagStyle(yearColor)}">${item.year}</span>` : ''}
+				                        ${(item.season && gridColumns != 5) ? `<span style="${getTagStyle(yearColor)}">${item.season}</span>` : ''}
+				                        ${item.month ? `<span style="${getTagStyle(yearColor)}">${item.month}月</span>` : ''}
+                                        ${genres.slice(0, 2).map(g => `<span style="${getTagStyle(genreColor)}">${g}</span>`).join('')}
+                                        ${extraTags.slice(0, 1).map(t => `<span style="${getTagStyle(t.color)}">${t.val}</span>`).join('')}
+			                    </div>
                 </div>
             </div>
         `;
@@ -375,19 +377,19 @@ window.showAnimeDetail = (id) => {
 	    }
 
 					    content.innerHTML = `
-				        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; position: relative; background: #050609; border-radius: 16px; overflow: hidden; box-sizing: border-box; border: 2px solid ${ratingColor}; box-shadow: 0 0 30px ${ratingColor}44;">
-				            <!-- 左側滿版海報 -->
-				            <div class="detail-poster-aside" style="border-right: 2px solid ${ratingColor}; box-sizing: border-box; background: #000; position: relative; z-index: 1;">
-	                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
-	                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
-	                <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; border-right: 2px solid ${ratingColor}; border-bottom: 2px solid ${ratingColor}; backdrop-filter: blur(12px); z-index: 10;">
-	                    <span class="star-icon" style="color: ${starColor}; font-size: 24px; filter: drop-shadow(0 0 8px ${starColor});">${item.recommendation || '★'}</span>
-	                    <span style="color: ${ratingColor}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${ratingColor});">${item.rating || '普'}</span>
-	                </div>
-	            </div>
-	
-	            <!-- 右側資訊流 -->
-<div class="detail-content-main force-scroll" style="padding: 25px !important; gap: 12px !important; background: #0a0e1a !important; border-left: 2px solid ${ratingColor} !important;">
+					        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; position: relative; background: #050609; border-radius: 16px; overflow: hidden; box-sizing: border-box; border: 2px solid ${ratingColor}; box-shadow: 0 0 30px ${ratingColor}44; display: flex; flex-direction: row;">
+					            <!-- 左側滿版海報 -->
+					            <div class="detail-poster-aside" style="flex: 0 0 380px; border-right: 2px solid ${ratingColor}; box-sizing: border-box; background: #000; position: relative; z-index: 1;">
+		                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
+		                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
+		                <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; border-right: 2px solid ${ratingColor}; border-bottom: 2px solid ${ratingColor}; backdrop-filter: blur(12px); z-index: 10;">
+		                    <span class="star-icon" style="color: ${starColor}; font-size: 24px; filter: drop-shadow(0 0 8px ${starColor});">${item.recommendation || '★'}</span>
+		                    <span style="color: ${ratingColor}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${ratingColor});">${item.rating || '普'}</span>
+		                </div>
+		            </div>
+		
+		            <!-- 右側資訊流 -->
+	<div class="detail-content-main force-scroll" style="flex: 1; padding: 25px !important; gap: 12px !important; background: #0a0e1a !important; border-left: 2px solid ${ratingColor} !important; overflow-y: auto; max-height: 85vh;">
 			                <!-- 標題與核心數據區塊 -->
 			                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative;">
 			                    <div style="padding: 12px 20px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.15), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
