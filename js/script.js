@@ -51,12 +51,10 @@ window.initApp = async function() {
     try {
         console.log('🚀 系統初始化中...');
         
-        // 1. 先獲取 Session 狀態
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        isAdmin = !!session;
+        // 1. 獲取網站設定與選項資料 (優先載入)
+        const { data: settings, error: settingsError } = await supabaseClient.from('site_settings').select('*');
+        if (settingsError) throw settingsError;
 
-        // 2. 獲取網站設定與選項資料
-        const { data: settings } = await supabaseClient.from('site_settings').select('*');
         if (settings) {
             settings.forEach(s => {
                 if (s.id === 'site_title') siteSettings.site_title = s.value;
@@ -81,14 +79,13 @@ window.initApp = async function() {
             });
         }
         document.title = siteSettings.site_title;
+
+        // 2. 獲取 Session 狀態
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        isAdmin = !!session;
         
         // 3. 載入作品資料
-        try {
-            await window.loadData();
-        } catch (e) {
-            console.error('Data load error:', e);
-            window.showToast('資料讀取失敗', 'error');
-        }
+        await window.loadData();
 
         // 4. 執行首次渲染
         isFirstLoad = false;
@@ -98,25 +95,17 @@ window.initApp = async function() {
 
         // 5. 監聽後續登入狀態變化
         supabaseClient.auth.onAuthStateChange((event, session) => {
-            const prevAdmin = isAdmin;
             isAdmin = !!session;
             window.updateAdminMenu();
-            
-            if (isAdmin && !prevAdmin) {
-                window.showToast('✓ 登入成功');
-            }
-            
-            // 登入狀態改變時，若在後台則重新渲染後台，若在前台則重新渲染前台
-            if (document.querySelector('.admin-container')) {
-                window.renderAdmin();
-            } else {
-                window.renderApp();
-            }
+            if (document.querySelector('.admin-container')) window.renderAdmin();
+            else window.renderApp();
         });
         
     } catch (err) { 
         console.error('Init error:', err);
-        window.showToast('系統初始化失敗', 'error');
+        window.showToast('系統初始化失敗，請重新整理', 'error');
+        // 即使失敗也嘗試渲染基本結構
+        isFirstLoad = false;
         window.renderApp();
     }
 };
@@ -177,6 +166,11 @@ window.renderApp = function() {
 
     const filtered = window.getFilteredData();
     const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
+
+    // 確保 CSS 變數同步
+    if (gridColumns !== 'mobile') {
+        document.documentElement.style.setProperty('--grid-columns', gridColumns);
+    }
 
 // 更新系統菜單（在 body 層級）
     let topControlBar = document.getElementById('topControlBar');
@@ -465,16 +459,15 @@ window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.r
 
 window.changeGridLayout = (n) => {
     gridColumns = n === 'mobile' ? 'mobile' : parseInt(n);
-    window.gridColumns = gridColumns;  // 同步到 window 對象
+    window.gridColumns = gridColumns;
     localStorage.setItem('gridColumns', gridColumns);
     
-    // 強制更新 CSS 變數以修復 4 欄佈局 Bug
-    const gridContainer = document.getElementById('anime-grid-container');
-    if (gridContainer && n !== 'mobile') {
-        gridContainer.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+    // 立即更新全域 CSS 變數
+    if (n !== 'mobile') {
+        document.documentElement.style.setProperty('--grid-columns', n);
     }
     
-    window.renderApp(); // 重新渲染以套用所有變更
+    window.renderApp();
 };
 
 window.renderSearchSelectsHTML = () => {
