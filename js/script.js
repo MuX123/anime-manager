@@ -396,7 +396,7 @@ window.showAnimeDetail = (id) => {
 					    content.innerHTML = `
 				        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; position: relative; background: #050609; border-radius: 16px; overflow: hidden; box-sizing: border-box; border: 2px solid ${ratingColor}; box-shadow: 0 0 30px ${ratingColor}44;">
 				            <!-- 左側滿版海報 -->
-				            <div class="detail-poster-aside" style="border-right: 1px solid rgba(0, 212, 255, 0.1); box-sizing: border-box; background: #000; position: relative; z-index: 1;">
+				            <div class="detail-poster-aside" style="border-right: 2px solid ${ratingColor}; box-sizing: border-box; background: #000; position: relative; z-index: 1;">
 	                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}">
 	                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
 	                <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; border-right: 2px solid ${ratingColor}; border-bottom: 2px solid ${ratingColor}; backdrop-filter: blur(12px); z-index: 10;">
@@ -449,7 +449,7 @@ window.showAnimeDetail = (id) => {
 			                <div class="detail-section-v35" style="margin-bottom: 0; position: relative;">
 			                    <div style="padding: 10px 20px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.15), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
 		                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-		                           ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 8px 16px; font-size: 12px; white-space: nowrap; border-color: ${btnColor}; color: ${btnColor}; background: ${btnColor}22; border-radius: 50px; height: 32px;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic; font-size: 12px;">暫無連結</span>'}
+			                           ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 8px 16px; font-size: 12px; white-space: nowrap; border-color: ${btnColor} !important; color: ${btnColor} !important; background: ${btnColor}22 !important; border-radius: 50px; height: 32px;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic; font-size: 12px;">暫無連結</span>'}
 		                        </div>
 		                    </div>
 		                </div>
@@ -1233,17 +1233,20 @@ window.saveSettings = async () => {
         const announcementColor = document.getElementById('set-announcement-color').value;
         const adminName = document.getElementById('set-admin-name').value;
         const adminAvatar = document.getElementById('set-admin-avatar').value;
-        const adminColor = document.getElementById('set-admin-color').value;
-        
-        const { error } = await supabaseClient.from('site_settings').upsert([
-            { id: 'site_title', value: title }, 
-            { id: 'announcement', value: announcement },
-            { id: 'title_color', value: titleColor },
-            { id: 'announcement_color', value: announcementColor },
-            { id: 'admin_name', value: adminName },
-            { id: 'admin_avatar', value: adminAvatar },
-            { id: 'admin_color', value: adminColor }
-        ]);
+	        const adminColor = document.getElementById('set-admin-color').value;
+	        
+	        const { error } = await supabaseClient.from('site_settings').upsert([
+	            { id: 'site_title', value: title }, 
+	            { id: 'announcement', value: announcement },
+	            { id: 'title_color', value: titleColor },
+	            { id: 'announcement_color', value: announcementColor },
+	            { id: 'admin_name', value: adminName },
+	            { id: 'admin_avatar', value: adminAvatar },
+	            { id: 'admin_color', value: adminColor }
+	        ]);
+	        
+	        // 同步更新全域變數
+	        siteSettings.admin_color = adminColor;
         
         if (error) throw error;
 
