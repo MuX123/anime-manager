@@ -1412,7 +1412,13 @@ window.renderAnnouncements = async function() {
             <div class="announcement-wrapper" style="height: 70vh; overflow-y: auto; padding-right: 10px; margin-bottom: 20px;" class="force-scroll">
                 <div class="announcement-list" style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 30px;">
                     ${data.map(item => {
-                        const images = item.image_urls || [];
+	                        let images = item.image_urls || [];
+	                        if (typeof images === 'string') {
+	                            try { images = JSON.parse(images); } catch(e) { images = images.split('\n').filter(u => u.trim()); }
+	                        }
+	                        if (!Array.isArray(images)) images = [];
+	                        if (item.image_url && !images.includes(item.image_url)) images.push(item.image_url);
+	                        images = images.filter(u => u && typeof u === 'string' && u.startsWith('http'));
                         let gridStyle = '';
                         if (images.length === 1) gridStyle = 'grid-template-columns: minmax(300px, 400px); justify-content: start;';
                         else if (images.length === 2) gridStyle = 'grid-template-columns: repeat(2, minmax(250px, 350px)); justify-content: start;';
