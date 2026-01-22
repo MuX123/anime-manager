@@ -189,7 +189,7 @@ window.renderApp = function() {
     topControlBar.innerHTML = `
         <div style="display: flex; flex-direction: column; background: rgba(5, 15, 25, 0.5); padding: 12px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.2); backdrop-filter: blur(15px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); min-width: 160px; gap: 8px;">
             <select onchange="window.changeGridLayout(this.value)" style="width: 100%; background: rgba(0,212,255,0.05) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">
-                ${[3,4].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
+                ${[3,4,5].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
                 <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
             </select>
             <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 6px;"></div>
@@ -301,9 +301,9 @@ window.renderCard = (item) => {
                 <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
                     <h3 style="color: ${nameColor}; font-size: 16px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
 	                    <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-	                        ${item.year ? `<span style="${getTagStyle(yearColor)}">${item.year}</span>` : ''}
-	                        ${item.season ? `<span style="${getTagStyle(yearColor)}">${item.season}</span>` : ''}
-	                        ${item.month ? `<span style="${getTagStyle(yearColor)}">${item.month}月</span>` : ''}
+${item.year ? `<span style="${getTagStyle(yearColor)}">${item.year}</span>` : ''}
+			                        ${(item.season && gridColumns != 5) ? `<span style="${getTagStyle(yearColor)}">${item.season}</span>` : ''}
+			                        ${item.month ? `<span style="${getTagStyle(yearColor)}">${item.month}月</span>` : ''}
 	                        ${item.episodes ? `<span style="${getTagStyle(episodesColor)}">全 ${item.episodes} 集</span>` : ''}
 	                    </div>
                 </div>
@@ -348,9 +348,9 @@ window.renderCard = (item) => {
                         <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '13px' : '15px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
                     </div>
 		                    <div class="card-tags-v38" style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; width: 100%; justify-content: center;">
-		                        ${item.year ? `<span style="${getTagStyle(yearColor)}">${item.year}</span>` : ''}
-		                        ${item.season ? `<span style="${getTagStyle(yearColor)}">${item.season}</span>` : ''}
-		                        ${item.month ? `<span style="${getTagStyle(yearColor)}">${item.month}月</span>` : ''}
+${item.year ? `<span style="${getTagStyle(yearColor)}">${item.year}</span>` : ''}
+			                        ${(item.season && gridColumns != 5) ? `<span style="${getTagStyle(yearColor)}">${item.season}</span>` : ''}
+			                        ${item.month ? `<span style="${getTagStyle(yearColor)}">${item.month}月</span>` : ''}
 		                    </div>
                 </div>
             </div>
