@@ -300,22 +300,47 @@ window.renderCard = (item) => {
         const starCount = (item.recommendation || '').split('★').length - 1;
         const starText = `星X${starCount || 1}`;
         return `
-            <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 10px 15px !important; gap: 15px; width: 100%;">
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 60px; border-right: 1px solid rgba(0,212,255,0.1); padding-right: 10px;">
+            <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 10px 15px !important; gap: 15px; width: 100%; height: 70px;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 60px; border-right: 1px solid rgba(0,212,255,0.1); padding-right: 10px; height: 100%;">
                     <span style="color: ${starColor}; font-size: 13px; font-weight: bold; white-space: nowrap;">${starText}</span>
                     <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 900; background: ${ratingColor}22;">${item.rating || '普'}</span>
                 </div>
-                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; height: 100%;">
                     <h3 class="force-scroll" style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; font-weight: bold; scrollbar-width: none;">${item.name}</h3>
                     <div style="display: flex; gap: 8px; font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow-x: auto; scrollbar-width: none;">
                         ${item.year ? `<span>${item.year}</span>` : ''}
                         ${item.season ? `<span>${item.season}</span>` : ''}
                         ${item.month ? `<span>${item.month}月</span>` : ''}
-                        ${genres.map(g => {
-                            const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-                            return cleanG ? `<span>${cleanG}</span>` : '';
-                        }).join('')}
                         ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${item.episodes} 集</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (gridColumns === 'mobile') {
+        const starCount = (item.recommendation || '').split('★').length - 1;
+        const starText = `星X${starCount || 1}`;
+        return `
+            <div class="anime-card desktop-list-layout" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 12px 20px !important; gap: 20px; width: 100%;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 80px; border-right: 1px solid rgba(0,212,255,0.1); padding-right: 15px;">
+                    <span style="color: ${starColor}; font-size: 15px; font-weight: bold; white-space: nowrap;">${starText}</span>
+                    <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 900; background: ${ratingColor}22;">${item.rating || '普'}</span>
+                </div>
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+                    <h3 style="color: ${nameColor}; font-size: 18px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
+                    <div style="display: flex; align-items: center; gap: 15px; font-size: 13px; color: var(--text-secondary);">
+                        <div style="display: flex; gap: 10px; white-space: nowrap;">
+                            ${item.year ? `<span>${item.year}</span>` : ''}
+                            ${item.season ? `<span>${item.season}</span>` : ''}
+                            ${item.month ? `<span>${item.month}月</span>` : ''}
+                            ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${item.episodes} 集</span>` : ''}
+                        </div>
+                        <div class="force-scroll" style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; flex: 1;">
+                            ${genres.map(g => {
+                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
+                                return cleanG ? `<span style="${getTagStyle(genreColor)}">${cleanG}</span>` : '';
+                            }).join('')}
+                            ${extraTags.map(t => `<span style="${getTagStyle(t.color)}">${t.val}</span>`).join('')}
+                        </div>
                     </div>
                 </div>
             </div>
