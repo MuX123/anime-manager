@@ -223,7 +223,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.7.1-ULTRA</div>
+	            <div class="site-version">v5.7.2-ULTRA</div>
 		        <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -322,7 +322,7 @@ window.renderCard = (item) => {
         });
     }
 
-    if (isMobileLayout) {
+    if (window.innerWidth <= 768) {
         const starCount = (item.recommendation || '').split('★').length - 1;
         const starText = `星X${starCount || 1}`;
         return `
