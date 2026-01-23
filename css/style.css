@@ -44,24 +44,10 @@ body {
     max-height: 100vh;
 }
 
-/* Scrollbar - 全局樣式 */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { 
-    background: rgba(0, 212, 255, 0.3); 
-    border-radius: 10px; 
-    border: 1px solid rgba(0, 212, 255, 0.1);
-}
-::-webkit-scrollbar-thumb:hover { 
-    background: rgba(0, 212, 255, 0.6); 
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.4); 
-}
-
-/* 隱藏全局滾動條 */
-body::-webkit-scrollbar {
-    width: 0;
-    background: transparent;
-}
+/* Hide all scrollbars */
+::-webkit-scrollbar { width: 0; height: 0; background: transparent; }
+* { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+::-webkit-scrollbar-thumb { background: transparent; }
 
 /* Layout */
 .app-container, .admin-container { 
