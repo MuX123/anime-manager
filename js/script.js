@@ -326,12 +326,12 @@ window.renderCard = (item) => {
         const starCount = (item.recommendation || '').split('★').length - 1;
         const starText = `星X${starCount || 1}`;
         return `
-            <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 8px 12px !important; gap: 12px; width: 100%; height: 65px;">
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 50px; border-right: 1px solid rgba(0,212,255,0.1); padding-right: 8px; height: 100%;">
+            <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 8px 12px !important; gap: 12px; width: 100%; height: 65px; overflow: hidden;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 60px; flex-shrink: 0; border-right: 1px solid rgba(0,212,255,0.1); padding-right: 8px; height: 100%;">
                     <span style="color: ${starColor}; font-size: 11px; font-weight: bold; white-space: nowrap;">${starText}</span>
                     <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-weight: 900; background: ${ratingColor}22;">${item.rating || '普'}</span>
                 </div>
-                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; height: 100%;">
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; height: 100%; overflow: hidden;">
                     <h3 class="force-scroll" style="color: ${nameColor}; font-size: 14px; margin: 0; white-space: nowrap; overflow-x: auto; font-weight: bold; scrollbar-width: none;">${item.name}</h3>
                     <div style="display: flex; gap: 6px; font-size: 10px; color: var(--text-secondary); white-space: nowrap; overflow-x: auto; scrollbar-width: none;">
                         ${item.year ? `<span>${item.year}</span>` : ''}
@@ -346,13 +346,13 @@ window.renderCard = (item) => {
         const starCount = (item.recommendation || '').split('★').length - 1;
         const starText = `星X${starCount || 1}`;
         return `
-            <div class="anime-card desktop-list-layout" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 12px 20px !important; gap: 0; width: 100%;">
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 80px; border-right: 1px solid rgba(0,212,255,0.1); padding-right: 15px;">
+            <div class="anime-card desktop-list-layout" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 12px 20px !important; gap: 0; width: 100%; overflow: hidden;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100px; flex-shrink: 0; border-right: 1px solid rgba(0,212,255,0.1); padding-right: 15px;">
                     <span style="color: ${starColor}; font-size: 15px; font-weight: bold; white-space: nowrap;">${starText}</span>
                     <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 900; background: ${ratingColor}22;">${item.rating || '普'}</span>
                 </div>
-                <div style="flex: 1; min-width: 0; display: flex; align-items: center; padding-left: 20px; gap: 20px;">
-                    <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+                <div style="flex: 1; min-width: 0; display: flex; align-items: center; padding-left: 20px; gap: 20px; height: 100%;">
+                    <div style="flex: 0 0 35%; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
                         <h3 style="color: ${nameColor}; font-size: 18px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
                         <div style="display: flex; gap: 10px; font-size: 13px; color: var(--text-secondary); white-space: nowrap;">
                             ${item.year ? `<span>${item.year}</span>` : ''}
@@ -361,7 +361,7 @@ window.renderCard = (item) => {
                             ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${item.episodes} 集</span>` : ''}
                         </div>
                     </div>
-                    <div class="desktop-scroll-tags" onwheel="this.scrollLeft += event.deltaY; event.preventDefault();" style="flex: 1; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding: 4px 0; scrollbar-width: thin; cursor: grab; border-left: 1px solid rgba(0,212,255,0.1); padding-left: 20px;">
+                    <div class="desktop-scroll-tags" onwheel="this.scrollLeft += event.deltaY; event.preventDefault();" style="flex: 1; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding: 10px 0; scrollbar-width: thin; cursor: grab; border-left: 1px solid rgba(0,212,255,0.1); padding-left: 20px; align-items: center;">
                         ${genres.map(g => {
                             const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
                             return cleanG ? `<span style="${getTagStyle(genreColor)}">${cleanG}</span>` : '';
