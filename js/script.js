@@ -50,9 +50,35 @@ let importTarget = 'anime';
 let editId = null;
 let isFirstLoad = true;
 
-// --- Core Functions ---
+	// --- Core Functions ---
 
-window.initApp = async function() {
+    // Mouse drag scroll for desktop tags
+    document.addEventListener('mousedown', (e) => {
+        const tags = e.target.closest('.desktop-scroll-tags');
+        if (!tags) return;
+        tags.isDown = true;
+        tags.startX = e.pageX - tags.offsetLeft;
+        tags.scrollLeftStart = tags.scrollLeft;
+    });
+    document.addEventListener('mouseleave', () => {
+        const tags = document.querySelector('.desktop-scroll-tags[isDown="true"]');
+        if (tags) tags.isDown = false;
+    });
+    document.addEventListener('mouseup', () => {
+        const tags = document.querySelector('.desktop-scroll-tags');
+        // We need to find the one that was active
+        document.querySelectorAll('.desktop-scroll-tags').forEach(t => t.isDown = false);
+    });
+    document.addEventListener('mousemove', (e) => {
+        const tags = e.target.closest('.desktop-scroll-tags');
+        if (!tags || !tags.isDown) return;
+        e.preventDefault();
+        const x = e.pageX - tags.offsetLeft;
+        const walk = (x - tags.startX) * 2;
+        tags.scrollLeft = tags.scrollLeftStart - walk;
+    });
+	
+	window.initApp = async function() {
     try {
         console.log('🚀 系統初始化中...');
         
@@ -325,8 +351,8 @@ window.renderCard = (item) => {
                     <span style="color: ${starColor}; font-size: 15px; font-weight: bold; white-space: nowrap;">${starText}</span>
                     <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 900; background: ${ratingColor}22;">${item.rating || '普'}</span>
                 </div>
-                <div style="flex: 1; min-width: 0; display: flex; align-items: center; padding-left: 20px;">
-                    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; padding-left: 20px; gap: 8px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                         <h3 style="color: ${nameColor}; font-size: 18px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
                         <div style="display: flex; gap: 10px; font-size: 13px; color: var(--text-secondary); white-space: nowrap;">
                             ${item.year ? `<span>${item.year}</span>` : ''}
@@ -335,7 +361,7 @@ window.renderCard = (item) => {
                             ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${item.episodes} 集</span>` : ''}
                         </div>
                     </div>
-                    <div class="force-scroll" style="flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; padding-left: 20px; border-left: 1px solid rgba(0,212,255,0.1);">
+                    <div class="desktop-scroll-tags" onwheel="this.scrollLeft += event.deltaY; event.preventDefault();" style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding: 4px 0; scrollbar-width: thin; cursor: grab;">
                         ${genres.map(g => {
                             const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
                             return cleanG ? `<span style="${getTagStyle(genreColor)}">${cleanG}</span>` : '';

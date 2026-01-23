@@ -299,13 +299,27 @@ select {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
     }
 
-    /* 橫向滾動條優化 */
-    .scroll-row-v35 {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 5px;
+/* 橫向滾動條優化 */
+	.scroll-row-v35 {
+		overflow-x: auto !important;
+		-webkit-overflow-scrolling: touch;
+		padding-bottom: 5px;
+	}
+	.scroll-row-v35::-webkit-scrollbar { height: 4px; }
+
+    .desktop-scroll-tags::-webkit-scrollbar {
+        height: 4px;
     }
-    .scroll-row-v35::-webkit-scrollbar { height: 4px; }
+    .desktop-scroll-tags::-webkit-scrollbar-thumb {
+        background: rgba(0, 212, 255, 0.2);
+        border-radius: 10px;
+    }
+    .desktop-scroll-tags::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 212, 255, 0.5);
+    }
+    .desktop-scroll-tags:active {
+        cursor: grabbing;
+    }
 
     /* 資料列表作品名稱橫軸滾動 */
     .mobile-layout-card h3 {
