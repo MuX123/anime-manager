@@ -309,8 +309,12 @@ window.renderCard = (item) => {
                     <h3 class="force-scroll" style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; font-weight: bold; scrollbar-width: none;">${item.name}</h3>
                     <div style="display: flex; gap: 8px; font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow-x: auto; scrollbar-width: none;">
                         ${item.year ? `<span>${item.year}</span>` : ''}
-                        ${item.month ? `<span>${item.month}月</span>` : ''}
                         ${item.season ? `<span>${item.season}</span>` : ''}
+                        ${item.month ? `<span>${item.month}月</span>` : ''}
+                        ${genres.map(g => {
+                            const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
+                            return cleanG ? `<span>${cleanG}</span>` : '';
+                        }).join('')}
                         ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${item.episodes} 集</span>` : ''}
                     </div>
                 </div>
@@ -341,10 +345,6 @@ window.renderCard = (item) => {
                             ${item.year ? `<span style="${getTagStyle(yearColor)}">${item.year}</span>` : ''}
                             ${item.season ? `<span style="${getTagStyle(yearColor)}">${item.season}</span>` : ''}
                             ${item.month ? `<span style="${getTagStyle(yearColor)}">${item.month}月</span>` : ''}
-                            ${genres.map(g => `<span style="${getTagStyle(genreColor)}">${g}</span>`).join('')}
-                        </div>
-                        <div style="display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; width: 100%; justify-content: center;">
-                            ${extraTags.map(t => `<span style="${getTagStyle(t.color)}">${t.val}</span>`).join('')}
                         </div>
                     </div>
                 </div>
