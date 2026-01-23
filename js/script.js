@@ -223,7 +223,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.7.0-ULTRA</div>
+	            <div class="site-version">v5.7.1-ULTRA</div>
 		        <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -352,14 +352,18 @@ window.renderCard = (item) => {
                     <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 900; background: ${ratingColor}22;">${item.rating || '普'}</span>
                 </div>
                 <div style="flex: 1; min-width: 0; display: flex; align-items: center; padding-left: 20px; gap: 20px; height: 100%;">
-                    <div style="flex: 0 0 35%; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
                         <h3 style="color: ${nameColor}; font-size: 18px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
-                        <div style="display: flex; gap: 10px; font-size: 13px; color: var(--text-secondary); white-space: nowrap;">
+                        <div style="display: flex; gap: 10px; font-size: 12px; color: var(--text-secondary);">
                             ${item.year ? `<span>${item.year}</span>` : ''}
                             ${item.season ? `<span>${item.season}</span>` : ''}
                             ${item.month ? `<span>${item.month}月</span>` : ''}
                             ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${item.episodes} 集</span>` : ''}
                         </div>
+                    </div>
+                    <div style="flex: 0 0 15%; min-width: 0; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid rgba(0,212,255,0.1); padding-left: 20px; justify-content: center;">
+                        <span style="color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Type</span>
+                        <span style="color: ${genreColor}; font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.type || 'TV'}</span>
                     </div>
                     <div class="desktop-scroll-tags" onwheel="this.scrollLeft += event.deltaY; event.preventDefault();" style="flex: 1; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding: 10px 0; scrollbar-width: thin; cursor: grab; border-left: 1px solid rgba(0,212,255,0.1); padding-left: 20px; align-items: center;">
                         ${genres.map(g => {
