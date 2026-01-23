@@ -223,7 +223,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.7.4-ULTRA</div>
+	            <div class="site-version">v5.7.5-ULTRA</div>
 		        <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -352,8 +352,8 @@ window.renderCard = (item) => {
                     <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 900; background: ${ratingColor}22;">${item.rating || '普'}</span>
                 </div>
                 <div style="flex: 1; min-width: 0; display: flex; align-items: center; padding-left: 20px; gap: 20px; height: 100%;">
-                    <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 4px; justify-content: center;">
-                        <h3 class="force-scroll" style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; scrollbar-width: none; font-weight: bold;">${item.name}</h3>
+                    <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+                        <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
                         <div style="display: flex; gap: 10px; font-size: 12px; color: var(--text-secondary); align-items: center;">
                             ${item.year ? `<span>${item.year}</span>` : ''}
                             ${item.season ? `<span>${item.season}</span>` : ''}
