@@ -223,7 +223,7 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-	            <div class="site-version">v5.7.3-ULTRA</div>
+	            <div class="site-version">v5.7.4-ULTRA</div>
 		        <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -326,14 +326,14 @@ window.renderCard = (item) => {
         const starCount = (item.recommendation || '').split('★').length - 1;
         const starText = `星X${starCount || 1}`;
         return `
-            <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 8px 12px !important; gap: 12px; width: 100%; height: 65px; overflow: hidden;">
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 65px; flex-shrink: 0; border-right: 1px solid rgba(0,212,255,0.1); padding-right: 8px; height: 100%;">
-                    <span style="color: ${starColor}; font-size: 11px; font-weight: bold; white-space: nowrap;">${starText}</span>
-                    <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-weight: 900; background: ${ratingColor}22;">${item.rating || '普'}</span>
+            <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; flex-direction: column; justify-content: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 10px 15px !important; gap: 6px; width: 100%; height: 75px; overflow: hidden;">
+                <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
+                    <span style="color: ${starColor}; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${starText}</span>
+                    <h3 class="force-scroll" style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; font-weight: bold; scrollbar-width: none; flex: 1;">${item.name}</h3>
                 </div>
-                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; height: 100%; overflow: hidden;">
-                    <h3 style="color: ${nameColor}; font-size: 14px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
-                    <div style="display: flex; gap: 6px; font-size: 10px; color: var(--text-secondary); white-space: nowrap; overflow: hidden;">
+                <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
+                    <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-weight: 900; background: ${ratingColor}22; flex-shrink: 0;">${item.rating || '普'}</span>
+                    <div style="display: flex; gap: 8px; font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; align-items: center;">
                         ${item.year ? `<span>${item.year}</span>` : ''}
                         ${item.season ? `<span>${item.season}</span>` : ''}
                         ${item.month ? `<span>${item.month}月</span>` : ''}
@@ -352,9 +352,9 @@ window.renderCard = (item) => {
                     <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 900; background: ${ratingColor}22;">${item.rating || '普'}</span>
                 </div>
                 <div style="flex: 1; min-width: 0; display: flex; align-items: center; padding-left: 20px; gap: 20px; height: 100%;">
-                    <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
-                        <h3 style="color: ${nameColor}; font-size: 18px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
-                        <div style="display: flex; gap: 10px; font-size: 12px; color: var(--text-secondary);">
+                    <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 4px; justify-content: center;">
+                        <h3 class="force-scroll" style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; scrollbar-width: none; font-weight: bold;">${item.name}</h3>
+                        <div style="display: flex; gap: 10px; font-size: 12px; color: var(--text-secondary); align-items: center;">
                             ${item.year ? `<span>${item.year}</span>` : ''}
                             ${item.season ? `<span>${item.season}</span>` : ''}
                             ${item.month ? `<span>${item.month}月</span>` : ''}
