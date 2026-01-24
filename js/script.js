@@ -1,4 +1,4 @@
-// TECH v5.8.1 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v5.8.2 - ACG Manager Logic (System Admin AI Optimized)
 let currentSection = 'notice';
 let animeData = [];
 let optionsData = {
@@ -125,9 +125,9 @@ let isFirstLoad = true;
         window.updateAdminMenu();
         window.initGlobalScroll();
         
-        // 5. 追蹤訪問統計
+        // 5. 追蹤訪問統計（非阻塞）
         if (typeof window.trackVisit === 'function') {
-            await window.trackVisit();
+            window.trackVisit().catch(err => console.error('Analytics error:', err));
         }
 
         // 5. 監聽後續登入狀態變化
@@ -235,7 +235,7 @@ window.renderApp = function() {
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
 		            <div class="site-version" style="display: flex; align-items: center; gap: 15px;">
-		                <span>v5.8.1</span>
+		                <span>v5.8.2</span>
 		                <div id="analytics-display" style="font-size: 11px; color: rgba(255,255,255,0.6);"></div>
 		            </div>
 		        <div class="app-container">

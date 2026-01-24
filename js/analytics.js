@@ -12,6 +12,15 @@ function getVisitorId() {
 async function trackVisit() {
     try {
         const visitorId = getVisitorId();
+        const lastTrack = localStorage.getItem('last_track_time');
+        const now = Date.now();
+        
+        if (lastTrack && (now - parseInt(lastTrack)) < 60000) {
+            await loadAnalytics();
+            return;
+        }
+        
+        localStorage.setItem('last_track_time', now.toString());
         
         const { data: existing, error: fetchError } = await supabaseClient
             .from('site_analytics')
@@ -25,22 +34,25 @@ async function trackVisit() {
         }
 
         if (existing) {
-            await supabaseClient
+            supabaseClient
                 .from('site_analytics')
                 .update({
                     last_visit: new Date().toISOString(),
                     visit_count: existing.visit_count + 1
                 })
-                .eq('visitor_id', visitorId);
+                .eq('visitor_id', visitorId)
+                .then(() => {});
         } else {
-            await supabaseClient
+            supabaseClient
                 .from('site_analytics')
-                .insert([{ visitor_id: visitorId }]);
+                .insert([{ visitor_id: visitorId }])
+                .then(() => {});
         }
 
-        await supabaseClient
+        supabaseClient
             .from('page_views')
-            .insert([{ visitor_id: visitorId }]);
+            .insert([{ visitor_id: visitorId }])
+            .then(() => {});
 
         await loadAnalytics();
     } catch (err) {
@@ -50,6 +62,17 @@ async function trackVisit() {
 
 async function loadAnalytics() {
     try {
+        const cached = localStorage.getItem('analytics_cache');
+        const cacheTime = localStorage.getItem('analytics_cache_time');
+        
+        if (cached && cacheTime && (Date.now() - parseInt(cacheTime)) < 300000) {
+            const data = JSON.parse(cached);
+            analyticsData.totalViews = data.totalViews;
+            analyticsData.uniqueVisitors = data.uniqueVisitors;
+            updateAnalyticsDisplay();
+            return;
+        }
+        
         const [viewsResult, visitorsResult] = await Promise.all([
             supabaseClient.from('page_views').select('id', { count: 'exact', head: true }),
             supabaseClient.from('site_analytics').select('id', { count: 'exact', head: true })
@@ -57,6 +80,9 @@ async function loadAnalytics() {
 
         analyticsData.totalViews = viewsResult.count || 0;
         analyticsData.uniqueVisitors = visitorsResult.count || 0;
+        
+        localStorage.setItem('analytics_cache', JSON.stringify(analyticsData));
+        localStorage.setItem('analytics_cache_time', Date.now().toString());
 
         updateAnalyticsDisplay();
     } catch (err) {
