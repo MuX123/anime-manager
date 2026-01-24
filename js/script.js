@@ -584,28 +584,35 @@ window.handleFilter = (key, val) => {
 };
 
 window.getFilteredData = () => {
-    return animeData.filter(item => {
+    const filtered = animeData.filter(item => {
         if (item.category !== currentCategory) return false;
         if (filters.search && !item.name.toLowerCase().includes(filters.search.toLowerCase())) return false;
         
-        // 遍歷所有過濾條件
         for (const key in filters) {
             if (key === 'search' || !filters[key]) continue;
             
-            // 處理類型 (多選陣列)
             if (key === 'genre') {
                 if (!item.genre || !item.genre.includes(filters.genre)) return false;
             } 
-            // 處理自定義列表 (存放在 extra_data 中)
             else if (key.startsWith('custom_')) {
                 if (!item.extra_data || item.extra_data[key] !== filters[key]) return false;
             }
-            // 處理一般屬性
             else {
                 if (item[key] !== filters[key]) return false;
             }
         }
         return true;
+    });
+    
+    return filtered.sort((a, b) => {
+        const yearA = parseInt(a.year) || 0;
+        const yearB = parseInt(b.year) || 0;
+        if (yearB !== yearA) return yearB - yearA;
+        
+        const monthMap = {'1月':1,'2月':2,'3月':3,'4月':4,'5月':5,'6月':6,'7月':7,'8月':8,'9月':9,'10月':10,'11月':11,'12月':12};
+        const monthA = monthMap[a.month] || 0;
+        const monthB = monthMap[b.month] || 0;
+        return monthB - monthA;
     });
 };
 
