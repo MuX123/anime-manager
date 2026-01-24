@@ -1,4 +1,4 @@
-// TECH v3.4.4 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v3.4.5 - ACG Manager Logic (System Admin AI Optimized)
 let currentSection = 'notice';
 let animeData = [];
 let optionsData = {
@@ -181,19 +181,22 @@ window.renderApp = function() {
         topControlBar.id = 'topControlBar';
         document.body.appendChild(topControlBar);
     }
-    topControlBar.style.cssText = `position: fixed !important; top: 50% !important; right: 20px !important; transform: translateY(-50%) !important; display: ${currentSection === 'admin' ? 'none' : 'flex'}; flex-direction: column; align-items: flex-end; z-index: 9999 !important;`;
+    topControlBar.style.cssText = `position: fixed !important; top: 20px !important; right: 20px !important; display: ${currentSection === 'admin' ? 'none' : 'flex'}; flex-direction: column; align-items: flex-end; z-index: 9999 !important;`;
     topControlBar.innerHTML = `
-        <div style="display: flex; flex-direction: column; background: rgba(5, 15, 25, 0.5); padding: 12px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.2); backdrop-filter: blur(15px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); min-width: 160px; gap: 8px;">
-            <select onchange="window.changeGridLayout(this.value)" style="width: 100%; background: rgba(0,212,255,0.05) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">
-                ${[3,4,5].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
-                <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
-            </select>
-            <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 6px;"></div>
+        <div class="floating-menu-btn" onclick="document.getElementById('floatingMenu').classList.toggle('active')">☰</div>
+        <div id="floatingMenu" class="floating-menu">
+            <div style="padding: 15px; border-bottom: 1px solid rgba(0,212,255,0.2);">
+                <select onchange="window.changeGridLayout(this.value)" style="width: 100%; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.25); padding: 8px; color: #fff; border-radius: 6px;">
+                    ${[3,4,5].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''}>${n} 欄佈局</option>`).join('')}
+                    <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''}>📱 資料列表</option>
+                </select>
+            </div>
+            <div id="adminMenuOptions"></div>
         </div>
     `;
 
     app.innerHTML = `
-        <div class="site-version">v5.7.9-ULTRA</div>
+        <div class="site-version">v5.8.0-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -427,7 +430,7 @@ window.renderSearchSelectsHTML = () => {
 window.handleFilter = (key, val) => { filters[key] = val; currentPage = 1; window.renderApp(); };
 window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(); };
 window.getOptionLabel = (key) => {
-    const labels = { genre: '類型', year: '年份', month: '月份', season: '季度', episodes: '集數', rating: '評分', recommendation: '推薦' };
+    const labels = { genre: '類型', year: '年份', month: '月份', season: '季度', episodes: '集數', rating: '評分', recommendation: '推薦', ...siteSettings.custom_labels };
     return labels[key] || key;
 };
 
@@ -472,8 +475,24 @@ window.renderAnnouncements = async function() {
             container.innerHTML = '<div style="text-align: center; padding: 50px; color: var(--text-secondary);">目前尚無公告</div>';
             return;
         }
-        container.innerHTML = `<div style="display: flex; flex-direction: column; gap: 20px; padding: 20px;">${data.map(item => `<div style="background: rgba(0,212,255,0.05); padding: 20px; border-radius: 10px; border: 1px solid rgba(0,212,255,0.2);"><div style="color: var(--neon-cyan); font-weight: bold; margin-bottom: 10px;">${item.author_name || '管理員'} - ${new Date(item.timestamp).toLocaleString()}</div><div style="line-height: 1.6;">${item.content}</div></div>`).join('')}</div>`;
-    } catch (e) { container.innerHTML = '公告載入失敗'; }
+        container.innerHTML = `<div style="display: flex; flex-direction: column; gap: 25px; padding: 20px;">${data.map(item => {
+            const contentWithImages = item.content.replace(/!\[.*?\]\((.*?)\)/g, '<img src="$1" style="max-height: 150px; width: auto; border-radius: 8px; border: 1px solid rgba(0,212,255,0.3); object-fit: cover;">');
+            const hasImages = /<img/.test(contentWithImages);
+            return `
+                <div style="background: rgba(10,15,25,0.8); padding: 25px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2); box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid rgba(0,212,255,0.1); padding-bottom: 12px;">
+                        <img src="${item.author_avatar || siteSettings.admin_avatar}" style="width: 45px; height: 45px; border-radius: 50%; border: 2px solid ${siteSettings.admin_color || '#00ffff'};">
+                        <div>
+                            <div style="color: ${siteSettings.admin_color || '#00ffff'}; font-weight: bold; font-size: 16px;">${item.author_name || siteSettings.admin_name}</div>
+                            <div style="color: var(--text-secondary); font-size: 12px;">${new Date(item.timestamp).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div style="line-height: 1.8; color: var(--text-main); font-size: 15px; white-space: pre-wrap;">${contentWithImages}</div>
+                    ${hasImages ? `<style>#discord-section img { margin-top: 10px; margin-right: 10px; display: inline-block; }</style>` : ''}
+                </div>
+            `;
+        }).join('')}</div>`;
+    } catch (e) { container.innerHTML = '<div style="text-align: center; padding: 50px; color: #ff4444;">公告載入失敗</div>'; }
 };
 
 window.showLoginModal = () => {
