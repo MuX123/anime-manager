@@ -1,4 +1,4 @@
-// TECH v5.8.0 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v5.8.1 - ACG Manager Logic (System Admin AI Optimized)
 let currentSection = 'notice';
 let animeData = [];
 let optionsData = {
@@ -124,6 +124,11 @@ let isFirstLoad = true;
         window.renderApp();
         window.updateAdminMenu();
         window.initGlobalScroll();
+        
+        // 5. 追蹤訪問統計
+        if (typeof window.trackVisit === 'function') {
+            await window.trackVisit();
+        }
 
         // 5. 監聽後續登入狀態變化
         supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -229,7 +234,10 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-		            <div class="site-version">v5.8.0</div>
+		            <div class="site-version" style="display: flex; align-items: center; gap: 15px;">
+		                <span>v5.8.1</span>
+		                <div id="analytics-display" style="font-size: 11px; color: rgba(255,255,255,0.6);"></div>
+		            </div>
 		        <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -266,6 +274,17 @@ app.innerHTML = `
     // 重新初始化滾輪捲動監聽
     window.initGlobalScroll();
     window.updateAdminMenu();
+    
+    // 更新統計顯示
+    if (typeof window.analyticsData !== 'undefined') {
+        const container = document.getElementById('analytics-display');
+        if (container) {
+            container.innerHTML = `
+                <span style="margin-right: 15px;">👁 ${window.analyticsData.totalViews.toLocaleString()}</span>
+                <span>👤 ${window.analyticsData.uniqueVisitors.toLocaleString()}</span>
+            `;
+        }
+    }
 
 	    // 確保詳情彈窗 HTML 存在
 	    if (!document.getElementById('detailModal')) {
