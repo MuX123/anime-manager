@@ -46,6 +46,7 @@ let gridColumns = (() => {
     return window.innerWidth <= 768 ? 'mobile' : 5;
 })();
 window.gridColumns = gridColumns;
+let sortOrder = localStorage.getItem('sortOrder') || 'desc';
 let importTarget = 'anime';
 let editId = null;
 let isFirstLoad = true;
@@ -216,6 +217,10 @@ window.renderApp = function() {
             <select onchange="window.changeGridLayout(this.value)" style="width: 100%; background: rgba(0,212,255,0.05) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">
                 ${[3,4,5].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
                 <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
+            </select>
+            <select onchange="window.changeSortOrder(this.value)" style="width: 100%; background: rgba(0,212,255,0.05) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">
+                <option value="desc" ${sortOrder === 'desc' ? 'selected' : ''} style="background: var(--bg-dark);">從新到舊</option>
+                <option value="asc" ${sortOrder === 'asc' ? 'selected' : ''} style="background: var(--bg-dark);">從舊到新</option>
             </select>
             <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 6px;"></div>
         </div>
@@ -552,6 +557,13 @@ window.changeGridLayout = (n) => {
     window.renderApp();
 };
 
+window.changeSortOrder = (order) => {
+    sortOrder = order;
+    localStorage.setItem('sortOrder', sortOrder);
+    currentPage = 1;
+    window.renderApp();
+};
+
 window.renderSearchSelectsHTML = () => {
     let html = '';
     const defaultKeys = ['genre', 'year', 'season', 'month', 'episodes', 'rating', 'recommendation'];
@@ -607,12 +619,12 @@ window.getFilteredData = () => {
     return filtered.sort((a, b) => {
         const yearA = parseInt(a.year) || 0;
         const yearB = parseInt(b.year) || 0;
-        if (yearB !== yearA) return yearB - yearA;
+        if (yearB !== yearA) return sortOrder === 'desc' ? yearB - yearA : yearA - yearB;
         
         const monthMap = {'1月':1,'2月':2,'3月':3,'4月':4,'5月':5,'6月':6,'7月':7,'8月':8,'9月':9,'10月':10,'11月':11,'12月':12};
         const monthA = monthMap[a.month] || 0;
         const monthB = monthMap[b.month] || 0;
-        return monthB - monthA;
+        return sortOrder === 'desc' ? monthB - monthA : monthA - monthB;
     });
 };
 
