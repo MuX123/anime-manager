@@ -1,4 +1,4 @@
-// TECH v5.8.2 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v5.8.3 - ACG Manager Logic (System Admin AI Optimized)
 let currentSection = 'notice';
 let animeData = [];
 let optionsData = {
@@ -235,7 +235,7 @@ window.renderApp = function() {
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
 		            <div class="site-version" style="display: flex; align-items: center; gap: 15px;">
-		                <span>v5.8.2</span>
+		                <span>v5.8.3</span>
 		                <div id="analytics-display" style="font-size: 11px; color: rgba(255,255,255,0.6);"></div>
 		            </div>
 		        <div class="app-container">
@@ -791,14 +791,20 @@ window.renderAdminContent = (pagedData, total) => {
                 <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">漫畫板塊</button>
                 <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">電影板塊</button>
             </div>
-	            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 20px;">
-	                <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.exportCSV('${currentCategory}')">📥 匯出資料 (CSV)</button>
-	                <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.triggerImport('${currentCategory}')">📤 匯入資料 (CSV)</button>
-	            </div>
+		            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		                <button class="btn-primary" id="bulk-delete-btn" style="font-size: 12px; padding: 8px 16px; border-color: #ff4444; color: #ff4444; display: none;" onclick="window.bulkDeleteAnime()">🗑 批量刪除 (<span id="selected-count">0</span>)</button>
+		                <div style="display: flex; gap: 12px;">
+		                    <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.exportCSV('${currentCategory}')">📥 匯出資料 (CSV)</button>
+		                    <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.triggerImport('${currentCategory}')">📤 匯入資料 (CSV)</button>
+		                </div>
+		            </div>
             <div class="admin-table-container" style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                     <thead>
                         <tr style="border-bottom: 2px solid var(--neon-blue); color: var(--neon-cyan); text-align: left;">
+                            <th style="padding: 15px; width: 50px;">
+                                <input type="checkbox" id="select-all" onchange="window.toggleSelectAll(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
+                            </th>
                             <th style="padding: 15px;">名稱</th>
                             <th style="padding: 15px;">年份</th>
                             <th style="padding: 15px;">評分</th>
@@ -808,6 +814,9 @@ window.renderAdminContent = (pagedData, total) => {
                     <tbody>
                         ${pagedData.map(item => `
                             <tr style="border-bottom: 1px solid rgba(0,212,255,0.1);">
+                                <td style="padding: 15px;">
+                                    <input type="checkbox" class="item-checkbox" data-id="${item.id}" onchange="window.updateBulkDeleteButton()" style="width: 18px; height: 18px; cursor: pointer;">
+                                </td>
                                 <td style="padding: 15px; font-weight: bold;">${item.name}</td>
                                 <td style="padding: 15px;">${item.year || ''}</td>
                                 <td style="padding: 15px;">${item.rating || ''}</td>
@@ -1384,6 +1393,48 @@ window.deleteAnime = async (id) => {
         await window.loadData();
         window.renderAdmin();
     } catch (err) { window.showToast('✗ 刪除失敗', 'error'); }
+};
+
+window.toggleSelectAll = (checked) => {
+    document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = checked);
+    window.updateBulkDeleteButton();
+};
+
+window.updateBulkDeleteButton = () => {
+    const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+    const count = checkboxes.length;
+    const btn = document.getElementById('bulk-delete-btn');
+    const countSpan = document.getElementById('selected-count');
+    const selectAll = document.getElementById('select-all');
+    
+    if (btn && countSpan) {
+        btn.style.display = count > 0 ? 'block' : 'none';
+        countSpan.textContent = count;
+    }
+    
+    if (selectAll) {
+        const totalCheckboxes = document.querySelectorAll('.item-checkbox').length;
+        selectAll.checked = count === totalCheckboxes && count > 0;
+    }
+};
+
+window.bulkDeleteAnime = async () => {
+    const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+    const ids = Array.from(checkboxes).map(cb => cb.dataset.id);
+    
+    if (ids.length === 0) return;
+    
+    if (!confirm(`確定要刪除選中的 ${ids.length} 個作品嗎？`)) return;
+    
+    try {
+        const { error } = await supabaseClient.from('anime_list').delete().in('id', ids);
+        if (error) throw error;
+        window.showToast(`✓ 已刪除 ${ids.length} 個作品`);
+        await window.loadData();
+        window.renderAdmin();
+    } catch (err) {
+        window.showToast('✗ 批量刪除失敗', 'error');
+    }
 };
 
 window.renderAdminPagination = (total) => {
