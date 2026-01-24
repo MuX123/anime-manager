@@ -515,11 +515,23 @@ window.closeAnimeDetail = () => { document.getElementById('detailModal').classLi
 window.renderPagination = (total) => {
     const pages = Math.ceil(total / itemsPerPage);
     if (pages <= 1) return '';
-    let btns = '';
-    for (let i = 1; i <= pages; i++) {
-        btns += `<button class="btn-primary ${currentPage === i ? 'active' : ''}" style="width: 45px; padding: 10px 0;" onclick="window.changePage(${i})">${i}</button>`;
+    let btns = [];
+    const maxVisible = 5;
+    let start = Math.max(1, currentPage - 2);
+    let end = Math.min(pages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+    if (start > 1) {
+        btns.push(`<button class="btn-primary" style="width: 45px; padding: 10px 0;" onclick="window.changePage(1)">1</button>`);
+        if (start > 2) btns.push(`<span style="color: var(--neon-cyan); align-self: center; padding: 0 5px;">...</span>`);
     }
-    return btns;
+    for (let i = start; i <= end; i++) {
+        btns.push(`<button class="btn-primary ${currentPage === i ? 'active' : ''}" style="width: 45px; padding: 10px 0;" onclick="window.changePage(${i})">${i}</button>`);
+    }
+    if (end < pages) {
+        if (end < pages - 1) btns.push(`<span style="color: var(--neon-cyan); align-self: center; padding: 0 5px;">...</span>`);
+        btns.push(`<button class="btn-primary" style="width: 45px; padding: 10px 0;" onclick="window.changePage(${pages})">${pages}</button>`);
+    }
+    return btns.join('');
 };
 
 window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
@@ -756,8 +768,8 @@ window.renderAdminContent = (pagedData, total) => {
                                 <td style="padding: 15px; font-weight: bold;">${item.name}</td>
                                 <td style="padding: 15px;">${item.year || ''}</td>
                                 <td style="padding: 15px;">${item.rating || ''}</td>
-                                <td style="padding: 15px;">
-                                    <button class="btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="window.editAnime('${item.id}')">📝 編輯</button>
+                                <td style="padding: 15px; white-space: nowrap;">
+                                    <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;" onclick="window.editAnime('${item.id}')">📝 編輯</button>
                                     <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; border-color: #ff4444; color: #ff4444;" onclick="window.deleteAnime('${item.id}')">✕ 刪除</button>
                                 </td>
                             </tr>
@@ -1334,7 +1346,23 @@ window.deleteAnime = async (id) => {
 window.renderAdminPagination = (total) => {
     const pages = Math.ceil(total / adminItemsPerPage);
     if (pages <= 1) return '';
-    return Array.from({length: pages}, (_, i) => i + 1).map(p => `<button class="btn-primary ${adminPage === p ? 'active' : ''}" style="width: 40px; padding: 8px 0;" onclick="window.changeAdminPage(${p})">${p}</button>`).join('');
+    let btns = [];
+    const maxVisible = 5;
+    let start = Math.max(1, adminPage - 2);
+    let end = Math.min(pages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+    if (start > 1) {
+        btns.push(`<button class="btn-primary" style="width: 40px; padding: 8px 0;" onclick="window.changeAdminPage(1)">1</button>`);
+        if (start > 2) btns.push(`<span style="color: var(--neon-cyan); align-self: center; padding: 0 5px;">...</span>`);
+    }
+    for (let i = start; i <= end; i++) {
+        btns.push(`<button class="btn-primary ${adminPage === i ? 'active' : ''}" style="width: 40px; padding: 8px 0;" onclick="window.changeAdminPage(${i})">${i}</button>`);
+    }
+    if (end < pages) {
+        if (end < pages - 1) btns.push(`<span style="color: var(--neon-cyan); align-self: center; padding: 0 5px;">...</span>`);
+        btns.push(`<button class="btn-primary" style="width: 40px; padding: 8px 0;" onclick="window.changeAdminPage(${pages})">${pages}</button>`);
+    }
+    return btns.join('');
 };
 
 window.changeAdminPage = (p) => { adminPage = p; window.renderAdmin(); };
