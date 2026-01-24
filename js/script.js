@@ -395,7 +395,83 @@ window.renderAdminContent = (pagedData, total) => {
             </div>
         `;
     }
-    return `<div style="padding: 20px; text-align: center; color: var(--neon-cyan);">功能開發中...</div>`;
+    if (currentAdminTab === 'add') {
+        const item = editId ? animeData.find(a => a.id === editId) : null;
+        return `
+            <h3 style="margin-bottom: 20px; color: var(--neon-cyan);">${editId ? '編輯作品' : '新增作品'}</h3>
+            <div style="display: grid; gap: 15px; max-width: 600px;">
+                <input id="anime-name" placeholder="作品名稱" value="${item?.name || ''}" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">
+                <select id="anime-category" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">
+                    <option value="anime" ${item?.category === 'anime' ? 'selected' : ''}>動畫</option>
+                    <option value="manga" ${item?.category === 'manga' ? 'selected' : ''}>漫畫</option>
+                    <option value="movie" ${item?.category === 'movie' ? 'selected' : ''}>電影</option>
+                </select>
+                <select id="anime-year" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">
+                    <option value="">年份</option>
+                    ${(optionsData.year || []).map(y => `<option value="${y}" ${item?.year === y ? 'selected' : ''}>${y}</option>`).join('')}
+                </select>
+                <select id="anime-season" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">
+                    <option value="">季度</option>
+                    ${(optionsData.season || []).map(s => `<option value="${s}" ${item?.season === s ? 'selected' : ''}>${s}</option>`).join('')}
+                </select>
+                <select id="anime-month" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">
+                    <option value="">月份</option>
+                    ${(optionsData.month || []).map(m => `<option value="${m}" ${item?.month === m ? 'selected' : ''}>${m}</option>`).join('')}
+                </select>
+                <select id="anime-episodes" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">
+                    <option value="">集數</option>
+                    ${(optionsData.episodes || []).map(e => `<option value="${e}" ${item?.episodes === e ? 'selected' : ''}>${e}</option>`).join('')}
+                </select>
+                <select id="anime-rating" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">
+                    <option value="">評分</option>
+                    ${(optionsData.rating || []).map(r => `<option value="${r}" ${item?.rating === r ? 'selected' : ''}>${r}</option>`).join('')}
+                </select>
+                <select id="anime-recommendation" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">
+                    <option value="">推薦</option>
+                    ${(optionsData.recommendation || []).map(r => `<option value="${r}" ${item?.recommendation === r ? 'selected' : ''}>${r}</option>`).join('')}
+                </select>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px;">
+                    ${(optionsData.genre || []).map(g => `<label style="color: white; cursor: pointer;"><input type="checkbox" class="genre-check" value="${g}" ${(item?.genre || []).includes(g) ? 'checked' : ''}> ${g}</label>`).join('')}
+                </div>
+                <textarea id="anime-description" placeholder="描述" rows="3" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">${item?.description || ''}</textarea>
+                <input id="anime-poster" placeholder="海報網址" value="${item?.poster || ''}" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary" onclick="window.saveAnime()" style="flex: 1;">💾 儲存</button>
+                    <button class="btn-primary" onclick="window.switchAdminTab('manage')" style="flex: 1; border-color: #888; color: #888;">取消</button>
+                </div>
+            </div>
+        `;
+    }
+    if (currentAdminTab === 'options') {
+        return `
+            <h3 style="margin-bottom: 20px; color: var(--neon-cyan);">選項管理</h3>
+            <div style="display: grid; gap: 20px; max-width: 800px;">
+                ${['genre', 'year', 'season', 'month', 'episodes', 'rating', 'recommendation'].map(key => `
+                    <div>
+                        <label style="color: var(--neon-cyan); display: block; margin-bottom: 8px;">${window.getOptionLabel(key)}</label>
+                        <textarea id="opt-${key}" rows="2" style="width: 100%; padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">${(optionsData[key] || []).join(', ')}</textarea>
+                    </div>
+                `).join('')}
+                <button class="btn-primary" onclick="window.saveOptions()" style="max-width: 200px;">💾 儲存選項</button>
+            </div>
+        `;
+    }
+    if (currentAdminTab === 'settings') {
+        return `
+            <h3 style="margin-bottom: 20px; color: var(--neon-cyan);">網站設定</h3>
+            <div style="display: grid; gap: 15px; max-width: 600px;">
+                <input id="site-title" placeholder="網站標題" value="${siteSettings.site_title}" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">
+                <input id="site-announcement" placeholder="公告文字" value="${siteSettings.announcement}" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">
+                <input id="site-title-color" type="color" value="${siteSettings.title_color}" style="padding: 5px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px;">
+                <input id="site-announcement-color" type="color" value="${siteSettings.announcement_color}" style="padding: 5px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px;">
+                <input id="site-admin-name" placeholder="管理員名稱" value="${siteSettings.admin_name}" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">
+                <input id="site-admin-avatar" placeholder="管理員頭像網址" value="${siteSettings.admin_avatar}" style="padding: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); color: white; border-radius: 6px;">
+                <input id="site-admin-color" type="color" value="${siteSettings.admin_color}" style="padding: 5px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px;">
+                <button class="btn-primary" onclick="window.saveSettings()" style="max-width: 200px;">💾 儲存設定</button>
+            </div>
+        `;
+    }
+    return `<div style="padding: 20px; text-align: center; color: var(--neon-cyan);">Unknown tab</div>`;
 };
 
 window.getFilteredData = () => {
@@ -608,3 +684,85 @@ window.importData = async (event) => {
 };
 
 window.initApp();
+
+window.saveAnime = async () => {
+    const name = document.getElementById('anime-name').value.trim();
+    if (!name) { window.showToast('請輸入作品名稱', 'error'); return; }
+    const genre = Array.from(document.querySelectorAll('.genre-check:checked')).map(c => c.value);
+    const data = {
+        name,
+        category: document.getElementById('anime-category').value,
+        year: document.getElementById('anime-year').value,
+        season: document.getElementById('anime-season').value,
+        month: document.getElementById('anime-month').value,
+        episodes: document.getElementById('anime-episodes').value,
+        rating: document.getElementById('anime-rating').value,
+        recommendation: document.getElementById('anime-recommendation').value,
+        genre,
+        description: document.getElementById('anime-description').value.trim(),
+        poster: document.getElementById('anime-poster').value.trim()
+    };
+    try {
+        if (editId) {
+            const { error } = await supabaseClient.from('anime_list').update(data).eq('id', editId);
+            if (error) throw error;
+            window.showToast('更新成功');
+        } else {
+            const { error } = await supabaseClient.from('anime_list').insert(data);
+            if (error) throw error;
+            window.showToast('新增成功');
+        }
+        await window.loadData();
+        editId = null;
+        window.switchAdminTab('manage');
+    } catch (e) {
+        window.showToast('儲存失敗', 'error');
+    }
+};
+
+window.saveOptions = async () => {
+    const keys = ['genre', 'year', 'season', 'month', 'episodes', 'rating', 'recommendation'];
+    const updated = {};
+    keys.forEach(key => {
+        const val = document.getElementById(`opt-${key}`).value.trim();
+        updated[key] = val ? val.split(',').map(v => v.trim()).filter(v => v) : [];
+    });
+    optionsData = { ...optionsData, ...updated };
+    try {
+        const { error } = await supabaseClient.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) });
+        if (error) throw error;
+        window.showToast('選項已儲存');
+    } catch (e) {
+        window.showToast('儲存失敗', 'error');
+    }
+};
+
+window.saveSettings = async () => {
+    const settings = [
+        { id: 'site_title', value: document.getElementById('site-title').value },
+        { id: 'announcement', value: document.getElementById('site-announcement').value },
+        { id: 'title_color', value: document.getElementById('site-title-color').value },
+        { id: 'announcement_color', value: document.getElementById('site-announcement-color').value },
+        { id: 'admin_name', value: document.getElementById('site-admin-name').value },
+        { id: 'admin_avatar', value: document.getElementById('site-admin-avatar').value },
+        { id: 'admin_color', value: document.getElementById('site-admin-color').value }
+    ];
+    try {
+        for (const s of settings) {
+            const { error } = await supabaseClient.from('site_settings').upsert(s);
+            if (error) throw error;
+            if (s.id === 'site_title') siteSettings.site_title = s.value;
+            if (s.id === 'announcement') siteSettings.announcement = s.value;
+            if (s.id === 'title_color') siteSettings.title_color = s.value;
+            if (s.id === 'announcement_color') siteSettings.announcement_color = s.value;
+            if (s.id === 'admin_name') siteSettings.admin_name = s.value;
+            if (s.id === 'admin_avatar') siteSettings.admin_avatar = s.value;
+            if (s.id === 'admin_color') siteSettings.admin_color = s.value;
+        }
+        document.title = siteSettings.site_title;
+        window.showToast('設定已儲存');
+        window.renderApp();
+    } catch (e) {
+        window.showToast('儲存失敗', 'error');
+    }
+};
