@@ -1,4 +1,4 @@
-// TECH v3.4.3 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v3.4.4 - ACG Manager Logic (System Admin AI Optimized)
 let currentSection = 'notice';
 let animeData = [];
 let optionsData = {
@@ -85,6 +85,11 @@ window.initApp = async function() {
         window.renderApp();
         window.updateAdminMenu();
         window.initGlobalScroll();
+        const loader = document.getElementById('loading-screen');
+        if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 500);
+        }
 
         supabaseClient.auth.onAuthStateChange((event, session) => {
             isAdmin = !!session;
@@ -96,6 +101,11 @@ window.initApp = async function() {
         console.error('Init error:', err);
         isFirstLoad = false;
         window.renderApp();
+        const loader = document.getElementById('loading-screen');
+        if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 500);
+        }
     }
 };
 
@@ -183,7 +193,7 @@ window.renderApp = function() {
     `;
 
     app.innerHTML = `
-        <div class="site-version">v5.7.8-ULTRA</div>
+        <div class="site-version">v5.7.9-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>

@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./css/style.css?v=20260123_v2">
+    <link rel="stylesheet" href="./css/style.css?v=20260124_v1">
     <style>
         #loading-screen {
             position: fixed;
@@ -34,7 +34,7 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #app { display: none; }
+        #app { display: block; min-height: 100vh; }
     </style>
 </head>
 <body style="background-color: #0a0e1a; background-image: radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(176, 38, 255, 0.05) 0%, transparent 50%), linear-gradient(rgba(0, 212, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.02) 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px; background-attachment: fixed; margin: 0;">
@@ -60,7 +60,7 @@
     <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./js/supabase.js?v=20260123_v2"></script>
-    <script src="./js/script.js?v=20260123_v2"></script>
+    <script src="./js/supabase.js?v=20260124_v1"></script>
+    <script src="./js/script.js?v=20260124_v1"></script>
 </body>
 </html>
