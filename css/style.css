@@ -1027,3 +1027,38 @@ select {
         opacity: 1;
     }
 }
+
+/* Table Optimization */
+.admin-table-container {
+    overflow-x: auto;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(0,212,255,0.1);
+}
+.admin-table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+.admin-table-container th, .admin-table-container td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid rgba(0,212,255,0.05);
+}
+.admin-table-container th {
+    background: rgba(0,212,255,0.05);
+    color: var(--neon-cyan);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+.pagination button {
+    min-width: 40px !important;
+}
