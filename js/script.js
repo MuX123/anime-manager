@@ -1,4 +1,4 @@
-// TECH v3.4.0 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v5.6.1 - ACG Manager Logic (System Admin AI Optimized)
 let currentSection = 'notice';
 let animeData = [];
 let optionsData = {
