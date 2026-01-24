@@ -1,4 +1,4 @@
-// TECH v3.4.5 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v3.4.6 - ACG Manager Logic (System Admin AI Optimized)
 let currentSection = 'notice';
 let animeData = [];
 let optionsData = {
@@ -194,9 +194,10 @@ window.renderApp = function() {
             <div id="adminMenuOptions"></div>
         </div>
     `;
+    window.updateAdminMenu();
 
     app.innerHTML = `
-        <div class="site-version">v5.8.0-ULTRA</div>
+        <div class="site-version">v5.8.1-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
