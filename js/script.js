@@ -219,8 +219,9 @@ window.renderApp = function() {
                 <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
             </select>
             <select onchange="window.changeSortOrder(this.value)" style="width: 100%; background: rgba(0,212,255,0.05) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease; text-align: center; text-align-last: center;">
-                <option value="desc" ${sortOrder === 'desc' ? 'selected' : ''} style="background: var(--bg-dark);">從新到舊</option>
-                <option value="asc" ${sortOrder === 'asc' ? 'selected' : ''} style="background: var(--bg-dark);">從舊到新</option>
+                <option value="desc" ${sortOrder === 'desc' ? 'selected' : ''} style="background: var(--bg-dark);">時間：從新到舊</option>
+                <option value="asc" ${sortOrder === 'asc' ? 'selected' : ''} style="background: var(--bg-dark);">時間：從舊到新</option>
+                <option value="name" ${sortOrder === 'name' ? 'selected' : ''} style="background: var(--bg-dark);">名稱：A-Z</option>
             </select>
             <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 6px;"></div>
         </div>
@@ -617,6 +618,10 @@ window.getFilteredData = () => {
     });
     
     return filtered.sort((a, b) => {
+        if (sortOrder === 'name') {
+            return a.name.localeCompare(b.name, 'zh-TW');
+        }
+        
         const yearA = parseInt(a.year) || 0;
         const yearB = parseInt(b.year) || 0;
         if (yearB !== yearA) return sortOrder === 'desc' ? yearB - yearA : yearA - yearB;
