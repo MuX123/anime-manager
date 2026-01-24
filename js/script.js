@@ -1,4 +1,4 @@
-// TECH v3.4.2 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v3.4.3 - ACG Manager Logic (System Admin AI Optimized)
 let currentSection = 'notice';
 let animeData = [];
 let optionsData = {
@@ -183,7 +183,7 @@ window.renderApp = function() {
     `;
 
     app.innerHTML = `
-        <div class="site-version">v5.7.7-ULTRA</div>
+        <div class="site-version">v5.7.8-ULTRA</div>
         <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
@@ -219,11 +219,9 @@ window.renderCard = (item) => {
     const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
     const nameColor = item.name_color || optionsData.category_colors?.name || '#ffffff';
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
-    const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
     const cyanBase = 'rgba(0, 212, 255, 0.1)';
     
     const isMobileLayout = gridColumns === 'mobile';
-    const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
 
     if (isMobileLayout) {
         return `
@@ -236,7 +234,7 @@ window.renderCard = (item) => {
                     <h3 style="color: ${nameColor}; font-size: 16px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
                     <div style="display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none;">
                         ${item.year ? `<span style="font-size: 11px; color: ${yearColor}; border: 1px solid ${yearColor}66; padding: 2px 8px; border-radius: 50px;">${item.year}</span>` : ''}
-                        ${item.episodes ? `<span style="font-size: 11px; color: ${episodesColor}; border: 1px solid ${episodesColor}66; padding: 2px 8px; border-radius: 50px;">全 ${item.episodes} 集</span>` : ''}
+                        ${item.episodes ? `<span style="font-size: 11px; color: var(--neon-green); border: 1px solid var(--neon-green)66; padding: 2px 8px; border-radius: 50px;">全 ${item.episodes} 集</span>` : ''}
                     </div>
                 </div>
             </div>
@@ -453,6 +451,20 @@ window.initGlobalScroll = () => {
             if (c.scrollWidth > c.clientWidth && e.deltaY !== 0) { e.preventDefault(); c.scrollLeft += e.deltaY; }
         }, { passive: false });
     });
+};
+
+// 公告渲染函數補齊
+window.renderAnnouncements = async function() {
+    const container = document.getElementById('discord-section');
+    if (!container) return;
+    try {
+        const { data, error } = await supabaseClient.from('announcements').select('*').order('timestamp', { ascending: false });
+        if (error || !data || data.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 50px; color: var(--text-secondary);">目前尚無公告</div>';
+            return;
+        }
+        container.innerHTML = `<div style="display: flex; flex-direction: column; gap: 20px; padding: 20px;">${data.map(item => `<div style="background: rgba(0,212,255,0.05); padding: 20px; border-radius: 10px; border: 1px solid rgba(0,212,255,0.2);"><div style="color: var(--neon-cyan); font-weight: bold; margin-bottom: 10px;">${item.author_name || '管理員'} - ${new Date(item.timestamp).toLocaleString()}</div><div style="line-height: 1.6;">${item.content}</div></div>`).join('')}</div>`;
+    } catch (e) { container.innerHTML = '公告載入失敗'; }
 };
 
 window.initApp();
