@@ -1497,10 +1497,7 @@ window.renderAnnouncements = async function() {
 	                        if (!Array.isArray(images)) images = [];
 	                        if (item.image_url && !images.includes(item.image_url)) images.push(item.image_url);
 	                        images = images.filter(u => u && typeof u === 'string' && u.startsWith('http'));
-                        let gridStyle = '';
-                        if (images.length === 1) gridStyle = 'grid-template-columns: minmax(300px, 400px); justify-content: start;';
-                        else if (images.length === 2) gridStyle = 'grid-template-columns: repeat(2, minmax(250px, 350px)); justify-content: start;';
-                        else if (images.length >= 3) gridStyle = 'grid-template-columns: repeat(auto-fit, minmax(250px, 350px)); justify-content: start;';
+                        let gridStyle = 'grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); max-width: 100%;';
 
                         return `
                         <div class="announcement-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0,212,255,0.1); border-radius: 12px; padding: 20px; position: relative; transition: all 0.3s ease; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
@@ -1521,8 +1518,8 @@ window.renderAnnouncements = async function() {
                             ${images.length > 0 ? `
                                 <div style="display: grid; gap: 12px; ${gridStyle} margin-top: 15px;">
                                     ${images.map(url => `
-                                        <div style="aspect-ratio: 16/9; background: #000; cursor: zoom-in; border: 2px solid rgba(0,212,255,0.3); border-radius: 10px; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 0 15px rgba(0,212,255,0.1);" onclick="window.openLightbox('${url}')" title="點擊查看大圖">
-                                            <img src="${url}" style="width: 100%; height: 100%; object-fit: cover; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.08)'; this.style.filter='brightness(1.1)'" onmouseout="this.style.transform='scale(1)'; this.style.filter='brightness(1)'">
+                                        <div style="aspect-ratio: 1/1; background: #000; cursor: zoom-in; border: 2px solid rgba(0,212,255,0.3); border-radius: 10px; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 0 15px rgba(0,212,255,0.1);" onclick="window.openLightbox('${url}')" title="點擊查看大圖">
+                                            <img src="${url}" style="width: 100%; height: 100%; object-fit: cover; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'; this.style.filter='brightness(1.1)'" onmouseout="this.style.transform='scale(1)'; this.style.filter='brightness(1)'">
                                         </div>
                                     `).join('')}
                                 </div>
