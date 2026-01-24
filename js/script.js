@@ -453,7 +453,6 @@ window.initGlobalScroll = () => {
     });
 };
 
-// 公告渲染函數補齊
 window.renderAnnouncements = async function() {
     const container = document.getElementById('discord-section');
     if (!container) return;
@@ -465,6 +464,117 @@ window.renderAnnouncements = async function() {
         }
         container.innerHTML = `<div style="display: flex; flex-direction: column; gap: 20px; padding: 20px;">${data.map(item => `<div style="background: rgba(0,212,255,0.05); padding: 20px; border-radius: 10px; border: 1px solid rgba(0,212,255,0.2);"><div style="color: var(--neon-cyan); font-weight: bold; margin-bottom: 10px;">${item.author_name || '管理員'} - ${new Date(item.timestamp).toLocaleString()}</div><div style="line-height: 1.6;">${item.content}</div></div>`).join('')}</div>`;
     } catch (e) { container.innerHTML = '公告載入失敗'; }
+};
+
+window.showLoginModal = () => {
+    const modal = document.getElementById('loginModal');
+    if (modal) modal.style.display = 'flex';
+};
+
+window.hideLoginModal = () => {
+    const modal = document.getElementById('loginModal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.handleLogin = async () => {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) {
+        window.showToast('請輸入電子郵件和密碼', 'error');
+        return;
+    }
+    try {
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) {
+            window.showToast('登入失敗: ' + error.message, 'error');
+        } else {
+            window.hideLoginModal();
+            window.showToast('登入成功');
+        }
+    } catch (e) {
+        window.showToast('登入錯誤', 'error');
+    }
+};
+
+window.handleLogout = async () => {
+    try {
+        await supabaseClient.auth.signOut();
+        window.showToast('已登出');
+        window.renderApp();
+    } catch (e) {
+        window.showToast('登出失敗', 'error');
+    }
+};
+
+window.editAnime = (id) => {
+    window.switchAdminTab('add', id);
+};
+
+window.deleteAnime = async (id) => {
+    if (!confirm('確認刪除此作品?')) return;
+    try {
+        const { error } = await supabaseClient.from('anime_list').delete().eq('id', id);
+        if (error) {
+            window.showToast('刪除失敗', 'error');
+        } else {
+            window.showToast('刪除成功');
+            await window.loadData();
+            window.renderAdmin();
+        }
+    } catch (e) {
+        window.showToast('刪除錯誤', 'error');
+    }
+};
+
+window.exportCSV = () => {
+    const filtered = animeData.filter(item => item.category === currentCategory);
+    const csv = [['名稱', '年份', '評分', '集數', '類型', '描述'].join(',')];
+    filtered.forEach(item => {
+        csv.push([item.name, item.year, item.rating, item.episodes, item.genre?.join('|') || '', item.description || ''].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+    });
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${currentCategory}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+};
+
+window.triggerImport = () => {
+    document.getElementById('importFile').click();
+};
+
+window.importData = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    const lines = text.trim().split('\n');
+    if (lines.length < 2) {
+        window.showToast('無效的CSV文件', 'error');
+        return;
+    }
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const rows = lines.slice(1).map(line => {
+        const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+        return Object.fromEntries(headers.map((h, i) => [h, values[i]]));
+    });
+    try {
+        for (const row of rows) {
+            await supabaseClient.from('anime_list').insert({
+                name: row.名稱 || row.name || '',
+                year: row.年份 || row.year || '',
+                rating: row.評分 || row.rating || '',
+                episodes: row.集數 || row.episodes || '',
+                genre: row.類型 ? row.類型.split('|') : [],
+                description: row.描述 || row.description || '',
+                category: currentCategory
+            });
+        }
+        window.showToast('匯入成功');
+        await window.loadData();
+        window.renderAdmin();
+    } catch (e) {
+        window.showToast('匯入失敗', 'error');
+    }
 };
 
 window.initApp();
