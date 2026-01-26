@@ -219,8 +219,8 @@ window.renderApp = function() {
     topControlBar.style.cssText = `position: fixed !important; top: 50% !important; right: 20px !important; transform: translateY(-50%) !important; display: ${currentSection === 'admin' ? 'none' : 'flex'}; flex-direction: column; align-items: flex-end; z-index: 9999 !important;`;
     topControlBar.innerHTML = `
         <div style="display: flex; flex-direction: column; background: rgba(5, 15, 25, 0.5); padding: 12px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.2); backdrop-filter: blur(15px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); min-width: 160px; gap: 8px;">
-            <select onchange="window。changeGridLayout（this。value）" style="width: 100%; background: rgba(0,212,255,0。05)！重要的；邊框:1px 實心 rgba (0,212,255,0。25)！重要的；填充:10px！重要的；字體大小:13px！重要的；遊標:指針；顏色:#fff！重要的；字體粗細:500；大綱:無！重要的；邊框半徑:6px；字體系列:'Noto Sans TC',無襯線；過渡:全部 0。3 秒輕鬆；文字對齊:中心；文字對齊最後:中心；">
-                ${[3,4,5]。map（n => `<選項值="${n}" ${gridColumns == n？'selected' : ''} style="background: var(--bg-dark）;">${n} 欄</option>`)。join('')}
+            <select onchange="window.changeGridLayout(this.value)" style="width: 100%; background: rgba(0,212,255,0.05) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease; text-align: center; text-align-last: center;">
+                ${[3,4,5].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
                 <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
             </select>
             <select onchange="window.changeSortOrder(this.value)" style="width: 100%; background: rgba(0,212,255,0.05) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease; text-align: center; text-align-last: center;">
@@ -259,11 +259,11 @@ app.innerHTML = `
 	                    </div>
 	                </div>
 	            </div>
-	            <div id="通知容器"style="顯示:${isNotice？'block':'無'};">
-	                ${通知HTML}
+	            <div id="notice-container" style="display: ${isNotice ? 'block' : 'none'};">
+	                ${noticeHTML}
 	            </div>
-	            <div id="main-grid-content" style="display: ${isNotice？'none':'塊'};">
-	                <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile'？'force-mobile-layout':''}"style="display:${gridColumns ==='mobile'？'flex':'grid'}; ${gridColumns === 「移動」？'flex-direction: column; gap: 10px;' : `grid-template-columns: repeat(${gridColumns}, 1fr）; gap: 20px;`}">
+	            <div id="main-grid-content" style="display: ${isNotice ? 'none' : 'block'};">
+	                <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}" style="display: ${gridColumns === 'mobile' ? 'flex' : 'grid'}; ${gridColumns === 'mobile' ? 'flex-direction: column; gap: 10px;' : `grid-template-columns: repeat(${gridColumns}, 1fr); gap: 20px;`}">
 	                    ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
 	                </div>
 	                <div id="pagination-container" style="display: flex; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
@@ -473,9 +473,9 @@ window.showAnimeDetail = (id) => {
 					            <div class="detail-poster-aside" style="flex: 0 0 380px; border-right: 2px solid ${ratingColor}; box-sizing: border-box; background: #000; position: relative; z-index: 1;">
 		                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
 		                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
-		                <div class="cyber-core-v39-large" style="位置:絕對；頂部:0；左側:0；顯示:flex；對齊項目:中心；間隙:15px；填充:10px 20px；背景:rgba(0,0,0,0。8)；邊框右下半徑:15px；右邊框:2px solid ${ratingColor}；邊框底部:2px solid ${ratingColor}；背景過濾器:模糊(12px）; z指數:10;">
-		                    <span class="star-icon" style="color: ${starColor}; font-size: 24px; filter: drop-shadow(0 0 8px ${starColor});">${item。recommendation || '★'}</span>
-		                    <span style="color: ${ratingColor}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${ratingColor});">${item。rating || '普'}</span>
+		                <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; border-right: 2px solid ${ratingColor}; border-bottom: 2px solid ${ratingColor}; backdrop-filter: blur(12px); z-index: 10;">
+		                    <span class="star-icon" style="color: ${starColor}; font-size: 24px; filter: drop-shadow(0 0 8px ${starColor});">${item.recommendation || '★'}</span>
+		                    <span style="color: ${ratingColor}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${ratingColor});">${item.rating || '普'}</span>
 		                </div>
 		            </div>
 		
@@ -918,9 +918,9 @@ window.renderAnimeForm = (item) => {
                             </div>
                         </div>
                         <div>
-                            <label style="字體大小:11px; color: var(--text-secondary）; display: block; margin-bottom: 4px;">標籤</label>
-                            <div class="color-input-wrapper" style="寬度:100%;">
-                                <div class="color-swatch" style="background: ${item。name_color || '#ffffff'}; width: 100%; height: 30px; border-radius: 0px;" onclick="document。getElementById('form-name-color')。click()"></div>
+                            <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">名稱</label>
+                            <div class="color-input-wrapper" style="width: 100%;">
+                                <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 30px; border-radius: 0px;" onclick="document.getElementById('form-name-color').click()"></div>
                                 <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
                             </div>
                         </div>
@@ -979,8 +979,8 @@ window.renderAnimeForm = (item) => {
                         <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">發行年份</label><select id="form-year" style="width: 100%;">${optionsData.year.map(y => `<option value="${y}" ${item.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
                         <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">播放季度</label><select id="form-season" style="width: 100%;">${optionsData.season.map(s => `<option value="${s}" ${item.season === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
                         <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">發行月份</label><select id="form-month" style="width: 100%;">${optionsData.month.map(m => `<option value="${m}" ${item.month === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
-                        <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan）; font-weight: bold;">格式</label><select id="form-rating" style="width: 100%;">${optionsData。rating。map（r => `<option value="${r}" ${item。rating === r？'selected':''}>${r}</option>`)。join('')}</select></div>
-                        <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan）; font-weight: bold;">forneds</label><select id="form-recommendation" style="width: 100%;">${optionsData。recommendation。map（r => `<option value="${r}" ${item。recommendation === r？'selected':''}>${r}</option>`)。join('')}</select></div>
+                        <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">分級評分</label><select id="form-rating" style="width: 100%;">${optionsData.rating.map(r => `<option value="${r}" ${item.rating === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+                        <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">推薦指數</label><select id="form-recommendation" style="width: 100%;">${optionsData.recommendation.map(r => `<option value="${r}" ${item.recommendation === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
                         <div style="display: flex; flex-direction: column; gap: 5px;"><label style="font-size: 12px; color: var(--neon-cyan); font-weight: bold;">總集數</label><input type="text" id="form-episodes" placeholder="例如: 12" value="${item.episodes || ''}" style="width: 100%;"></div>
                         
                         <!-- 動態自定義列表 -->
@@ -1031,10 +1031,10 @@ window.renderOptionsManager = () => {
                             ${(optionsData[key] || []).map((opt, idx) => {
                                 const itemColor = (key === 'rating') ? (optionsData.rating_colors?.[opt] || color) : color;
                                 return `
-	                                    <div class="option-item-row" style="display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid rgba(0,212,255,0。05);">
-	                                        ${key === 「評級」？`
-	                                            <div class="顏色輸入包裝器">
-	                                                <div class="color-swatch" style="background: ${itemColor}; width: 20px; height: 20px; border-radius: 0px;" onclick="this。nextElementSibling。click()"></div>
+	                                    <div class="option-item-row" style="display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid rgba(0,212,255,0.05);">
+	                                        ${key === 'rating' ? `
+	                                            <div class="color-input-wrapper">
+	                                                <div class="color-swatch" style="background: ${itemColor}; width: 20px; height: 20px; border-radius: 0px;" onclick="this.nextElementSibling.click()"></div>
 	                                                <input type="color" value="${itemColor}" onchange="window.updateRatingItemColor('${opt}', this.value); this.previousElementSibling.style.background = this.value">
 	                                            </div>
 	                                        ` : ''}
@@ -1140,14 +1140,14 @@ window.saveAnime = async () => {
             throw error;
         }
         
-        window。showToast('✓ 視窗顯示');
-        等待視窗。loadData();
-        window。switchAdminTab('管理');
-    } catch（err）{ window。showToast('✗ 儲誤播:' + err。message, 'error'); }
+        window.showToast('✓ 儲存成功');
+        await window.loadData();
+        window.switchAdminTab('manage');
+    } catch (err) { window.showToast('✗ 儲存失敗：' + err.message, 'error'); }
 };
 
-window。editAnime =（id）=> { window。switchAdminTab('edit', id）; };
-window。addlinkrow = () => { const c = document。getElementById ('links-list'); const d = document。createElement ('div'); d。style。display = 'flex'; d。style。gap = '8px'; d。style。marginBottom = '10px'; d。innerHTML = `<input type="text" placeholder="名" class="link-name" style="flex: 1;"><input type="text" placeholder="網" class="link-url" style="flex: 2;"><按鈕類別="btn-primary"樣式="填充:8px 12px；邊框顏色:#ff4444；顏色:#ff4444;"onclick="this。parentElement。remove()">✕</button>`; c。appendChild（d）; };
+window.editAnime = (id) => { window.switchAdminTab('edit', id); };
+window.addLinkRow = () => { const c = document.getElementById('links-list'); const d = document.createElement('div'); d.style.display = 'flex'; d.style.gap = '8px'; d.style.marginBottom = '10px'; d.innerHTML = `<input type="text" placeholder="名" class="link-name" style="flex: 1;"><input type="text" placeholder="網" class="link-url" style="flex: 2;"><button class="btn-primary" style="padding: 8px 12px; border-color: #ff4444; color: #ff4444;" onclick="this.parentElement.remove()">✕</button>`; c.appendChild(d); };
 window.addOptionItem = async (key) => { const input = document.getElementById(`add-opt-${key}`); if (!input.value) return window.showToast('✗ 請輸入選項名稱', 'error'); optionsData[key].push(input.value); input.value = ''; await window.saveOptionsToDB(); window.renderAdmin(); };
 window.deleteOptionItem = async (key, idx) => { optionsData[key].splice(idx, 1); await window.saveOptionsToDB(); window.renderAdmin(); };
 
@@ -1654,10 +1654,10 @@ window.showEditAnnouncementModal = (item) => {
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 500px;">
             <h2 style="color: var(--neon-cyan); margin-bottom: 20px;">📝 編輯公告</h2>
-            <textarea id="ann-content" placeholder="內容內容..." style="width: 100%; height: 150px; margin-bottom: 15px;">${item。content || ''}</textarea>
-            <textarea id="ann-images" placeholder="文字區域名稱（文字區域名稱）..." style="width: 100%; height: 80px; margin-bottom: 20px; font-size: 12px;">${（item。image_urls || [])。join('\n')}</textarea>
-            <div style="顯示:flex；間隙:10px;">
-                <button class="btn-primary" style="flex: 1;" onclick="window。submitAnnouncement('${item。id}')">按鈕功能</button>
+            <textarea id="ann-content" placeholder="輸入公告內容..." style="width: 100%; height: 150px; margin-bottom: 15px;">${item.content || ''}</textarea>
+            <textarea id="ann-images" placeholder="輸入圖片網址 (多張請用換行分隔)..." style="width: 100%; height: 80px; margin-bottom: 20px; font-size: 12px;">${(item.image_urls || []).join('\n')}</textarea>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" style="flex: 1;" onclick="window.submitAnnouncement('${item.id}')">儲存修改</button>
                 <button class="btn-primary" style="flex: 1; border-color: #ff4444; color: #ff4444;" onclick="document.getElementById('announcement-modal').remove()">取消</button>
             </div>
         </div>
@@ -1751,8 +1751,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (target && (target.scrollWidth > target.clientWidth || target.scrollHeight > target.clientHeight)) {
             if (target.scrollWidth > target.clientWidth) {
                 e.preventDefault();
-                目標。scrollLeft += e。deltaY > 0？50:-50；
+                target.scrollLeft += e.deltaY > 0 ? 50 : -50;
             }
         }
-    }, {被動:false });
+    }, { passive: false });
 });
