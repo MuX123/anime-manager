@@ -1,4 +1,4 @@
-// TECH v5.8.3 - ACG Manager Logic (System Admin AI Optimized)
+// TECH v6.0.0 - ACG Manager Logic (Security & Performance Optimized)
 let currentSection = 'notice';
 let animeData = [];
 let optionsData = {
@@ -83,60 +83,109 @@ let isFirstLoad = true;
     try {
         console.log('🚀 系統初始化中...');
         
-        // 1. 獲取網站設定與選項資料 (優先載入)
-        const { data: settings, error: settingsError } = await supabaseClient.from('site_settings').select('*');
-        if (settingsError) throw settingsError;
-
-        if (settings) {
-            settings.forEach(s => {
-                if (s.id === 'site_title') siteSettings.site_title = s.value;
-                if (s.id === 'announcement') siteSettings.announcement = s.value;
-                if (s.id === 'title_color') siteSettings.title_color = s.value;
-                if (s.id === 'announcement_color') siteSettings.announcement_color = s.value;
-                if (s.id === 'admin_name') siteSettings.admin_name = s.value;
-                if (s.id === 'admin_avatar') siteSettings.admin_avatar = s.value;
-                if (s.id === 'admin_color') siteSettings.admin_color = s.value;
-                if (s.id === 'custom_labels') { try { siteSettings.custom_labels = JSON.parse(s.value); } catch(e) {} }
-                if (s.id === 'options_data') { 
-                    try { 
-                        const parsed = JSON.parse(s.value);
-                        optionsData = { ...optionsData, ...parsed };
-                        if (!optionsData.category_colors) optionsData.category_colors = {};
-                        if (!optionsData.custom_lists) optionsData.custom_lists = [];
-                        const defaultColors = { genre: '#00ffff', year: '#ffffff', month: '#ffffff', season: '#ffffff', episodes: '#00ffff', rating: '#b026ff', recommendation: '#ffcc00', btn_bg: '#00d4ff' };
-                        optionsData.category_colors = { ...defaultColors, ...optionsData.category_colors };
-                        if (!optionsData.category_colors.btn_bg) optionsData.category_colors.btn_bg = '#00d4ff';
-                    } catch(e) {} 
-                }
-            });
-        }
-        document.title = siteSettings.site_title;
-
-        // 2. 獲取 Session 狀態
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        isAdmin = !!session;
+        // 等待所有模組載入完成
+        await new Promise(resolve => setTimeout(resolve, 500));
         
-        // 3. 載入作品資料
-        await window.loadData();
-
-        // 4. 執行首次渲染
-        isFirstLoad = false;
-        window.renderApp();
-        window.updateAdminMenu();
-        window.initGlobalScroll();
-        
-        // 5. 追蹤訪問統計（非阻塞）
-        if (typeof window.trackVisit === 'function') {
-            window.trackVisit().catch(err => console.error('Analytics error:', err));
+        // 1. 檢查 Supabase 連接狀態
+        let client;
+        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+            client = window.supabaseManager.getClient();
+            console.log('✅ 使用新的 Supabase 客戶端');
+        } else if (window.supabaseClient) {
+            client = window.supabaseClient;
+            console.log('⚠️ 使用舊的 Supabase 客戶端');
+        } else {
+            console.error('❌ Supabase 客戶端未初始化');
+            window.showToast('資料庫連接尚未準備就緒', 'error');
+            isFirstLoad = false;
+            window.renderApp();
+            return;
         }
-
-        // 5. 監聽後續登入狀態變化
-        supabaseClient.auth.onAuthStateChange((event, session) => {
+        
+        // 2. 設置認證狀態監聽
+        client.auth.onAuthStateChange((event, session) => {
             isAdmin = !!session;
+            console.log('🔐 認證狀態變化:', { event, isAdmin });
             window.updateAdminMenu();
-            if (document.querySelector('.admin-container')) window.renderAdmin();
-            else window.renderApp();
+            if (document.querySelector('.admin-container')) {
+                window.renderAdmin();
+            } else {
+                window.renderApp();
+            }
         });
+        
+        // 3. 檢查當前認證狀態
+        try {
+            const { data: { session } } = await client.auth.getSession();
+            if (session) {
+                isAdmin = true;
+                console.log('👤 檢測到已登入用戶:', session.user.email);
+            }
+        } catch (err) {
+            console.warn('檢查認證狀態失敗:', err);
+        }
+        
+        // 4. 獲取網站設定與選項資料 (優先載入)
+        try {
+            const { data: settings, error: settingsError } = await client.from('site_settings').select('*');
+            if (!settingsError && settings) {
+                settings.forEach(s => {
+                    if (s.id === 'site_title') siteSettings.site_title = s.value;
+                    if (s.id === 'announcement') siteSettings.announcement = s.value;
+                    if (s.id === 'title_color') siteSettings.title_color = s.value;
+                    if (s.id === 'announcement_color') siteSettings.announcement_color = s.value;
+                    if (s.id === 'admin_name') siteSettings.admin_name = s.value;
+                    if (s.id === 'admin_avatar') siteSettings.admin_avatar = s.value;
+                    if (s.id === 'admin_color') siteSettings.admin_color = s.value;
+                    if (s.id === 'custom_labels') { 
+                        try { 
+                            siteSettings.custom_labels = JSON.parse(s.value); 
+                        } catch(e) { 
+                            console.warn('custom_labels 解析失敗:', e); 
+                        }
+                    }
+                    if (s.id === 'options_data') { 
+                        try { 
+                            const parsed = JSON.parse(s.value);
+                            if (parsed && parsed.genre) {
+                                optionsData = parsed;
+                            }
+                        } catch(e) {
+                            console.warn('options_data 解析失敗，使用預設選項:', e);
+                        }
+                    }
+                });
+                console.log('✅ 網站設定載入成功');
+            } else {
+                console.warn('網站設定載入失敗或無資料:', settingsError);
+            }
+        } catch (err) {
+            console.error('載入網站設定發生錯誤:', err);
+            // 使用預設設定
+        }
+        
+        // 5. 載入作品資料
+        await window.loadData();
+        
+        // 6. 設置全域變數
+        window.animeData = animeData;
+        window.optionsData = optionsData;
+        window.siteSettings = siteSettings;
+        
+        // 7. 渲染初始介面
+        window.renderApp();
+        
+        // 8. 隱藏載入畫面
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }
+        
+        isFirstLoad = false;
+        console.log('✅ 系統初始化完成');
         
     } catch (err) { 
         console.error('Init error:', err);
@@ -235,7 +284,7 @@ window.renderApp = function() {
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
 		            <div class="site-version" style="display: flex; align-items: center; gap: 15px;">
-		                <span>v5.8.3</span>
+		                <span>v6.0.0</span>
 		                <div id="analytics-display" style="font-size: 11px; color: rgba(255,255,255,0.6);"></div>
 		            </div>
 		        <div class="app-container">

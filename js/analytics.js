@@ -11,6 +11,17 @@ function getVisitorId() {
 
 async function trackVisit() {
     try {
+        // 確保使用正確的 Supabase 客戶端
+        let client;
+        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+            client = window.supabaseManager.getClient();
+        } else if (window.supabaseClient) {
+            client = window.supabaseClient;
+        } else {
+            console.warn('⚠️ Analytics: Supabase 客戶端尚未準備就緒');
+            return;
+        }
+        
         const visitorId = getVisitorId();
         const lastTrack = localStorage.getItem('last_track_time');
         const now = Date.now();
@@ -22,20 +33,20 @@ async function trackVisit() {
         
         localStorage.setItem('last_track_time', now.toString());
         
-        const { data: existing, error: fetchError } = await supabaseClient
-            .from('site_analytics')
+        const { data: existing, error: fetchError } = await client
+            .from('visitor_analytics')
             .select('*')
             .eq('visitor_id', visitorId)
             .single();
-
+        
         if (fetchError && fetchError.code !== 'PGRST116') {
             console.error('Analytics fetch error:', fetchError);
             return;
         }
-
+        
         if (existing) {
-            supabaseClient
-                .from('site_analytics')
+            client
+                .from('visitor_analytics')
                 .update({
                     last_visit: new Date().toISOString(),
                     visit_count: existing.visit_count + 1
@@ -43,17 +54,22 @@ async function trackVisit() {
                 .eq('visitor_id', visitorId)
                 .then(() => {});
         } else {
-            supabaseClient
-                .from('site_analytics')
+            client
+                .from('visitor_analytics')
                 .insert([{ visitor_id: visitorId }])
                 .then(() => {});
         }
-
-        supabaseClient
-            .from('page_views')
-            .insert([{ visitor_id: visitorId }])
+        
+        // 記錄當前頁面訪問
+        client
+            .from('visitor_analytics')
+            .insert([{ 
+                visitor_id: visitorId,
+                page_url: window.location.href,
+                timestamp: new Date().toISOString()
+            }])
             .then(() => {});
-
+        
         await loadAnalytics();
     } catch (err) {
         console.error('Track visit error:', err);
@@ -62,6 +78,17 @@ async function trackVisit() {
 
 async function loadAnalytics() {
     try {
+        // 確保使用正確的 Supabase 客戶端
+        let client;
+        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+            client = window.supabaseManager.getClient();
+        } else if (window.supabaseClient) {
+            client = window.supabaseClient;
+        } else {
+            console.warn('⚠️ Analytics Load: Supabase 客戶端尚未準備就緒');
+            return;
+        }
+        
         const cached = localStorage.getItem('analytics_cache');
         const cacheTime = localStorage.getItem('analytics_cache_time');
         
@@ -74,19 +101,23 @@ async function loadAnalytics() {
         }
         
         const [viewsResult, visitorsResult] = await Promise.all([
-            supabaseClient.from('page_views').select('id', { count: 'exact', head: true }),
-            supabaseClient.from('site_analytics').select('id', { count: 'exact', head: true })
+            client.from('visitor_analytics').select('id', { count: 'exact', head: true }),
+            client.from('visitor_analytics').select('visitor_id', { count: 'exact', head: true })
         ]);
-
+        
         analyticsData.totalViews = viewsResult.count || 0;
         analyticsData.uniqueVisitors = visitorsResult.count || 0;
         
         localStorage.setItem('analytics_cache', JSON.stringify(analyticsData));
         localStorage.setItem('analytics_cache_time', Date.now().toString());
-
+        
+        console.log('📊 Analytics 數據載入:', { views: analyticsData.totalViews, visitors: analyticsData.uniqueVisitors });
+        
         updateAnalyticsDisplay();
     } catch (err) {
         console.error('Load analytics error:', err);
+        // 即使失敗也顯示 0，避免顯示錯誤
+        updateAnalyticsDisplay();
     }
 }
 
@@ -103,3 +134,12 @@ function updateAnalyticsDisplay() {
 window.trackVisit = trackVisit;
 window.loadAnalytics = loadAnalytics;
 window.analyticsData = analyticsData;
+
+// 在頁面載入時自動追蹤訪問
+document.addEventListener('DOMContentLoaded', () => {
+    // 延遲執行，等待其他模組初始化完成
+    setTimeout(() => {
+        console.log('📊 開始追蹤訪客統計');
+        trackVisit();
+    }, 3000);
+});
