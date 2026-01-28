@@ -40,20 +40,43 @@ body {
     font-family: 'Space Mono', 'Microsoft JhengHei', monospace;
     overflow-x: hidden;
     overflow-y: auto;
-    height: 100vh;
-    max-height: 100vh;
+    min-height: 100vh;
 }
 
-/* Hide all scrollbars */
-::-webkit-scrollbar { width: 0; height: 0; background: transparent; }
-* { scrollbar-width: none !important; -ms-overflow-style: none !important; }
-::-webkit-scrollbar-thumb { background: transparent; }
+/* Custom scrollbar styling */
+::-webkit-scrollbar { 
+    width: 8px; 
+    height: 8px; 
+    background: transparent; 
+}
+
+::-webkit-scrollbar-track { 
+    background: rgba(0, 212, 255, 0.05); 
+    border-radius: 4px; 
+}
+
+::-webkit-scrollbar-thumb { 
+    background: rgba(0, 212, 255, 0.3); 
+    border-radius: 4px; 
+    transition: background 0.3s ease; 
+}
+
+::-webkit-scrollbar-thumb:hover { 
+    background: rgba(0, 212, 255, 0.6); 
+}
+
+/* For Firefox */
+* { 
+    scrollbar-width: thin; 
+    scrollbar-color: rgba(0, 212, 255, 0.3) rgba(0, 212, 255, 0.05); 
+}
 
 /* Layout */
 .app-container, .admin-container { 
     max-width: 900px; 
     margin: 0 auto; 
     padding: 40px 20px;
+    min-height: calc(100vh - 80px);
 }
 header { text-align: center; margin-bottom: 40px; }
 h1 { font-family: 'Orbitron', sans-serif; font-size: 32px; letter-spacing: 4px; margin-bottom: 10px; }

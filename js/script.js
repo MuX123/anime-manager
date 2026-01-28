@@ -1,4 +1,4 @@
-// TECH v6.0.0 - ACG Manager Logic (Security & Performance Optimized)
+// TECH v6.1.0 - ACG Manager Logic (Security & Performance Optimized)
 let currentSection = 'notice';
 let animeData = [];
 let optionsData = {
@@ -284,7 +284,7 @@ window.renderApp = function() {
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
 		            <div class="site-version" style="display: flex; align-items: center; gap: 15px;">
-		                <span>v6.0.0</span>
+		                <span>v6.1.0</span>
 		                <div id="analytics-display" style="font-size: 11px; color: rgba(255,255,255,0.6);"></div>
 		            </div>
 		        <div class="app-container">
@@ -510,7 +510,17 @@ window.showAnimeDetail = (id) => {
 		        Object.entries(item.extra_data).forEach(([key, val]) => {
 		            if (val) {
 		                // 修正：從 optionsData 獲取對應 key 的顏色設定
-		                const customColor = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : '#ffffff';
+// 根據 key 類型獲取對應的顏色配置
+let colorKey = key;
+if (key === '載體') colorKey = 'episodes';
+else if (key === '季度') colorKey = 'season';
+else if (key === '月份') colorKey = 'month';
+else if (key === '年度') colorKey = 'year';
+else if (key === '評分') colorKey = 'rating';
+else if (key === '推薦度') colorKey = 'recommendation';
+else colorKey = key; // 對於自定義列表，直接使用 key
+
+const customColor = (optionsData.category_colors && optionsData.category_colors[colorKey]) ? optionsData.category_colors[colorKey] : '#ffffff';
 		                extraTags.push({ val: val, key: key, color: customColor });
 		            }
 		        });
@@ -795,9 +805,12 @@ window.renderAdmin = () => {
     const filtered = animeData.filter(item => item.category === currentCategory);
     const paged = filtered.slice((adminPage-1)*adminItemsPerPage, adminPage*adminItemsPerPage);
     
-    // 記錄選項管理的滾動位置
-    const optionsWrapper = document.getElementById('optionsWrapper');
-    const scrollLeft = optionsWrapper ? optionsWrapper.scrollLeft : 0;
+    // 記錄選項管理的滾動位置（僅在切換標籤時）
+    let scrollLeft = 0;
+    if (currentAdminTab === 'options') {
+        const optionsWrapper = document.getElementById('optionsWrapper');
+        scrollLeft = optionsWrapper ? optionsWrapper.scrollLeft : 0;
+    }
 
     app.innerHTML = `
         <div class="admin-container">
@@ -809,6 +822,7 @@ window.renderAdmin = () => {
                 <button class="btn-primary ${currentAdminTab === 'manage' ? 'active' : ''}" onclick="window.switchAdminTab('manage')">作品管理</button>
                 <button class="btn-primary ${currentAdminTab === 'add' ? 'active' : ''}" onclick="window.switchAdminTab('add')">＋ 新增作品</button>
                 <button class="btn-primary ${currentAdminTab === 'options' ? 'active' : ''}" onclick="window.switchAdminTab('options')">選項管理</button>
+                <button class="btn-primary ${currentAdminTab === 'announcements' ? 'active' : ''}" onclick="window.switchAdminTab('announcements')">公告管理</button>
                 <button class="btn-primary ${currentAdminTab === 'settings' ? 'active' : ''}" onclick="window.switchAdminTab('settings')">網站設定</button>
             </div>
             <div class="admin-panel">
@@ -817,7 +831,7 @@ window.renderAdmin = () => {
         </div>
     `;
     
-    // 恢復滾動位置
+    // 恢復滾動位置（僅在切換標籤時）
     if (currentAdminTab === 'options') {
         const newOptionsWrapper = document.getElementById('optionsWrapper');
         if (newOptionsWrapper) newOptionsWrapper.scrollLeft = scrollLeft;
@@ -830,6 +844,11 @@ window.switchAdminTab = (tab, id = null) => {
     currentAdminTab = tab; 
     editId = id;
     window.renderAdmin(); 
+    
+    // 初始化公告管理
+    if (tab === 'announcements') {
+        setTimeout(() => window.initAnnouncementsManager(), 100);
+    }
 };
 
 window.renderAdminContent = (pagedData, total) => {
@@ -887,6 +906,8 @@ window.renderAdminContent = (pagedData, total) => {
         return window.renderAnimeForm(item);
     } else if (currentAdminTab === 'options') {
         return window.renderOptionsManager();
+    } else if (currentAdminTab === 'announcements') {
+        return window.renderAnnouncementsManager();
 			    } else if (currentAdminTab === 'settings') {
 			        return `
 			            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%; margin: 0 auto; padding-bottom: 50px;">
@@ -896,7 +917,7 @@ window.renderAdminContent = (pagedData, total) => {
 		                    <div style="margin-bottom: 15px;">
 		                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">標題顏色</label>
                         <div class="color-input-wrapper" style="width: 100%;">
-                            <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 100%; height: 40px; border-radius: 8px;" onclick="document.getElementById('set-title-color').click()"></div>
+                            <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 40px; height: 40px; border-radius: 8px; cursor: pointer;" onclick="document.getElementById('set-title-color').click()"></div>
                             <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
 		                        </div>
 		                    </div>
@@ -904,7 +925,7 @@ window.renderAdminContent = (pagedData, total) => {
 		                    <div style="margin-bottom: 15px;">
 		                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">公告顏色</label>
                         <div class="color-input-wrapper" style="width: 100%;">
-                            <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 100%; height: 40px; border-radius: 8px;" onclick="document.getElementById('set-announcement-color').click()"></div>
+                            <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 40px; height: 40px; border-radius: 8px; cursor: pointer;" onclick="document.getElementById('set-announcement-color').click()"></div>
                             <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
 		                        </div>
 		                    </div>
@@ -917,7 +938,7 @@ window.renderAdminContent = (pagedData, total) => {
 		                    <div style="margin-bottom: 15px;">
 		                        <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">名稱顏色</label>
                         <div class="color-input-wrapper" style="width: 100%;">
-                            <div class="color-swatch" style="background: ${siteSettings.admin_color || '#00ffff'}; width: 100%; height: 40px; border-radius: 8px;" onclick="document.getElementById('set-admin-color').click()"></div>
+                            <div class="color-swatch" style="background: ${siteSettings.admin_color || '#00ffff'}; width: 40px; height: 40px; border-radius: 8px; cursor: pointer;" onclick="document.getElementById('set-admin-color').click()"></div>
                             <input type="color" id="set-admin-color" value="${siteSettings.admin_color || '#00ffff'}" onchange="this.previousElementSibling.style.background = this.value">
 		                        </div>
 		                    </div>
@@ -961,22 +982,22 @@ window.renderAnimeForm = (item) => {
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
                         <div>
                             <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">星標</label>
-                            <div class="color-input-wrapper" style="width: 100%;">
-                                <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 100%; height: 30px; border-radius: 0px;" onclick="document.getElementById('form-star-color').click()"></div>
+<div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 30px; height: 30px; border-radius: 4px; cursor: pointer;" onclick="document.getElementById('form-star-color').click()"></div>
                                 <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" onchange="this.previousElementSibling.style.background = this.value">
                             </div>
                         </div>
                         <div>
                             <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">名稱</label>
-                            <div class="color-input-wrapper" style="width: 100%;">
-                                <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 30px; border-radius: 0px;" onclick="document.getElementById('form-name-color').click()"></div>
+<div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 30px; height: 30px; border-radius: 4px; cursor: pointer;" onclick="document.getElementById('form-name-color').click()"></div>
                                 <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
                             </div>
                         </div>
                         <div>
                             <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">簡介</label>
-                            <div class="color-input-wrapper" style="width: 100%;">
-                                <div class="color-swatch" style="background: ${item.desc_color || '#ffffff'}; width: 100%; height: 30px; border-radius: 0px;" onclick="document.getElementById('form-desc-color').click()"></div>
+<div class="color-input-wrapper" style="width: 100%;">
+                            <div class="color-swatch" style="background: ${item.desc_color || '#ffffff'}; width: 30px; height: 30px; border-radius: 4px; cursor: pointer;" onclick="document.getElementById('form-desc-color').click()"></div>
                                 <input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
                             </div>
                         </div>
@@ -987,8 +1008,8 @@ window.renderAnimeForm = (item) => {
 	                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
 	                        <div style="display: flex; align-items: center; gap: 10px;">
                                 <span style="color: var(--neon-cyan); font-weight: bold; font-size: 13px;">🔗 相關連結</span>
-	                                <div class="color-input-wrapper">
-	                                <div class="color-swatch" style="background: ${item.extra_data?.btn_bg || optionsData.category_colors?.btn_bg || '#00d4ff'}; width: 20px; height: 20px; border-radius: 0px;" onclick="this.nextElementSibling.click()"></div>
+<div class="color-input-wrapper">
+                            <div class="color-swatch" style="background: ${item.extra_data?.btn_bg || optionsData.category_colors?.btn_bg || '#00d4ff'}; width: 20px; height: 20px; border-radius: 4px; cursor: pointer;" onclick="this.nextElementSibling.click()"></div>
 		                                    <input type="color" id="form-btn-bg" value="${item.extra_data?.btn_bg || optionsData.category_colors?.btn_bg || '#00d4ff'}" onchange="this.previousElementSibling.style.background = this.value">
 	                                </div>
                             </div>
@@ -1049,6 +1070,45 @@ window.renderAnimeForm = (item) => {
     `;
 };
 
+window.renderAnnouncementsManager = () => {
+    return `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%; margin: 0 auto; padding-bottom: 50px;">
+            <!-- 公告分類管理 -->
+            <div class="admin-panel-v492" style="background: rgba(0,212,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2);">
+                <h3 style="color: var(--neon-cyan); border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; margin-bottom: 20px; font-family: 'Orbitron';">📁 公告分類管理</h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">新增分類</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="new-category-name" placeholder="輸入分類名稱" style="flex: 1;">
+                        <button class="btn-primary" onclick="window.addAnnouncementCategory()">新增</button>
+                    </div>
+                </div>
+                
+                <div id="announcement-categories-list" style="max-height: 300px; overflow-y: auto;">
+                    <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                        載入中...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 公告列表管理 -->
+            <div class="admin-panel-v492" style="background: rgba(0,212,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="color: var(--neon-cyan); border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; font-family: 'Orbitron';">📢 公告管理</h3>
+                    <button class="btn-primary" onclick="window.showAddEnhancedAnnouncementModal()">＋ 新增公告</button>
+                </div>
+                
+                <div id="announcements-list" style="max-height: 400px; overflow-y: auto;">
+                    <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                        載入中...
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
 window.renderOptionsManager = () => {
     const defaultKeys = ['genre', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'name', 'desc', 'btn_bg'];
     const customKeys = optionsData.custom_lists || [];
@@ -1062,35 +1122,28 @@ window.renderOptionsManager = () => {
         <div class="options-scroll-wrapper force-scroll" id="optionsWrapper">
             ${allKeys.map(key => {
                 const color = optionsData.category_colors[key] || '#ffffff';
-                return `
+return `
                     <div class="options-column">
                         <div class="options-column-header">
                             ${(key !== 'recommendation' && key !== 'rating') ? `
                                 <div class="color-input-wrapper">
-                                    <div class="color-swatch" style="background: ${color};" onclick="this.nextElementSibling.click()"></div>
+                                    <div class="color-swatch" style="background: ${color}; width: 20px; height: 20px; border-radius: 4px; cursor: pointer;" onclick="this.nextElementSibling.click()"></div>
                                     <input type="color" value="${color}" onchange="window.updateCategoryColor('${key}', this.value); this.previousElementSibling.style.background = this.value">
                                 </div>
                             ` : ''}
                             <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center;">
                                 <span style="${(key !== 'recommendation' && key !== 'rating') ? 'margin-left: 8px;' : ''}">${window.getOptionLabel(key)}</span>
-                                ${customKeys.includes(key) ? `<button style="background:none; border:none; color:#ff4444; cursor:pointer; font-size:12px;" onclick="window.deleteCustomList('${key}')">🗑</button>` : ''}
+                            </div>
+                            <div class="options-items-container desktop-scroll-tags" style="display: flex; flex-wrap: wrap; gap: 5px; overflow-x: auto; white-space: nowrap; padding: 5px;">
+                                ${optionsData[key]?.map(item => `
+                                    <div class="option-item" style="display: flex; align-items: center; gap: 5px; padding: 5px; border: 1px solid ${color}; border-radius: 4px; cursor: pointer;">
+                                        <span>${item}</span>
+                                        <span style="color: #ff4444; font-size: 12px; cursor: pointer;" onclick="window.removeOptionItem('${key}', '${item}')">✕</span>
+                                    </div>
+                                `).join('')}
                             </div>
                         </div>
-                        <div class="options-list force-scroll">
-                            ${(optionsData[key] || []).map((opt, idx) => {
-                                const itemColor = (key === 'rating') ? (optionsData.rating_colors?.[opt] || color) : color;
-                                return `
-	                                    <div class="option-item-row" style="display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid rgba(0,212,255,0.05);">
-	                                        ${key === 'rating' ? `
-	                                            <div class="color-input-wrapper">
-	                                                <div class="color-swatch" style="background: ${itemColor}; width: 20px; height: 20px; border-radius: 0px;" onclick="this.nextElementSibling.click()"></div>
-	                                                <input type="color" value="${itemColor}" onchange="window.updateRatingItemColor('${opt}', this.value); this.previousElementSibling.style.background = this.value">
-	                                            </div>
-	                                        ` : ''}
-	                                        <span style="flex: 1; ${getTagStyle(itemColor)}">${opt}</span>
-	                                        <span style="cursor: pointer; color: #ff4444; font-weight: bold; padding: 5px;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</span>
-	                                    </div>
-                                `;
+                    `;
                             }).join('')}
                         </div>
                         <div style="padding: 15px; border-top: 1px solid rgba(0,212,255,0.1); display: flex; gap: 5px; align-items: center;">
@@ -1359,6 +1412,9 @@ window.importData = (event) => {
                                 if (h === 'extra_data') Object.assign(item.extra_data, parsed);
                                 else item[h] = parsed;
                             } catch(e) { if (h === 'links') item[h] = []; }
+                        } else if (h === 'description') {
+                            // 特殊處理描述欄位，確保不會被加入到作品名稱中
+                            item[h] = val;
                         } else {
                             item[h] = val;
                         }
@@ -1613,18 +1669,23 @@ window.renderAnnouncements = async function() {
         </div>`;
 
     try {
-        const { data, error } = await supabaseClient
+        // 獲取公告和分類數據
+        const { data: announcements, error } = await supabaseClient
             .from('announcements')
-            .select('*')
+            .select(`
+                *,
+                announcement_categories(id, name, color)
+            `)
+            .order('priority', { ascending: false })
             .order('timestamp', { ascending: false });
 
         if (error) throw error;
 
-        if (!data || data.length === 0) {
+        if (!announcements || announcements.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 80px 20px; color: var(--text-secondary); border: 1px dashed rgba(0,212,255,0.3); border-radius: 10px;">
                     <p>目前尚無永久公告資料</p>
-                    ${isAdmin ? '<button class="btn-primary" style="margin-top: 20px;" onclick="window.showAddAnnouncementModal()">+ 手動新增公告</button>' : ''}
+                    ${isAdmin ? '<button class="btn-primary" style="margin-top: 20px;" onclick="window.showAddEnhancedAnnouncementModal()">+ 手動新增公告</button>' : ''}
                 </div>`;
             return;
         }
@@ -1632,28 +1693,48 @@ window.renderAnnouncements = async function() {
         container.innerHTML = `
             <div class="announcement-wrapper" style="height: 70vh; overflow-y: auto; padding-right: 10px; margin-bottom: 20px;" class="force-scroll">
                 <div class="announcement-list" style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 30px;">
-                    ${data.map(item => {
-	                        let images = item.image_urls || [];
-	                        if (typeof images === 'string') {
-	                            try { images = JSON.parse(images); } catch(e) { images = images.split('\n').filter(u => u.trim()); }
-	                        }
-	                        if (!Array.isArray(images)) images = [];
-	                        if (item.image_url && !images.includes(item.image_url)) images.push(item.image_url);
-	                        images = images.filter(u => u && typeof u === 'string' && u.startsWith('http'));
+                    ${announcements.map(item => {
+                        let images = item.image_urls || [];
+                        if (typeof images === 'string') {
+                            try { images = JSON.parse(images); } catch(e) { images = images.split('\n').filter(u => u.trim()); }
+                        }
+                        if (!Array.isArray(images)) images = [];
+                        if (item.image_url && !images.includes(item.image_url)) images.push(item.image_url);
+                        images = images.filter(u => u && typeof u === 'string' && u.startsWith('http'));
                         let gridStyle = 'grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); max-width: 100%;';
+
+                        const category = item.announcement_categories;
+                        const priorityColor = item.priority >= 100 ? '#ff4444' : item.priority >= 50 ? '#ffcc00' : '#00ff41';
 
                         return `
                         <div class="announcement-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0,212,255,0.1); border-radius: 12px; padding: 20px; position: relative; transition: all 0.3s ease; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                            ${item.title ? `
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                    <h3 style="color: var(--neon-cyan); margin: 0; font-size: 18px; flex: 1;">${item.title}</h3>
+                                    ${item.priority ? `
+                                        <span style="background: ${priorityColor}; color: #000; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold;">
+                                            優先級: ${item.priority}
+                                        </span>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid rgba(0,212,255,0.05); padding-bottom: 10px;">
                                 <img src="${item.author_avatar || siteSettings.admin_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--neon-blue);">
                                 <div style="flex: 1;">
-                                    <div style="color: ${item.author_color || siteSettings.admin_color || 'var(--neon-cyan)'}; font-weight: bold; font-size: 14px;">${item.author_name || siteSettings.admin_name || '管理員'}</div>
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+                                        <span style="color: ${item.author_color || siteSettings.admin_color || 'var(--neon-cyan)'}; font-weight: bold; font-size: 14px;">${item.author_name || siteSettings.admin_name || '管理員'}</span>
+                                        ${category ? `
+                                            <span style="background: ${category.color || '#00d4ff'}; color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">
+                                                ${category.name}
+                                            </span>
+                                        ` : ''}
+                                    </div>
                                     <div style="color: var(--text-secondary); font-size: 11px; font-family: 'Space Mono', monospace;">${new Date(item.timestamp).toLocaleString()}</div>
                                 </div>
                                 ${isAdmin ? `
                                     <div style="display: flex; gap: 10px;">
-                                        <button onclick='window.showEditAnnouncementModal(${JSON.stringify(item).replace(/'/g, "&apos;")})' style="background: none; border: none; color: var(--neon-cyan); cursor: pointer; font-size: 12px;">編輯</button>
-                                        <button onclick="window.deleteAnnouncement('${item.id}')" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 12px;">刪除</button>
+                                        <button onclick='window.showEditEnhancedAnnouncementModal(${JSON.stringify(item).replace(/'/g, "&apos;")})' style="background: none; border: none; color: var(--neon-cyan); cursor: pointer; font-size: 12px;">編輯</button>
+                                        <button onclick="window.deleteEnhancedAnnouncement('${item.id}')" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 12px;">刪除</button>
                                     </div>
                                 ` : ''}
                             </div>
@@ -1805,3 +1886,298 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: false });
 });
+
+// --- 公告管理系統增強功能 ---
+
+// 公告分類數據
+let announcementCategories = [];
+
+// 載入公告分類
+window.loadAnnouncementCategories = async function() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('announcement_categories')
+            .select('*')
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        announcementCategories = data || [];
+        window.renderCategoriesList();
+    } catch (err) {
+        console.error('載入公告分類失敗:', err);
+        document.getElementById('announcement-categories-list').innerHTML = 
+            '<div style="color: #ff4444; text-align: center;">載入失敗</div>';
+    }
+};
+
+// 渲染分類列表
+window.renderCategoriesList = function() {
+    const container = document.getElementById('announcement-categories-list');
+    if (!container) return;
+
+    if (announcementCategories.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">尚無分類</div>';
+        return;
+    }
+
+    container.innerHTML = announcementCategories.map(category => `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; margin-bottom: 8px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.1); border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 12px; height: 12px; background: ${category.color || '#00d4ff'}; border-radius: 50%;"></div>
+                <span style="color: var(--text-main);">${category.name}</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="window.editAnnouncementCategory('${category.id}')" style="background: none; border: none; color: var(--neon-cyan); cursor: pointer; font-size: 12px;">編輯</button>
+                <button onclick="window.deleteAnnouncementCategory('${category.id}')" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 12px;">刪除</button>
+            </div>
+        </div>
+    `).join('');
+};
+
+// 新增公告分類
+window.addAnnouncementCategory = async function() {
+    const nameInput = document.getElementById('new-category-name');
+    const name = nameInput.value.trim();
+    
+    if (!name) {
+        window.showToast('請輸入分類名稱', 'error');
+        return;
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('announcement_categories')
+            .insert([{
+                name: name,
+                color: '#00d4ff',
+                created_at: new Date().toISOString()
+            }]);
+
+        if (error) throw error;
+        
+        nameInput.value = '';
+        await window.loadAnnouncementCategories();
+        window.showToast('✓ 分類已新增', 'success');
+    } catch (err) {
+        console.error('新增分類失敗:', err);
+        window.showToast('✗ 新增失敗', 'error');
+    }
+};
+
+// 刪除公告分類
+window.deleteAnnouncementCategory = async function(categoryId) {
+    if (!confirm('確定要刪除此分類嗎？相關公告將會移至「未分類」。')) return;
+
+    try {
+        // 先將相關公告的分類設為 null
+        await supabaseClient
+            .from('announcements')
+            .update({ category_id: null })
+            .eq('category_id', categoryId);
+
+        // 刪除分類
+        const { error } = await supabaseClient
+            .from('announcement_categories')
+            .delete()
+            .eq('id', categoryId);
+
+        if (error) throw error;
+        
+        await window.loadAnnouncementCategories();
+        await window.loadAnnouncementsList();
+        window.showToast('✓ 分類已刪除', 'success');
+    } catch (err) {
+        console.error('刪除分類失敗:', err);
+        window.showToast('✗ 刪除失敗', 'error');
+    }
+};
+
+// 載入公告列表
+window.loadAnnouncementsList = async function() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('announcements')
+            .select(`
+                *,
+                announcement_categories(name)
+            `)
+            .order('priority', { ascending: false })
+            .order('timestamp', { ascending: false });
+
+        if (error) throw error;
+        
+        window.renderAnnouncementsList(data || []);
+    } catch (err) {
+        console.error('載入公告列表失敗:', err);
+        document.getElementById('announcements-list').innerHTML = 
+            '<div style="color: #ff4444; text-align: center;">載入失敗</div>';
+    }
+};
+
+// 渲染公告列表
+window.renderAnnouncementsList = function(announcements) {
+    const container = document.getElementById('announcements-list');
+    if (!container) return;
+
+    if (announcements.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">尚無公告</div>';
+        return;
+    }
+
+    container.innerHTML = announcements.map(announcement => `
+        <div style="padding: 15px; margin-bottom: 10px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.1); border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                        <span style="color: var(--neon-cyan); font-weight: bold;">${announcement.title || '無標題'}</span>
+                        <span style="background: ${announcement.priority >= 100 ? '#ff4444' : announcement.priority >= 50 ? '#ffcc00' : '#00ff41'}; color: #000; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">
+                            優先級: ${announcement.priority || 0}
+                        </span>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 12px; margin-bottom: 5px;">
+                        分類: ${announcement.announcement_categories?.name || '未分類'}
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 11px;">
+                        ${new Date(announcement.timestamp).toLocaleString()}
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="window.editEnhancedAnnouncement('${announcement.id}')" style="background: none; border: none; color: var(--neon-cyan); cursor: pointer; font-size: 12px;">編輯</button>
+                    <button onclick="window.deleteEnhancedAnnouncement('${announcement.id}')" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 12px;">刪除</button>
+                </div>
+            </div>
+            <div style="color: var(--text-main); font-size: 14px; line-height: 1.5; max-height: 60px; overflow: hidden;">
+                ${announcement.content || ''}
+            </div>
+        </div>
+    `).join('');
+};
+
+// 顯示新增增強公告模態框
+window.showAddEnhancedAnnouncementModal = function() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;';
+    modal.innerHTML = `
+        <div class="modal-content" style="background: var(--panel-bg); border: 2px solid var(--neon-blue); padding: 30px; border-radius: 16px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <h2 style="color: var(--neon-cyan); margin-bottom: 20px;">📢 發布新公告</h2>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">標題</label>
+                <input type="text" id="ann-title" placeholder="輸入公告標題..." style="width: 100%;">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">分類</label>
+                <select id="ann-category" style="width: 100%; padding: 8px; background: var(--bg-darker); border: 1px solid var(--neon-blue); color: white;">
+                    <option value="">未分類</option>
+                    ${announcementCategories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('')}
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">優先級 (數字越大越靠前)</label>
+                <input type="number" id="ann-priority" value="0" min="0" max="999" style="width: 100%;">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">內容</label>
+                <textarea id="ann-content" placeholder="輸入公告內容..." style="width: 100%; height: 120px; resize: vertical;"></textarea>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">圖片網址 (一行一個)</label>
+                <textarea id="ann-images" placeholder="https://example.com/image1.png&#10;https://example.com/image2.png" style="width: 100%; height: 80px; resize: vertical;"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" style="flex: 1;" onclick="window.saveEnhancedAnnouncement()">發布</button>
+                <button class="btn-primary" style="flex: 1; border-color: #ff4444; color: #ff4444;" onclick="this.closest('.modal').remove()">取消</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+};
+
+// 保存增強公告
+window.saveEnhancedAnnouncement = async function() {
+    const title = document.getElementById('ann-title').value.trim();
+    const categoryId = document.getElementById('ann-category').value || null;
+    const priority = parseInt(document.getElementById('ann-priority').value) || 0;
+    const content = document.getElementById('ann-content').value.trim();
+    const imagesText = document.getElementById('ann-images').value.trim();
+    
+    if (!title || !content) {
+        window.showToast('請填寫標題和內容', 'error');
+        return;
+    }
+
+    try {
+        const imageUrls = imagesText ? imagesText.split('\n').filter(url => url.trim()) : [];
+        
+        const payload = {
+            title: title,
+            category_id: categoryId,
+            priority: priority,
+            content: content,
+            image_urls: imageUrls,
+            author_name: siteSettings.admin_name || '管理員',
+            author_avatar: siteSettings.admin_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png',
+            author_color: siteSettings.admin_color || '#00ffff',
+            timestamp: new Date().toISOString()
+        };
+
+        const { error } = await supabaseClient
+            .from('announcements')
+            .insert([payload]);
+
+        if (error) throw error;
+        
+        document.querySelector('.modal').remove();
+        await window.loadAnnouncementsList();
+        window.showToast('✓ 公告已發布', 'success');
+    } catch (err) {
+        console.error('發布公告失敗:', err);
+        window.showToast('✗ 發布失敗', 'error');
+    }
+};
+
+// 編輯增強公告
+window.editEnhancedAnnouncement = function(announcementId) {
+    // 這裡可以實作編輯功能，暫時顯示一個簡單的提示
+    window.showToast('編輯功能開發中', 'info');
+};
+
+// 刪除增強公告
+window.deleteEnhancedAnnouncement = async function(announcementId) {
+    if (!confirm('確定要刪除此公告嗎？')) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('announcements')
+            .delete()
+            .eq('id', announcementId);
+
+        if (error) throw error;
+        
+        await window.loadAnnouncementsList();
+        window.showToast('✓ 公告已刪除', 'success');
+    } catch (err) {
+        console.error('刪除公告失敗:', err);
+        window.showToast('✗ 刪除失敗', 'error');
+    }
+};
+
+// 編輯分類
+window.editAnnouncementCategory = function(categoryId) {
+    // 這裡可以實作編輯分類功能，暫時顯示一個簡單的提示
+    window.showToast('編輯分類功能開發中', 'info');
+};
+
+// 初始化公告管理
+window.initAnnouncementsManager = async function() {
+    if (currentAdminTab === 'announcements') {
+        await window.loadAnnouncementCategories();
+        await window.loadAnnouncementsList();
+    }
+};
