@@ -143,8 +143,8 @@ vercel --prod
 
 ## 📞 聯絡方式
 
-- 問題回報: [GitHub Issues](https://github.com/your-username/anime-manager/issues)
-- 功能建議: [GitHub Discussions](https://github.com/your-username/anime-manager/discussions)
+- 問題回報: [DISCORD] music_su
+- 功能建議: [DISCORD] music_su
 
 ## 🙏 致謝
 
