@@ -25,7 +25,7 @@ class ConfigManager {
                 sessionSecret: this.getEnvVar('SESSION_SECRET', this.generateSecret())
             },
             app: {
-                version: '6.1.0',
+                version: '5.8.3',
                 environment: this.getEnvVar('NODE_ENV', 'development'),
                 debug: this.getEnvVar('DEBUG', 'true') === 'true'
             }
