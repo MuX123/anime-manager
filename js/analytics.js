@@ -1,4 +1,4 @@
-let analyticsData = { totalClicks: 0, uniqueVisitors: 0 };
+let analyticsData = { totalClicks: 0, totalVisits: 0, uniqueVisitors: 0 };
 
 function getVisitorId() {
     let visitorId = localStorage.getItem('visitor_id');
@@ -98,14 +98,6 @@ async function trackVisit() {
         const lastTrack = localStorage.getItem('last_visit_time');
         const now = Date.now();
         
-        // 防止同一次會話重複計算，但允許重新載入頁面後重新計算
-        if (lastTrack && (now - parseInt(lastTrack)) < 300000) { // 5分鐘內不重複計算
-            await loadAnalytics();
-            return;
-        }
-        
-        localStorage.setItem('last_visit_time', now.toString());
-        
         // 檢查是否為新訪客（本地檢查）
         const isNewVisitor = !localStorage.getItem('visitor_tracked');
         
@@ -113,6 +105,15 @@ async function trackVisit() {
             localStorage.setItem('visitor_tracked', 'true');
             analyticsData.uniqueVisitors++;
             console.log('👤 新訪客記錄:', analyticsData.uniqueVisitors);
+        }
+        
+        // 每次進入網站都計算一次訪問（但限制5分鐘內不重複計算）
+        if (!lastTrack || (now - parseInt(lastTrack)) >= 300000) { // 5分鐘內不重複計算
+            localStorage.setItem('last_visit_time', now.toString());
+            
+            // 更新訪問次數（不是點擊次數）
+            analyticsData.totalVisits++;
+            console.log('🖱️ 網站訪問記錄:', analyticsData.totalVisits);
         }
         
         // 嘗試使用資料庫
@@ -136,11 +137,14 @@ async function trackVisit() {
                 .eq('visitor_id', visitorId)
                 .single();
             
+            let isNewDbVisitor = false;
+            
             if (fetchError && fetchError.code !== 'PGRST116') {
                 console.warn('Analytics fetch error:', fetchError.message);
                 // 如果資料庫錯誤，繼續使用本地追蹤
             } else if (!existingVisitor) {
                 // 如果是新訪客，記錄到訪客表
+                isNewDbVisitor = true;
                 await client
                     .from('site_visitors')
                     .insert([{ 
@@ -149,6 +153,12 @@ async function trackVisit() {
                         last_visit: new Date().toISOString()
                     }]);
                 console.log('👤 新訪客已記錄到資料庫');
+                
+                // 同步更新本地不重復訪問人數
+                if (isNewVisitor) {
+                    analyticsData.uniqueVisitors++;
+                    console.log('👤 本地不重復訪客更新:', analyticsData.uniqueVisitors);
+                }
             } else {
                 // 更新最後訪問時間
                 await client
@@ -157,6 +167,11 @@ async function trackVisit() {
                         last_visit: new Date().toISOString()
                     })
                     .eq('visitor_id', visitorId);
+                    
+                // 如果本地記錄是新訪客但資料庫已存在，同步資料庫狀態
+                if (isNewVisitor) {
+                    isNewVisitor = false;
+                }
             }
             
             // 記錄頁面訪問
@@ -233,8 +248,10 @@ async function loadAnalytics() {
         // 使用5分鐘快取
         if (cached && cacheTime && (Date.now() - parseInt(cacheTime)) < 300000) {
             const data = JSON.parse(cached);
-            analyticsData.totalClicks = data.totalClicks || analyticsData.totalClicks;
-            analyticsData.uniqueVisitors = data.uniqueVisitors || analyticsData.uniqueVisitors;
+            // 合併本地和資料庫數據，取最大值避免回朔
+            analyticsData.totalClicks = Math.max(analyticsData.totalClicks, data.totalClicks || 0);
+            analyticsData.totalVisits = Math.max(analyticsData.totalVisits, data.totalVisits || 0);
+            analyticsData.uniqueVisitors = Math.max(analyticsData.uniqueVisitors, data.uniqueVisitors || 0);
             updateAnalyticsDisplay();
             return;
         }
@@ -246,18 +263,22 @@ async function loadAnalytics() {
         try {
             if (schemaStatus === 'NEW_SCHEMA') {
                 // 新版結構：使用 event_type 分類查詢
-                const [clicksResult, visitorsResult] = await Promise.all([
+                const [visitsResult, clicksResult, visitorsResult] = await Promise.all([
+                    client.from('site_analytics').select('id', { count: 'exact', head: true }).eq('event_type', 'page_view'),
                     client.from('site_analytics').select('id', { count: 'exact', head: true }).eq('event_type', 'click'),
                     client.from('site_visitors').select('visitor_id', { count: 'exact', head: true })
                 ]);
                 
+                const dbVisits = visitsResult.count || 0;
                 const dbClicks = clicksResult.count || 0;
                 const dbVisitors = visitorsResult.count || 0;
                 
-                analyticsData.totalClicks = dbClicks;
-                analyticsData.uniqueVisitors = dbVisitors;
+                // 合併本地和資料庫數據，取最大值避免回朔
+                analyticsData.totalVisits = Math.max(analyticsData.totalVisits, dbVisits);
+                analyticsData.totalClicks = Math.max(analyticsData.totalClicks, dbClicks);
+                analyticsData.uniqueVisitors = Math.max(analyticsData.uniqueVisitors, dbVisitors);
                 
-                console.log('📊 新版 Analytics 數據載入:', { clicks: analyticsData.totalClicks, visitors: analyticsData.uniqueVisitors });
+                console.log('📊 新版 Analytics 數據載入:', { visits: analyticsData.totalVisits, clicks: analyticsData.totalClicks, visitors: analyticsData.uniqueVisitors });
             } else {
                 // 舊版結構：只能查詢總記錄數
                 const [oldAnalyticsResult] = await Promise.all([
@@ -265,25 +286,31 @@ async function loadAnalytics() {
                 ]);
                 
                 const totalRecords = oldAnalyticsResult.count || 0;
-                analyticsData.uniqueVisitors = totalRecords;
-                // 舊版沒有點擊追蹤，保持初始值
+                analyticsData.uniqueVisitors = Math.max(analyticsData.uniqueVisitors, totalRecords);
+                // 舊版沒有點擊追蹤，保持本地值
                 
                 console.warn('⚠️ 使用舊版資料庫結構，點擊追蹤功能可能不可用');
-                console.log('📊 舊版 Analytics 數據載入:', { clicks: analyticsData.totalClicks, visitors: analyticsData.uniqueVisitors });
+                console.log('📊 舊版 Analytics 數據載入:', { visits: analyticsData.totalVisits, clicks: analyticsData.totalClicks, visitors: analyticsData.uniqueVisitors });
             }
             
-            localStorage.setItem('analytics_cache', JSON.stringify(analyticsData));
+            // 保存合併後的數據到快取
+            const cacheData = {
+                totalVisits: analyticsData.totalVisits,
+                totalClicks: analyticsData.totalClicks,
+                uniqueVisitors: analyticsData.uniqueVisitors
+            };
+            localStorage.setItem('analytics_cache', JSON.stringify(cacheData));
             localStorage.setItem('analytics_cache_time', Date.now().toString());
             
         } catch (dbErr) {
             console.warn('📊 資料庫查詢失敗，使用本地數據:', dbErr.message);
-            // 如果資料庫表不存在，保持初始值
+            // 如果資料庫表不存在，保持本地值
         }
         
         updateAnalyticsDisplay();
     } catch (err) {
         console.error('Load analytics error:', err);
-        // 即使失敗也顯示初始值，避免顯示錯誤
+        // 即使失敗也顯示本地值，避免顯示錯誤
         updateAnalyticsDisplay();
     }
 }
@@ -291,15 +318,15 @@ async function loadAnalytics() {
 function updateAnalyticsDisplay() {
     const container = document.getElementById('analytics-display');
     if (container) {
-        const clicks = analyticsData.totalClicks || 0;
+        const visits = analyticsData.totalVisits || 0;
         const visitors = analyticsData.uniqueVisitors || 0;
         
         container.innerHTML = `
-            <span style="margin-right: 15px;">🖱️ ${clicks.toLocaleString()}</span>
+            <span style="margin-right: 15px;">🖱️ ${visits.toLocaleString()}</span>
             <span>👤 ${visitors.toLocaleString()}</span>
         `;
         
-        console.log('📊 顯示更新:', { clicks, visitors });
+        console.log('📊 顯示更新:', { visits, visitors });
     } else {
         console.warn('⚠️ analytics-display 元素未找到');
     }
