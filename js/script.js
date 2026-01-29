@@ -328,9 +328,9 @@ app.innerHTML = `
             const clicks = window.analyticsData.categoryClicks || 0;
             const visitors = window.analyticsData.uniqueVisitors || 0;
             container.innerHTML = `
-                <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 2px 8px; border-radius: 4px; color: #ffffff; font-size: 13px; font-weight: 600;">🖱️ ${visits.toLocaleString()}</span>
-                <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 2px 8px; border-radius: 4px; color: #ffffff; font-size: 13px; font-weight: 600;">📂 ${clicks.toLocaleString()}</span>
-                <span style="background: rgba(0,212,255,0.05); padding: 2px 8px; border-radius: 4px; color: #ffffff; font-size: 13px; font-weight: 600;">👤 ${visitors.toLocaleString()}</span>
+                <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 4px 10px; border-radius: 4px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">🖱️ <span style="font-variant-numeric: normal;">${visits.toLocaleString()}</span></span>
+                <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 4px 10px; border-radius: 4px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">📂 <span style="font-variant-numeric: normal;">${clicks.toLocaleString()}</span></span>
+                <span style="background: rgba(0,212,255,0.05); padding: 4px 10px; border-radius: 4px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">👤 <span style="font-variant-numeric: normal;">${visitors.toLocaleString()}</span></span>
             `;
         }
     }

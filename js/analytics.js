@@ -1,4 +1,4 @@
-let analyticsData = { totalClicks: 0, totalVisits: 0, uniqueVisitors: 0, categoryClicks: 0 };
+let analyticsData = { totalVisits: 0, uniqueVisitors: 0, categoryClicks: 0 };
 
 function getVisitorId() {
     let visitorId = localStorage.getItem('visitor_id');
@@ -61,11 +61,7 @@ async function trackCategoryClick(category) {
     }
 }
 
-// 更新訪問次數（舊函數已停用）
-async function updateClickCount() {
-    // 這個函數已停用，改為在 loadAnalytics 中處理
-    console.log('📊 updateClickCount 已停用，改為訪問次數追蹤');
-}
+
 
 async function trackVisit() {
     try {
@@ -300,9 +296,9 @@ function updateAnalyticsDisplay() {
         // 防止頻繁更新導致閃爍
         const currentHTML = container.innerHTML;
         const newHTML = `
-            <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 2px 8px; border-radius: 4px; color: #ffffff; font-size: 13px; font-weight: 600;">🖱️ ${visits.toLocaleString()}</span>
-            <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 2px 8px; border-radius: 4px; color: #ffffff; font-size: 13px; font-weight: 600;">📂 ${clicks.toLocaleString()}</span>
-            <span style="background: rgba(0,212,255,0.05); padding: 2px 8px; border-radius: 4px; color: #ffffff; font-size: 13px; font-weight: 600;">👤 ${visitors.toLocaleString()}</span>
+            <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 4px 10px; border-radius: 4px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">🖱️ <span style="font-variant-numeric: normal;">${visits.toLocaleString()}</span></span>
+            <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 4px 10px; border-radius: 4px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">📂 <span style="font-variant-numeric: normal;">${clicks.toLocaleString()}</span></span>
+            <span style="background: rgba(0,212,255,0.05); padding: 4px 10px; border-radius: 4px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">👤 <span style="font-variant-numeric: normal;">${visitors.toLocaleString()}</span></span>
         `;
         
         if (currentHTML !== newHTML) {
