@@ -49,6 +49,26 @@ body {
 * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
 ::-webkit-scrollbar-thumb { background: transparent; }
 
+/* 網站統計信息 - 固定在左上角 */
+.site-version { 
+    position: fixed !important;
+    top: 10px !important;
+    left: 10px !important;
+    z-index: 1000 !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+    padding: 5px 10px !important;
+    border-radius: 5px !important;
+    border: 1px solid rgba(0, 212, 255, 0.3) !important;
+    font-size: 10px !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(5px) !important;
+}
+
+#analytics-display {
+    font-size: 10px !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
 /* Layout */
 .app-container, .admin-container { 
     max-width: 900px; 
@@ -240,7 +260,17 @@ select {
     }
 
     h1 { font-size: 24px !important; }
-    .site-version { font-size: 10px !important; }
+    .site-version { 
+        font-size: 10px !important; 
+        position: fixed !important;
+        top: 10px !important;
+        left: 10px !important;
+        z-index: 1000 !important;
+        background: rgba(0, 0, 0, 0.7) !important;
+        padding: 5px 10px !important;
+        border-radius: 5px !important;
+        border: 1px solid rgba(0, 212, 255, 0.3) !important;
+    }
     
     /* 詳情頁手機版優化 */
     .detail-container-v35 {

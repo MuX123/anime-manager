@@ -1,4 +1,4 @@
-let analyticsData = { totalViews: 0, uniqueVisitors: 0 };
+let analyticsData = { totalClicks: 0, uniqueVisitors: 0 };
 
 function getVisitorId() {
     let visitorId = localStorage.getItem('visitor_id');
@@ -7,6 +7,76 @@ function getVisitorId() {
         localStorage.setItem('visitor_id', visitorId);
     }
     return visitorId;
+}
+
+// 全局點擊追蹤
+function trackClick() {
+    try {
+        // 確保使用正確的 Supabase 客戶端
+        let client;
+        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+            client = window.supabaseManager.getClient();
+        } else if (window.supabaseClient) {
+            client = window.supabaseClient;
+        } else {
+            console.warn('⚠️ Click Track: Supabase 客戶端尚未準備就緒');
+            return;
+        }
+        
+        const visitorId = getVisitorId();
+        
+        // 記錄點擊到資料庫
+        client
+            .from('site_analytics')
+            .insert([{ 
+                visitor_id: visitorId,
+                event_type: 'click',
+                page_url: window.location.href,
+                timestamp: new Date().toISOString()
+            }])
+            .then(() => {
+                // 異步更新統計數據
+                updateClickCount();
+            })
+            .catch(err => {
+                console.warn('點擊追蹤失敗:', err);
+            });
+            
+    } catch (err) {
+        console.error('Track click error:', err);
+    }
+}
+
+// 更新點擊次數
+async function updateClickCount() {
+    try {
+        let client;
+        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+            client = window.supabaseManager.getClient();
+        } else if (window.supabaseClient) {
+            client = window.supabaseClient;
+        } else {
+            return;
+        }
+        
+        const { count } = await client
+            .from('site_analytics')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_type', 'click');
+            
+        analyticsData.totalClicks = count || 0;
+        
+        // 更新顯示
+        updateAnalyticsDisplay();
+        
+        // 更新緩存
+        const cached = JSON.parse(localStorage.getItem('analytics_cache') || '{}');
+        cached.totalClicks = analyticsData.totalClicks;
+        localStorage.setItem('analytics_cache', JSON.stringify(cached));
+        
+    } catch (err) {
+        console.error('Update click count error:', err);
+    }
 }
 
 async function trackVisit() {
@@ -23,18 +93,20 @@ async function trackVisit() {
         }
         
         const visitorId = getVisitorId();
-        const lastTrack = localStorage.getItem('last_track_time');
+        const lastTrack = localStorage.getItem('last_visit_time');
         const now = Date.now();
         
-        if (lastTrack && (now - parseInt(lastTrack)) < 60000) {
+        // 防止同一次會話重複計算，但允許重新載入頁面後重新計算
+        if (lastTrack && (now - parseInt(lastTrack)) < 300000) { // 5分鐘內不重複計算
             await loadAnalytics();
             return;
         }
         
-        localStorage.setItem('last_track_time', now.toString());
+        localStorage.setItem('last_visit_time', now.toString());
         
-        const { data: existing, error: fetchError } = await client
-            .from('visitor_analytics')
+        // 檢查是否為新訪客
+        const { data: existingVisitor, error: fetchError } = await client
+            .from('site_visitors')
             .select('*')
             .eq('visitor_id', visitorId)
             .single();
@@ -44,31 +116,34 @@ async function trackVisit() {
             return;
         }
         
-        if (existing) {
-            client
-                .from('visitor_analytics')
-                .update({
-                    last_visit: new Date().toISOString(),
-                    visit_count: existing.visit_count + 1
-                })
-                .eq('visitor_id', visitorId)
-                .then(() => {});
+        // 如果是新訪客，記錄到訪客表
+        if (!existingVisitor) {
+            await client
+                .from('site_visitors')
+                .insert([{ 
+                    visitor_id: visitorId,
+                    first_visit: new Date().toISOString(),
+                    last_visit: new Date().toISOString()
+                }]);
         } else {
-            client
-                .from('visitor_analytics')
-                .insert([{ visitor_id: visitorId }])
-                .then(() => {});
+            // 更新最後訪問時間
+            await client
+                .from('site_visitors')
+                .update({
+                    last_visit: new Date().toISOString()
+                })
+                .eq('visitor_id', visitorId);
         }
         
-        // 記錄當前頁面訪問
-        client
-            .from('visitor_analytics')
+        // 記錄頁面訪問
+        await client
+            .from('site_analytics')
             .insert([{ 
                 visitor_id: visitorId,
+                event_type: 'page_view',
                 page_url: window.location.href,
                 timestamp: new Date().toISOString()
-            }])
-            .then(() => {});
+            }]);
         
         await loadAnalytics();
     } catch (err) {
@@ -92,26 +167,28 @@ async function loadAnalytics() {
         const cached = localStorage.getItem('analytics_cache');
         const cacheTime = localStorage.getItem('analytics_cache_time');
         
+        // 使用5分鐘快取
         if (cached && cacheTime && (Date.now() - parseInt(cacheTime)) < 300000) {
             const data = JSON.parse(cached);
-            analyticsData.totalViews = data.totalViews;
-            analyticsData.uniqueVisitors = data.uniqueVisitors;
+            analyticsData.totalClicks = data.totalClicks || 0;
+            analyticsData.uniqueVisitors = data.uniqueVisitors || 0;
             updateAnalyticsDisplay();
             return;
         }
         
-        const [viewsResult, visitorsResult] = await Promise.all([
-            client.from('visitor_analytics').select('id', { count: 'exact', head: true }),
-            client.from('visitor_analytics').select('visitor_id', { count: 'exact', head: true })
+        // 並行獲取點擊次數和訪客數量
+        const [clicksResult, visitorsResult] = await Promise.all([
+            client.from('site_analytics').select('id', { count: 'exact', head: true }).eq('event_type', 'click'),
+            client.from('site_visitors').select('visitor_id', { count: 'exact', head: true })
         ]);
         
-        analyticsData.totalViews = viewsResult.count || 0;
+        analyticsData.totalClicks = clicksResult.count || 0;
         analyticsData.uniqueVisitors = visitorsResult.count || 0;
         
         localStorage.setItem('analytics_cache', JSON.stringify(analyticsData));
         localStorage.setItem('analytics_cache_time', Date.now().toString());
         
-        console.log('📊 Analytics 數據載入:', { views: analyticsData.totalViews, visitors: analyticsData.uniqueVisitors });
+        console.log('📊 Analytics 數據載入:', { clicks: analyticsData.totalClicks, visitors: analyticsData.uniqueVisitors });
         
         updateAnalyticsDisplay();
     } catch (err) {
@@ -125,21 +202,39 @@ function updateAnalyticsDisplay() {
     const container = document.getElementById('analytics-display');
     if (container) {
         container.innerHTML = `
-            <span style="margin-right: 15px;">👁 ${analyticsData.totalViews.toLocaleString()}</span>
+            <span style="margin-right: 15px;">🖱️ ${analyticsData.totalClicks.toLocaleString()}</span>
             <span>👤 ${analyticsData.uniqueVisitors.toLocaleString()}</span>
         `;
     }
 }
 
 window.trackVisit = trackVisit;
+window.trackClick = trackClick;
 window.loadAnalytics = loadAnalytics;
 window.analyticsData = analyticsData;
 
-// 在頁面載入時自動追蹤訪問
+// 設置全局點擊監聽器
+function setupClickTracking() {
+    let clickTimer;
+    document.addEventListener('click', (event) => {
+        // 忽略管理員操作和某些特殊元素
+        if (isAdmin) return;
+        if (event.target.closest('#systemMenu, #loginModal, #detailModal, .modal')) return;
+        
+        // 防止過於頻繁的點擊追蹤，使用防抖
+        clearTimeout(clickTimer);
+        clickTimer = setTimeout(() => {
+            trackClick();
+        }, 100);
+    });
+}
+
+// 在頁面載入時自動追蹤訪問和設置點擊追蹤
 document.addEventListener('DOMContentLoaded', () => {
     // 延遲執行，等待其他模組初始化完成
     setTimeout(() => {
         console.log('📊 開始追蹤訪客統計');
         trackVisit();
+        setupClickTracking();
     }, 3000);
 });
