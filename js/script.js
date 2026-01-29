@@ -340,9 +340,18 @@ app.innerHTML = `
             const clicks = window.analyticsData.categoryClicks || 0;
             const visitors = window.analyticsData.uniqueVisitors || 0;
             container.innerHTML = `
-                <span style="margin-right: 15px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">🖱️ 訪問:<span style="font-variant-numeric: normal;">${visits.toLocaleString()}</span></span>
-                <span style="margin-right: 15px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">📂 點擊:<span style="font-variant-numeric: normal;">${clicks.toLocaleString()}</span></span>
-                <span style="background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">👤 人數:<span style="font-variant-numeric: normal;">${visitors.toLocaleString()}</span></span>
+                <span style="margin-right: 15px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important; display: flex; align-items: center; gap: 5px;">
+                    <span style="font-size: 16px; color: #ffffff;">🖱</span>
+                    <span style="font-size: 14px; color: #00d4ff;">${visits.toLocaleString()}</span>
+                </span>
+                <span style="margin-right: 15px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important; display: flex; align-items: center; gap: 5px;">
+                    <span style="font-size: 16px; color: #ffffff;">📂</span>
+                    <span style="font-size: 14px; color: #00d4ff;">${clicks.toLocaleString()}</span>
+                </span>
+                <span style="margin-right: 15px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important; display: flex; align-items: center; gap: 5px;">
+                    <span style="font-size: 16px; color: #ffffff;">👤</span>
+                    <span style="font-size: 14px; color: #00d4ff;">${visitors.toLocaleString()}</span>
+                </span>
             `;
         }
     }

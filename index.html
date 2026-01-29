@@ -42,12 +42,57 @@
         <div class="loader"></div>
     </div>
 
-    <div class="site-version" style="display: flex; align-items: center; gap: 20px; font-size: 14px; font-weight: bold;">
-        <span style="background: rgba(0,212,255,0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; letter-spacing: 1px; font-weight: 700; font-size: 18px;">v6.0.1</span>
-        <div id="analytics-display" style="display: flex; align-items: center; gap: 15px;">
-            <span style="margin-right: 15px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">🖱️ 訪問:<span style="font-variant-numeric: normal;">0</span></span>
-            <span style="margin-right: 15px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">📂 點擊:<span style="font-variant-numeric: normal;">0</span></span>
-            <span style="background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">👤 人數:<span style="font-variant-numeric: normal;">0</span></span>
+<div class="site-version" style="display: flex; align-items: center; gap: 15px; font-size: 12px; font-weight: bold;">
+        <span style="background: rgba(0,212,255,0.1); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-family: 'Orbitron', monospace; letter-spacing: 0.5px; font-weight: 700; font-size: 10px;">v6.0.1</span>
+        <div id="analytics-display" style="display: flex; align-items: center; gap: 8px;">
+            <!-- 訪問次數 -->
+            <div style="background: rgba(0,212,255,0.08); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(0,212,255,0.2); display: flex; align-items: center; gap: 4px; font-family: 'Orbitron', monospace; font-weight: 700;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 3L19 8L5 21L1 21L1 17L15 3Z" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M11 7L17 13" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span style="font-size: 10px; color: #ffffff;">0</span>
+            </div>
+            <!-- 版面點擊 -->
+            <div style="background: rgba(0,212,255,0.08); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(0,212,255,0.2); display: flex; align-items: center; gap: 4px; font-family: 'Orbitron', monospace; font-weight: 700;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 3L19 8L10 17L5 17L5 12L15 3Z" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M19 8L15 3" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span style="font-size: 10px; color: #ffffff;">0</span>
+            </div>
+            <!-- 訪客數 -->
+            <div style="background: rgba(0,212,255,0.08); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(0,212,255,0.2); display: flex; align-items: center; gap: 4px; font-family: 'Orbitron', monospace; font-weight: 700;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span style="font-size: 10px; color: #ffffff;">0</span>
+            </div>
+        </div>
+    </div>
+            <div style="background: rgba(0,212,255,0.1); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; display: flex; align-items: center; gap: 6px; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; font-weight: 700;">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 4 16 12 0 2-2 2-2 0c-2 2-2 4 0c6 6 2-2 2-2 0c6 6 2-2 6-6 0c6 6 2-2 2 2 0 6-6 6 2-2 6-2 0c10 0 2 2 10 0c6 6 2-2 2 6-2 0c6 6 2-2 2 6-2 0c6 6 2-2 2 6-2 0c10 0 2 2 10 0c6 6 2-2 2 6-2zm0-4 8-4 0 0 1 1 1 1 0c0 0 1 1 0 4 0 4-4 4-4 4-4 0c0 4 8-4 8-4 8-4 4-4z'/%3E%3C/svg%3E" alt="users" style="width: 14px; height: 14px;">
+                <span style="font-size: 12px; color: #ffffff;">0</span>
+            </div>
+        </div>
+            <div style="background: rgba(0,212,255,0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; display: flex; align-items: center; gap: 6px; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; font-weight: 700;">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2C6.48 2 0 0 10.5s-1 1.95-4.5 1.95-1.95L7.05 7.05zm0 14c0 5.52 4.48 10 10 10 0c-5.52 2.48-10-10-10z'/%3E%3C/svg%3E" alt="click" style="width: 16px; height: 16px;">
+                <span style="font-size: 14px; color: #ffffff;">0</span>
+            </div>
+            <div style="background: rgba(0,212,255,0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; display: flex; align-items: center; gap: 6px; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; font-weight: 700;">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2C6.48 2 0 0 10.5s-1 1.95-4.5 1.95-1.95L7.05 7.05zm0 14c0 5.52 4.48 10 10 10 0c-5.52 2.48-10-10-10z'/%3E%3C/svg%3E" alt="users" style="width: 16px; height: 16px;">
+                <span style="font-size: 14px; color: #ffffff;">0</span>
+            </div>
+        </div>
+            <div style="background: rgba(0,212,255,0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; display: flex; align-items: center; gap: 6px; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; font-weight: 700;">
+                <span style="font-size: 16px; color: #ffffff;">📂</span>
+                <span style="font-size: 12px; color: #00d4ff; margin-left: 4px;">0</span>
+            </div>
+            <div style="background: rgba(0,212,255,0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; display: flex; align-items: center; gap: 6px; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; font-weight: 700;">
+                <span style="font-size: 16px; color: #ffffff;">👤</span>
+                <span style="font-size: 12px; color: #00d4ff; margin-left: 4px;">0</span>
+            </div>
         </div>
     </div>
     

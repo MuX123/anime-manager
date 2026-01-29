@@ -42,15 +42,13 @@ async function trackCategoryClick(category) {
             
             console.log('📂 版面點擊記錄到雲端:', category);
             
-            // 立即更新本地顯示，然後重新載入雲端數據
-            analyticsData.categoryClicks++;
-            updateAnalyticsDisplay();
-            
-            // 重新載入雲端數據
-            await loadCategoryClicksFromCloud();
+            // 重新載入雲端數據（延遲 500ms 確保資料庫更新完成）
+            setTimeout(async () => {
+                await loadCategoryClicksFromCloud();
             }, 500);
-            
         } else {
+            console.warn('⚠️ 舊版資料庫結構不支援版面點擊追蹤');
+        }
             // 舊版結構：不支援 event_type
             console.warn('⚠️ 舊版資料庫結構不支援版面點擊追蹤');
         }
@@ -123,56 +121,7 @@ async function loadVisitsFromCloud() {
     }
 }
         
-        // 查詢雲端版面點擊總數
-        const { count } = await client
-            .from('site_analytics')
-            .select('*', { count: 'exact', head: true })
-            .eq('event_type', 'category_click');
-            
-        const cloudClicks = count || 0;
         
-        // 更新本地顯示（不保存到 localStorage）
-        analyticsData.categoryClicks = cloudClicks;
-        updateAnalyticsDisplay();
-        
-        console.log('📂 雲端版面點擊數據載入:', cloudClicks);
-        
-    } catch (err) {
-        console.error('Load category clicks from cloud error:', err);
-    }
-}
-
-// 從雲端載入訪問次數數據
-async function loadVisitsFromCloud() {
-    try {
-        let client;
-        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
-            client = window.supabaseManager.getClient();
-        } else if (window.supabaseClient) {
-            client = window.supabaseClient;
-        } else {
-            console.warn('⚠️ 無法連接資料庫載入訪問次數數據');
-            return;
-        }
-        
-        // 查詢雲端訪問次數總數
-        const { count } = await client
-            .from('site_analytics')
-            .select('*', { count: 'exact', head: true })
-            .eq('event_type', 'page_view');
-            
-        const cloudVisits = count || 0;
-        
-        // 更新本地顯示（不保存到 localStorage，避免與 trackVisit 衝突）
-        analyticsData.totalVisits = cloudVisits;
-        // updateAnalyticsDisplay(); // 移除，避免衝突
-        
-        console.log('🖱️ 雲端訪問次數數據載入:', cloudVisits);
-        
-    } catch (err) {
-        console.error('Load visits from cloud error:', err);
-    }
-}
 
 
 
@@ -434,9 +383,30 @@ function updateAnalyticsDisplay() {
         // 防止頻繁更新導致閃爍
         const currentHTML = container.innerHTML;
         const newHTML = `
-            <span style="margin-right: 15px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">🖱️ 訪問:<span style="font-variant-numeric: normal;">${visits.toLocaleString()}</span></span>
-            <span style="margin-right: 15px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">📂 點擊:<span style="font-variant-numeric: normal;">${clicks.toLocaleString()}</span></span>
-            <span style="background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">👤 人數:<span style="font-variant-numeric: normal;">${visitors.toLocaleString()}</span></span>
+            <!-- 訪問次數 -->
+            <div style="background: rgba(0,212,255,0.08); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(0,212,255,0.2); display: flex; align-items: center; gap: 4px; font-family: 'Orbitron', monospace; font-weight: 700;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 3L19 8L5 21L1 21L1 17L15 3Z" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M11 7L17 13" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span style="font-size: 10px; color: #ffffff;">${visits.toLocaleString()}</span>
+            </div>
+            <!-- 版面點擊 -->
+            <div style="background: rgba(0,212,255,0.08); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(0,212,255,0.2); display: flex; align-items: center; gap: 4px; font-family: 'Orbitron', monospace; font-weight: 700;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 3L19 8L10 17L5 17L5 12L15 3Z" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M19 8L15 3" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span style="font-size: 10px; color: #ffffff;">${clicks.toLocaleString()}</span>
+            </div>
+            <!-- 訪客數 -->
+            <div style="background: rgba(0,212,255,0.08); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(0,212,255,0.2); display: flex; align-items: center; gap: 4px; font-family: 'Orbitron', monospace; font-weight: 700;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span style="font-size: 10px; color: #ffffff;">${visitors.toLocaleString()}</span>
+            </div>
         `;
         
         if (currentHTML !== newHTML) {
@@ -462,10 +432,21 @@ window.loadCategoryClicksFromCloud = loadCategoryClicksFromCloud;
 window.loadVisitsFromCloud = loadVisitsFromCloud;
 window.analyticsData = analyticsData;
 
-// 禁用點擊追蹤 - 現在只追蹤訪問次數
+// 設置分類按鈕點擊追蹤
 function setupClickTracking() {
-    // 點擊追蹤已禁用，改為追蹤訪問次數
-    console.log('📊 點擊追蹤已禁用，改為訪問次數追蹤');
+    // 等待頁面完全載入後設置分類按鈕點擊追蹤
+    setTimeout(() => {
+        const categoryButtons = document.querySelectorAll('[data-category], .category-btn, .filter-btn, button[onclick*="filter"]');
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const category = e.target.dataset?.category || e.target.textContent.trim();
+                if (category && category !== '' && !category.includes('全部') && !category.includes('所有')) {
+                    trackCategoryClick(category);
+                }
+            });
+        });
+        console.log('📊 分類點擊追蹤已設置，找到', categoryButtons.length, '個按鈕');
+    }, 3000);
 }
 
 // 立即初始化顯示
