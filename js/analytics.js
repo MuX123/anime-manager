@@ -42,8 +42,13 @@ async function trackCategoryClick(category) {
             
             console.log('📂 版面點擊記錄到雲端:', category);
             
+            // 立即更新本地顯示，然後重新載入雲端數據
+            analyticsData.categoryClicks++;
+            updateAnalyticsDisplay();
+            
             // 重新載入雲端數據
             await loadCategoryClicksFromCloud();
+            }, 500);
             
         } else {
             // 舊版結構：不支援 event_type
@@ -87,6 +92,88 @@ async function loadCategoryClicksFromCloud() {
     }
 }
 
+async function loadVisitsFromCloud() {
+    try {
+        let client;
+        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+            client = window.supabaseManager.getClient();
+        } else if (window.supabaseClient) {
+            client = window.supabaseClient;
+        } else {
+            console.warn('⚠️ 無法連接資料庫載入訪問次數數據');
+            return;
+        }
+        
+        // 查詢雲端訪問次數總數
+        const { count } = await client
+            .from('site_analytics')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_type', 'page_view');
+            
+        const cloudVisits = count || 0;
+        
+        // 更新本地顯示（不保存到 localStorage，避免與 trackVisit 衝突）
+        analyticsData.totalVisits = cloudVisits;
+        updateAnalyticsDisplay();
+        
+        console.log('🖱️ 雲端訪問次數數據載入:', cloudVisits);
+        
+    } catch (err) {
+        console.error('Load visits from cloud error:', err);
+    }
+}
+        
+        // 查詢雲端版面點擊總數
+        const { count } = await client
+            .from('site_analytics')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_type', 'category_click');
+            
+        const cloudClicks = count || 0;
+        
+        // 更新本地顯示（不保存到 localStorage）
+        analyticsData.categoryClicks = cloudClicks;
+        updateAnalyticsDisplay();
+        
+        console.log('📂 雲端版面點擊數據載入:', cloudClicks);
+        
+    } catch (err) {
+        console.error('Load category clicks from cloud error:', err);
+    }
+}
+
+// 從雲端載入訪問次數數據
+async function loadVisitsFromCloud() {
+    try {
+        let client;
+        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+            client = window.supabaseManager.getClient();
+        } else if (window.supabaseClient) {
+            client = window.supabaseClient;
+        } else {
+            console.warn('⚠️ 無法連接資料庫載入訪問次數數據');
+            return;
+        }
+        
+        // 查詢雲端訪問次數總數
+        const { count } = await client
+            .from('site_analytics')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_type', 'page_view');
+            
+        const cloudVisits = count || 0;
+        
+        // 更新本地顯示（不保存到 localStorage，避免與 trackVisit 衝突）
+        analyticsData.totalVisits = cloudVisits;
+        // updateAnalyticsDisplay(); // 移除，避免衝突
+        
+        console.log('🖱️ 雲端訪問次數數據載入:', cloudVisits);
+        
+    } catch (err) {
+        console.error('Load visits from cloud error:', err);
+    }
+}
+
 
 
 async function trackVisit() {
@@ -104,11 +191,38 @@ async function trackVisit() {
         }
         
         // 每次進入網站都計算一次訪問（不管誰、每次進入都算一次）
-        analyticsData.totalVisits++;
-        console.log('🖱️ 網站訪問記錄:', analyticsData.totalVisits);
-        
-        // 更新顯示
-        updateAnalyticsDisplay();
+        // 先記錄到資料庫，然後重新載入
+        try {
+            let client;
+            if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+                client = window.supabaseManager.getClient();
+            } else if (window.supabaseClient) {
+                client = window.supabaseClient;
+            } else {
+                console.warn('⚠️ 無法連接資料庫記錄訪問');
+                return;
+            }
+            
+            const visitorId = getVisitorId();
+            
+            // 記錄到資料庫
+            await client
+                .from('site_analytics')
+                .insert([{ 
+                    visitor_id: visitorId,
+                    event_type: 'page_view',
+                    page_url: window.location.href,
+                    timestamp: new Date().toISOString()
+                }]);
+            
+            console.log('🖱️ 訪問記錄到雲端');
+            
+            // 重新載入雲端數據
+            await loadVisitsFromCloud();
+            
+        } catch (dbErr) {
+            console.warn('資料庫記錄訪問失敗:', dbErr.message);
+        }
         
         // 嘗試使用資料庫
         try {
@@ -269,7 +383,8 @@ async function loadAnalytics() {
                 
                 // 合併本地和資料庫數據，取最大值避免回朔
                 analyticsData.totalVisits = Math.max(analyticsData.totalVisits, dbVisits);
-                analyticsData.categoryClicks = Math.max(analyticsData.categoryClicks, dbCategoryClicks);
+                // 注意：categoryClicks 不合併，完全依賴雲端數據
+                // analyticsData.categoryClicks = Math.max(analyticsData.categoryClicks, dbCategoryClicks);
                 analyticsData.uniqueVisitors = Math.max(analyticsData.uniqueVisitors, dbVisitors);
                 
                 console.log('📊 新版 Analytics 數據載入:', { visits: analyticsData.totalVisits, categoryClicks: analyticsData.categoryClicks, visitors: analyticsData.uniqueVisitors });
@@ -344,6 +459,7 @@ window.trackVisit = trackVisit;
 window.trackCategoryClick = trackCategoryClick;
 window.loadAnalytics = loadAnalytics;
 window.loadCategoryClicksFromCloud = loadCategoryClicksFromCloud;
+window.loadVisitsFromCloud = loadVisitsFromCloud;
 window.analyticsData = analyticsData;
 
 // 禁用點擊追蹤 - 現在只追蹤訪問次數
@@ -354,16 +470,17 @@ function setupClickTracking() {
 
 // 立即初始化顯示
 function initAnalyticsDisplay() {
-    updateAnalyticsDisplay();
+    // 先載入雲端數據
+    loadVisitsFromCloud();
+    loadCategoryClicksFromCloud();
     
     // 設置點擊追蹤（已停用）
     setupClickTracking();
     
-    // 延遲追蹤訪問和載入雲端版面點擊數據
+    // 延遲追蹤訪問
     setTimeout(() => {
         console.log('📊 開始追蹤訪客統計');
         trackVisit();
-        loadCategoryClicksFromCloud();
     }, 2000);
 }
 
