@@ -288,10 +288,10 @@ app.innerHTML = `
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
             </header>
             <div class="category-buttons-container" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; position: relative; z-index: 100;">
-                <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">◆ 公告</button>
-                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
-                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
-                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
+                <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.trackCategoryClickAndSwitch('notice')">◆ 公告</button>
+                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.trackCategoryClickAndSwitch('anime')">◆ 動畫</button>
+                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.trackCategoryClickAndSwitch('manga')">◆ 漫畫</button>
+                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.trackCategoryClickAndSwitch('movie')">◆ 電影</button>
             </div>
             <div style="border: 2px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 18px; margin-bottom: 30px; font-size: 14px; color: ${siteSettings.announcement_color || '#ffffff'}; text-align: center; border-radius: 10px; background: rgba(0,212,255,0.05); font-weight: bold;">
                 <span>📢 ${siteSettings.announcement}</span>
@@ -324,9 +324,13 @@ app.innerHTML = `
     if (typeof window.analyticsData !== 'undefined') {
         const container = document.getElementById('analytics-display');
         if (container) {
+            const visits = window.analyticsData.totalVisits || 0;
+            const clicks = window.analyticsData.categoryClicks || 0;
+            const visitors = window.analyticsData.uniqueVisitors || 0;
             container.innerHTML = `
-                <span style="margin-right: 15px;">🖱️ ${window.analyticsData.totalVisits.toLocaleString()}</span>
-                <span>👤 ${window.analyticsData.uniqueVisitors.toLocaleString()}</span>
+                <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 2px 8px; border-radius: 4px; color: #ffffff; font-size: 13px; font-weight: 600;">🖱️ ${visits.toLocaleString()}</span>
+                <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 2px 8px; border-radius: 4px; color: #ffffff; font-size: 13px; font-weight: 600;">📂 ${clicks.toLocaleString()}</span>
+                <span style="background: rgba(0,212,255,0.05); padding: 2px 8px; border-radius: 4px; color: #ffffff; font-size: 13px; font-weight: 600;">👤 ${visitors.toLocaleString()}</span>
             `;
         }
     }
@@ -695,6 +699,15 @@ window.getFilteredData = () => {
         const monthB = monthMap[b.month] || 0;
         return sortOrder === 'desc' ? monthB - monthA : monthA - monthB;
     });
+};
+
+window.trackCategoryClickAndSwitch = async (cat) => {
+    // 追蹤版面點擊
+    if (typeof window.trackCategoryClick === 'function') {
+        window.trackCategoryClick(cat);
+    }
+    // 切換分類
+    window.switchCategory(cat);
 };
 
 window.switchCategory = async (cat) => { 

@@ -1,4 +1,4 @@
-let analyticsData = { totalClicks: 0, totalVisits: 0, uniqueVisitors: 0 };
+let analyticsData = { totalClicks: 0, totalVisits: 0, uniqueVisitors: 0, categoryClicks: 0 };
 
 function getVisitorId() {
     let visitorId = localStorage.getItem('visitor_id');
@@ -9,7 +9,57 @@ function getVisitorId() {
     return visitorId;
 }
 
-// 點擊追蹤已停用 - 改為訪問次數追蹤
+// 版面點擊追蹤 - 只統計分類按鈕點擊
+async function trackCategoryClick(category) {
+    try {
+        // 立即更新本地計數
+        analyticsData.categoryClicks++;
+        updateAnalyticsDisplay();
+        console.log('📂 版面點擊計數更新:', analyticsData.categoryClicks, '分類:', category);
+        
+        // 確保使用正確的 Supabase 客戶端
+        let client;
+        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+            client = window.supabaseManager.getClient();
+        } else if (window.supabaseClient) {
+            client = window.supabaseClient;
+        } else {
+            console.warn('⚠️ Category Click: Supabase 客戶端尚未準備就緒，僅使用本地計數');
+            return;
+        }
+        
+        const visitorId = getVisitorId();
+        
+        // 檢查資料庫結構
+        const schemaStatus = await checkDatabaseSchema(client);
+        
+        if (schemaStatus === 'NEW_SCHEMA') {
+            // 新版結構：使用 event_type
+            client
+                .from('site_analytics')
+                .insert([{ 
+                    visitor_id: visitorId,
+                    event_type: 'category_click',
+                    page_url: window.location.href,
+                    event_data: { category: category },
+                    timestamp: new Date().toISOString()
+                }])
+                .then(() => {
+                    console.log('📂 版面點擊追蹤成功 (新版結構):', analyticsData.categoryClicks);
+                })
+                .catch(err => {
+                    console.warn('版面點擊追蹤資料庫失敗，但本地計數已更新:', err.message);
+                });
+        } else {
+            // 舊版結構：不支援 event_type，不記錄到資料庫
+            console.warn('⚠️ 舊版資料庫結構不支援版面點擊追蹤，僅使用本地計數');
+        }
+            
+    } catch (err) {
+        // 即使發生錯誤，本地計數已經更新
+        console.error('Track category click error，但本地計數已更新:', err);
+    }
+}
 
 // 更新訪問次數（舊函數已停用）
 async function updateClickCount() {
@@ -174,7 +224,7 @@ async function loadAnalytics() {
         if (cached && cacheTime && (Date.now() - parseInt(cacheTime)) < 300000) {
             const data = JSON.parse(cached);
             // 合併本地和資料庫數據，取最大值避免回朔
-            analyticsData.totalClicks = Math.max(analyticsData.totalClicks, data.totalClicks || 0);
+            analyticsData.categoryClicks = Math.max(analyticsData.categoryClicks, data.categoryClicks || 0);
             analyticsData.totalVisits = Math.max(analyticsData.totalVisits, data.totalVisits || 0);
             analyticsData.uniqueVisitors = Math.max(analyticsData.uniqueVisitors, data.uniqueVisitors || 0);
             updateAnalyticsDisplay();
@@ -188,22 +238,22 @@ async function loadAnalytics() {
         try {
             if (schemaStatus === 'NEW_SCHEMA') {
                 // 新版結構：使用 event_type 分類查詢
-                const [visitsResult, clicksResult, visitorsResult] = await Promise.all([
+                const [visitsResult, categoryClicksResult, visitorsResult] = await Promise.all([
                     client.from('site_analytics').select('id', { count: 'exact', head: true }).eq('event_type', 'page_view'),
-                    client.from('site_analytics').select('id', { count: 'exact', head: true }).eq('event_type', 'click'),
+                    client.from('site_analytics').select('id', { count: 'exact', head: true }).eq('event_type', 'category_click'),
                     client.from('site_visitors').select('visitor_id', { count: 'exact', head: true })
                 ]);
                 
                 const dbVisits = visitsResult.count || 0;
-                const dbClicks = clicksResult.count || 0;
+                const dbCategoryClicks = categoryClicksResult.count || 0;
                 const dbVisitors = visitorsResult.count || 0;
                 
                 // 合併本地和資料庫數據，取最大值避免回朔
                 analyticsData.totalVisits = Math.max(analyticsData.totalVisits, dbVisits);
-                analyticsData.totalClicks = Math.max(analyticsData.totalClicks, dbClicks);
+                analyticsData.categoryClicks = Math.max(analyticsData.categoryClicks, dbCategoryClicks);
                 analyticsData.uniqueVisitors = Math.max(analyticsData.uniqueVisitors, dbVisitors);
                 
-                console.log('📊 新版 Analytics 數據載入:', { visits: analyticsData.totalVisits, clicks: analyticsData.totalClicks, visitors: analyticsData.uniqueVisitors });
+                console.log('📊 新版 Analytics 數據載入:', { visits: analyticsData.totalVisits, categoryClicks: analyticsData.categoryClicks, visitors: analyticsData.uniqueVisitors });
             } else {
                 // 舊版結構：只能查詢總記錄數
                 const [oldAnalyticsResult] = await Promise.all([
@@ -214,14 +264,14 @@ async function loadAnalytics() {
                 analyticsData.uniqueVisitors = Math.max(analyticsData.uniqueVisitors, totalRecords);
                 // 舊版沒有點擊追蹤，保持本地值
                 
-                console.warn('⚠️ 使用舊版資料庫結構，點擊追蹤功能可能不可用');
-                console.log('📊 舊版 Analytics 數據載入:', { visits: analyticsData.totalVisits, clicks: analyticsData.totalClicks, visitors: analyticsData.uniqueVisitors });
+                console.warn('⚠️ 使用舊版資料庫結構，版面點擊追蹤功能可能不可用');
+                console.log('📊 舊版 Analytics 數據載入:', { visits: analyticsData.totalVisits, categoryClicks: analyticsData.categoryClicks, visitors: analyticsData.uniqueVisitors });
             }
             
             // 保存合併後的數據到快取
             const cacheData = {
                 totalVisits: analyticsData.totalVisits,
-                totalClicks: analyticsData.totalClicks,
+                categoryClicks: analyticsData.categoryClicks,
                 uniqueVisitors: analyticsData.uniqueVisitors
             };
             localStorage.setItem('analytics_cache', JSON.stringify(cacheData));
@@ -245,17 +295,19 @@ function updateAnalyticsDisplay() {
     if (container) {
         const visits = analyticsData.totalVisits || 0;
         const visitors = analyticsData.uniqueVisitors || 0;
+        const clicks = analyticsData.categoryClicks || 0;
         
         // 防止頻繁更新導致閃爍
         const currentHTML = container.innerHTML;
         const newHTML = `
-            <span style="margin-right: 15px;">🖱️ ${visits.toLocaleString()}</span>
-            <span>👤 ${visitors.toLocaleString()}</span>
+            <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 2px 8px; border-radius: 4px; color: #ffffff; font-size: 13px; font-weight: 600;">🖱️ ${visits.toLocaleString()}</span>
+            <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 2px 8px; border-radius: 4px; color: #ffffff; font-size: 13px; font-weight: 600;">📂 ${clicks.toLocaleString()}</span>
+            <span style="background: rgba(0,212,255,0.05); padding: 2px 8px; border-radius: 4px; color: #ffffff; font-size: 13px; font-weight: 600;">👤 ${visitors.toLocaleString()}</span>
         `;
         
         if (currentHTML !== newHTML) {
             container.innerHTML = newHTML;
-            console.log('📊 顯示更新:', { visits, visitors });
+            console.log('📊 顯示更新:', { visits, clicks, visitors });
         }
     } else {
         console.warn('⚠️ analytics-display 元素未找到');
@@ -263,6 +315,7 @@ function updateAnalyticsDisplay() {
 }
 
 window.trackVisit = trackVisit;
+window.trackCategoryClick = trackCategoryClick;
 window.loadAnalytics = loadAnalytics;
 window.analyticsData = analyticsData;
 
