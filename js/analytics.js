@@ -79,8 +79,8 @@ async function loadCategoryClicksFromCloud() {
             
         const cloudClicks = count || 0;
         
-        // 更新本地顯示（不保存到 localStorage）
-        analyticsData.categoryClicks = cloudClicks;
+        // 修復：確保數據一致性，合併本地和雲端數據
+        analyticsData.categoryClicks = Math.max(analyticsData.categoryClicks || 0, cloudClicks);
         updateAnalyticsDisplay();
         
         console.log('📂 雲端版面點擊數據載入:', cloudClicks);
@@ -130,13 +130,13 @@ async function trackVisit() {
         const visitorId = getVisitorId();
         const now = Date.now();
         
-        // 檢查是否為新訪客（本地檢查）
+        // 檢查是否為新訪客（本地檢查）- 修復：避免雙重計數
         const isNewVisitor = !localStorage.getItem('visitor_tracked');
         
         if (isNewVisitor) {
             localStorage.setItem('visitor_tracked', 'true');
-            analyticsData.uniqueVisitors++;
-            console.log('👤 新訪客記錄:', analyticsData.uniqueVisitors);
+            // 移除本地計數，統一從資料庫計算
+            console.log('👤 新訪客標記，等待資料庫確認');
         }
         
         // 每次進入網站都計算一次訪問（不管誰、每次進入都算一次）
@@ -211,11 +211,8 @@ async function trackVisit() {
                     }]);
                 console.log('👤 新訪客已記錄到資料庫');
                 
-                // 同步更新本地不重復訪問人數
-                if (isNewVisitor) {
-                    analyticsData.uniqueVisitors++;
-                    console.log('👤 本地不重復訪客更新:', analyticsData.uniqueVisitors);
-                }
+                // 統一從資料庫計算訪客數，避免雙重計數
+                console.log('👤 資料庫新訪客:', isNewDbVisitor);
             } else {
                 // 更新最後訪問時間
                 await client
