@@ -296,14 +296,21 @@ function updateAnalyticsDisplay() {
         // 防止頻繁更新導致閃爍
         const currentHTML = container.innerHTML;
         const newHTML = `
-            <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 4px 10px; border-radius: 4px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">🖱️ <span style="font-variant-numeric: normal;">${visits.toLocaleString()}</span></span>
-            <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 4px 10px; border-radius: 4px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">📂 <span style="font-variant-numeric: normal;">${clicks.toLocaleString()}</span></span>
-            <span style="background: rgba(0,212,255,0.05); padding: 4px 10px; border-radius: 4px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">👤 <span style="font-variant-numeric: normal;">${visitors.toLocaleString()}</span></span>
+            <span style="margin-right: 15px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">🖱️ 訪問:<span style="font-variant-numeric: normal;">${visits.toLocaleString()}</span></span>
+            <span style="margin-right: 15px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">📂 點擊:<span style="font-variant-numeric: normal;">${clicks.toLocaleString()}</span></span>
+            <span style="background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">👤 人數:<span style="font-variant-numeric: normal;">${visitors.toLocaleString()}</span></span>
         `;
         
         if (currentHTML !== newHTML) {
             container.innerHTML = newHTML;
             console.log('📊 顯示更新:', { visits, clicks, visitors });
+            
+            // 保存到 localStorage
+            localStorage.setItem('analytics_data', JSON.stringify({
+                totalVisits: analyticsData.totalVisits,
+                categoryClicks: analyticsData.categoryClicks,
+                uniqueVisitors: analyticsData.uniqueVisitors
+            }));
         }
     } else {
         console.warn('⚠️ analytics-display 元素未找到');
@@ -323,7 +330,20 @@ function setupClickTracking() {
 
 // 立即初始化顯示
 function initAnalyticsDisplay() {
-    console.log('📊 初始化統計顯示:', analyticsData);
+    // 從 localStorage 恢復數據
+    const savedData = localStorage.getItem('analytics_data');
+    if (savedData) {
+        try {
+            const parsed = JSON.parse(savedData);
+            analyticsData.totalVisits = parsed.totalVisits || 0;
+            analyticsData.categoryClicks = parsed.categoryClicks || 0;
+            analyticsData.uniqueVisitors = parsed.uniqueVisitors || 0;
+            console.log('📊 從 localStorage 恢復統計數據:', analyticsData);
+        } catch (e) {
+            console.warn('恢復統計數據失敗:', e);
+        }
+    }
+    
     updateAnalyticsDisplay();
     
     // 設置點擊追蹤（已停用）

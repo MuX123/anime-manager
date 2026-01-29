@@ -19,6 +19,13 @@ let optionsData = {
         recommendation: '#ffcc00',
         btn_bg: '#00d4ff'
     },
+    rating_colors: {
+        '神': '#ff0000',
+        '迷': '#ff6600', 
+        '優': '#ffaa00',
+        '普': '#00aaff',
+        '劣': '#666666'
+    },
     custom_lists: []
 };
 let siteSettings = { 
@@ -148,7 +155,12 @@ let isFirstLoad = true;
                         try { 
                             const parsed = JSON.parse(s.value);
                             if (parsed && parsed.genre) {
-                                optionsData = parsed;
+                                // 合併設定，保持原有的 rating_colors
+                                optionsData = {
+                                    ...optionsData,
+                                    ...parsed,
+                                    rating_colors: optionsData.rating_colors
+                                };
                             }
                         } catch(e) {
                             console.warn('options_data 解析失敗，使用預設選項:', e);
@@ -328,9 +340,9 @@ app.innerHTML = `
             const clicks = window.analyticsData.categoryClicks || 0;
             const visitors = window.analyticsData.uniqueVisitors || 0;
             container.innerHTML = `
-                <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 4px 10px; border-radius: 4px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">🖱️ <span style="font-variant-numeric: normal;">${visits.toLocaleString()}</span></span>
-                <span style="margin-right: 15px; background: rgba(0,212,255,0.05); padding: 4px 10px; border-radius: 4px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">📂 <span style="font-variant-numeric: normal;">${clicks.toLocaleString()}</span></span>
-                <span style="background: rgba(0,212,255,0.05); padding: 4px 10px; border-radius: 4px; color: #ffffff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">👤 <span style="font-variant-numeric: normal;">${visitors.toLocaleString()}</span></span>
+                <span style="margin-right: 15px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">🖱️ 訪問:<span style="font-variant-numeric: normal;">${visits.toLocaleString()}</span></span>
+                <span style="margin-right: 15px; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">📂 點擊:<span style="font-variant-numeric: normal;">${clicks.toLocaleString()}</span></span>
+                <span style="background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; font-size: 14px; font-weight: 700; font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei', sans-serif; text-decoration: none !important;">👤 人數:<span style="font-variant-numeric: normal;">${visitors.toLocaleString()}</span></span>
             `;
         }
     }
