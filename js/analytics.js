@@ -66,7 +66,6 @@ async function trackCategoryClick(category) {
 async function trackVisit() {
     try {
         const visitorId = getVisitorId();
-        const lastTrack = localStorage.getItem('last_visit_time');
         const now = Date.now();
         
         // 檢查是否為新訪客（本地檢查）
@@ -78,14 +77,12 @@ async function trackVisit() {
             console.log('👤 新訪客記錄:', analyticsData.uniqueVisitors);
         }
         
-        // 每次進入網站都計算一次訪問（但限制5分鐘內不重複計算）
-        if (!lastTrack || (now - parseInt(lastTrack)) >= 300000) { // 5分鐘內不重複計算
-            localStorage.setItem('last_visit_time', now.toString());
-            
-            // 更新訪問次數（不是點擊次數）
-            analyticsData.totalVisits++;
-            console.log('🖱️ 網站訪問記錄:', analyticsData.totalVisits);
-        }
+        // 每次進入網站都計算一次訪問（不管誰、每次進入都算一次）
+        analyticsData.totalVisits++;
+        console.log('🖱️ 網站訪問記錄:', analyticsData.totalVisits);
+        
+        // 更新顯示
+        updateAnalyticsDisplay();
         
         // 嘗試使用資料庫
         try {
