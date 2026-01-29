@@ -9,87 +9,12 @@ function getVisitorId() {
     return visitorId;
 }
 
-// 全局點擊追蹤
-async function trackClick() {
-    try {
-        // 立即更新本地計數，提供即時反饋
-        analyticsData.totalClicks++;
-        updateAnalyticsDisplay();
-        console.log('🖱️ 本地點擊計數更新:', analyticsData.totalClicks);
-        
-        // 確保使用正確的 Supabase 客戶端
-        let client;
-        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
-            client = window.supabaseManager.getClient();
-        } else if (window.supabaseClient) {
-            client = window.supabaseClient;
-        } else {
-            console.warn('⚠️ Click Track: Supabase 客戶端尚未準備就緒，僅使用本地計數');
-            return;
-        }
-        
-        const visitorId = getVisitorId();
-        
-        // 檢查資料庫結構
-        const schemaStatus = await checkDatabaseSchema(client);
-        
-        if (schemaStatus === 'NEW_SCHEMA') {
-            // 新版結構：使用 event_type
-            client
-                .from('site_analytics')
-                .insert([{ 
-                    visitor_id: visitorId,
-                    event_type: 'click',
-                    page_url: window.location.href,
-                    timestamp: new Date().toISOString()
-                }])
-                .then(() => {
-                    console.log('🖱️ 點擊追蹤成功 (新版結構):', analyticsData.totalClicks);
-                })
-                .catch(err => {
-                    console.warn('點擊追蹤資料庫失敗，但本地計數已更新:', err.message);
-                });
-        } else {
-            // 舊版結構：不支援 event_type，不記錄到資料庫
-            console.warn('⚠️ 舊版資料庫結構不支援點擊追蹤，僅使用本地計數');
-        }
-            
-    } catch (err) {
-        // 即使發生錯誤，本地計數已經更新
-        console.error('Track click error，但本地計數已更新:', err);
-    }
-}
+// 點擊追蹤已停用 - 改為訪問次數追蹤
 
-// 更新點擊次數
+// 更新訪問次數（舊函數已停用）
 async function updateClickCount() {
-    try {
-        let client;
-        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
-            client = window.supabaseManager.getClient();
-        } else if (window.supabaseClient) {
-            client = window.supabaseClient;
-        } else {
-            return;
-        }
-        
-        const { count } = await client
-            .from('site_analytics')
-            .select('*', { count: 'exact', head: true })
-            .eq('event_type', 'click');
-            
-        analyticsData.totalClicks = count || 0;
-        
-        // 更新顯示
-        updateAnalyticsDisplay();
-        
-        // 更新緩存
-        const cached = JSON.parse(localStorage.getItem('analytics_cache') || '{}');
-        cached.totalClicks = analyticsData.totalClicks;
-        localStorage.setItem('analytics_cache', JSON.stringify(cached));
-        
-    } catch (err) {
-        console.error('Update click count error:', err);
-    }
+    // 這個函數已停用，改為在 loadAnalytics 中處理
+    console.log('📊 updateClickCount 已停用，改為訪問次數追蹤');
 }
 
 async function trackVisit() {
@@ -321,36 +246,30 @@ function updateAnalyticsDisplay() {
         const visits = analyticsData.totalVisits || 0;
         const visitors = analyticsData.uniqueVisitors || 0;
         
-        container.innerHTML = `
+        // 防止頻繁更新導致閃爍
+        const currentHTML = container.innerHTML;
+        const newHTML = `
             <span style="margin-right: 15px;">🖱️ ${visits.toLocaleString()}</span>
             <span>👤 ${visitors.toLocaleString()}</span>
         `;
         
-        console.log('📊 顯示更新:', { visits, visitors });
+        if (currentHTML !== newHTML) {
+            container.innerHTML = newHTML;
+            console.log('📊 顯示更新:', { visits, visitors });
+        }
     } else {
         console.warn('⚠️ analytics-display 元素未找到');
     }
 }
 
 window.trackVisit = trackVisit;
-window.trackClick = trackClick;
 window.loadAnalytics = loadAnalytics;
 window.analyticsData = analyticsData;
 
-// 設置全局點擊監聽器
+// 禁用點擊追蹤 - 現在只追蹤訪問次數
 function setupClickTracking() {
-    let clickTimer;
-    document.addEventListener('click', (event) => {
-        // 忽略管理員操作和某些特殊元素
-        if (typeof isAdmin !== 'undefined' && isAdmin) return;
-        if (event.target.closest('#systemMenu, #loginModal, #detailModal, .modal')) return;
-        
-        // 防止過於頻繁的點擊追蹤，使用防抖
-        clearTimeout(clickTimer);
-        clickTimer = setTimeout(() => {
-            trackClick();
-        }, 100);
-    });
+    // 點擊追蹤已禁用，改為追蹤訪問次數
+    console.log('📊 點擊追蹤已禁用，改為訪問次數追蹤');
 }
 
 // 立即初始化顯示
@@ -358,7 +277,7 @@ function initAnalyticsDisplay() {
     console.log('📊 初始化統計顯示:', analyticsData);
     updateAnalyticsDisplay();
     
-    // 設置點擊追蹤
+    // 設置點擊追蹤（已停用）
     setupClickTracking();
     
     // 延遲追蹤訪問

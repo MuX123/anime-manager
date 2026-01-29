@@ -325,7 +325,7 @@ app.innerHTML = `
         const container = document.getElementById('analytics-display');
         if (container) {
             container.innerHTML = `
-                <span style="margin-right: 15px;">🖱️ ${window.analyticsData.totalClicks.toLocaleString()}</span>
+                <span style="margin-right: 15px;">🖱️ ${window.analyticsData.totalVisits.toLocaleString()}</span>
                 <span>👤 ${window.analyticsData.uniqueVisitors.toLocaleString()}</span>
             `;
         }
