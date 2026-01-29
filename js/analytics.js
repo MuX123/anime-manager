@@ -1,4 +1,4 @@
-let analyticsData = { totalClicks: 50, uniqueVisitors: 12 };
+let analyticsData = { totalClicks: 0, uniqueVisitors: 0 };
 
 function getVisitorId() {
     let visitorId = localStorage.getItem('visitor_id');
@@ -254,8 +254,8 @@ async function loadAnalytics() {
                 const dbClicks = clicksResult.count || 0;
                 const dbVisitors = visitorsResult.count || 0;
                 
-                analyticsData.totalClicks = analyticsData.totalClicks + dbClicks;
-                analyticsData.uniqueVisitors = analyticsData.uniqueVisitors + dbVisitors;
+                analyticsData.totalClicks = dbClicks;
+                analyticsData.uniqueVisitors = dbVisitors;
                 
                 console.log('📊 新版 Analytics 數據載入:', { clicks: analyticsData.totalClicks, visitors: analyticsData.uniqueVisitors });
             } else {
@@ -265,7 +265,7 @@ async function loadAnalytics() {
                 ]);
                 
                 const totalRecords = oldAnalyticsResult.count || 0;
-                analyticsData.uniqueVisitors = analyticsData.uniqueVisitors + totalRecords;
+                analyticsData.uniqueVisitors = totalRecords;
                 // 舊版沒有點擊追蹤，保持初始值
                 
                 console.warn('⚠️ 使用舊版資料庫結構，點擊追蹤功能可能不可用');
@@ -291,8 +291,8 @@ async function loadAnalytics() {
 function updateAnalyticsDisplay() {
     const container = document.getElementById('analytics-display');
     if (container) {
-        const clicks = analyticsData.totalClicks || 50;
-        const visitors = analyticsData.uniqueVisitors || 12;
+        const clicks = analyticsData.totalClicks || 0;
+        const visitors = analyticsData.uniqueVisitors || 0;
         
         container.innerHTML = `
             <span style="margin-right: 15px;">🖱️ ${clicks.toLocaleString()}</span>
