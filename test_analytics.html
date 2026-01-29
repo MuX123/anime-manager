@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>統計功能測試</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f0f0f0;
+        }
+        .site-version { 
+            position: fixed; 
+            top: 10px; 
+            left: 10px; 
+            background: rgba(0,0,0,0.8); 
+            color: white; 
+            padding: 5px 10px; 
+            border-radius: 5px; 
+            z-index: 1000;
+        }
+        .test-area { 
+            margin-top: 100px; 
+            padding: 20px; 
+            background: white; 
+            border-radius: 10px;
+        }
+        button { 
+            margin: 10px; 
+            padding: 10px 20px; 
+            cursor: pointer; 
+        }
+    </style>
+</head>
+<body>
+    <div class="site-version" style="display: flex; align-items: center; gap: 15px;">
+        <span>v6.0.0</span>
+        <div id="analytics-display">
+            <span style="margin-right: 15px;">🖱️ 50</span>
+            <span>👤 12</span>
+        </div>
+    </div>
+    
+    <div class="test-area">
+        <h1>統計功能測試</h1>
+        <p>點擊下面按鈕測試點擊追蹤功能：</p>
+        <button onclick="testClick()">測試按鈕 1</button>
+        <button onclick="testClick()">測試按鈕 2</button>
+        <button onclick="testClick()">測試按鈕 3</button>
+        
+        <h2>當前統計數據</h2>
+        <div id="debug-info"></div>
+    </div>
+
+    <script>
+        // 模擬 analytics.js 的核心功能
+        let analyticsData = { totalClicks: 50, uniqueVisitors: 12 };
+        
+        function getVisitorId() {
+            let visitorId = localStorage.getItem('visitor_id');
+            if (!visitorId) {
+                visitorId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('visitor_id', visitorId);
+                analyticsData.uniqueVisitors++;
+            }
+            return visitorId;
+        }
+        
+        function trackClick() {
+            analyticsData.totalClicks++;
+            updateAnalyticsDisplay();
+            updateDebugInfo();
+            console.log('🖱️ 點擊追蹤:', analyticsData.totalClicks);
+        }
+        
+        function updateAnalyticsDisplay() {
+            const container = document.getElementById('analytics-display');
+            if (container) {
+                container.innerHTML = `
+                    <span style="margin-right: 15px;">🖱️ ${analyticsData.totalClicks.toLocaleString()}</span>
+                    <span>👤 ${analyticsData.uniqueVisitors.toLocaleString()}</span>
+                `;
+            }
+        }
+        
+        function updateDebugInfo() {
+            const debug = document.getElementById('debug-info');
+            debug.innerHTML = `
+                <p><strong>點擊次數:</strong> ${analyticsData.totalClicks}</p>
+                <p><strong>訪客人數:</strong> ${analyticsData.uniqueVisitors}</p>
+                <p><strong>訪客ID:</strong> ${localStorage.getItem('visitor_id') || '未設置'}</p>
+                <p><strong>時間戳:</strong> ${new Date().toLocaleString()}</p>
+            `;
+        }
+        
+        function testClick() {
+            trackClick();
+        }
+        
+        // 設置全局點擊監聽器
+        document.addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                trackClick();
+            }
+        });
+        
+        // 初始化
+        getVisitorId();
+        updateAnalyticsDisplay();
+        updateDebugInfo();
+        
+        console.log('📊 測試頁面初始化完成:', analyticsData);
+    </script>
+</body>
+</html>

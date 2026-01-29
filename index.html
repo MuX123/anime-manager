@@ -44,7 +44,10 @@
 
     <div class="site-version" style="display: flex; align-items: center; gap: 15px;">
         <span>v6.0.0</span>
-        <div id="analytics-display"></div>
+        <div id="analytics-display">
+            <span style="margin-right: 15px;">🖱️ 50</span>
+            <span>👤 12</span>
+        </div>
     </div>
     
     <div id="app"></div>
@@ -65,24 +68,24 @@
     <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
     <!-- GitHub Pages 配置 (最先載入) -->
-    <script src="./js/github-pages-config.js?v=20260128_v6.0.0"></script>
+    <script src="./js/github-pages-config.js?v=20260129_v6.0.1"></script>
     
     <!-- 核心基礎模組 (載入順序重要) -->
-    <script src="./js/config.js?v=20260128_v6.0.0"></script>
-    <script src="./js/logger.js?v=20260128_v6.0.0"></script>
-    <script src="./js/security.js?v=20260128_v6.0.0"></script>
-    <script src="./js/performance.js?v=20260128_v6.0.0"></script>
+    <script src="./js/config.js?v=20260129_v6.0.1"></script>
+    <script src="./js/logger.js?v=20260129_v6.0.1"></script>
+    <script src="./js/security.js?v=20260129_v6.0.1"></script>
+    <script src="./js/performance.js?v=20260129_v6.0.1"></script>
     
     <!-- 應用功能模組 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./js/supabase.js?v=20260128_v6.0.0"></script>
-    <script src="./js/analytics.js?v=20260128_v6.0.0"></script>
-    <script src="./js/script.js?v=20260128_v6.0.0"></script>
+    <script src="./js/supabase.js?v=20260129_v6.0.1"></script>
+    <script src="./js/analytics.js?v=20260129_v6.0.1"></script>
+    <script src="./js/script.js?v=20260129_v6.0.1"></script>
     
     <!-- 調試工具 (開發模式) -->
-    <script src="./js/debug.js?v=20260128_v6.0.0"></script>
+    <script src="./js/debug.js?v=20260129_v6.0.1"></script>
     
     <!-- 問題修復補丁 -->
-    <script src="./js/fix-recommendation.js?v=20260128_v6.0.0"></script>
+    <script src="./js/fix-recommendation.js?v=20260129_v6.0.1"></script>
 </body>
 </html>

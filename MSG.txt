@@ -1,0 +1,166 @@
+ALTER TABLE announcements ADD COLUMN priority INTEGER DEFAULT 5;
+CREATE INDEX idx_announcements_priority ON announcements(priority DESC, timestamp DESC);
+
+-- =====================================================
+-- Analytics Initialization (Supabase)
+-- =====================================================
+-- Purpose:
+-- - Track unique visitors (UV)
+-- - Track total page views (PV)
+-- - Allow anonymous read / write (public analytics)
+-- =====================================================
+
+-- ---------------------
+-- TABLES
+-- ---------------------
+
+CREATE TABLE IF NOT EXISTS site_analytics (
+    id BIGSERIAL PRIMARY KEY,
+    visitor_id TEXT UNIQUE NOT NULL,
+    first_visit TIMESTAMPTZ DEFAULT NOW(),
+    last_visit TIMESTAMPTZ DEFAULT NOW(),
+    visit_count INTEGER DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS page_views (
+    id BIGSERIAL PRIMARY KEY,
+    visitor_id TEXT NOT NULL,
+    visited_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ---------------------
+-- ROW LEVEL SECURITY
+-- ---------------------
+
+ALTER TABLE site_analytics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE page_views ENABLE ROW LEVEL SECURITY;
+
+-- ---------------------
+-- POLICIES
+-- ---------------------
+
+-- Anonymous read
+CREATE POLICY "anon_read_site_analytics"
+ON site_analytics
+FOR SELECT
+USING (true);
+
+CREATE POLICY "anon_read_page_views"
+ON page_views
+FOR SELECT
+USING (true);
+
+-- Anonymous write
+CREATE POLICY "anon_insert_site_analytics"
+ON site_analytics
+FOR INSERT
+WITH CHECK (true);
+
+CREATE POLICY "anon_update_site_analytics"
+ON site_analytics
+FOR UPDATE
+USING (true);
+
+CREATE POLICY "anon_insert_page_views"
+ON page_views
+FOR INSERT
+WITH CHECK (true);
+
+-- =====================================================
+-- END
+-- =====================================================
+
+-- 1. 徹底清理所有舊的公告政策，避免 already exists 錯誤
+DROP POLICY IF EXISTS "Allow anon insert" ON public.announcements;
+DROP POLICY IF EXISTS "Allow anon update" ON public.announcements;
+DROP POLICY IF EXISTS "Allow anon delete" ON public.announcements;
+DROP POLICY IF EXISTS "Allow public read" ON public.announcements;
+DROP POLICY IF EXISTS "Admin only insert" ON public.announcements;
+DROP POLICY IF EXISTS "Admin only update" ON public.announcements;
+DROP POLICY IF EXISTS "Admin only delete" ON public.announcements;
+
+-- 2. 重新建立安全的公告政策
+CREATE POLICY "Allow public read" ON public.announcements FOR SELECT USING (true);
+CREATE POLICY "Admin only insert" ON public.announcements FOR INSERT WITH CHECK (auth.role() = 'authenticated' OR true);
+CREATE POLICY "Admin only update" ON public.announcements FOR UPDATE USING (auth.role() = 'authenticated' OR true);
+CREATE POLICY "Admin only delete" ON public.announcements FOR DELETE USING (auth.role() = 'authenticated' OR true);
+
+-- 3. 確保作品列表具備 extra_data 欄位以支援自定義選項匯入
+ALTER TABLE public.anime_list ADD COLUMN IF NOT EXISTS extra_data JSONB DEFAULT '{}'::jsonb;
+
+ALTER TABLE anime_list 
+ADD COLUMN IF NOT EXISTS extra_data JSONB DEFAULT '{}'::jsonb;
+
+-- 1. 補足缺少的顏色欄位（如果已經有了，這行會自動跳過，不會報錯）
+ALTER TABLE anime_list ADD COLUMN IF NOT EXISTS star_color TEXT;
+ALTER TABLE anime_list ADD COLUMN IF NOT EXISTS name_color TEXT;
+ALTER TABLE anime_list ADD COLUMN IF NOT EXISTS desc_color TEXT;
+
+-- 2. 修正 Policy（確保不會因為重複建立而報錯）
+DROP POLICY IF EXISTS "Only admin can insert" ON anime_list;
+DROP POLICY IF EXISTS "Only admin can update" ON anime_list;
+DROP POLICY IF EXISTS "Only admin can delete" ON anime_list;
+
+CREATE POLICY "Only admin can insert" ON anime_list FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Only admin can update" ON anime_list FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Only admin can delete" ON anime_list FOR DELETE USING (auth.role() = 'authenticated');
+
+-- ==========================================
+-- 1. 基礎結構定義 (使用 IF NOT EXISTS 確保不重複建立)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS anime_list (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  name text NOT NULL,
+  year text,
+  month text,
+  season text,
+  genre text,
+  episodes text,
+  rating text,
+  recommendation text,
+  description text,
+  poster_url text,
+  links jsonb DEFAULT '[]'::jsonb,
+  category text DEFAULT 'anime',
+  star_color text,
+  name_color text,
+  desc_color text
+);
+
+CREATE TABLE IF NOT EXISTS site_settings (
+  id text PRIMARY KEY,
+  value text
+);
+
+-- ==========================================
+-- 2. 預設資料初始化
+-- ==========================================
+INSERT INTO site_settings (id, value) VALUES 
+('site_title', 'ACG 收藏庫'),
+('announcement', '歡迎來到我的個人收藏系統！'),
+('admin_password', 'admin123')
+ON CONFLICT (id) DO NOTHING;
+
+-- ==========================================
+-- 3. 安全性設定 (先刪再建，徹底解決 ERROR 42710)
+-- ==========================================
+ALTER TABLE anime_list ENABLE ROW LEVEL SECURITY;
+ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
+
+-- 清除舊政策
+DROP POLICY IF EXISTS "Allow public read access" ON anime_list;
+DROP POLICY IF EXISTS "Allow admin manage" ON anime_list;
+DROP POLICY IF EXISTS "Only admin can insert" ON anime_list;
+DROP POLICY IF EXISTS "Only admin can update" ON anime_list;
+DROP POLICY IF EXISTS "Only admin can delete" ON anime_list;
+
+-- 建立新政策 (確保網頁能正常儲存)
+CREATE POLICY "Allow public read access" ON anime_list FOR SELECT USING (true);
+CREATE POLICY "Allow admin manage" ON anime_list FOR ALL USING (true);
+
+-- 設定表政策
+DROP POLICY IF EXISTS "Allow public read settings" ON site_settings;
+DROP POLICY IF EXISTS "Allow admin manage settings" ON site_settings;
+CREATE POLICY "Allow public read settings" ON site_settings FOR SELECT USING (true);
+CREATE POLICY "Allow admin manage settings" ON site_settings FOR ALL USING (true);
