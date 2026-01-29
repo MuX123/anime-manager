@@ -9,14 +9,9 @@ function getVisitorId() {
     return visitorId;
 }
 
-// 版面點擊追蹤 - 只統計分類按鈕點擊
+// 版面點擊追蹤 - 只統計分類按鈕點擊（雲端計算）
 async function trackCategoryClick(category) {
     try {
-        // 立即更新本地計數
-        analyticsData.categoryClicks++;
-        updateAnalyticsDisplay();
-        console.log('📂 版面點擊計數更新:', analyticsData.categoryClicks, '分類:', category);
-        
         // 確保使用正確的 Supabase 客戶端
         let client;
         if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
@@ -24,7 +19,7 @@ async function trackCategoryClick(category) {
         } else if (window.supabaseClient) {
             client = window.supabaseClient;
         } else {
-            console.warn('⚠️ Category Click: Supabase 客戶端尚未準備就緒，僅使用本地計數');
+            console.warn('⚠️ Category Click: Supabase 客戶端尚未準備就緒');
             return;
         }
         
@@ -35,7 +30,7 @@ async function trackCategoryClick(category) {
         
         if (schemaStatus === 'NEW_SCHEMA') {
             // 新版結構：使用 event_type
-            client
+            await client
                 .from('site_analytics')
                 .insert([{ 
                     visitor_id: visitorId,
@@ -43,21 +38,52 @@ async function trackCategoryClick(category) {
                     page_url: window.location.href,
                     event_data: { category: category },
                     timestamp: new Date().toISOString()
-                }])
-                .then(() => {
-                    console.log('📂 版面點擊追蹤成功 (新版結構):', analyticsData.categoryClicks);
-                })
-                .catch(err => {
-                    console.warn('版面點擊追蹤資料庫失敗，但本地計數已更新:', err.message);
-                });
+                }]);
+            
+            console.log('📂 版面點擊記錄到雲端:', category);
+            
+            // 重新載入雲端數據
+            await loadCategoryClicksFromCloud();
+            
         } else {
-            // 舊版結構：不支援 event_type，不記錄到資料庫
-            console.warn('⚠️ 舊版資料庫結構不支援版面點擊追蹤，僅使用本地計數');
+            // 舊版結構：不支援 event_type
+            console.warn('⚠️ 舊版資料庫結構不支援版面點擊追蹤');
         }
             
     } catch (err) {
-        // 即使發生錯誤，本地計數已經更新
-        console.error('Track category click error，但本地計數已更新:', err);
+        console.error('Track category click error:', err);
+    }
+}
+
+// 從雲端載入版面點擊數據
+async function loadCategoryClicksFromCloud() {
+    try {
+        let client;
+        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+            client = window.supabaseManager.getClient();
+        } else if (window.supabaseClient) {
+            client = window.supabaseClient;
+        } else {
+            console.warn('⚠️ 無法連接資料庫載入版面點擊數據');
+            return;
+        }
+        
+        // 查詢雲端版面點擊總數
+        const { count } = await client
+            .from('site_analytics')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_type', 'category_click');
+            
+        const cloudClicks = count || 0;
+        
+        // 更新本地顯示（不保存到 localStorage）
+        analyticsData.categoryClicks = cloudClicks;
+        updateAnalyticsDisplay();
+        
+        console.log('📂 雲端版面點擊數據載入:', cloudClicks);
+        
+    } catch (err) {
+        console.error('Load category clicks from cloud error:', err);
     }
 }
 
@@ -317,6 +343,7 @@ function updateAnalyticsDisplay() {
 window.trackVisit = trackVisit;
 window.trackCategoryClick = trackCategoryClick;
 window.loadAnalytics = loadAnalytics;
+window.loadCategoryClicksFromCloud = loadCategoryClicksFromCloud;
 window.analyticsData = analyticsData;
 
 // 禁用點擊追蹤 - 現在只追蹤訪問次數
@@ -327,29 +354,16 @@ function setupClickTracking() {
 
 // 立即初始化顯示
 function initAnalyticsDisplay() {
-    // 從 localStorage 恢復數據
-    const savedData = localStorage.getItem('analytics_data');
-    if (savedData) {
-        try {
-            const parsed = JSON.parse(savedData);
-            analyticsData.totalVisits = parsed.totalVisits || 0;
-            analyticsData.categoryClicks = parsed.categoryClicks || 0;
-            analyticsData.uniqueVisitors = parsed.uniqueVisitors || 0;
-            console.log('📊 從 localStorage 恢復統計數據:', analyticsData);
-        } catch (e) {
-            console.warn('恢復統計數據失敗:', e);
-        }
-    }
-    
     updateAnalyticsDisplay();
     
     // 設置點擊追蹤（已停用）
     setupClickTracking();
     
-    // 延遲追蹤訪問
+    // 延遲追蹤訪問和載入雲端版面點擊數據
     setTimeout(() => {
         console.log('📊 開始追蹤訪客統計');
         trackVisit();
+        loadCategoryClicksFromCloud();
     }, 2000);
 }
 
