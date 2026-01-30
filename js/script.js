@@ -118,11 +118,16 @@ let isFirstLoad = true;
         try {
             const { data: { session } } = await client.auth.getSession();
             if (session) {
-                isAdmin = true;
-                console.log('👤 檢測到已登入用戶:', session.user.email);
+                // 檢查是否為管理員（根據email或其他條件）
+                const adminEmail = siteSettings.admin_email || 'admin@acg-manager.com'; // 可以在site_settings中設定管理員email
+                isAdmin = session.user.email === adminEmail;
+                console.log('👤 檢測到登入用戶:', session.user.email, '管理員:', isAdmin);
+            } else {
+                isAdmin = false;
             }
         } catch (err) {
             console.warn('檢查認證狀態失敗:', err);
+            isAdmin = false;
         }
         
         // 4. 獲取網站設定與選項資料 (優先載入)
@@ -762,9 +767,14 @@ window.hideLoginModal = () => {
 window.handleLogin = async () => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    const { error, data } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) return window.showToast('登入失敗：' + error.message, 'error');
+    
+    // 登入成功後，立即更新認證狀態並檢查是否為管理員
+    isAdmin = true;
+    window.updateAdminMenu();
     window.hideLoginModal();
+    window.showToast('✓ 登入成功', 'success');
 };
 
 window.handleLogout = async () => {

@@ -175,21 +175,38 @@ async function loadAnalytics() {
             return;
         }
         
-        // 並行獲取點擊次數和訪客數量
-        const [clicksResult, visitorsResult, pageViewsResult] = await Promise.all([
-            client.from('category_clicks').select('id', { count: 'exact', head: true }),
-            client.from('site_visitors').select('visitor_id', { count: 'exact', head: true }),
-            client.from('page_views').select('id', { count: 'exact', head: true })
-        ]);
+        // 順序獲取數據以避免並行查詢導致的不一致
+        let clicksResult, visitorsResult, pageViewsResult;
         
-        analyticsData.totalClicks = clicksResult.count || 0;
-        analyticsData.uniqueVisitors = visitorsResult.count || 0;
-        analyticsData.totalPageViews = pageViewsResult.count || 0;
+        try {
+            // 按順序獲取點擊次數
+            clicksResult = await client.from('category_clicks').select('id', { count: 'exact', head: true });
+            analyticsData.totalClicks = clicksResult.count || 0;
+            
+            // 然後獲取訪客數量
+            visitorsResult = await client.from('site_visitors').select('visitor_id', { count: 'exact', head: true });
+            analyticsData.uniqueVisitors = visitorsResult.count || 0;
+            
+            // 最後獲取頁面瀏覽數量
+            pageViewsResult = await client.from('page_views').select('id', { count: 'exact', head: true });
+            analyticsData.totalPageViews = pageViewsResult.count || 0;
+            
+        } catch (error) {
+            console.warn('Analytics 載入錯誤:', error);
+            // 使用快取數據或預設值
+            const cached = localStorage.getItem('analytics_cache');
+            if (cached) {
+                const data = JSON.parse(cached);
+                analyticsData.totalClicks = data.totalClicks || 0;
+                analyticsData.uniqueVisitors = data.uniqueVisitors || 0;
+                analyticsData.totalPageViews = data.totalPageViews || 0;
+            }
+        }
         
         localStorage.setItem('analytics_cache', JSON.stringify(analyticsData));
         localStorage.setItem('analytics_cache_time', Date.now().toString());
         
-        console.log('📊 Analytics 數據載入:', { clicks: analyticsData.totalClicks, visitors: analyticsData.uniqueVisitors });
+        console.log('📊 Analytics 數據載入:', { clicks: analyticsData.totalClicks, visitors: analyticsData.uniqueVisitors, pageViews: analyticsData.totalPageViews });
         
         updateAnalyticsDisplay();
     } catch (err) {
@@ -202,11 +219,20 @@ async function loadAnalytics() {
 function updateAnalyticsDisplay() {
     const container = document.getElementById('analytics-display');
     if (container) {
+        // 添加淡入動畫效果，避免閃爍
+        container.style.opacity = '0';
+        container.style.transition = 'opacity 0.3s ease-in-out';
+        
         container.innerHTML = `
             <span style="margin-right: 10px;">👤 ${analyticsData.uniqueVisitors.toLocaleString()}</span>
             <span style="margin-right: 10px;">🖱️ ${analyticsData.totalClicks.toLocaleString()}</span>
             <span>📄 ${analyticsData.totalPageViews.toLocaleString()}</span>
         `;
+        
+        // 觸發淡入效果
+        setTimeout(() => {
+            container.style.opacity = '1';
+        }, 50);
     }
 }
 
