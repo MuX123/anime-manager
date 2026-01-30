@@ -702,8 +702,14 @@ window.getFilteredData = () => {
     });
 };
 
-window.switchCategory = async (cat) => { 
+window.switchCategory = async (cat) => {
     console.log('🔄 切換分類至:', cat);
+    
+    // 追蹤板塊切換
+    if (typeof window.trackCategorySwitch === 'function') {
+        window.trackCategorySwitch(cat);
+    }
+    
     currentCategory = cat;
     currentSection = cat; 
     currentPage = 1; 
@@ -847,7 +853,10 @@ window.renderAdminContent = (pagedData, total) => {
                 <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">電影板塊</button>
             </div>
 		            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-		                <button class="btn-primary" id="bulk-delete-btn" style="font-size: 12px; padding: 8px 16px; border-color: #ff4444; color: #ff4444; display: none;" onclick="window.bulkDeleteAnime()">🗑 批量刪除 (<span id="selected-count">0</span>)</button>
+		                <div style="display: flex; gap: 10px;">
+		                    <button class="btn-primary" id="bulk-delete-btn" style="font-size: 12px; padding: 8px 16px; border-color: #ff4444; color: #ff4444; display: none;" onclick="window.bulkDeleteAnime()">🗑 批量刪除 (<span id="selected-count">0</span>)</button>
+		                    <button class="btn-primary" style="font-size: 12px; padding: 8px 16px; border-color: #ff4444; color: #ff4444; background: rgba(255,0,0,0.1);" onclick="window.deleteAllInCategory()">💀 刪除全部 ${currentCategory} 數據</button>
+		                </div>
 		                <div style="display: flex; gap: 12px;">
 		                    <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.exportCSV('${currentCategory}')">📥 匯出資料 (CSV)</button>
 		                    <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.triggerImport('${currentCategory}')">📤 匯入資料 (CSV)</button>
@@ -1315,16 +1324,134 @@ window.importData = (event) => {
     reader.onload = async (e) => {
         try {
             const csv = e.target.result;
-            const lines = csv.split('\n').filter(l => l.trim());
-            if (lines.length < 2) return window.showToast('✗ CSV 檔案無內容', 'error');
+            
+            // 專業的 CSV 解析器，支援多行欄位和引號
+            const parseCSV = (text) => {
+                const rows = [];
+                let currentRow = [];
+                let currentField = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < text.length; i++) {
+                    const char = text[i];
+                    const nextChar = text[i + 1];
+                    
+                    // 引號處理
+                    if (char === '"') {
+                        if (inQuotes && nextChar === '"') {
+                            // 跳過轉義的引號
+                            currentField += '"';
+                            i++;
+                        } else {
+                            inQuotes = !inQuotes;
+                        }
+                    }
+                    // 逗號處理
+                    else if (char === ',' && !inQuotes) {
+                        currentRow.push(currentField);
+                        currentField = '';
+                    }
+                    // 換行處理
+                    else if ((char === '\n' || char === '\r') && !inQuotes) {
+                        // 跳過 \r\n 組合
+                        if (char === '\r' && nextChar === '\n') {
+                            i++;
+                        }
+                        // 完成當前行
+                        if (currentField.trim() || currentRow.length > 0) {
+                            currentRow.push(currentField);
+                            rows.push(currentRow);
+                        }
+                        currentRow = [];
+                        currentField = '';
+                    }
+                    // 其他字符
+                    else {
+                        currentField += char;
+                    }
+                }
+                
+                // 處理最後一行
+                if (currentField.trim() || currentRow.length > 0) {
+                    currentRow.push(currentField);
+                    rows.push(currentRow);
+                }
+                
+                return rows;
+            };
+            
+            const allRows = parseCSV(csv);
+            if (allRows.length < 2) return window.showToast('✗ CSV 檔案無內容', 'error');
             
             const labelMap = {
                 '作品名稱': 'name', '海報網址': 'poster_url', '簡介內容': 'description',
                 '星星顏色': 'star_color', '名稱顏色': 'name_color', '簡介顏色': 'desc_color',
                 '相關連結': 'links', '額外資料': 'extra_data',
-                '年份': 'year', '月份': 'month', '季度': 'season', '類型': 'genre',
+                '年份': 'year', '月份': 'month', '季度': 'season',
                 '集數': 'episodes', '評分': 'rating', '推薦度': 'recommendation'
             };
+            if (siteSettings.custom_labels) {
+                Object.entries(siteSettings.custom_labels).forEach(([key, label]) => { labelMap[label] = key; });
+            }
+            
+            // 解析標題行
+            const rawHeaders = allRows[0].map(h => h.trim().replace(/^"|"$/g, ''));
+            const headers = rawHeaders.map(h => labelMap[h] || h);
+            
+            // 定義資料庫中實際存在的標準欄位
+            const dbStandardFields = ['name', 'poster_url', 'description', 'star_color', 'name_color', 'desc_color', 'links', 'extra_data', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'category'];
+            
+            const items = [];
+            for (let i = 1; i < allRows.length; i++) {
+                const values = allRows[i];
+                
+                // 跳過空行
+                if (values.length === 1 && values[0].trim() === '') continue;
+                
+                const item = { extra_data: {} };
+                headers.forEach((h, idx) => {
+                    let val = (values[idx] || '').trim().replace(/^"|"$/g, '').replace(/""/g, '"');
+                    
+                    if (dbStandardFields.includes(h)) {
+                        // 處理標準欄位
+                        if (h === 'links' || h === 'extra_data') {
+                            try { 
+                                const parsed = JSON.parse(val);
+                                if (h === 'extra_data') Object.assign(item.extra_data, parsed);
+                                else item[h] = parsed;
+                            } catch(e) { if (h === 'links') item[h] = []; }
+                        } else {
+                            item[h] = val;
+                        }
+                    } else if (h) {
+                        // 處理自定義欄位，歸類到 extra_data
+                        item.extra_data[h] = val;
+                    }
+                });
+                
+                item.category = importTarget;
+                delete item.id;
+                
+                // 跳過無效的資料（沒有作品名稱）
+                if (!item.name || !item.name.trim()) continue;
+                
+                items.push(item);
+            }
+            
+            const { error } = await supabaseClient.from('anime_list').insert(items);
+            if (error) throw error;
+            
+            window.showToast(`✓ 成功匯入 ${items.length} 筆資料`);
+            await window.loadData();
+            window.renderAdmin();
+        } catch (err) { 
+            console.error('Import error:', err);
+            window.showToast('✗ 匯入失敗：' + err.message, 'error'); 
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+};
             if (siteSettings.custom_labels) {
                 Object.entries(siteSettings.custom_labels).forEach(([key, label]) => { labelMap[label] = key; });
             }
@@ -1454,6 +1581,34 @@ window.deleteAnime = async (id) => {
         await window.loadData();
         window.renderAdmin();
     } catch (err) { window.showToast('✗ 刪除失敗', 'error'); }
+};
+
+window.deleteAllInCategory = async () => {
+    // 統計該板塊有多少作品
+    const count = animeData.filter(a => a.category === currentCategory).length;
+    if (count === 0) {
+        window.showToast('✗ 該板塊沒有作品', 'warning');
+        return;
+    }
+    
+    if (!confirm(`⚠️ 確定要刪除全部 ${count} 個 ${currentCategory} 作品嗎？\n此操作無法復原！`)) return;
+    
+    // 二次確認
+    if (!confirm(`再次確認：確定要刪除全部 ${count} 個 ${currentCategory} 作品？`)) return;
+    
+    try {
+        window.showToast('🗑 正在刪除...', 'info');
+        
+        const { error } = await supabaseClient.from('anime_list').delete().eq('category', currentCategory);
+        if (error) throw error;
+        
+        window.showToast(`✓ 已刪除全部 ${count} 個 ${currentCategory} 作品`);
+        await window.loadData();
+        window.renderAdmin();
+    } catch (err) {
+        console.error('Delete all error:', err);
+        window.showToast('✗ 刪除失敗：' + err.message, 'error');
+    }
 };
 
 window.toggleSelectAll = (checked) => {

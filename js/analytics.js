@@ -1,17 +1,5 @@
 let analyticsData = { totalClicks: null, uniqueVisitors: null, totalPageViews: null };
 
-// 頁面載入時隱藏統計區塊，直到數據載入完成
-document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('analytics-display');
-    if (container) {
-        // 隱藏容器，數據載入完成後才顯示
-        container.style.transition = 'opacity 0.5s ease-in-out';
-        container.style.opacity = '0';
-        container.style.visibility = 'hidden';
-        container.style.pointerEvents = 'none'; // 防止點擊隱藏的元素
-    }
-});
-
 function getVisitorId() {
     let visitorId = localStorage.getItem('visitor_id');
     if (!visitorId) {
@@ -21,45 +9,7 @@ function getVisitorId() {
     return visitorId;
 }
 
-// 全局點擊追蹤
-function trackClick() {
-    try {
-        // 確保使用正確的 Supabase 客戶端
-        let client;
-        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
-            client = window.supabaseManager.getClient();
-        } else if (window.supabaseClient) {
-            client = window.supabaseClient;
-        } else {
-            console.warn('⚠️ Click Track: Supabase 客戶端尚未準備就緒');
-            return;
-        }
-        
-        const visitorId = getVisitorId();
-        
-        // 記錄點擊到資料庫
-        client
-            .from('category_clicks')
-            .insert([{ 
-                visitor_id: visitorId,
-                category_name: 'general', // 預設分類，後續可改為更具體的分類
-                page_url: window.location.href,
-                click_timestamp: new Date().toISOString()
-            }])
-            .then(() => {
-                // 異步更新統計數據
-                updateClickCount();
-            })
-            .catch(err => {
-                console.warn('點擊追蹤失敗:', err);
-            });
-            
-    } catch (err) {
-        console.error('Track click error:', err);
-    }
-}
-
-// 更新點擊次數
+// 追蹤板塊切換（只統計板塊切換，不統計所有點擊）
 async function updateClickCount() {
     try {
         let client;
@@ -264,29 +214,81 @@ function updateAnalyticsDisplay() {
 }
 
 window.trackVisit = trackVisit;
-window.trackClick = trackClick;
+window.trackCategorySwitch = trackCategorySwitch;
 window.loadAnalytics = loadAnalytics;
 window.analyticsData = analyticsData;
 
-// 設置全局點擊監聽器
-function setupClickTracking() {
-    let clickTimer;
-    document.addEventListener('click', (event) => {
-        // 忽略管理員操作和某些特殊元素
-        if (isAdmin) return;
-        if (event.target.closest('#systemMenu, #loginModal, #detailModal, .modal')) return;
+// 追蹤板塊切換（只統計板塊切換，不統計所有點擊）
+function trackCategorySwitch(categoryName) {
+    try {
+        let client;
+        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+            client = window.supabaseManager.getClient();
+        } else if (window.supabaseClient) {
+            client = window.supabaseClient;
+        } else {
+            console.warn('⚠️ Category Switch Track: Supabase 客戶端尚未準備就緒');
+            return;
+        }
         
-        // 防止過於頻繁的點擊追蹤，使用防抖
-        clearTimeout(clickTimer);
-        clickTimer = setTimeout(() => {
-            trackClick();
-        }, 100);
-    });
+        const visitorId = getVisitorId();
+        
+        // 記錄板塊切換到 category_clicks 表
+        client
+            .from('category_clicks')
+            .insert([{ 
+                visitor_id: visitorId,
+                category_name: categoryName,
+                page_url: window.location.href,
+                click_timestamp: new Date().toISOString()
+            }])
+            .then(() => {
+                updateClickCount();
+            })
+            .catch(err => {
+                console.warn('板塊切換追蹤失敗:', err);
+            });
+            
+    } catch (err) {
+        console.error('Track category switch error:', err);
+    }
 }
 
-// 在頁面載入後延遲追蹤訪問（避免與初始化衝突）
+// 追蹤管理員操作
+function trackAdminAction(actionName) {
+    try {
+        let client;
+        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+            client = window.supabaseManager.getClient();
+        } else if (window.supabaseClient) {
+            client = window.supabaseClient;
+        } else {
+            return;
+        }
+        
+        const visitorId = getVisitorId();
+        
+        client
+            .from('category_clicks')
+            .insert([{ 
+                visitor_id: visitorId,
+                category_name: 'admin_' + actionName,
+                page_url: window.location.href,
+                click_timestamp: new Date().toISOString()
+            }])
+            .catch(err => {
+                // 靜默失敗，不顯示錯誤
+            });
+            
+    } catch (err) {
+        // 靜默失敗
+    }
+}
+
+// 設置全局點擊監聽器（已停用，改為只追蹤板塊切換）
+
+// 在頁面載入後延遲追蹤訪問
 setTimeout(() => {
     console.log('📊 開始追蹤訪客統計');
     trackVisit();
-    setupClickTracking();
 }, 3000);
