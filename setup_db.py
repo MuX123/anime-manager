@@ -88,7 +88,9 @@ def main():
         'anime_list',
         'site_settings', 
         'announcements',
-        'visitor_analytics'
+        'page_views',
+        'category_clicks',
+        'visitor_sessions'
     ]
     
     print("\n📊 檢查資料表狀態:")
@@ -134,13 +136,29 @@ def main():
    - created_at (timestamp)
    - updated_at (timestamp)
 
-4. visitor_analytics (訪客統計表)
-   - id (uuid, primary key)
-   - visitor_id (text)
-   - page_url (text)
-   - timestamp (timestamp)
-   - user_agent (text)
-   - session_data (jsonb)
+4. page_views (頁面瀏覽統計表)
+    - id (uuid, primary key)
+    - visitor_id (text)
+    - page_url (text)
+    - page_title (text)
+    - view_timestamp (timestamp)
+
+5. category_clicks (分類點擊統計表)
+    - id (uuid, primary key)
+    - visitor_id (text)
+    - category_name (text)
+    - page_url (text)
+    - click_timestamp (timestamp)
+
+6. visitor_sessions (訪客會話表)
+    - id (uuid, primary key)
+    - visitor_id (text)
+    - session_id (text)
+    - first_seen (timestamp)
+    - last_seen (timestamp)
+    - page_views (integer)
+    - category_clicks (integer)
+    - user_agent (text)
 """)
 
 if __name__ == "__main__":

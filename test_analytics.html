@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分析功能測試</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>分析功能測試頁面</h1>
+    <div id="analytics-display" style="background: #f0f0f0; padding: 10px; margin: 10px 0;">
+        載入中...
+    </div>
+    <button onclick="testClickTracking()">測試點擊追蹤</button>
+    <button onclick="testVisitTracking()">測試訪問追蹤</button>
+    <button onclick="loadAnalytics()">重新載入統計</button>
+    
+    <div id="test-results"></div>
+
+    <script>
+        // 初始化 Supabase 客戶端
+        const supabaseUrl = 'https://twgydqknzdyahgfuamak.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3Z3lkcWtuemR5YWhnZnVhbWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NjA5MTEsImV4cCI6MjA4NDMzNjkxMX0.0YizCZP2OglEQQIh96x8viaemR6reZs8zendNT9KS7c';
+        const client = window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        
+        let analyticsData = { totalClicks: 0, uniqueVisitors: 0 };
+
+        function getVisitorId() {
+            let visitorId = localStorage.getItem('visitor_id');
+            if (!visitorId) {
+                visitorId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('visitor_id', visitorId);
+            }
+            return visitorId;
+        }
+
+        async function testClickTracking() {
+            try {
+                const visitorId = getVisitorId();
+                const result = await client
+                    .from('category_clicks')
+                    .insert([{ 
+                        visitor_id: visitorId,
+                        category_name: 'test',
+                        page_url: window.location.href,
+                        click_timestamp: new Date().toISOString()
+                    }]);
+                
+                updateResults('✅ 點擊追蹤測試成功: ' + JSON.stringify(result));
+                setTimeout(loadAnalytics, 1000); // 延遲載入統計
+            } catch (err) {
+                updateResults('❌ 點擊追蹤測試失敗: ' + err.message);
+            }
+        }
+
+        async function testVisitTracking() {
+            try {
+                const visitorId = getVisitorId();
+                const lastTrack = localStorage.getItem('last_visit_time');
+                const now = Date.now();
+                
+                if (!lastTrack || (now - parseInt(lastTrack)) >= 300000) {
+                    // 記錄頁面訪問
+                    await client
+                        .from('page_views')
+                        .insert([{ 
+                            visitor_id: visitorId,
+                            page_url: window.location.href,
+                            page_title: document.title,
+                            view_timestamp: new Date().toISOString()
+                        }]);
+                    
+                    localStorage.setItem('last_visit_time', now.toString());
+                    updateResults('✅ 訪問追蹤測試成功');
+                } else {
+                    updateResults('⏰ 5分鐘內重複訪問，跳過記錄');
+                }
+                
+                setTimeout(loadAnalytics, 1000);
+            } catch (err) {
+                updateResults('❌ 訪問追蹤測試失敗: ' + err.message);
+            }
+        }
+
+        async function loadAnalytics() {
+            try {
+                const [clicksResult, visitorsResult] = await Promise.all([
+                    client.from('category_clicks').select('id', { count: 'exact', head: true }),
+                    client.from('site_visitors').select('visitor_id', { count: 'exact', head: true })
+                ]);
+                
+                analyticsData.totalClicks = clicksResult.count || 0;
+                analyticsData.uniqueVisitors = visitorsResult.count || 0;
+                
+                updateAnalyticsDisplay();
+                updateResults('✅ 統計數據載入成功');
+            } catch (err) {
+                updateResults('❌ 統計數據載入失敗: ' + err.message);
+            }
+        }
+
+        function updateAnalyticsDisplay() {
+            const container = document.getElementById('analytics-display');
+            if (container) {
+                container.innerHTML = `
+                    <span style="margin-right: 15px;">🖱️ 點擊次數: ${analyticsData.totalClicks.toLocaleString()}</span>
+                    <span>👤 訪客人數: ${analyticsData.uniqueVisitors.toLocaleString()}</span>
+                `;
+            }
+        }
+
+        function updateResults(message) {
+            const resultsDiv = document.getElementById('test-results');
+            const timestamp = new Date().toLocaleTimeString();
+            resultsDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+        }
+
+        // 頁面載入時自動載入統計
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(loadAnalytics, 1000);
+        });
+    </script>
+</body>
+</html>

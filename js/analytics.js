@@ -27,12 +27,12 @@ function trackClick() {
         
         // 記錄點擊到資料庫
         client
-            .from('site_analytics')
+            .from('category_clicks')
             .insert([{ 
                 visitor_id: visitorId,
-                event_type: 'click',
+                category_name: 'general', // 預設分類，後續可改為更具體的分類
                 page_url: window.location.href,
-                timestamp: new Date().toISOString()
+                click_timestamp: new Date().toISOString()
             }])
             .then(() => {
                 // 異步更新統計數據
@@ -60,9 +60,8 @@ async function updateClickCount() {
         }
         
         const { count } = await client
-            .from('site_analytics')
-            .select('*', { count: 'exact', head: true })
-            .eq('event_type', 'click');
+            .from('category_clicks')
+            .select('*', { count: 'exact', head: true });
             
         analyticsData.totalClicks = count || 0;
         
@@ -137,12 +136,12 @@ async function trackVisit() {
         
         // 記錄頁面訪問
         await client
-            .from('site_analytics')
+            .from('page_views')
             .insert([{ 
                 visitor_id: visitorId,
-                event_type: 'page_view',
                 page_url: window.location.href,
-                timestamp: new Date().toISOString()
+                page_title: document.title,
+                view_timestamp: new Date().toISOString()
             }]);
         
         await loadAnalytics();
@@ -178,7 +177,7 @@ async function loadAnalytics() {
         
         // 並行獲取點擊次數和訪客數量
         const [clicksResult, visitorsResult] = await Promise.all([
-            client.from('site_analytics').select('id', { count: 'exact', head: true }).eq('event_type', 'click'),
+            client.from('category_clicks').select('id', { count: 'exact', head: true }),
             client.from('site_visitors').select('visitor_id', { count: 'exact', head: true })
         ]);
         
