@@ -1153,7 +1153,7 @@ window.saveAnime = async () => {
             name: nameEl.value,
             poster_url: document.getElementById('form-poster').value,
             category: document.getElementById('form-category').value,
-            genre: Array.from(document.querySelectorAll('input[name="form-genre"]:checked')).map(cb => cb.value),
+                 // genre: Array.from(document.querySelectorAll('input[name="form-genre"]:checked')).map(cb => cb.value), // 暫時保留以防將來表結構恢復
             links: Array.from(document.querySelectorAll('#links-list > div')).map(row => {
                 const n = row.querySelector('.link-name');
                 const u = row.querySelector('.link-url');
@@ -1332,8 +1332,14 @@ window.importData = (event) => {
             const rawHeaders = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
             const headers = rawHeaders.map(h => labelMap[h] || h);
             
-            // 定義資料庫中實際存在的標準欄位
-            const dbStandardFields = ['name', 'poster_url', 'description', 'star_color', 'name_color', 'desc_color', 'links', 'extra_data', 'year', 'month', 'season', 'genre', 'episodes', 'rating', 'recommendation', 'category'];
+            // 定義資料庫中實際存在的標準欄位（根據實際查詢結果）
+            const dbStandardFields = ['name', 'poster_url', 'description', 'star_color', 'name_color', 'desc_color', 'links', 'extra_data', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'category'];
+            
+            // 暫時移除 genre 欄位處理，因為資料表中沒有這個欄位
+            // const genreIndex = headers.findIndex(h => h === 'genre');
+            // if (genreIndex !== -1) {
+            //     item[headers[genreIndex]] = val ? val.split('|') : [];
+            // }
 
             const items = [];
             for (let i = 1; i < lines.length; i++) {

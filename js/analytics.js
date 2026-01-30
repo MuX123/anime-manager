@@ -1,4 +1,16 @@
-let analyticsData = { totalClicks: 0, uniqueVisitors: 0 };
+let analyticsData = { totalClicks: null, uniqueVisitors: null, totalPageViews: null };
+
+// 頁面載入時隱藏統計區塊，直到數據載入完成
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('analytics-display');
+    if (container) {
+        // 隱藏容器，數據載入完成後才顯示
+        container.style.transition = 'opacity 0.5s ease-in-out';
+        container.style.opacity = '0';
+        container.style.visibility = 'hidden';
+        container.style.pointerEvents = 'none'; // 防止點擊隱藏的元素
+    }
+});
 
 function getVisitorId() {
     let visitorId = localStorage.getItem('visitor_id');
@@ -166,13 +178,17 @@ async function loadAnalytics() {
         const cached = localStorage.getItem('analytics_cache');
         const cacheTime = localStorage.getItem('analytics_cache_time');
         
-        // 使用5分鐘快取
+        // 使用5分鐘快取（如果快取數據有效則直接使用）
         if (cached && cacheTime && (Date.now() - parseInt(cacheTime)) < 300000) {
             const data = JSON.parse(cached);
-            analyticsData.totalClicks = data.totalClicks || 0;
-            analyticsData.uniqueVisitors = data.uniqueVisitors || 0;
-            updateAnalyticsDisplay();
-            return;
+            // 確保快取數據有效（不為 null）
+            if (data.totalClicks !== null && data.uniqueVisitors !== null && data.totalPageViews !== null) {
+                analyticsData.totalClicks = data.totalClicks;
+                analyticsData.uniqueVisitors = data.uniqueVisitors;
+                analyticsData.totalPageViews = data.totalPageViews;
+                updateAnalyticsDisplay();
+                return;
+            }
         }
         
         // 順序獲取數據以避免並行查詢導致的不一致
@@ -218,22 +234,33 @@ async function loadAnalytics() {
 
 function updateAnalyticsDisplay() {
     const container = document.getElementById('analytics-display');
-    if (container) {
-        // 添加淡入動畫效果，避免閃爍
-        container.style.opacity = '0';
-        container.style.transition = 'opacity 0.3s ease-in-out';
-        
-        container.innerHTML = `
-            <span style="margin-right: 10px;">👤 ${analyticsData.uniqueVisitors.toLocaleString()}</span>
-            <span style="margin-right: 10px;">🖱️ ${analyticsData.totalClicks.toLocaleString()}</span>
-            <span>📄 ${analyticsData.totalPageViews.toLocaleString()}</span>
-        `;
-        
-        // 觸發淡入效果
-        setTimeout(() => {
-            container.style.opacity = '1';
-        }, 50);
+    if (!container) return;
+    
+    // 檢查是否所有數據都已載入
+    const allLoaded = analyticsData.totalClicks !== null && 
+                     analyticsData.uniqueVisitors !== null && 
+                     analyticsData.totalPageViews !== null;
+    
+    if (!allLoaded) {
+        // 數據尚未載入完成，保持隱藏
+        return;
     }
+    
+    // 數據載入完成，顯示並添加淡入動畫
+    container.style.visibility = 'visible';
+    container.style.pointerEvents = 'auto';
+    container.style.opacity = '0';
+    
+    container.innerHTML = `
+        <span style="margin-right: 10px;">👤 ${analyticsData.uniqueVisitors.toLocaleString()}</span>
+        <span style="margin-right: 10px;">🖱️ ${analyticsData.totalClicks.toLocaleString()}</span>
+        <span>📄 ${analyticsData.totalPageViews.toLocaleString()}</span>
+    `;
+    
+    // 觸發淡入效果
+    requestAnimationFrame(() => {
+        container.style.opacity = '1';
+    });
 }
 
 window.trackVisit = trackVisit;
@@ -257,12 +284,9 @@ function setupClickTracking() {
     });
 }
 
-// 在頁面載入時自動追蹤訪問和設置點擊追蹤
-document.addEventListener('DOMContentLoaded', () => {
-    // 延遲執行，等待其他模組初始化完成
-    setTimeout(() => {
-        console.log('📊 開始追蹤訪客統計');
-        trackVisit();
-        setupClickTracking();
-    }, 3000);
-});
+// 在頁面載入後延遲追蹤訪問（避免與初始化衝突）
+setTimeout(() => {
+    console.log('📊 開始追蹤訪客統計');
+    trackVisit();
+    setupClickTracking();
+}, 3000);
