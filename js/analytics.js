@@ -9,67 +9,23 @@ function getVisitorId() {
     return visitorId;
 }
 
-// 版面點擊追蹤 - 只統計分類按鈕點擊（雲端計算）
+// 版面點擊追蹤功能已移除 - 不再進行任何後端統計操作
 async function trackCategoryClick(category) {
-    try {
-        // 確保使用正確的 Supabase 客戶端
-        let client;
-        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
-            client = window.supabaseManager.getClient();
-        } else if (window.supabaseClient) {
-            client = window.supabaseClient;
-        } else {
-            console.warn('⚠️ Category Click: Supabase 客戶端尚未準備就緒');
-            return;
-        }
-        
-        const visitorId = getVisitorId();
-        
-        // 檢查資料庫結構
-        const schemaStatus = await checkDatabaseSchema(client);
-        
-        if (schemaStatus === 'NEW_SCHEMA') {
-            // 新版結構：使用 event_type
-            await client
-                .from('site_analytics')
-                .insert([{ 
-                    visitor_id: visitorId,
-                    event_type: 'category_click',
-                    page_url: window.location.href,
-                    event_data: { category: category },
-                    timestamp: new Date().toISOString()
-                }]);
-            
-            console.log('📂 版面點擊記錄到雲端:', category);
-            
-            // 重新載入雲端數據（延遲 500ms 確保資料庫更新完成）
-            setTimeout(async () => {
-                await loadCategoryClicksFromCloud();
-            }, 500);
-        } else {
-            console.warn('⚠️ 舊版資料庫結構不支援版面點擊追蹤');
-        }
-            // 舊版結構：不支援 event_type
-            console.warn('⚠️ 舊版資料庫結構不支援版面點擊追蹤');
-        }
-            
-    } catch (err) {
-        console.error('Track category click error:', err);
-    }
+    console.log('📂 版面點擊追蹤功能已禁用');
+    // 不再進行任何資料庫操作或本地計數
+    return;
 }
 
-// 從雲端載入版面點擊數據
+// 雲端數據載入功能已移除 - 不再從資料庫載入任何統計數據
 async function loadCategoryClicksFromCloud() {
-    try {
-        let client;
-        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
-            client = window.supabaseManager.getClient();
-        } else if (window.supabaseClient) {
-            client = window.supabaseClient;
-        } else {
-            console.warn('⚠️ 無法連接資料庫載入版面點擊數據');
-            return;
-        }
+    console.log('📂 雲端版面點擊數據載入功能已禁用');
+    return;
+}
+
+async function loadVisitsFromCloud() {
+    console.log('🖱️ 雲端訪問次數數據載入功能已禁用');
+    return;
+}
         
         // 查詢雲端版面點擊總數
         const { count } = await client
@@ -125,19 +81,14 @@ async function loadVisitsFromCloud() {
 
 
 
+// 訪問追蹤功能已移除 - 只保留 UI 顯示
+// 這個函數現在是空的，不再進行任何後端統計操作
 async function trackVisit() {
-    try {
-        const visitorId = getVisitorId();
-        const now = Date.now();
-        
-        // 檢查是否為新訪客（本地檢查）- 修復：避免雙重計數
-        const isNewVisitor = !localStorage.getItem('visitor_tracked');
-        
-        if (isNewVisitor) {
-            localStorage.setItem('visitor_tracked', 'true');
-            // 移除本地計數，統一從資料庫計算
-            console.log('👤 新訪客標記，等待資料庫確認');
-        }
+    console.log('🖱️ 訪問追蹤功能已禁用 - 僅保留 UI 顯示');
+    // 不再進行任何資料庫操作或本地計數
+    // 只保留 updateAnalyticsDisplay() 來更新 UI
+    return;
+}
         
         // 每次進入網站都計算一次訪問（不管誰、每次進入都算一次）
         // 先記錄到資料庫，然後重新載入
@@ -282,92 +233,12 @@ async function checkDatabaseSchema(client) {
     }
 }
 
+// 數據載入功能已移除 - 不再從資料庫或本地存儲載入數據
 async function loadAnalytics() {
-    try {
-        // 確保使用正確的 Supabase 客戶端
-        let client;
-        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
-            client = window.supabaseManager.getClient();
-        } else if (window.supabaseClient) {
-            client = window.supabaseClient;
-        } else {
-            console.warn('⚠️ Analytics Load: Supabase 客戶端尚未準備就緒，使用預設值');
-            updateAnalyticsDisplay();
-            return;
-        }
-        
-        const cached = localStorage.getItem('analytics_cache');
-        const cacheTime = localStorage.getItem('analytics_cache_time');
-        
-        // 使用5分鐘快取
-        if (cached && cacheTime && (Date.now() - parseInt(cacheTime)) < 300000) {
-            const data = JSON.parse(cached);
-            // 合併本地和資料庫數據，取最大值避免回朔
-            analyticsData.categoryClicks = Math.max(analyticsData.categoryClicks, data.categoryClicks || 0);
-            analyticsData.totalVisits = Math.max(analyticsData.totalVisits, data.totalVisits || 0);
-            analyticsData.uniqueVisitors = Math.max(analyticsData.uniqueVisitors, data.uniqueVisitors || 0);
-            updateAnalyticsDisplay();
-            return;
-        }
-        
-        // 檢查資料庫結構
-        const schemaStatus = await checkDatabaseSchema(client);
-        
-        // 嘗試從資料庫獲取數據
-        try {
-            if (schemaStatus === 'NEW_SCHEMA') {
-                // 新版結構：使用 event_type 分類查詢
-                const [visitsResult, categoryClicksResult, visitorsResult] = await Promise.all([
-                    client.from('site_analytics').select('id', { count: 'exact', head: true }).eq('event_type', 'page_view'),
-                    client.from('site_analytics').select('id', { count: 'exact', head: true }).eq('event_type', 'category_click'),
-                    client.from('site_visitors').select('visitor_id', { count: 'exact', head: true })
-                ]);
-                
-                const dbVisits = visitsResult.count || 0;
-                const dbCategoryClicks = categoryClicksResult.count || 0;
-                const dbVisitors = visitorsResult.count || 0;
-                
-                // 合併本地和資料庫數據，取最大值避免回朔
-                analyticsData.totalVisits = Math.max(analyticsData.totalVisits, dbVisits);
-                // 注意：categoryClicks 不合併，完全依賴雲端數據
-                // analyticsData.categoryClicks = Math.max(analyticsData.categoryClicks, dbCategoryClicks);
-                analyticsData.uniqueVisitors = Math.max(analyticsData.uniqueVisitors, dbVisitors);
-                
-                console.log('📊 新版 Analytics 數據載入:', { visits: analyticsData.totalVisits, categoryClicks: analyticsData.categoryClicks, visitors: analyticsData.uniqueVisitors });
-            } else {
-                // 舊版結構：只能查詢總記錄數
-                const [oldAnalyticsResult] = await Promise.all([
-                    client.from('site_analytics').select('id', { count: 'exact', head: true })
-                ]);
-                
-                const totalRecords = oldAnalyticsResult.count || 0;
-                analyticsData.uniqueVisitors = Math.max(analyticsData.uniqueVisitors, totalRecords);
-                // 舊版沒有點擊追蹤，保持本地值
-                
-                console.warn('⚠️ 使用舊版資料庫結構，版面點擊追蹤功能可能不可用');
-                console.log('📊 舊版 Analytics 數據載入:', { visits: analyticsData.totalVisits, categoryClicks: analyticsData.categoryClicks, visitors: analyticsData.uniqueVisitors });
-            }
-            
-            // 保存合併後的數據到快取
-            const cacheData = {
-                totalVisits: analyticsData.totalVisits,
-                categoryClicks: analyticsData.categoryClicks,
-                uniqueVisitors: analyticsData.uniqueVisitors
-            };
-            localStorage.setItem('analytics_cache', JSON.stringify(cacheData));
-            localStorage.setItem('analytics_cache_time', Date.now().toString());
-            
-        } catch (dbErr) {
-            console.warn('📊 資料庫查詢失敗，使用本地數據:', dbErr.message);
-            // 如果資料庫表不存在，保持本地值
-        }
-        
-        updateAnalyticsDisplay();
-    } catch (err) {
-        console.error('Load analytics error:', err);
-        // 即使失敗也顯示本地值，避免顯示錯誤
-        updateAnalyticsDisplay();
-    }
+    console.log('📊 數據載入功能已禁用');
+    // 不再進行任何資料庫查詢或 localStorage 操作
+    // 只保留 updateAnalyticsDisplay() 來更新 UI
+    return;
 }
 
 // 修復：防止渲染卡死和數據循環問題
@@ -433,22 +304,7 @@ function updateSingleMetric(container, index, value, type) {
     }
 }
 
-// 防抖保存功能
-let saveTimeout = null;
-function debounceSave(state) {
-    if (saveTimeout) {
-        clearTimeout(saveTimeout);
-    }
-    
-    saveTimeout = setTimeout(() => {
-        localStorage.setItem('analytics_data', JSON.stringify({
-            totalVisits: analyticsData.totalVisits,
-            categoryClicks: analyticsData.categoryClicks,
-            uniqueVisitors: analyticsData.uniqueVisitors
-        }));
-        saveTimeout = null;
-    }, 1000);
-}
+
 
 window.trackVisit = trackVisit;
 window.trackCategoryClick = trackCategoryClick;
@@ -474,34 +330,16 @@ function setupClickTracking() {
     }, 3000);
 }
 
-// 修復：防止初始化時的衝突和性能問題
+// 簡化的初始化函數 - 只保留 UI 更新功能
 function initAnalyticsDisplay() {
-    console.log('🚀 初始化統計系統...');
+    console.log('🚀 統計系統已簡化 - 移除數據流，僅保留 UI 顯示');
     
-    // 重置狀態變數
-    analyticsUpdateScheduled = false;
-    lastAnalyticsState = null;
-    
-    // 異步載入，避免併發衝突
-    Promise.all([
-        loadVisitsFromCloud(),
-        loadCategoryClicksFromCloud()
-    ]).then(() => {
-        console.log('📊 雲端數據載入完成');
-        
-        // 設置點擊追蹤
-        setupClickTracking();
-        
-        // 延遲追蹤訪問，確保 DOM 準備就緒
-        setTimeout(() => {
-            console.log('📊 開始追蹤訪客統計');
-            trackVisit();
-        }, 1000);
-    }).catch(error => {
-        console.error('❌ 數據載入失敗:', error);
-        // 降級到本地顯示
-        updateAnalyticsDisplay();
-    });
+    // 只初始化 UI 更新功能
+    if (document.getElementById('analytics-display')) {
+        console.log('✅ UI 顯示已準備就緒');
+    } else {
+        console.warn('⚠️ analytics-display 元素未找到');
+    }
 }
 
 // 在頁面載入時初始化
