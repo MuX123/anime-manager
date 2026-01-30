@@ -1612,7 +1612,7 @@ window.renderAnnouncements = async function() {
         const { data, error } = await supabaseClient
             .from('announcements')
             .select('*')
-            .order('timestamp', { ascending: false });
+            .order('created_at', { ascending: false });
 
         if (error) throw error;
 

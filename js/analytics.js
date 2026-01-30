@@ -176,13 +176,15 @@ async function loadAnalytics() {
         }
         
         // 並行獲取點擊次數和訪客數量
-        const [clicksResult, visitorsResult] = await Promise.all([
+        const [clicksResult, visitorsResult, pageViewsResult] = await Promise.all([
             client.from('category_clicks').select('id', { count: 'exact', head: true }),
-            client.from('site_visitors').select('visitor_id', { count: 'exact', head: true })
+            client.from('site_visitors').select('visitor_id', { count: 'exact', head: true }),
+            client.from('page_views').select('id', { count: 'exact', head: true })
         ]);
         
         analyticsData.totalClicks = clicksResult.count || 0;
         analyticsData.uniqueVisitors = visitorsResult.count || 0;
+        analyticsData.totalPageViews = pageViewsResult.count || 0;
         
         localStorage.setItem('analytics_cache', JSON.stringify(analyticsData));
         localStorage.setItem('analytics_cache_time', Date.now().toString());
@@ -201,8 +203,9 @@ function updateAnalyticsDisplay() {
     const container = document.getElementById('analytics-display');
     if (container) {
         container.innerHTML = `
-            <span style="margin-right: 15px;">🖱️ ${analyticsData.totalClicks.toLocaleString()}</span>
-            <span>👤 ${analyticsData.uniqueVisitors.toLocaleString()}</span>
+            <span style="margin-right: 10px;">👤 ${analyticsData.uniqueVisitors.toLocaleString()}</span>
+            <span style="margin-right: 10px;">🖱️ ${analyticsData.totalClicks.toLocaleString()}</span>
+            <span>📄 ${analyticsData.totalPageViews.toLocaleString()}</span>
         `;
     }
 }
