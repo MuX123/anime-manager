@@ -17,17 +17,17 @@ class ConfigManager {
     loadConfig() {
         return {
             supabase: {
-                url: this.getEnvVar('SUPABASE_URL', 'https://twgydqknzdyahgfuamak.supabase.co'),
-                anonKey: this.getEnvVar('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3Z3lkcWtuemR5YWhnZnVhbWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NjA5MTEsImV4cCI6MjA4NDMzNjkxMX0.0YizCZP2OglEQQIh96x8viaemR6reZs8zendNT9KS7c')
+                url: this.getEnvVar('SUPABASE_URL', ''),
+                anonKey: this.getEnvVar('SUPABASE_ANON_KEY', '')
             },
             security: {
                 cspEnabled: this.getEnvVar('CSP_ENABLED', 'true') === 'true',
                 sessionSecret: this.getEnvVar('SESSION_SECRET', this.generateSecret())
             },
             app: {
-                version: '5.8.3',
-                environment: this.getEnvVar('NODE_ENV', 'development'),
-                debug: this.getEnvVar('DEBUG', 'true') === 'true'
+                version: '6.0.0',
+                environment: this.getEnvVar('NODE_ENV', 'production'),
+                debug: this.getEnvVar('DEBUG', 'false') === 'true'
             }
         };
     }

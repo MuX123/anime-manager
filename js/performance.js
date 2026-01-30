@@ -211,9 +211,14 @@ class PerformanceOptimizer {
 
     /**
      * 設置 Service Worker
+     * Note: Service Worker requires a separate sw.js file and HTTPS
+     * Currently disabled until sw.js is implemented
      */
     setupServiceWorker() {
         if ('serviceWorker' in navigator) {
+            // Service Worker 註冊已暫時停用
+            // 若要啟用，請創建 sw.js 文件並取消下方註釋
+            /*
             navigator.serviceWorker.register('./sw.js')
                 .then(registration => {
                     window.logger?.info('Service Worker 註冊成功', { scope: registration.scope });
@@ -221,6 +226,8 @@ class PerformanceOptimizer {
                 .catch(error => {
                     window.logger?.warn('Service Worker 註冊失敗', { error });
                 });
+            */
+            window.logger?.info('Service Worker 已停用（需要 sw.js 文件）');
         }
     }
 

@@ -53,6 +53,18 @@ let isFirstLoad = true;
 
 	// --- Core Functions ---
 
+    /**
+     * 安全地轉義 HTML 特殊字符（防止 XSS）
+     * @param {string} str 未處理的字串
+     * @returns {string} 轉義後的安全字串
+     */
+    const escapeHtml = (str) => {
+        if (str === null || str === undefined) return '';
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+    };
+
     // Mouse drag scroll for desktop tags
     document.addEventListener('mousedown', (e) => {
         const tags = e.target.closest('.desktop-scroll-tags');
@@ -103,9 +115,18 @@ let isFirstLoad = true;
         }
         
         // 2. 設置認證狀態監聽
-        client.auth.onAuthStateChange((event, session) => {
-            isAdmin = !!session;
-            console.log('🔐 認證狀態變化:', { event, isAdmin });
+        client.auth.onAuthStateChange(async (event, session) => {
+            // 預設不是管理員
+            isAdmin = false;
+
+            if (session) {
+                // 檢查是否為管理員
+                isAdmin = await window.checkIsAdmin(session.user.email);
+                console.log('🔐 認證狀態變化:', { event, isAdmin, email: session.user.email });
+            } else {
+                console.log('🔐 用戶已登出');
+            }
+
             window.updateAdminMenu();
             if (document.querySelector('.admin-container')) {
                 window.renderAdmin();
@@ -113,14 +134,12 @@ let isFirstLoad = true;
                 window.renderApp();
             }
         });
-        
+
         // 3. 檢查當前認證狀態
         try {
             const { data: { session } } = await client.auth.getSession();
             if (session) {
-                // 檢查是否為管理員（根據email或其他條件）
-                const adminEmail = siteSettings.admin_email || 'admin@acg-manager.com'; // 可以在site_settings中設定管理員email
-                isAdmin = session.user.email === adminEmail;
+                isAdmin = await window.checkIsAdmin(session.user.email);
                 console.log('👤 檢測到登入用戶:', session.user.email, '管理員:', isAdmin);
             } else {
                 isAdmin = false;
@@ -219,12 +238,55 @@ window.loadData = async function() {
     }
 };
 
+/**
+ * 驗證用戶是否為管理員
+ * @param {string} userEmail 用戶電子郵件
+ * @returns {Promise<boolean>} 是否為管理員
+ */
+window.checkIsAdmin = async function(userEmail) {
+    if (!userEmail) return false;
+
+    // 優先使用 site_settings 中的管理員 email
+    const adminEmailFromSettings = siteSettings.admin_email;
+    if (adminEmailFromSettings && userEmail.toLowerCase() === adminEmailFromSettings.toLowerCase()) {
+        return true;
+    }
+
+    // 備用：檢查本地設定的管理員 email
+    const adminEmail = siteSettings.admin_email || 'admin@acg-manager.com';
+    if (userEmail.toLowerCase() === adminEmail.toLowerCase()) {
+        return true;
+    }
+
+    // 檢查用戶的 role metadata（如果有）
+    try {
+        let client;
+        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+            client = window.supabaseManager.getClient();
+        } else if (window.supabaseClient) {
+            client = window.supabaseClient;
+        }
+
+        if (client) {
+            const { data: { user } } = await client.auth.getUser();
+            const userMetadata = user?.user_metadata || {};
+            if (userMetadata.role === 'admin') {
+                return true;
+            }
+        }
+    } catch (err) {
+        console.warn('檢查用戶 role 失敗:', err);
+    }
+
+    return false;
+};
+
 window.updateAdminMenu = function() {
     const container = document.getElementById('adminMenuOptions');
     if (!container) return;
-container.innerHTML = isAdmin ? 
-	        `<div class="menu-item-v2" onclick="window.toggleAdminMode(true)">⚙ 管理後台</div><div class="menu-item-v2" onclick="window.handleLogout()">⊗ 登出系統</div>` : 
-	        `<div class="menu-item-v2" onclick="window.showLoginModal()">🔐 管理員登入</div>`;
+ container.innerHTML = isAdmin ?
+ 	        `<div class="menu-item-v2" onclick="window.toggleAdminMode(true)">⚙ 管理後台</div><div class="menu-item-v2" onclick="window.handleLogout()">⊗ 登出系統</div>` :
+ 	        `<div class="menu-item-v2" onclick="window.showLoginModal()">🔐 管理員登入</div>`;
 };
 
 window.renderApp = function() {
@@ -404,52 +466,54 @@ window.renderCard = (item) => {
             <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; flex-direction: column; justify-content: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 10px 15px !important; gap: 6px; width: 100%; height: 75px; overflow: hidden;">
                 <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
                     <span style="color: ${starColor}; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${starText}</span>
-                    <h3 class="force-scroll" style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; font-weight: bold; scrollbar-width: none; flex: 1;">${item.name}</h3>
+                    <h3 class="force-scroll" style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; font-weight: bold; scrollbar-width: none; flex: 1;">${escapeHtml(item.name)}</h3>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
-                    <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-weight: 900; background: ${ratingColor}22; flex-shrink: 0;">${item.rating || '普'}</span>
+                    <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-weight: 900; background: ${ratingColor}22; flex-shrink: 0;">${escapeHtml(item.rating || '普')}</span>
                     <div style="display: flex; gap: 8px; font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; align-items: center;">
-                        ${item.year ? `<span>${item.year}</span>` : ''}
-                        ${item.season ? `<span>${item.season}</span>` : ''}
-                        ${item.month ? `<span>${item.month}月</span>` : ''}
-                        ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${item.episodes} 集</span>` : ''}
+                        ${item.year ? `<span>${escapeHtml(item.year)}</span>` : ''}
+                        ${item.season ? `<span>${escapeHtml(item.season)}</span>` : ''}
+                        ${item.month ? `<span>${escapeHtml(item.month)}月</span>` : ''}
+                        ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${escapeHtml(item.episodes)} 集</span>` : ''}
                     </div>
                 </div>
             </div>
         `;
     } else if (gridColumns === 'mobile') {
+        // Desktop list layout
         const starCount = (item.recommendation || '').split('★').length - 1;
         const starText = `星X${starCount || 1}`;
         return `
             <div class="anime-card desktop-list-layout" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 12px 20px !important; gap: 0; width: 100%; overflow: hidden;">
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100px; flex-shrink: 0; border-right: 1px solid rgba(0,212,255,0.1); padding-right: 15px;">
                     <span style="color: ${starColor}; font-size: 15px; font-weight: bold; white-space: nowrap;">${starText}</span>
-                    <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 900; background: ${ratingColor}22;">${item.rating || '普'}</span>
+                    <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 900; background: ${ratingColor}22;">${escapeHtml(item.rating || '普')}</span>
                 </div>
                 <div style="flex: 1; min-width: 0; display: flex; align-items: center; padding-left: 20px; gap: 20px; height: 100%;">
                     <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
-                        <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${item.name}</h3>
+                        <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${escapeHtml(item.name)}</h3>
                         <div style="display: flex; gap: 10px; font-size: 12px; color: var(--text-secondary); align-items: center;">
-                            ${item.year ? `<span>${item.year}</span>` : ''}
-                            ${item.season ? `<span>${item.season}</span>` : ''}
-                            ${item.month ? `<span>${item.month}月</span>` : ''}
-                            ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${item.episodes} 集</span>` : ''}
+                            ${item.year ? `<span>${escapeHtml(item.year)}</span>` : ''}
+                            ${item.season ? `<span>${escapeHtml(item.season)}</span>` : ''}
+                            ${item.month ? `<span>${escapeHtml(item.month)}月</span>` : ''}
+                            ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${escapeHtml(item.episodes)} 集</span>` : ''}
                         </div>
                     </div>
                     <div style="flex: 0 0 15%; min-width: 0; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid rgba(0,212,255,0.1); padding-left: 20px; justify-content: center;">
-                        <span style="color: ${genreColor}; font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.type || ''}</span>
+                        <span style="color: ${genreColor}; font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(item.type || '')}</span>
                     </div>
                     <div class="desktop-scroll-tags" onwheel="this.scrollLeft += event.deltaY; event.preventDefault();" style="flex: 1; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding: 10px 0; scrollbar-width: thin; cursor: grab; border-left: 1px solid rgba(0,212,255,0.1); padding-left: 20px; align-items: center;">
                         ${genres.map(g => {
                             const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-                            return cleanG ? `<span style="${getTagStyle(genreColor)}">${cleanG}</span>` : '';
+                            return cleanG ? `<span style="${getTagStyle(genreColor)}">${escapeHtml(cleanG)}</span>` : '';
                         }).join('')}
-                        ${extraTags.map(t => `<span style="${getTagStyle(t.color)}">${t.val}</span>`).join('')}
+                        ${extraTags.map(t => `<span style="${getTagStyle(t.color)}">${escapeHtml(t.val)}</span>`).join('')}
                     </div>
                 </div>
             </div>
         `;
     } else {
+        // Grid layout
         return `
             <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="border: 2px solid ${ratingColor}; background: ${cyanBase};">
                 <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
@@ -458,22 +522,22 @@ window.renderCard = (item) => {
                     <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; backdrop-filter: blur(8px); z-index: 10;">
                         <div style="position: relative; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 50%;">
                             <span class="star-icon" style="color: ${starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${starColor});">
-                                <span>${item.recommendation || '★'}</span>
+                                <span>${escapeHtml(item.recommendation || '★')}</span>
                             </span>
                         </div>
-                        <div style="color: ${ratingColor}; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 1px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px;">${item.rating || '普'}</div>
+                        <div style="color: ${ratingColor}; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 1px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.rating || '普')}</div>
                     </div>
-                    <div class="episodes-badge-v38" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: ${episodesColor}; font-size: 14px; padding: 4px 16px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; z-index: 10; box-shadow: 0 0 15px rgba(0,0,0,0.8);">全 ${item.episodes || '0'} 集</div>
+                    <div class="episodes-badge-v38" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: ${episodesColor}; font-size: 14px; padding: 4px 16px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; z-index: 10; box-shadow: 0 0 15px rgba(0,0,0,0.8);">全 ${escapeHtml(item.episodes || '0')} 集</div>
                 </div>
                 <div class="card-content-v38" style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4); width: 100%;">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                        <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '13px' : '15px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${item.name}</h3>
+                        <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '13px' : '15px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${escapeHtml(item.name)}</h3>
                     </div>
                     <div class="card-tags-v38" style="display: flex; flex-direction: column; gap: 6px; width: 100%; align-items: center;">
                         <div style="display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; width: 100%; justify-content: center;">
-                            ${item.year ? `<span style="${getTagStyle(yearColor)}">${item.year}</span>` : ''}
-                            ${item.season ? `<span style="${getTagStyle(yearColor)}">${item.season}</span>` : ''}
-                            ${item.month ? `<span style="${getTagStyle(yearColor)}">${item.month}月</span>` : ''}
+                            ${item.year ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.year)}</span>` : ''}
+                            ${item.season ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.season)}</span>` : ''}
+                            ${item.month ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.month)}月</span>` : ''}
                         </div>
                     </div>
                 </div>
@@ -517,15 +581,15 @@ window.showAnimeDetail = (id) => {
 		        });
 	    }
 
-					    content.innerHTML = `
+		content.innerHTML = `
 					        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; position: relative; background: #050609; border-radius: 16px; overflow: hidden; box-sizing: border-box; border: 2px solid ${ratingColor}; box-shadow: 0 0 30px ${ratingColor}44; display: flex; flex-direction: row;">
 					            <!-- 左側滿版海報 -->
 					            <div class="detail-poster-aside" style="flex: 0 0 380px; border-right: 2px solid ${ratingColor}; box-sizing: border-box; background: #000; position: relative; z-index: 1;">
 		                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
 		                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
 		                <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; border-right: 2px solid ${ratingColor}; border-bottom: 2px solid ${ratingColor}; backdrop-filter: blur(12px); z-index: 10;">
-		                    <span class="star-icon" style="color: ${starColor}; font-size: 24px; filter: drop-shadow(0 0 8px ${starColor});">${item.recommendation || '★'}</span>
-		                    <span style="color: ${ratingColor}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${ratingColor});">${item.rating || '普'}</span>
+		                    <span class="star-icon" style="color: ${starColor}; font-size: 24px; filter: drop-shadow(0 0 8px ${starColor});">${escapeHtml(item.recommendation || '★')}</span>
+		                    <span style="color: ${ratingColor}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${ratingColor});">${escapeHtml(item.rating || '普')}</span>
 		                </div>
 		            </div>
 		
@@ -534,12 +598,12 @@ window.showAnimeDetail = (id) => {
 			                <!-- 標題與核心數據區塊 -->
 			                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative;">
 			                    <div style="padding: 12px 20px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.15), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
-		                        <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0; font-size: 24px;">${item.name}</h2>
+		                        <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0; font-size: 24px;">${escapeHtml(item.name)}</h2>
 		                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; margin-top: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-		                            ${item.year ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${item.year}</div>` : ''}
-		                            ${item.season ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${item.season}</div>` : ''}
-		                            ${item.month ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${item.month}月</div>` : ''}
-		                            ${item.episodes ? `<div class="core-data-item" style="${getTagStyle(episodesColor)}">全 ${item.episodes} 集</div>` : ''}
+		                            ${item.year ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${escapeHtml(item.year)}</div>` : ''}
+		                            ${item.season ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${escapeHtml(item.season)}</div>` : ''}
+		                            ${item.month ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${escapeHtml(item.month)}月</div>` : ''}
+		                            ${item.episodes ? `<div class="core-data-item" style="${getTagStyle(episodesColor)}">全 ${escapeHtml(item.episodes)} 集</div>` : ''}
 		                        </div>
 		                    </div>
 		                </div>
@@ -550,11 +614,11 @@ window.showAnimeDetail = (id) => {
 			                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
 			                            ${genres.map(g => {
 			                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-			                                return `<span style="${getTagStyle(genreColor)}">${cleanG}</span>`;
+			                                return cleanG ? `<span style="${getTagStyle(genreColor)}">${escapeHtml(cleanG)}</span>` : '';
 			                            }).join('')}
 			                            ${extraTags.map(t => {
 			                                const color = t.color || '#ffffff';
-			                                return `<span style="${getTagStyle(color)}">${t.val}</span>`;
+			                                return `<span style="${getTagStyle(color)}">${escapeHtml(t.val)}</span>`;
 			                            }).join('')}
 			                        </div>
 			                    </div>
@@ -564,7 +628,7 @@ window.showAnimeDetail = (id) => {
 				                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative; flex: 1; min-height: 0;">
 				                    <div style="padding: 15px 20px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.15), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column;">
 			                        <div class="force-scroll" style="overflow-y: auto; max-height: 140px; padding-right: 10px;">
-			                            <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 1.8; font-size: 15px; white-space: pre-wrap; margin: 0;">${item.description || '暫無簡介'}</p>
+			                            <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 1.8; font-size: 15px; white-space: pre-wrap; margin: 0;">${escapeHtml(item.description || '暫無簡介')}</p>
 			                        </div>
 			                    </div>
 			                </div>
@@ -573,7 +637,7 @@ window.showAnimeDetail = (id) => {
 				                <div class="detail-section-v35" style="margin-top: 10px; position: relative;">
 				                    <div style="padding: 10px 20px; box-sizing: border-box;">
 			                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-				                           ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 6px 12px; font-size: 11px; white-space: nowrap; border-color: ${btnColor} !important; color: ${btnColor} !important; background: ${btnColor}22 !important; border-radius: 50px; height: 28px;">${l.name}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic; font-size: 11px;">暫無連結</span>'}
+				                           ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 6px 12px; font-size: 11px; white-space: nowrap; border-color: ${btnColor} !important; color: ${btnColor} !important; background: ${btnColor}22 !important; border-radius: 50px; height: 28px;">${escapeHtml(l.name)}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic; font-size: 11px;">暫無連結</span>'}
 			                        </div>
 			                    </div>
 			                </div>
@@ -773,11 +837,27 @@ window.hideLoginModal = () => {
 window.handleLogin = async () => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    const { error, data } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+    let client;
+    if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+        client = window.supabaseManager.getClient();
+    } else if (window.supabaseClient) {
+        client = window.supabaseClient;
+    }
+
+    const { error, data } = await client.auth.signInWithPassword({ email, password });
     if (error) return window.showToast('登入失敗：' + error.message, 'error');
-    
-    // 登入成功後，立即更新認證狀態並檢查是否為管理員
-    isAdmin = true;
+
+    // 登入成功後，驗證是否為管理員
+    isAdmin = await window.checkIsAdmin(email);
+
+    if (!isAdmin) {
+        // 登入成功但不是管理員
+        await client.auth.signOut();
+        window.showToast('⚠️ 您沒有管理員權限', 'error');
+        return;
+    }
+
     window.updateAdminMenu();
     window.hideLoginModal();
     window.showToast('✓ 登入成功', 'success');
@@ -1527,6 +1607,12 @@ window.importData = (event) => {
 };
 
 window.saveSettings = async () => {
+    // Authorization check
+    if (!isAdmin) {
+        window.showToast('✗ 您沒有管理員權限', 'error');
+        return;
+    }
+    
     try {
         const title = document.getElementById('set-title').value;
         const announcement = document.getElementById('set-announcement').value;
@@ -1573,6 +1659,12 @@ window.saveSettings = async () => {
 };
 
 window.deleteAnime = async (id) => {
+    // Authorization check
+    if (!isAdmin) {
+        window.showToast('✗ 您沒有管理員權限', 'error');
+        return;
+    }
+    
     if (!confirm('確定要刪除此作品嗎？')) return;
     try {
         const { error } = await supabaseClient.from('anime_list').delete().eq('id', id);
@@ -1584,6 +1676,12 @@ window.deleteAnime = async (id) => {
 };
 
 window.deleteAllInCategory = async () => {
+    // Authorization check
+    if (!isAdmin) {
+        window.showToast('✗ 您沒有管理員權限', 'error');
+        return;
+    }
+    
     // 統計該板塊有多少作品
     const count = animeData.filter(a => a.category === currentCategory).length;
     if (count === 0) {
@@ -1635,6 +1733,12 @@ window.updateBulkDeleteButton = () => {
 };
 
 window.bulkDeleteAnime = async () => {
+    // Authorization check
+    if (!isAdmin) {
+        window.showToast('✗ 您沒有管理員權限', 'error');
+        return;
+    }
+    
     const checkboxes = document.querySelectorAll('.item-checkbox:checked');
     const ids = Array.from(checkboxes).map(cb => cb.dataset.id);
     
@@ -1746,25 +1850,8 @@ if (document.readyState === 'loading') {
     window.initApp();
 }
 
-// --- Discord 公告同步與顯示邏輯 (方案 B) ---
-const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1463359919452590193/uVmtehjked0vs7rNWUVyqDDROIr8CAfSWhOxEPBt1WkoeAgdIOuPHJyukvBFXfocKT1I';
-
-window.syncDiscordAnnouncements = async function() {
-    if (!isAdmin) return; // 僅管理員登入時執行同步，節省資源
-    
-    try {
-        // 1. 從 Discord 獲取最新訊息 (透過 Webhook URL 的 GET 請求獲取頻道資訊，但 Webhook 不支援直接 GET 訊息)
-        // 注意：標準 Webhook 不支援獲取訊息列表。
-        // 這裡我們改用一種「被動接收」或「手動觸發」的邏輯。
-        // 由於用戶已經提供了 Webhook，最理想的是在 Discord 頻道發送訊息時觸發。
-        // 但為了讓現有訊息出現，我們需要一個「拉取」的動作。
-        // 考慮到安全性與簡便性，我們這裡實作從 Supabase 讀取，並提供一個介面讓用戶手動貼入訊息（或未來自動化）。
-        
-        console.log('Discord 同步功能已就緒，等待訊息存入 Supabase...');
-    } catch (err) {
-        console.error('Sync error:', err);
-    }
-};
+// Discord integration disabled - webhook URLs must not be exposed in client code
+// Announcements are managed via Supabase database
 
 window.renderAnnouncements = async function() {
     const container = document.getElementById('discord-section');
