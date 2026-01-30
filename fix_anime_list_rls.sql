@@ -28,9 +28,9 @@ BEGIN
         CREATE POLICY "Allow anonymous delete to anime_list" ON anime_list
             FOR DELETE USING (true);
         
-        RAISE NOTICE '✅ anime_list RLS policies updated';
+        RAISE NOTICE 'anime_list RLS policies updated successfully';
     ELSE
-        RAISE NOTICE '⚠️ anime_list table does not have RLS enabled';
+        RAISE NOTICE 'anime_list table does not have RLS enabled';
     END IF;
 END $$;
 

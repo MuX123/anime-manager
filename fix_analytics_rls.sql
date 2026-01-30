@@ -20,9 +20,9 @@ BEGIN
         CREATE POLICY "Allow anonymous select to page_views" ON page_views
             FOR SELECT USING (true);
         
-        RAISE NOTICE '✅ page_views RLS policies updated';
+        RAISE NOTICE 'page_views RLS policies updated successfully';
     ELSE
-        RAISE NOTICE '⚠️ page_views table does not have RLS enabled';
+        RAISE NOTICE 'page_views table does not have RLS enabled';
     END IF;
 END $$;
 
@@ -43,9 +43,9 @@ BEGIN
         CREATE POLICY "Allow anonymous select to category_clicks" ON category_clicks
             FOR SELECT USING (true);
         
-        RAISE NOTICE '✅ category_clicks RLS policies updated';
+        RAISE NOTICE 'category_clicks RLS policies updated successfully';
     ELSE
-        RAISE NOTICE '⚠️ category_clicks table does not have RLS enabled';
+        RAISE NOTICE 'category_clicks table does not have RLS enabled';
     END IF;
 END $$;
 
@@ -66,9 +66,9 @@ BEGIN
         CREATE POLICY "Allow anonymous select to visitor_sessions" ON visitor_sessions
             FOR SELECT USING (true);
         
-        RAISE NOTICE '✅ visitor_sessions RLS policies updated';
+        RAISE NOTICE 'visitor_sessions RLS policies updated successfully';
     ELSE
-        RAISE NOTICE '⚠️ visitor_sessions table does not have RLS enabled';
+        RAISE NOTICE 'visitor_sessions table does not have RLS enabled';
     END IF;
 END $$;
 

@@ -53,4 +53,4 @@ FROM pg_tables
 WHERE tablename IN ('anime_list', 'announcements', 'site_settings', 'site_visitors', 'category_clicks', 'page_views')
 ORDER BY tablename;
 
-RAISE NOTICE '✅ 所有表的 RLS 權限已修復完成';
+RAISE NOTICE 'RLS policies updated for all tables successfully';
