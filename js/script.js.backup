@@ -283,7 +283,11 @@ window.renderApp = function() {
 
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
-        <div class="app-container">
+		            <div class="site-version" style="display: flex; align-items: center; gap: 15px;">
+		                <span>v6.0.0</span>
+		                <div id="analytics-display" style="font-size: 11px; color: rgba(255,255,255,0.6);"></div>
+		            </div>
+		        <div class="app-container">
             <header>
                 <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
             </header>
@@ -325,7 +329,7 @@ app.innerHTML = `
         const container = document.getElementById('analytics-display');
         if (container) {
             container.innerHTML = `
-                <span style="margin-right: 15px;">🖱️ ${window.analyticsData.totalClicks.toLocaleString()}</span>
+                <span style="margin-right: 15px;">👁 ${window.analyticsData.totalViews.toLocaleString()}</span>
                 <span>👤 ${window.analyticsData.uniqueVisitors.toLocaleString()}</span>
             `;
         }

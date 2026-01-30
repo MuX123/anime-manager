@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試頁面</title>
+    <style>
+        body { background: #0a0e1a; color: white; font-family: Arial; padding: 20px; }
+        .test { background: #00d4ff; padding: 20px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <h1>測試頁面</h1>
+    <div class="test">如果你看到這個，CSS正常工作</div>
+    <script>
+        console.log('JavaScript正常工作');
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.innerHTML += '<p>DOM載入完成</p>';
+        });
+    </script>
+</body>
+</html>
