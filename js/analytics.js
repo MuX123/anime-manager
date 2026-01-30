@@ -370,56 +370,84 @@ async function loadAnalytics() {
     }
 }
 
+// 修復：防止渲染卡死和數據循環問題
+let analyticsUpdateScheduled = false;
+let lastAnalyticsState = null;
+
 function updateAnalyticsDisplay() {
     const container = document.getElementById('analytics-display');
-    if (container) {
-        const visits = analyticsData.totalVisits || 0;
-        const visitors = analyticsData.uniqueVisitors || 0;
-        const clicks = analyticsData.categoryClicks || 0;
-        
-        // 防止頻繁更新導致閃爍
-        const currentHTML = container.innerHTML;
-        const newHTML = `
-            <!-- 訪問次數 -->
-            <div style="background: rgba(0,212,255,0.08); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(0,212,255,0.2); display: flex; align-items: center; gap: 4px; font-family: 'Orbitron', monospace; font-weight: 700;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 3L19 8L5 21L1 21L1 17L15 3Z" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M11 7L17 13" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span style="font-size: 10px; color: #ffffff;">${visits.toLocaleString()}</span>
-            </div>
-            <!-- 版面點擊 -->
-            <div style="background: rgba(0,212,255,0.08); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(0,212,255,0.2); display: flex; align-items: center; gap: 4px; font-family: 'Orbitron', monospace; font-weight: 700;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 3L19 8L10 17L5 17L5 12L15 3Z" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M19 8L15 3" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span style="font-size: 10px; color: #ffffff;">${clicks.toLocaleString()}</span>
-            </div>
-            <!-- 訪客數 -->
-            <div style="background: rgba(0,212,255,0.08); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(0,212,255,0.2); display: flex; align-items: center; gap: 4px; font-family: 'Orbitron', monospace; font-weight: 700;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span style="font-size: 10px; color: #ffffff;">${visitors.toLocaleString()}</span>
-            </div>
-        `;
-        
-        if (currentHTML !== newHTML) {
-            container.innerHTML = newHTML;
+    if (!container) {
+        console.warn('⚠️ analytics-display 元素未找到');
+        return;
+    }
+    
+    const visits = analyticsData.totalVisits || 0;
+    const visitors = analyticsData.uniqueVisitors || 0;
+    const clicks = analyticsData.categoryClicks || 0;
+    
+    // 檢查狀態是否變化，避免無用更新
+    const currentState = { visits, clicks, visitors };
+    const stateChanged = !lastAnalyticsState || 
+        lastAnalyticsState.visits !== currentState.visits ||
+        lastAnalyticsState.clicks !== currentState.clicks ||
+        lastAnalyticsState.visitors !== currentState.visitors;
+    
+    if (!stateChanged) {
+        return; // 狀態未變化，直接返回
+    }
+    
+    // 防止頻繁更新
+    if (analyticsUpdateScheduled) {
+        return;
+    }
+    
+    analyticsUpdateScheduled = true;
+    lastAnalyticsState = { ...currentState };
+    
+    requestAnimationFrame(() => {
+        try {
+            // 高效更新：只更新變化的數值
+            updateSingleMetric(container, 0, visits, 'visits');
+            updateSingleMetric(container, 1, clicks, 'clicks');
+            updateSingleMetric(container, 2, visitors, 'visitors');
+            
             console.log('📊 顯示更新:', { visits, clicks, visitors });
             
-            // 保存到 localStorage
-            localStorage.setItem('analytics_data', JSON.stringify({
-                totalVisits: analyticsData.totalVisits,
-                categoryClicks: analyticsData.categoryClicks,
-                uniqueVisitors: analyticsData.uniqueVisitors
-            }));
+            // 保存到 localStorage（防抖）
+            debounceSave(currentState);
+            
+        } finally {
+            analyticsUpdateScheduled = false;
         }
-    } else {
-        console.warn('⚠️ analytics-display 元素未找到');
+    });
+}
+
+// 高效單一指標更新
+function updateSingleMetric(container, index, value, type) {
+    const targetDiv = container.children[index];
+    if (!targetDiv) return;
+    
+    const targetSpan = targetDiv.querySelector('span');
+    if (targetSpan && targetSpan.textContent !== value.toLocaleString()) {
+        targetSpan.textContent = value.toLocaleString();
     }
+}
+
+// 防抖保存功能
+let saveTimeout = null;
+function debounceSave(state) {
+    if (saveTimeout) {
+        clearTimeout(saveTimeout);
+    }
+    
+    saveTimeout = setTimeout(() => {
+        localStorage.setItem('analytics_data', JSON.stringify({
+            totalVisits: analyticsData.totalVisits,
+            categoryClicks: analyticsData.categoryClicks,
+            uniqueVisitors: analyticsData.uniqueVisitors
+        }));
+        saveTimeout = null;
+    }, 1000);
 }
 
 window.trackVisit = trackVisit;
@@ -446,20 +474,34 @@ function setupClickTracking() {
     }, 3000);
 }
 
-// 立即初始化顯示
+// 修復：防止初始化時的衝突和性能問題
 function initAnalyticsDisplay() {
-    // 先載入雲端數據
-    loadVisitsFromCloud();
-    loadCategoryClicksFromCloud();
+    console.log('🚀 初始化統計系統...');
     
-    // 設置點擊追蹤（已停用）
-    setupClickTracking();
+    // 重置狀態變數
+    analyticsUpdateScheduled = false;
+    lastAnalyticsState = null;
     
-    // 延遲追蹤訪問
-    setTimeout(() => {
-        console.log('📊 開始追蹤訪客統計');
-        trackVisit();
-    }, 2000);
+    // 異步載入，避免併發衝突
+    Promise.all([
+        loadVisitsFromCloud(),
+        loadCategoryClicksFromCloud()
+    ]).then(() => {
+        console.log('📊 雲端數據載入完成');
+        
+        // 設置點擊追蹤
+        setupClickTracking();
+        
+        // 延遲追蹤訪問，確保 DOM 準備就緒
+        setTimeout(() => {
+            console.log('📊 開始追蹤訪客統計');
+            trackVisit();
+        }, 1000);
+    }).catch(error => {
+        console.error('❌ 數據載入失敗:', error);
+        // 降級到本地顯示
+        updateAnalyticsDisplay();
+    });
 }
 
 // 在頁面載入時初始化
