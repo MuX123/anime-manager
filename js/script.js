@@ -992,22 +992,22 @@ window.renderAnimeForm = (item) => {
                         <div>
                             <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">星標</label>
                             <div class="color-input-wrapper" style="width: 100%;">
-                                <div class="color-swatch" style="background: ${item.star_color || '#ffcc00'}; width: 100%; height: 30px; border-radius: 0px;" onclick="document.getElementById('form-star-color').click()"></div>
-                                <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" onchange="this.previousElementSibling.style.background = this.value">
-                            </div>
-                        </div>
-                        <div>
-                            <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">名稱</label>
-                            <div class="color-input-wrapper" style="width: 100%;">
-                                <div class="color-swatch" style="background: ${item.name_color || '#ffffff'}; width: 100%; height: 30px; border-radius: 0px;" onclick="document.getElementById('form-name-color').click()"></div>
-                                <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
-                            </div>
-                        </div>
-                        <div>
-                            <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">簡介</label>
-                            <div class="color-input-wrapper" style="width: 100%;">
-                                <div class="color-swatch" style="background: ${item.desc_color || '#ffffff'}; width: 100%; height: 30px; border-radius: 0px;" onclick="document.getElementById('form-desc-color').click()"></div>
-                                <input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+<div class="color-swatch" style="background: ${item.star_color || 'var(--star-color, #ffcc00)'}; width: 100%; height: 30px; border-radius: 4px;" onclick="document.getElementById('form-star-color').click()"></div>
+                                 <input type="color" id="form-star-color" value="${item.star_color || 'var(--star-color, #ffcc00)'}" onchange="this.previousElementSibling.style.background = this.value">
+                             </div>
+                         </div>
+                         <div>
+                             <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">名稱</label>
+                             <div class="color-input-wrapper" style="width: 100%;">
+                                 <div class="color-swatch" style="background: ${item.name_color || 'var(--name-color, #ffffff)'}; width: 100%; height: 30px; border-radius: 4px;" onclick="document.getElementById('form-name-color').click()"></div>
+                                 <input type="color" id="form-name-color" value="${item.name_color || 'var(--name-color, #ffffff)'}" onchange="this.previousElementSibling.style.background = this.value">
+                             </div>
+                         </div>
+                         <div>
+                             <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">簡介</label>
+                             <div class="color-input-wrapper" style="width: 100%;">
+                                 <div class="color-swatch" style="background: ${item.desc_color || 'var(--desc-color, #ffffff)'}; width: 100%; height: 30px; border-radius: 4px;" onclick="document.getElementById('form-desc-color').click()"></div>
+                                 <input type="color" id="form-desc-color" value="${item.desc_color || 'var(--desc-color, #ffffff)'}" onchange="this.previousElementSibling.style.background = this.value">
                             </div>
                         </div>
                     </div>
