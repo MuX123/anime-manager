@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數據庫連線測試</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>數據庫連線完整測試</h1>
+    <div id="test-results"></div>
+    <button onclick="runAllTests()">開始測試</button>
+    
+    <script>
+        // 初始化 Supabase 客戶端
+        const supabaseUrl = 'https://twgydqknzdyahgfuamak.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3Z3lkcWtuemR5YWhnZnVhbWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NjA5MTEsImV4cCI6MjA4NDMzNjkxMX0.0YizCZP2OglEQQIh96x8viaemR6reZs8zendNT9KS7c';
+        const client = window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        function addResult(test, status, details) {
+            const resultsDiv = document.getElementById('test-results');
+            const timestamp = new Date().toLocaleTimeString();
+            const statusColor = status === 'success' ? 'green' : status === 'warning' ? 'orange' : 'red';
+            resultsDiv.innerHTML += `
+                <div style="border: 1px solid #ccc; padding: 10px; margin: 5px 0; border-left: 5px solid ${statusColor};">
+                    <strong>[${timestamp}] ${test}</strong><br>
+                    <span style="color: ${statusColor};">狀態: ${status.toUpperCase()}</span><br>
+                    <small>${details}</small>
+                </div>
+            `;
+        }
+
+        async function runAllTests() {
+            document.getElementById('test-results').innerHTML = '';
+            
+            // 測試 1: 基本連線
+            try {
+                const { data, error } = await client.from('site_settings').select('id').limit(1);
+                if (error) {
+                    addResult('基本連線測試', 'error', error.message);
+                } else {
+                    addResult('基本連線測試', 'success', '連線正常，回傳資料');
+                }
+            } catch (e) {
+                addResult('基本連線測試', 'error', e.message);
+            }
+
+            // 測試 2: 讀取作品列表
+            try {
+                const { data, error } = await client.from('anime_list').select('id, name').limit(5);
+                if (error) {
+                    addResult('作品列表讀取', 'error', error.message);
+                } else {
+                    addResult('作品列表讀取', 'success', `找到 ${data.length} 筆作品`);
+                }
+            } catch (e) {
+                addResult('作品列表讀取', 'error', e.message);
+            }
+
+            // 測試 3: 讀取公告
+            try {
+                const { data, error } = await client.from('announcements').select('id, title').order('created_at', { ascending: false }).limit(3);
+                if (error) {
+                    addResult('公告讀取', 'error', error.message);
+                } else {
+                    addResult('公告讀取', 'success', `找到 ${data.length} 筆公告`);
+                }
+            } catch (e) {
+                addResult('公告讀取', 'error', e.message);
+            }
+
+            // 測試 4: 嘗試新增作品 (只測試權限)
+            try {
+                const testData = {
+                    name: '測試作品_' + Date.now(),
+                    category: 'anime',
+                    description: '這是測試資料'
+                };
+                const { data, error } = await client.from('anime_list').insert(testData).select('id').single();
+                if (error) {
+                    if (error.message.includes('permission') || error.message.includes('row level security')) {
+                        addResult('作品新增權限', 'warning', 'RLS 策略阻止匿名新增，需要修復');
+                    } else {
+                        addResult('作品新增測試', 'error', error.message);
+                    }
+                } else {
+                    addResult('作品新增測試', 'success', `成功新增作品 ID: ${data.id}`);
+                    // 立即刪除測試資料
+                    await client.from('anime_list').delete().eq('id', data.id);
+                }
+            } catch (e) {
+                addResult('作品新增測試', 'error', e.message);
+            }
+
+            // 測試 5: 檢查分析表
+            try {
+                const [clicksResult, visitorsResult, pageViewsResult] = await Promise.all([
+                    client.from('category_clicks').select('id', { count: 'exact', head: true }),
+                    client.from('site_visitors').select('visitor_id', { count: 'exact', head: true }),
+                    client.from('page_views').select('id', { count: 'exact', head: true })
+                ]);
+                
+                addResult('分析表統計', 'success', 
+                    `點擊: ${clicksResult.count}, 訪客: ${visitorsResult.count}, 頁面瀏覽: ${pageViewsResult.count}`);
+            } catch (e) {
+                addResult('分析表統計', 'error', e.message);
+            }
+        }
+
+        // 頁面載入時自動執行測試
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>
