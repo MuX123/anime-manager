@@ -1524,86 +1524,13 @@ window.importData = (event) => {
             window.showToast(`✓ 成功匯入 ${items.length} 筆資料`);
             await window.loadData();
             window.renderAdmin();
-        } catch (err) { 
+        } catch (err) {
             console.error('Import error:', err);
-            window.showToast('✗ 匯入失敗：' + err.message, 'error'); 
+            window.showToast('✗ 匯入失敗：' + err.message, 'error');
         }
     };
     reader.readAsText(file);
     event.target.value = '';
-};
-            if (siteSettings.custom_labels) {
-                Object.entries(siteSettings.custom_labels).forEach(([key, label]) => { labelMap[label] = key; });
-            }
-
-            const rawHeaders = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-            const headers = rawHeaders.map(h => labelMap[h] || h);
-            
-            // 定義資料庫中實際存在的標準欄位（根據實際查詢結果）
-            const dbStandardFields = ['name', 'poster_url', 'description', 'star_color', 'name_color', 'desc_color', 'links', 'extra_data', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'category'];
-            
-            // 暫時移除 genre 欄位處理，因為資料表中沒有這個欄位
-            // const genreIndex = headers.findIndex(h => h === 'genre');
-            // if (genreIndex !== -1) {
-            //     item[headers[genreIndex]] = val ? val.split('|') : [];
-            // }
-
-            const items = [];
-            for (let i = 1; i < lines.length; i++) {
-                const values = [];
-                let current = '';
-                let inQuotes = false;
-                for (let char of lines[i]) {
-                    if (char === '"') inQuotes = !inQuotes;
-                    else if (char === ',' && !inQuotes) {
-                        values.push(current);
-                        current = '';
-                    } else {
-                        current += char;
-                    }
-                }
-                values.push(current);
-                
-                const item = { extra_data: {} };
-                headers.forEach((h, idx) => {
-                    let val = (values[idx] || '').trim().replace(/^"|"$/g, '').replace(/""/g, '"');
-                    
-                    if (dbStandardFields.includes(h)) {
-                        // 處理標準欄位
-                        if (h === 'genre') {
-                            item[h] = val ? val.split('|') : [];
-                        } else if (h === 'links' || h === 'extra_data') {
-                            try { 
-                                const parsed = JSON.parse(val);
-                                if (h === 'extra_data') Object.assign(item.extra_data, parsed);
-                                else item[h] = parsed;
-                            } catch(e) { if (h === 'links') item[h] = []; }
-                        } else {
-                            item[h] = val;
-                        }
-                    } else if (h) {
-                        // 處理自定義欄位 (如 custom_123)，歸類到 extra_data
-                        item.extra_data[h] = val;
-                    }
-                });
-                
-                item.category = importTarget;
-                delete item.id;
-                items.push(item);
-            }
-            
-            const { error } = await supabaseClient.from('anime_list').insert(items);
-            if (error) throw error;
-            
-            window.showToast(`✓ 成功匯入 ${items.length} 筆資料`);
-            await window.loadData();
-            window.renderAdmin();
-        } catch (err) { 
-            console.error('Import error:', err);
-            window.showToast('✗ 匯入失敗：' + err.message, 'error'); 
-        }
-    };
-    reader.readAsText(file);
 };
 
 window.saveSettings = async () => {
@@ -1612,7 +1539,7 @@ window.saveSettings = async () => {
         window.showToast('✗ 您沒有管理員權限', 'error');
         return;
     }
-    
+
     try {
         const title = document.getElementById('set-title').value;
         const announcement = document.getElementById('set-announcement').value;
@@ -1620,21 +1547,21 @@ window.saveSettings = async () => {
         const announcementColor = document.getElementById('set-announcement-color').value;
         const adminName = document.getElementById('set-admin-name').value;
         const adminAvatar = document.getElementById('set-admin-avatar').value;
-	        const adminColor = document.getElementById('set-admin-color').value;
-	        
-	        const { error } = await supabaseClient.from('site_settings').upsert([
-	            { id: 'site_title', value: title }, 
-	            { id: 'announcement', value: announcement },
-	            { id: 'title_color', value: titleColor },
-	            { id: 'announcement_color', value: announcementColor },
-	            { id: 'admin_name', value: adminName },
-	            { id: 'admin_avatar', value: adminAvatar },
-	            { id: 'admin_color', value: adminColor }
-	        ]);
-	        
-	        // 同步更新全域變數
-	        siteSettings.admin_color = adminColor;
-        
+        const adminColor = document.getElementById('set-admin-color').value;
+
+        const { error } = await supabaseClient.from('site_settings').upsert([
+            { id: 'site_title', value: title },
+            { id: 'announcement', value: announcement },
+            { id: 'title_color', value: titleColor },
+            { id: 'announcement_color', value: announcementColor },
+            { id: 'admin_name', value: adminName },
+            { id: 'admin_avatar', value: adminAvatar },
+            { id: 'admin_color', value: adminColor }
+        ]);
+
+        // 同步更新全域變數
+        siteSettings.admin_color = adminColor;
+
         if (error) throw error;
 
         siteSettings = {
@@ -1647,14 +1574,14 @@ window.saveSettings = async () => {
             admin_avatar: adminAvatar,
             admin_color: adminColor
         };
-        
+
         document.title = title;
         window.showToast('✓ 設定已更新');
         window.renderAdmin();
-        window.renderApp(); // 強制刷新主介面
-    } catch (err) { 
+        window.renderApp();
+    } catch (err) {
         console.error('Save settings error:', err);
-        window.showToast('✗ 更新失敗', 'error'); 
+        window.showToast('✗ 更新失敗', 'error');
     }
 };
 
