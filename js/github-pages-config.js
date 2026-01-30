@@ -3,12 +3,12 @@
  * 提供預設配置以確保在 GitHub Pages 上正常運行
  */
 
-// GitHub Pages 預設配置
+// 在此填入你的 Supabase 配置
 window.__ACG_CONFIG__ = {
-    // Supabase 配置 (需要用戶自行設置)
-    SUPABASE_URL: '',
-    SUPABASE_ANON_KEY: '',
-    
+    // Supabase 配置 - 從 Supabase Dashboard > Settings > API 獲取
+    SUPABASE_URL: 'https://你的專案ID.supabase.co',
+    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...你的anon key...',
+
     // 基本配置
     NODE_ENV: 'production',
     DEBUG: false,
