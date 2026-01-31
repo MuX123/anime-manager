@@ -465,7 +465,11 @@ class PerformanceMonitor {
         if (window.performance && typeof window.performance.getEntriesByType === 'function') {
             window.addEventListener('load', () => {
                 setTimeout(() => {
-                    const navigation = performance.getEntriesByType('navigation')[0];
+                    const perf = window.performance;
+                    if (!perf || typeof perf.getEntriesByType !== 'function') {
+                        return;
+                    }
+                    const navigation = perf.getEntriesByType('navigation')[0];
                     if (navigation) {
                         this.recordMetric('pageLoad', {
                             loadTime: navigation.loadEventEnd - navigation.loadEventStart,
