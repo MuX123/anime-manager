@@ -1836,7 +1836,7 @@ window.renderAnnouncements = async function() {
                                 <img src="${item.author_avatar || siteSettings.admin_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--neon-blue);">
                                 <div style="flex: 1;">
                                     <div style="color: ${item.author_color || siteSettings.admin_color || 'var(--neon-cyan)'}; font-weight: bold; font-size: 14px;">${item.author_name || siteSettings.admin_name || '管理員'}</div>
-	                        <div style="color: var(--text-secondary); font-size: 11px; font-family: 'Space Mono', monospace;">${new Date(item.timestamp || item.created_at || item.createdAt || item.created || Date.now()).toLocaleString()}</div>
+	                            <div style="color: var(--text-secondary); font-size: 11px; font-family: 'Space Mono', monospace;">${new Date(item.created_at || item.timestamp || item.createdAt || item.created || Date.now()).toLocaleString()}</div>
                                 </div>
                                 ${isAdmin ? `
                                     <div style="display: flex; gap: 10px;">
@@ -1920,9 +1920,9 @@ window.submitAnnouncement = async (editId = null) => {
         };
         const payload = {
             ...basePayload,
-            timestamp: new Date().toISOString()
+            created_at: new Date().toISOString()
         };
-        
+
         console.log('🚀 發布公告，使用身分:', payload.author_name);
 
         let error;
