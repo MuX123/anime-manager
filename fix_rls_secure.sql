@@ -7,8 +7,18 @@
 -- ============================================================================
 DO $$
 BEGIN
-    -- Check if table exists
     IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'anime_list') THEN
+        -- Drop existing policies first (to avoid "already exists" error)
+        DROP POLICY IF EXISTS "Allow anonymous operations" ON anime_list;
+        DROP POLICY IF EXISTS "Allow anonymous select to anime_list" ON anime_list;
+        DROP POLICY IF EXISTS "Allow anonymous insert to anime_list" ON anime_list;
+        DROP POLICY IF EXISTS "Allow anonymous update to anime_list" ON anime_list;
+        DROP POLICY IF EXISTS "Allow anonymous delete to anime_list" ON anime_list;
+        DROP POLICY IF EXISTS "Public read access" ON anime_list;
+        DROP POLICY IF EXISTS "Authenticated insert" ON anime_list;
+        DROP POLICY IF EXISTS "Authenticated update" ON anime_list;
+        DROP POLICY IF EXISTS "Authenticated delete" ON anime_list;
+
         -- Enable RLS if not already enabled
         IF NOT EXISTS (
             SELECT 1 FROM pg_tables WHERE tablename = 'anime_list' AND rowsecurity = true
@@ -16,26 +26,13 @@ BEGIN
             ALTER TABLE anime_list ENABLE ROW LEVEL SECURITY;
         END IF;
 
-        -- Drop existing policies
-        DROP POLICY IF EXISTS "Allow anonymous operations" ON anime_list;
-        DROP POLICY IF EXISTS "Allow anonymous select to anime_list" ON anime_list;
-        DROP POLICY IF EXISTS "Allow anonymous insert to anime_list" ON anime_list;
-        DROP POLICY IF EXISTS "Allow anonymous update to anime_list" ON anime_list;
-        DROP POLICY IF EXISTS "Allow anonymous delete to anime_list" ON anime_list;
-
         -- Public read access (anyone can view)
-        CREATE POLICY "Public read access" ON anime_list
-            FOR SELECT USING (true);
+        CREATE POLICY "Public read access" ON anime_list FOR SELECT USING (true);
 
         -- Authenticated users can insert/update/delete
-        CREATE POLICY "Authenticated insert" ON anime_list
-            FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
-        CREATE POLICY "Authenticated update" ON anime_list
-            FOR UPDATE USING (auth.role() = 'authenticated');
-
-        CREATE POLICY "Authenticated delete" ON anime_list
-            FOR DELETE USING (auth.role() = 'authenticated');
+        CREATE POLICY "Authenticated insert" ON anime_list FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+        CREATE POLICY "Authenticated update" ON anime_list FOR UPDATE USING (auth.role() = 'authenticated');
+        CREATE POLICY "Authenticated delete" ON anime_list FOR DELETE USING (auth.role() = 'authenticated');
 
         RAISE NOTICE 'anime_list RLS policies fixed';
     ELSE
@@ -49,27 +46,24 @@ END $$;
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'announcements') THEN
+        DROP POLICY IF EXISTS "Enable all for announcements" ON announcements;
+        DROP POLICY IF EXISTS "Allow anonymous insert to announcements" ON announcements;
+        DROP POLICY IF EXISTS "Allow anonymous select to announcements" ON announcements;
+        DROP POLICY IF EXISTS "Public read access" ON announcements;
+        DROP POLICY IF EXISTS "Authenticated insert" ON announcements;
+        DROP POLICY IF EXISTS "Authenticated update" ON announcements;
+        DROP POLICY IF EXISTS "Authenticated delete" ON announcements;
+
         IF NOT EXISTS (
             SELECT 1 FROM pg_tables WHERE tablename = 'announcements' AND rowsecurity = true
         ) THEN
             ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
         END IF;
 
-        DROP POLICY IF EXISTS "Enable all for announcements" ON announcements;
-        DROP POLICY IF EXISTS "Allow anonymous insert to announcements" ON announcements;
-        DROP POLICY IF EXISTS "Allow anonymous select to announcements" ON announcements;
-
-        CREATE POLICY "Public read access" ON announcements
-            FOR SELECT USING (true);
-
-        CREATE POLICY "Authenticated insert" ON announcements
-            FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
-        CREATE POLICY "Authenticated update" ON announcements
-            FOR UPDATE USING (auth.role() = 'authenticated');
-
-        CREATE POLICY "Authenticated delete" ON announcements
-            FOR DELETE USING (auth.role() = 'authenticated');
+        CREATE POLICY "Public read access" ON announcements FOR SELECT USING (true);
+        CREATE POLICY "Authenticated insert" ON announcements FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+        CREATE POLICY "Authenticated update" ON announcements FOR UPDATE USING (auth.role() = 'authenticated');
+        CREATE POLICY "Authenticated delete" ON announcements FOR DELETE USING (auth.role() = 'authenticated');
 
         RAISE NOTICE 'announcements RLS policies fixed';
     ELSE
@@ -83,21 +77,20 @@ END $$;
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'site_settings') THEN
+        DROP POLICY IF EXISTS "Enable all for site_settings" ON site_settings;
+        DROP POLICY IF EXISTS "Allow anonymous read to site_settings" ON site_settings;
+        DROP POLICY IF EXISTS "Authenticated read" ON site_settings;
+        DROP POLICY IF EXISTS "Authenticated write" ON site_settings;
+
         IF NOT EXISTS (
             SELECT 1 FROM pg_tables WHERE tablename = 'site_settings' AND rowsecurity = true
         ) THEN
             ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
         END IF;
 
-        DROP POLICY IF EXISTS "Enable all for site_settings" ON site_settings;
-        DROP POLICY IF EXISTS "Allow anonymous read to site_settings" ON site_settings;
-
         -- Only authenticated users can read/write site settings
-        CREATE POLICY "Authenticated read" ON site_settings
-            FOR SELECT USING (auth.role() = 'authenticated');
-
-        CREATE POLICY "Authenticated write" ON site_settings
-            FOR ALL USING (auth.role() = 'authenticated');
+        CREATE POLICY "Authenticated read" ON site_settings FOR SELECT USING (auth.role() = 'authenticated');
+        CREATE POLICY "Authenticated write" ON site_settings FOR ALL USING (auth.role() = 'authenticated');
 
         RAISE NOTICE 'site_settings RLS policies fixed (auth only)';
     ELSE
@@ -111,23 +104,22 @@ END $$;
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'page_views') THEN
+        DROP POLICY IF EXISTS "Enable all for page_views" ON page_views;
+        DROP POLICY IF EXISTS "Allow anonymous insert to page_views" ON page_views;
+        DROP POLICY IF EXISTS "Allow anonymous select to page_views" ON page_views;
+        DROP POLICY IF EXISTS "Public insert" ON page_views;
+        DROP POLICY IF EXISTS "Authenticated read" ON page_views;
+
         IF NOT EXISTS (
             SELECT 1 FROM pg_tables WHERE tablename = 'page_views' AND rowsecurity = true
         ) THEN
             ALTER TABLE page_views ENABLE ROW LEVEL SECURITY;
         END IF;
 
-        DROP POLICY IF EXISTS "Enable all for page_views" ON page_views;
-        DROP POLICY IF EXISTS "Allow anonymous insert to page_views" ON page_views;
-        DROP POLICY IF EXISTS "Allow anonymous select to page_views" ON page_views;
-
         -- Anyone can insert (track visits)
-        CREATE POLICY "Public insert" ON page_views
-            FOR INSERT WITH CHECK (true);
-
+        CREATE POLICY "Public insert" ON page_views FOR INSERT WITH CHECK (true);
         -- Only authenticated can read
-        CREATE POLICY "Authenticated read" ON page_views
-            FOR SELECT USING (auth.role() = 'authenticated');
+        CREATE POLICY "Authenticated read" ON page_views FOR SELECT USING (auth.role() = 'authenticated');
 
         RAISE NOTICE 'page_views RLS policies fixed';
     ELSE
@@ -141,21 +133,20 @@ END $$;
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'category_clicks') THEN
+        DROP POLICY IF EXISTS "Enable all for category_clicks" ON category_clicks;
+        DROP POLICY IF EXISTS "Allow anonymous insert to category_clicks" ON category_clicks;
+        DROP POLICY IF EXISTS "Allow anonymous select to category_clicks" ON category_clicks;
+        DROP POLICY IF EXISTS "Public insert" ON category_clicks;
+        DROP POLICY IF EXISTS "Authenticated read" ON category_clicks;
+
         IF NOT EXISTS (
             SELECT 1 FROM pg_tables WHERE tablename = 'category_clicks' AND rowsecurity = true
         ) THEN
             ALTER TABLE category_clicks ENABLE ROW LEVEL SECURITY;
         END IF;
 
-        DROP POLICY IF EXISTS "Enable all for category_clicks" ON category_clicks;
-        DROP POLICY IF EXISTS "Allow anonymous insert to category_clicks" ON category_clicks;
-        DROP POLICY IF EXISTS "Allow anonymous select to category_clicks" ON category_clicks;
-
-        CREATE POLICY "Public insert" ON category_clicks
-            FOR INSERT WITH CHECK (true);
-
-        CREATE POLICY "Authenticated read" ON category_clicks
-            FOR SELECT USING (auth.role() = 'authenticated');
+        CREATE POLICY "Public insert" ON category_clicks FOR INSERT WITH CHECK (true);
+        CREATE POLICY "Authenticated read" ON category_clicks FOR SELECT USING (auth.role() = 'authenticated');
 
         RAISE NOTICE 'category_clicks RLS policies fixed';
     ELSE
@@ -169,28 +160,26 @@ END $$;
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'site_visitors') THEN
+        DROP POLICY IF EXISTS "Enable all for site_visitors" ON site_visitors;
+        DROP POLICY IF EXISTS "Allow anonymous read access to site_visitors" ON site_visitors;
+        DROP POLICY IF EXISTS "Allow anonymous insert to site_visitors" ON site_visitors;
+        DROP POLICY IF EXISTS "Allow anonymous update to site_visitors" ON site_visitors;
+        DROP POLICY IF EXISTS "Public insert" ON site_visitors;
+        DROP POLICY IF EXISTS "Self update" ON site_visitors;
+        DROP POLICY IF EXISTS "Authenticated read" ON site_visitors;
+
         IF NOT EXISTS (
             SELECT 1 FROM pg_tables WHERE tablename = 'site_visitors' AND rowsecurity = true
         ) THEN
             ALTER TABLE site_visitors ENABLE ROW LEVEL SECURITY;
         END IF;
 
-        DROP POLICY IF EXISTS "Enable all for site_visitors" ON site_visitors;
-        DROP POLICY IF EXISTS "Allow anonymous read access to site_visitors" ON site_visitors;
-        DROP POLICY IF EXISTS "Allow anonymous insert to site_visitors" ON site_visitors;
-        DROP POLICY IF EXISTS "Allow anonymous update to site_visitors" ON site_visitors;
-
         -- Anyone can insert (new visitor registration)
-        CREATE POLICY "Public insert" ON site_visitors
-            FOR INSERT WITH CHECK (true);
-
+        CREATE POLICY "Public insert" ON site_visitors FOR INSERT WITH CHECK (true);
         -- Users can update their own visitor record (if applicable)
-        CREATE POLICY "Self update" ON site_visitors
-            FOR UPDATE USING (true);
-
+        CREATE POLICY "Self update" ON site_visitors FOR UPDATE USING (true);
         -- Only authenticated can read all visitors
-        CREATE POLICY "Authenticated read" ON site_visitors
-            FOR SELECT USING (auth.role() = 'authenticated');
+        CREATE POLICY "Authenticated read" ON site_visitors FOR SELECT USING (auth.role() = 'authenticated');
 
         RAISE NOTICE 'site_visitors RLS policies fixed';
     ELSE
@@ -204,20 +193,19 @@ END $$;
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'site_analytics') THEN
+        DROP POLICY IF EXISTS "Allow anonymous read access to site_analytics" ON site_analytics;
+        DROP POLICY IF EXISTS "Allow anonymous insert to site_analytics" ON site_analytics;
+        DROP POLICY IF EXISTS "Public insert" ON site_analytics;
+        DROP POLICY IF EXISTS "Authenticated read" ON site_analytics;
+
         IF NOT EXISTS (
             SELECT 1 FROM pg_tables WHERE tablename = 'site_analytics' AND rowsecurity = true
         ) THEN
             ALTER TABLE site_analytics ENABLE ROW LEVEL SECURITY;
         END IF;
 
-        DROP POLICY IF EXISTS "Allow anonymous read access to site_analytics" ON site_analytics;
-        DROP POLICY IF EXISTS "Allow anonymous insert to site_analytics" ON site_analytics;
-
-        CREATE POLICY "Public insert" ON site_analytics
-            FOR INSERT WITH CHECK (true);
-
-        CREATE POLICY "Authenticated read" ON site_analytics
-            FOR SELECT USING (auth.role() = 'authenticated');
+        CREATE POLICY "Public insert" ON site_analytics FOR INSERT WITH CHECK (true);
+        CREATE POLICY "Authenticated read" ON site_analytics FOR SELECT USING (auth.role() = 'authenticated');
 
         RAISE NOTICE 'site_analytics RLS policies fixed';
     ELSE
@@ -231,20 +219,19 @@ END $$;
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'visitor_sessions') THEN
+        DROP POLICY IF EXISTS "Allow anonymous insert to visitor_sessions" ON visitor_sessions;
+        DROP POLICY IF EXISTS "Allow anonymous select to visitor_sessions" ON visitor_sessions;
+        DROP POLICY IF EXISTS "Public insert" ON visitor_sessions;
+        DROP POLICY IF EXISTS "Authenticated read" ON visitor_sessions;
+
         IF NOT EXISTS (
             SELECT 1 FROM pg_tables WHERE tablename = 'visitor_sessions' AND rowsecurity = true
         ) THEN
             ALTER TABLE visitor_sessions ENABLE ROW LEVEL SECURITY;
         END IF;
 
-        DROP POLICY IF EXISTS "Allow anonymous insert to visitor_sessions" ON visitor_sessions;
-        DROP POLICY IF EXISTS "Allow anonymous select to visitor_sessions" ON visitor_sessions;
-
-        CREATE POLICY "Public insert" ON visitor_sessions
-            FOR INSERT WITH CHECK (true);
-
-        CREATE POLICY "Authenticated read" ON visitor_sessions
-            FOR SELECT USING (auth.role() = 'authenticated');
+        CREATE POLICY "Public insert" ON visitor_sessions FOR INSERT WITH CHECK (true);
+        CREATE POLICY "Authenticated read" ON visitor_sessions FOR SELECT USING (auth.role() = 'authenticated');
 
         RAISE NOTICE 'visitor_sessions RLS policies fixed';
     ELSE
@@ -268,6 +255,12 @@ WHERE tablename IN (
 )
 ORDER BY tablename;
 
+SELECT '============================================' AS notice;
+SELECT 'All RLS policies have been securely updated' AS notice;
+SELECT 'Public: SELECT only on anime_list, announcements' AS notice;
+SELECT 'Public: INSERT on analytics tables (page_views, category_clicks, etc.)' AS notice;
+SELECT 'Authenticated: Full access on site_settings' AS notice;
+SELECT 'Authenticated: Full access on anime_list, announcements' AS notice;
 SELECT '============================================' AS notice;
 SELECT 'All RLS policies have been securely updated' AS notice;
 SELECT 'Public: SELECT only on anime_list, announcements' AS notice;

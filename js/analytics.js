@@ -1,4 +1,6 @@
-let analyticsData = { totalClicks: null, uniqueVisitors: null, totalPageViews: null };
+// 全局分析數據
+window.analyticsData = { totalClicks: 0, uniqueVisitors: 0, totalPageViews: 0 };
+let analyticsData = window.analyticsData;
 
 function getVisitorId() {
     let visitorId = localStorage.getItem('visitor_id');

@@ -462,7 +462,7 @@ class PerformanceMonitor {
      * 觀察頁面載入性能
      */
     observePageLoad() {
-        if ('performance' in window && 'getEntriesByType' in performance) {
+        if (window.performance && typeof window.performance.getEntriesByType === 'function') {
             window.addEventListener('load', () => {
                 setTimeout(() => {
                     const navigation = performance.getEntriesByType('navigation')[0];

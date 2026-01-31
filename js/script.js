@@ -388,14 +388,13 @@ app.innerHTML = `
     window.updateAdminMenu();
     
     // 更新統計顯示
-    if (typeof window.analyticsData !== 'undefined') {
-        const container = document.getElementById('analytics-display');
-        if (container) {
-            container.innerHTML = `
-                <span style="margin-right: 15px;">🖱️ ${window.analyticsData.totalClicks.toLocaleString()}</span>
-                <span>👤 ${window.analyticsData.uniqueVisitors.toLocaleString()}</span>
-            `;
-        }
+    const analyticsContainer = document.getElementById('analytics-display');
+    if (analyticsContainer && window.analyticsData) {
+        const analytics = window.analyticsData;
+        analyticsContainer.innerHTML = `
+            <span style="margin-right: 15px;">🖱️ ${(analytics.totalClicks || 0).toLocaleString()}</span>
+            <span>👤 ${(analytics.uniqueVisitors || 0).toLocaleString()}</span>
+        `;
     }
 
 	    // 確保詳情彈窗 HTML 存在
