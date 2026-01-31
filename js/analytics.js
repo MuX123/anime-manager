@@ -211,19 +211,22 @@ function updateAnalyticsDisplay() {
     }
     
     // 確保數值為數字（避免 null）
-    const clicks = analyticsData.totalClicks || 0;
-    const visitors = analyticsData.uniqueVisitors || 0;
-    const pageViews = analyticsData.totalPageViews || 0;
+    const clicks = analyticsData.totalClicks !== undefined && analyticsData.totalClicks !== null ? analyticsData.totalClicks : '--';
+    const visitors = analyticsData.uniqueVisitors !== undefined && analyticsData.uniqueVisitors !== null ? analyticsData.uniqueVisitors : '--';
+    const pageViews = analyticsData.totalPageViews !== undefined && analyticsData.totalPageViews !== null ? analyticsData.totalPageViews : '--';
     
     // 數據載入完成，顯示並添加淡入動畫
     container.style.visibility = 'visible';
     container.style.pointerEvents = 'auto';
     container.style.opacity = '0';
     
+    // 使用固定寬度容器避免數字變化導致的佈局跳動
+    const itemStyle = "display: inline-block; min-width: 60px; text-align: left;";
+    
     container.innerHTML = `
-        <span style="margin-right: 10px;">👤 ${visitors.toLocaleString()}</span>
-        <span style="margin-right: 10px;">🖱️ ${clicks.toLocaleString()}</span>
-        <span>📄 ${pageViews.toLocaleString()}</span>
+        <span style="margin-right: 15px;">👤 <span style="${itemStyle}">${visitors === '--' ? '--' : visitors.toLocaleString()}</span></span>
+        <span style="margin-right: 15px;">🖱️ <span style="${itemStyle}">${clicks === '--' ? '--' : clicks.toLocaleString()}</span></span>
+        <span>📄 <span style="${itemStyle}">${pageViews === '--' ? '--' : pageViews.toLocaleString()}</span></span>
     `;
     
     // 觸發淡入效果
@@ -311,3 +314,6 @@ setTimeout(() => {
     console.log('📊 開始追蹤訪客統計');
     trackVisit();
 }, 3000);
+
+// 立即初始化顯示（使用預設值或快取），避免空白
+updateAnalyticsDisplay();

@@ -391,15 +391,15 @@ app.innerHTML = `
     window.initGlobalScroll();
     window.updateAdminMenu();
     
-    // 更新統計顯示
-    const analyticsContainer = document.getElementById('analytics-display');
-    if (analyticsContainer && window.analyticsData) {
-        const analytics = window.analyticsData;
-        analyticsContainer.innerHTML = `
-            <span style="margin-right: 15px;">🖱️ ${(analytics.totalClicks || 0).toLocaleString()}</span>
-            <span>👤 ${(analytics.uniqueVisitors || 0).toLocaleString()}</span>
-        `;
-    }
+    // 更新統計顯示 - 移交給 analytics.js 統一處理，避免覆蓋導致的閃爍和數據丟失
+    // const analyticsContainer = document.getElementById('analytics-display');
+    // if (analyticsContainer && window.analyticsData) {
+    //     const analytics = window.analyticsData;
+    //     analyticsContainer.innerHTML = `
+    //         <span style="margin-right: 15px;">🖱️ ${(analytics.totalClicks || 0).toLocaleString()}</span>
+    //         <span>👤 ${(analytics.uniqueVisitors || 0).toLocaleString()}</span>
+    //     `;
+    // }
 
 	    // 確保詳情彈窗 HTML 存在
 	    if (!document.getElementById('detailModal')) {
