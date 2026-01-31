@@ -1836,7 +1836,7 @@ window.renderAnnouncements = async function() {
                                 <img src="${item.author_avatar || siteSettings.admin_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--neon-blue);">
                                 <div style="flex: 1;">
                                     <div style="color: ${item.author_color || siteSettings.admin_color || 'var(--neon-cyan)'}; font-weight: bold; font-size: 14px;">${item.author_name || siteSettings.admin_name || '管理員'}</div>
-                                    <div style="color: var(--text-secondary); font-size: 11px; font-family: 'Space Mono', monospace;">${new Date(item.timestamp).toLocaleString()}</div>
+	                        <div style="color: var(--text-secondary); font-size: 11px; font-family: 'Space Mono', monospace;">${new Date(item.timestamp || item.created_at || item.createdAt || item.created || Date.now()).toLocaleString()}</div>
                                 </div>
                                 ${isAdmin ? `
                                     <div style="display: flex; gap: 10px;">
@@ -1911,12 +1911,15 @@ window.submitAnnouncement = async (editId = null) => {
 
     try {
         // 確保抓取到最新的設定值
-        const payload = {
+        const basePayload = {
             content: content,
             image_urls: images,
             author_name: siteSettings.admin_name || '管理員',
             author_avatar: siteSettings.admin_avatar || '',
-            author_color: siteSettings.admin_color || '#00ffff',
+            author_color: siteSettings.admin_color || '#00ffff'
+        };
+        const payload = {
+            ...basePayload,
             timestamp: new Date().toISOString()
         };
         
@@ -1937,7 +1940,14 @@ window.submitAnnouncement = async (editId = null) => {
             error = err;
         } else {
             const { error: err } = await supabaseClient.from('announcements').insert([payload]);
-            error = err;
+            if (err && /timestamp/i.test(err.message || '')) {
+                const { error: err2 } = await supabaseClient.from('announcements').insert([
+                    { ...basePayload, created_at: new Date().toISOString() }
+                ]);
+                error = err2;
+            } else {
+                error = err;
+            }
         }
 
         if (error) throw error;
@@ -1947,7 +1957,8 @@ window.submitAnnouncement = async (editId = null) => {
         // 延遲一下再重新渲染，確保資料庫已完成寫入
         setTimeout(() => window.renderAnnouncements(), 300);
     } catch (err) {
-        window.showToast('✗ 操作失敗', 'error');
+        console.error('Announcement submit error:', err);
+        window.showToast('✗ 操作失敗：' + (err?.message || '未知錯誤'), 'error');
     }
 };
 
