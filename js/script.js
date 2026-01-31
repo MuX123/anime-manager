@@ -98,6 +98,19 @@ let isFirstLoad = true;
         
         // 等待所有模組載入完成
         await new Promise(resolve => setTimeout(resolve, 500));
+
+        const waitForSupabaseReady = async (timeoutMs = 5000, intervalMs = 250) => {
+            const start = Date.now();
+            while (Date.now() - start < timeoutMs) {
+                if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, intervalMs));
+            }
+            return window.supabaseManager ? window.supabaseManager.isConnectionReady() : false;
+        };
+
+        await waitForSupabaseReady();
         
         // 1. 檢查 Supabase 連接狀態
         let client = null;
