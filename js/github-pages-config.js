@@ -6,8 +6,8 @@
 // 在此填入你的 Supabase 配置
 window.__ACG_CONFIG__ = {
     // Supabase 配置 - 從 Supabase Dashboard > Settings > API 獲取
-    SUPABASE_URL: 'https://你的專案ID.supabase.co',
-    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...你的anon key...',
+    SUPABASE_URL: 'https://twgydqknzdyahgfuamak.supabase.co',
+    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3Z3lkcWtuemR5YWhnZnVhbWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NjA5MTEsImV4cCI6MjA4NDMzNjkxMX0.0YizCZP2OglEQQIh96x8viaemR6reZs8zendNT9KS7c',
 
     // 基本配置
     NODE_ENV: 'production',
