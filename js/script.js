@@ -29,6 +29,7 @@ let siteSettings = {
     admin_name: '管理員',
     admin_avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
     admin_color: '#00ffff',
+    admin_email: '',
     custom_labels: {} 
 };
 let currentCategory = 'notice';
@@ -158,7 +159,8 @@ let isFirstLoad = true;
                     if (s.id === 'admin_name') siteSettings.admin_name = s.value;
                     if (s.id === 'admin_avatar') siteSettings.admin_avatar = s.value;
                     if (s.id === 'admin_color') siteSettings.admin_color = s.value;
-                    if (s.id === 'custom_labels') { 
+                    if (s.id === 'admin_email') siteSettings.admin_email = s.value;
+                    if (s.id === 'custom_labels') {
                         try { 
                             siteSettings.custom_labels = JSON.parse(s.value); 
                         } catch(e) { 
@@ -244,14 +246,8 @@ window.checkIsAdmin = async function(userEmail) {
     if (!userEmail) return false;
 
     // 優先使用 site_settings 中的管理員 email
-    const adminEmailFromSettings = siteSettings.admin_email;
+    const adminEmailFromSettings = siteSettings?.admin_email;
     if (adminEmailFromSettings && userEmail.toLowerCase() === adminEmailFromSettings.toLowerCase()) {
-        return true;
-    }
-
-    // 備用：檢查本地設定的管理員 email
-    const adminEmail = siteSettings.admin_email || 'admin@acg-manager.com';
-    if (userEmail.toLowerCase() === adminEmail.toLowerCase()) {
         return true;
     }
 
@@ -260,8 +256,6 @@ window.checkIsAdmin = async function(userEmail) {
         let client;
         if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
             client = window.supabaseManager.getClient();
-        } else if (window.supabaseClient) {
-            client = window.supabaseClient;
         }
 
         if (client) {
@@ -834,11 +828,15 @@ window.handleLogin = async () => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
+    if (!email || !password) {
+        return window.showToast('請輸入電子郵件和密碼', 'error');
+    }
+
     let client;
     if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
         client = window.supabaseManager.getClient();
-    } else if (window.supabaseClient) {
-        client = window.supabaseClient;
+    } else {
+        return window.showToast('資料庫連接失敗，請重新整理頁面', 'error');
     }
 
     const { error, data } = await client.auth.signInWithPassword({ email, password });

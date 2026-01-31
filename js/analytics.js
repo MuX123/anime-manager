@@ -188,15 +188,32 @@ function updateAnalyticsDisplay() {
     const container = document.getElementById('analytics-display');
     if (!container) return;
     
-    // 檢查是否所有數據都已載入
-    const allLoaded = analyticsData.totalClicks !== null && 
-                     analyticsData.uniqueVisitors !== null && 
-                     analyticsData.totalPageViews !== null;
+    // 檢查是否所有數據都已載入（但允許顯示部分數據）
+    const hasAnyData = analyticsData.totalClicks !== null || 
+                       analyticsData.uniqueVisitors !== null || 
+                       analyticsData.totalPageViews !== null;
     
-    if (!allLoaded) {
-        // 數據尚未載入完成，保持隱藏
-        return;
+    // 如果從未載入過任何數據，顯示載入中
+    if (!hasAnyData) {
+        // 嘗試使用快取數據
+        const cached = localStorage.getItem('analytics_cache');
+        if (cached) {
+            const data = JSON.parse(cached);
+            analyticsData.totalClicks = data.totalClicks || 0;
+            analyticsData.uniqueVisitors = data.uniqueVisitors || 0;
+            analyticsData.totalPageViews = data.totalPageViews || 0;
+        } else {
+            // 顯示載入中狀態
+            container.innerHTML = `<span style="color: #666;">載入中...</span>`;
+            container.style.visibility = 'visible';
+            return;
+        }
     }
+    
+    // 確保數值為數字（避免 null）
+    const clicks = analyticsData.totalClicks || 0;
+    const visitors = analyticsData.uniqueVisitors || 0;
+    const pageViews = analyticsData.totalPageViews || 0;
     
     // 數據載入完成，顯示並添加淡入動畫
     container.style.visibility = 'visible';
@@ -204,9 +221,9 @@ function updateAnalyticsDisplay() {
     container.style.opacity = '0';
     
     container.innerHTML = `
-        <span style="margin-right: 10px;">👤 ${analyticsData.uniqueVisitors.toLocaleString()}</span>
-        <span style="margin-right: 10px;">🖱️ ${analyticsData.totalClicks.toLocaleString()}</span>
-        <span>📄 ${analyticsData.totalPageViews.toLocaleString()}</span>
+        <span style="margin-right: 10px;">👤 ${visitors.toLocaleString()}</span>
+        <span style="margin-right: 10px;">🖱️ ${clicks.toLocaleString()}</span>
+        <span>📄 ${pageViews.toLocaleString()}</span>
     `;
     
     // 觸發淡入效果

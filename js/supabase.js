@@ -28,12 +28,14 @@ class SupabaseManager {
             const config = window.configManager?.getSupabaseConfig();
             
             if (!config || !config.url || !config.anonKey) {
-                throw new Error('Supabase 配置缺失');
+                console.warn('Supabase 配置缺失，使用離線模式');
+                return;
             }
 
             // 檢查 Supabase SDK 是否載入
             if (typeof supabase === 'undefined') {
-                throw new Error('Supabase SDK 未載入，請檢查網路連線或 CDN 引用');
+                console.warn('Supabase SDK 未載入，請檢查網路連線或 CDN 引用');
+                return;
             }
 
             // 創建客戶端
@@ -53,14 +55,15 @@ class SupabaseManager {
                 }
             });
 
-            // 測試連接
-            await this.testConnection();
+            // 測試連接（使用寬容模式）
+            const connected = await this.testConnection();
             
-            this.isConnected = true;
-            window.logger?.info('Supabase 客戶端初始化成功');
+            this.isConnected = connected;
+            window.logger?.info(connected ? 'Supabase 客戶端初始化成功' : 'Supabase 客戶端初始化完成（離線模式）');
             
         } catch (error) {
-            this.handleConnectionError(error);
+            console.warn('Supabase 初始化錯誤，使用離線模式:', error.message);
+            this.isConnected = false;
         }
     }
 
@@ -70,13 +73,21 @@ class SupabaseManager {
      */
     async testConnection() {
         try {
-            const { data, error } = await this.client
-                .from('site_settings')
-                .select('id')
-                .limit(1);
-                
-            if (error) {
-                throw error;
+            // 先嘗試簡單的 auth 請求，確保客戶端可用
+            const { error: authError } = await this.client.auth.getSession();
+            if (authError && authError.name !== 'AuthSessionMissingError') {
+                throw authError;
+            }
+            
+            // 嘗試查詢 site_settings（表可能不存在，這不應該算失敗）
+            try {
+                await this.client
+                    .from('site_settings')
+                    .select('id')
+                    .limit(1);
+            } catch (tableError) {
+                // 表不存在或無權訪問，不算連接失敗
+                console.warn('⚠️ site_settings 表可能不存在:', tableError.message);
             }
             
             return true;
