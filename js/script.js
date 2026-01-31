@@ -99,16 +99,13 @@ let isFirstLoad = true;
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // 1. 檢查 Supabase 連接狀態
-        let client;
+        let client = null;
         if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
             client = window.supabaseManager.getClient();
             console.log('✅ 使用新的 Supabase 客戶端');
-        } else if (window.supabaseClient) {
-            client = window.supabaseClient;
-            console.log('⚠️ 使用舊的 Supabase 客戶端');
         } else {
-            console.error('❌ Supabase 客戶端未初始化');
-            window.showToast('資料庫連接尚未準備就緒', 'error');
+            console.warn('⚠️ Supabase 未連接，進入離線模式');
+            window.showToast('資料庫連接失敗，系統將以離線模式運行', 'warning');
             isFirstLoad = false;
             window.renderApp();
             return;
@@ -516,7 +513,7 @@ window.renderCard = (item) => {
         return `
             <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="border: 2px solid ${ratingColor}; background: ${cyanBase};">
                 <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
-                    <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <img src="${item.poster_url || 'data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='450' viewBox='0 0 300 450'%3E%3Crect fill='%231a1a2e' width='300' height='450'/%3E%3Ctext fill='%23666' font-family='sans-serif' font-size='18' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3ENO+IMAGE%3C/text%3E%3C/svg%3E'}" style="width: 100%; height: 100%; object-fit: cover;">
                     <div class="card-overlay-v38" style="position: absolute; inset: 0; box-shadow: inset 0 40px 30px -10px rgba(0,0,0,0.8), inset 0 -40px 30px -10px rgba(0,0,0,0.8), inset 40px 0 30px -10px rgba(0,0,0,0.4), inset -40px 0 30px -10px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
                     <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; backdrop-filter: blur(8px); z-index: 10;">
                         <div style="position: relative; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 50%;">
@@ -584,7 +581,7 @@ window.showAnimeDetail = (id) => {
 					        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; position: relative; background: #050609; border-radius: 16px; overflow: hidden; box-sizing: border-box; border: 2px solid ${ratingColor}; box-shadow: 0 0 30px ${ratingColor}44; display: flex; flex-direction: row;">
 					            <!-- 左側滿版海報 -->
 					            <div class="detail-poster-aside" style="flex: 0 0 380px; border-right: 2px solid ${ratingColor}; box-sizing: border-box; background: #000; position: relative; z-index: 1;">
-		                <img src="${item.poster_url || 'https://via.placeholder.com/300x450?text=NO+IMAGE'}" style="width: 100%; height: 100%; object-fit: cover;">
+		                <img src="${item.poster_url || 'data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='450' viewBox='0 0 300 450'%3E%3Crect fill='%231a1a2e' width='300' height='450'/%3E%3Ctext fill='%23666' font-family='sans-serif' font-size='18' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3ENO+IMAGE%3C/text%3E%3C/svg%3E'}" style="width: 100%; height: 100%; object-fit: cover;">
 		                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
 		                <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; border-right: 2px solid ${ratingColor}; border-bottom: 2px solid ${ratingColor}; backdrop-filter: blur(12px); z-index: 10;">
 		                    <span class="star-icon" style="color: ${starColor}; font-size: 24px; filter: drop-shadow(0 0 8px ${starColor});">${escapeHtml(item.recommendation || '★')}</span>
