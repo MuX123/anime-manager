@@ -822,21 +822,6 @@ window.switchCategory = async (cat) => {
     }
 };
 
-window.showLoginModal = () => { 
-    const modal = document.getElementById('loginModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.add('active');
-    }
-};
-window.hideLoginModal = () => { 
-    const modal = document.getElementById('loginModal');
-    if (modal) {
-        modal.style.display = 'none';
-        modal.classList.remove('active');
-    }
-};
-
 window.handleLogin = async () => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
@@ -1710,14 +1695,6 @@ window.bulkDeleteAnime = async () => {
         console.error('Delete announcement error:', err);
         window.showToast('✗ 刪除失敗：' + (err?.message || '未知錯誤'), 'error');
     }
-};
-
-window.showLoginModal = () => {
-    document.getElementById('loginModal').style.display = 'flex';
-};
-
-window.hideLoginModal = () => {
-    document.getElementById('loginModal').style.display = 'none';
 };
 
 window.renderAdminPagination = (total) => {
