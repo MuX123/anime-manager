@@ -2028,9 +2028,13 @@ window.hideLoginModal = function() {
 };
 
 
-/* 滾輪支持所有滾動軸 */
+/* 滾輪支持所有滾動軸（排除輸入框） */
 document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('wheel', (e) => {
+        // 排除輸入框、選取欄位
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+            return;
+        }
         const target = e.target.closest('[class*="scroll"], [class*="horizontal"], .horizontal-scroll-container, .scroll-row-v35');
         if (target && (target.scrollWidth > target.clientWidth || target.scrollHeight > target.clientHeight)) {
             if (target.scrollWidth > target.clientWidth) {
