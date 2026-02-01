@@ -51,7 +51,164 @@ let importTarget = 'anime';
 let editId = null;
 let isFirstLoad = true;
 
-	// --- Core Functions ---
+// --- UI Helper Functions (放在前面以確保 initApp 可以調用) ---
+
+window.showToast = (msg, type = 'info') => {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.style.borderColor = type === 'error' ? '#ff4444' : 'var(--neon-blue)';
+    toast.style.color = type === 'error' ? '#ff4444' : 'var(--neon-cyan)';
+    toast.classList.add('active');
+    setTimeout(() => toast.classList.remove('active'), 3000);
+};
+
+// Admin Authentication Functions
+let isAdminLoggedIn = false;
+
+window.showAdminLoginModal = () => {
+    const existingModal = document.getElementById('admin-login-modal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'admin-login-modal';
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+            <h2 style="color: var(--neon-cyan); margin-bottom: 20px; text-align: center;">🔐 管理員登入</h2>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">電子郵件</label>
+                <input type="email" id="admin-email" placeholder="admin@example.com" style="width: 100%; padding: 12px; border: 1px solid rgba(0,212,255,0.3); border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">密碼</label>
+                <input type="password" id="admin-password" placeholder="輸入密碼" style="width: 100%; padding: 12px; border: 1px solid rgba(0,212,255,0.3); border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff;">
+            </div>
+            <div id="login-error" style="color: #ff4444; text-align: center; margin-bottom: 15px; display: none;"></div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" style="flex: 1; padding: 12px;" onclick="window.performAdminLogin()">登入</button>
+                <button class="btn-primary" style="flex: 1; border-color: #ff4444; color: #ff4444;" onclick="document.getElementById('admin-login-modal').remove()">取消</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    document.getElementById('admin-password').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') window.performAdminLogin();
+    });
+};
+
+window.performAdminLogin = async () => {
+    const email = document.getElementById('admin-email').value.trim();
+    const password = document.getElementById('admin-password').value;
+    const errorDiv = document.getElementById('login-error');
+
+    if (!email || !password) {
+        errorDiv.textContent = '請輸入電子郵件和密碼';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    errorDiv.style.display = 'none';
+
+    try {
+        const result = await window.supabaseManager.signInWithEmail(email, password);
+
+        if (result.success) {
+            window.showToast('✓ 登入成功');
+            document.getElementById('admin-login-modal').remove();
+            await window.checkAndUpdateAdminStatus();
+        } else {
+            errorDiv.textContent = result.error || '登入失敗';
+            errorDiv.style.display = 'block';
+        }
+    } catch (err) {
+        errorDiv.textContent = '登入過程發生錯誤';
+        errorDiv.style.display = 'block';
+    }
+};
+
+window.adminLogout = async () => {
+    const result = await window.supabaseManager.signOut();
+    if (result.success) {
+        isAdminLoggedIn = false;
+        window.showToast('✓ 已登出');
+        window.updateAdminMenu();
+        if (document.querySelector('.admin-container')) {
+            window.toggleAdminMode(false);
+        }
+    } else {
+        window.showToast('✗ 登出失敗', 'error');
+    }
+};
+
+window.checkAndUpdateAdminStatus = async () => {
+    if (!window.supabaseManager || !window.supabaseManager.isConnectionReady()) {
+        isAdminLoggedIn = false;
+        return false;
+    }
+
+    try {
+        const isAdminUser = await window.supabaseManager.checkIsAdmin();
+        isAdminLoggedIn = isAdminUser;
+        window.updateAdminMenu();
+        return isAdminUser;
+    } catch (err) {
+        console.warn('檢查管理員狀態失敗:', err);
+        isAdminLoggedIn = false;
+        return false;
+    }
+};
+
+window.updateAdminMenu = () => {
+    const menuContainer = document.getElementById('adminMenuOptions');
+    if (!menuContainer) return;
+
+    if (isAdminLoggedIn) {
+        menuContainer.innerHTML = `
+            <button class="btn-primary" style="padding: 8px 12px; font-size: 12px; border-color: #ff4444; color: #ff4444; background: rgba(255,0,0,0.1);" onclick="window.toggleAdminMode(true)">⚙️ 後台管理</button>
+            <button class="btn-primary" style="padding: 8px 12px; font-size: 12px; border-color: #ffaa00; color: #ffaa00; background: rgba(255,170,0,0.1);" onclick="window.adminLogout()">🚪 登出</button>
+        `;
+    } else {
+        menuContainer.innerHTML = `
+            <button class="btn-primary" style="padding: 8px 12px; font-size: 12px;" onclick="window.showAdminLoginModal()">🔐 管理員登入</button>
+        `;
+    }
+};
+
+window.toggleAdminMode = (enable) => {
+    if (enable && !isAdminLoggedIn) {
+        window.showAdminLoginModal();
+        return;
+    }
+
+    const topControlBar = document.getElementById('topControlBar');
+    const app = document.getElementById('app');
+
+    if (enable) {
+        currentSection = 'admin';
+        if (topControlBar) topControlBar.style.display = 'none';
+        window.renderAdmin();
+    } else {
+        currentSection = 'notice';
+        if (topControlBar) topControlBar.style.display = 'flex';
+        window.switchCategory('notice');
+    }
+};
+
+// Listen for auth state changes
+if (window.supabaseManager) {
+    window.supabaseManager.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN') {
+            await window.checkAndUpdateAdminStatus();
+        } else if (event === 'SIGNED_OUT') {
+            isAdminLoggedIn = false;
+            window.updateAdminMenu();
+        }
+    });
+}
+
+// --- Core Functions ---
 
     /**
      * 安全地轉義 HTML 特殊字符（防止 XSS）
@@ -1890,155 +2047,9 @@ window.deleteAnnouncement = async (id) => {
 };
 
 
-// Admin Authentication
-let isAdminLoggedIn = false;
-
-window.showAdminLoginModal = () => {
-    const existingModal = document.getElementById('admin-login-modal');
-    if (existingModal) existingModal.remove();
-
-    const modal = document.createElement('div');
-    modal.id = 'admin-login-modal';
-    modal.className = 'modal active';
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 400px;">
-            <h2 style="color: var(--neon-cyan); margin-bottom: 20px; text-align: center;">🔐 管理員登入</h2>
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">電子郵件</label>
-                <input type="email" id="admin-email" placeholder="admin@example.com" style="width: 100%; padding: 12px; border: 1px solid rgba(0,212,255,0.3); border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff;">
-            </div>
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan);">密碼</label>
-                <input type="password" id="admin-password" placeholder="輸入密碼" style="width: 100%; padding: 12px; border: 1px solid rgba(0,212,255,0.3); border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff;">
-            </div>
-            <div id="login-error" style="color: #ff4444; text-align: center; margin-bottom: 15px; display: none;"></div>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-primary" style="flex: 1; padding: 12px;" onclick="window.performAdminLogin()">登入</button>
-                <button class="btn-primary" style="flex: 1; border-color: #ff4444; color: #ff4444;" onclick="document.getElementById('admin-login-modal').remove()">取消</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-
-    document.getElementById('admin-password').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') window.performAdminLogin();
-    });
-};
-
-window.performAdminLogin = async () => {
-    const email = document.getElementById('admin-email').value.trim();
-    const password = document.getElementById('admin-password').value;
-    const errorDiv = document.getElementById('login-error');
-
-    if (!email || !password) {
-        errorDiv.textContent = '請輸入電子郵件和密碼';
-        errorDiv.style.display = 'block';
-        return;
-    }
-
-    errorDiv.style.display = 'none';
-
-    try {
-        const result = await window.supabaseManager.signInWithEmail(email, password);
-
-        if (result.success) {
-            window.showToast('✓ 登入成功');
-            document.getElementById('admin-login-modal').remove();
-            await window.checkAndUpdateAdminStatus();
-        } else {
-            errorDiv.textContent = result.error || '登入失敗';
-            errorDiv.style.display = 'block';
-        }
-    } catch (err) {
-        errorDiv.textContent = '登入過程發生錯誤';
-        errorDiv.style.display = 'block';
-    }
-};
-
-window.adminLogout = async () => {
-    const result = await window.supabaseManager.signOut();
-    if (result.success) {
-        isAdminLoggedIn = false;
-        window.showToast('✓ 已登出');
-        window.updateAdminMenu();
-        if (document.querySelector('.admin-container')) {
-            window.toggleAdminMode(false);
-        }
-    } else {
-        window.showToast('✗ 登出失敗', 'error');
-    }
-};
-
-window.checkAndUpdateAdminStatus = async () => {
-    if (!window.supabaseManager.isConnectionReady()) {
-        isAdminLoggedIn = false;
-        return false;
-    }
-
-    try {
-        const isAdminUser = await window.supabaseManager.checkIsAdmin();
-        isAdminLoggedIn = isAdminUser;
-        window.updateAdminMenu();
-        return isAdminUser;
-    } catch (err) {
-        console.warn('檢查管理員狀態失敗:', err);
-        isAdminLoggedIn = false;
-        return false;
-    }
-};
-
-window.updateAdminMenu = () => {
-    const menuContainer = document.getElementById('adminMenuOptions');
-    if (!menuContainer) return;
-
-    if (isAdminLoggedIn) {
-        menuContainer.innerHTML = `
-            <button class="btn-primary" style="padding: 8px 12px; font-size: 12px; border-color: #ff4444; color: #ff4444; background: rgba(255,0,0,0.1);" onclick="window.toggleAdminMode(true)">⚙️ 後台管理</button>
-            <button class="btn-primary" style="padding: 8px 12px; font-size: 12px; border-color: #ffaa00; color: #ffaa00; background: rgba(255,170,0,0.1);" onclick="window.adminLogout()">🚪 登出</button>
-        `;
-    } else {
-        menuContainer.innerHTML = `
-            <button class="btn-primary" style="padding: 8px 12px; font-size: 12px;" onclick="window.showAdminLoginModal()">🔐 管理員登入</button>
-        `;
-    }
-};
-
-window.toggleAdminMode = (enable) => {
-    if (enable && !isAdminLoggedIn) {
-        window.showAdminLoginModal();
-        return;
-    }
-
-    const topControlBar = document.getElementById('topControlBar');
-    const app = document.getElementById('app');
-
-    if (enable) {
-        currentSection = 'admin';
-        if (topControlBar) topControlBar.style.display = 'none';
-        window.renderAdmin();
-    } else {
-        currentSection = 'notice';
-        if (topControlBar) topControlBar.style.display = 'flex';
-        window.switchCategory('notice');
-    }
-};
-
-// Listen for auth state changes
-if (window.supabaseManager) {
-    window.supabaseManager.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN') {
-            await window.checkAndUpdateAdminStatus();
-        } else if (event === 'SIGNED_OUT') {
-            isAdminLoggedIn = false;
-            window.updateAdminMenu();
-        }
-    });
-}
-
 /* 滾輪支持所有滾動軸（排除輸入框） */
 document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('wheel', (e) => {
-        // 排除輸入框、選取欄位
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
             return;
         }
@@ -2052,7 +2063,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: false });
 });
 
-// 啟動應用程式（確保所有函數都已定義）
+// 啟動應用程式
 setTimeout(() => {
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => window.initApp());
