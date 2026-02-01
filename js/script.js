@@ -2021,6 +2021,14 @@ window.deleteAnnouncement = async (id) => {
     }
 };
 
+window.showLoginModal = function() {
+    document.getElementById('loginModal').style.display = 'flex';
+};
+
+window.hideLoginModal = function() {
+    document.getElementById('loginModal').style.display = 'none';
+};
+
 
 /* 滾輪支持所有滾動軸 */
 document.addEventListener('DOMContentLoaded', () => {
