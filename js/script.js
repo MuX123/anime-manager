@@ -1683,12 +1683,20 @@ window.bulkDeleteAnime = async () => {
     try {
         const { error } = await supabaseClient.from('anime_list').delete().in('id', ids);
         if (error) throw error;
-        window.showToast(`✓ 已刪除 ${ids.length} 個作品`);
-        await window.loadData();
-        window.renderAdmin();
+        window.showToast('✓ 公告已刪除');
+        setTimeout(() => window.renderAnnouncements(), 300);
     } catch (err) {
-        window.showToast('✗ 批量刪除失敗', 'error');
+        console.error('Delete announcement error:', err);
+        window.showToast('✗ 刪除失敗：' + (err?.message || '未知錯誤'), 'error');
     }
+};
+
+window.showLoginModal = () => {
+    document.getElementById('loginModal').style.display = 'flex';
+};
+
+window.hideLoginModal = () => {
+    document.getElementById('loginModal').style.display = 'none';
 };
 
 window.renderAdminPagination = (total) => {
