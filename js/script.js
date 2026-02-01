@@ -1903,11 +1903,28 @@ window.showEditAnnouncementModal = (item) => {
 };
 
 window.submitAnnouncement = async (editId = null) => {
-    const content = document.getElementById('ann-content').value;
-    const imagesText = document.getElementById('ann-images').value;
+    console.log('🚀 submitAnnouncement 被調用，editId:', editId);
+    
+    const contentEl = document.getElementById('ann-content');
+    const imagesEl = document.getElementById('ann-images');
+    
+    if (!contentEl || !imagesEl) {
+        console.error('❌ 找不到公告表單元素');
+        window.showToast('系統錯誤：找不到表單元素', 'error');
+        return;
+    }
+    
+    const content = contentEl.value;
+    const imagesText = imagesEl.value;
     const images = imagesText.split('\n').map(url => url.trim()).filter(url => url !== '');
+    
+    console.log('📝 公告內容:', content.substring(0, 50), '...');
+    console.log('🖼️ 圖片數量:', images.length);
 
-    if (!content && images.length === 0) return window.showToast('請輸入內容或圖片', 'error');
+    if (!content && images.length === 0) {
+        window.showToast('請輸入內容或圖片', 'error');
+        return;
+    }
 
     try {
         // 確保抓取到最新的設定值
@@ -1927,6 +1944,7 @@ window.submitAnnouncement = async (editId = null) => {
 
         let error;
         if (editId && editId !== 'null') {
+            console.log('✏️ 編輯模式，ID:', editId);
             // 編輯時強制使用最新的管理員資訊覆蓋舊資料
             const { error: err } = await supabaseClient.from('announcements')
                 .update({
@@ -1939,8 +1957,12 @@ window.submitAnnouncement = async (editId = null) => {
                 .eq('id', Number(editId));
             error = err;
         } else {
+            console.log('➕ 新增模式，發送到 Supabase...');
+            console.log('📦 Payload:', JSON.stringify(payload, null, 2));
             const { error: err } = await supabaseClient.from('announcements').insert([payload]);
+            console.log('📊 Supabase 返回錯誤:', err);
             if (err && /timestamp/i.test(err.message || '')) {
+                console.log('🔄 重試不含 created_at...');
                 const { error: err2 } = await supabaseClient.from('announcements').insert([
                     { ...basePayload, created_at: new Date().toISOString() }
                 ]);

@@ -124,7 +124,6 @@ CREATE INDEX IF NOT EXISTS idx_page_views_visitor_id ON page_views(visitor_id);
 CREATE INDEX IF NOT EXISTS idx_page_views_timestamp ON page_views(view_timestamp);
 
 -- ============================================================================
--- RLS（Row Level Security）政策
 -- ============================================================================
 
 -- 啟用 RLS
@@ -136,26 +135,53 @@ ALTER TABLE category_clicks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE page_views ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================================
--- RLS 政策設定
 -- ============================================================================
 
--- announcements 表：完全公開（匿名用戶可讀寫）
+-- 公告：公開讀、僅管理員可寫
+
+-- 管理員判斷函式（以 site_settings.admin_email 比對 JWT email）
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+AS $$
+  SELECT
+    auth.role() = 'authenticated'
+    AND (auth.jwt() ->> 'email') IS NOT NULL
+    AND EXISTS (
+      SELECT 1
+      FROM site_settings s
+      WHERE s.id = 'admin_email'
+        AND s.value = (auth.jwt() ->> 'email')
+    );
+$$;
+
+-- 重置公告政策，避免重複與衝突
 DROP POLICY IF EXISTS "Enable all for announcements" ON announcements;
+DROP POLICY IF EXISTS "Allow anonymous insert to announcements" ON announcements;
+DROP POLICY IF EXISTS "Allow anonymous select to announcements" ON announcements;
+DROP POLICY IF EXISTS "Allow anonymous update to announcements" ON announcements;
+DROP POLICY IF EXISTS "Allow anonymous delete to announcements" ON announcements;
+DROP POLICY IF EXISTS "Public read access" ON announcements;
+DROP POLICY IF EXISTS "Public insert" ON announcements;
+DROP POLICY IF EXISTS "Public update" ON announcements;
+DROP POLICY IF EXISTS "Public delete" ON announcements;
 DROP POLICY IF EXISTS "Authenticated insert" ON announcements;
 DROP POLICY IF EXISTS "Authenticated update" ON announcements;
 DROP POLICY IF EXISTS "Authenticated delete" ON announcements;
 
+-- 最終政策：公開讀、僅管理員可寫
 CREATE POLICY "Public read access" ON announcements
     FOR SELECT USING (true);
 
-CREATE POLICY "Public insert" ON announcements
-    FOR INSERT WITH CHECK (true);
+CREATE POLICY "Authenticated insert" ON announcements
+    FOR INSERT WITH CHECK (public.is_admin());
 
-CREATE POLICY "Public update" ON announcements
-    FOR UPDATE USING (true);
+CREATE POLICY "Authenticated update" ON announcements
+    FOR UPDATE USING (public.is_admin()) WITH CHECK (public.is_admin());
 
-CREATE POLICY "Public delete" ON announcements
-    FOR DELETE USING (true);
+CREATE POLICY "Authenticated delete" ON announcements
+    FOR DELETE USING (public.is_admin());
 
 -- anime_list 表：完全公開
 DROP POLICY IF EXISTS "Allow anonymous operations" ON anime_list;
@@ -180,7 +206,19 @@ CREATE POLICY "Authenticated write" ON site_settings
     FOR ALL USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 
 -- site_visitors 表：匿名訪問
-DROP POLICY IF EXISTS "Enable all for site_visitors" ON site_visitors;
+DO $$
+DECLARE
+    p TEXT;
+BEGIN
+    FOR p IN
+        SELECT policyname FROM pg_policies
+        WHERE schemaname = 'public' AND tablename = 'site_visitors'
+    LOOP
+        EXECUTE 'DROP POLICY IF EXISTS ' || quote_ident(p) || ' ON site_visitors';
+    END LOOP;
+END $$;
+
+ALTER TABLE site_visitors ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Public read" ON site_visitors
     FOR SELECT USING (true);
@@ -192,7 +230,19 @@ CREATE POLICY "Public update" ON site_visitors
     FOR UPDATE USING (true);
 
 -- category_clicks 表：匿名訪問
-DROP POLICY IF EXISTS "Enable all for category_clicks" ON category_clicks;
+DO $$
+DECLARE
+    p TEXT;
+BEGIN
+    FOR p IN
+        SELECT policyname FROM pg_policies
+        WHERE schemaname = 'public' AND tablename = 'category_clicks'
+    LOOP
+        EXECUTE 'DROP POLICY IF EXISTS ' || quote_ident(p) || ' ON category_clicks';
+    END LOOP;
+END $$;
+
+ALTER TABLE category_clicks ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Public read" ON category_clicks
     FOR SELECT USING (true);
@@ -201,7 +251,19 @@ CREATE POLICY "Public insert" ON category_clicks
     FOR INSERT WITH CHECK (true);
 
 -- page_views 表：匿名訪問
-DROP POLICY IF EXISTS "Enable all for page_views" ON page_views;
+DO $$
+DECLARE
+    p TEXT;
+BEGIN
+    FOR p IN
+        SELECT policyname FROM pg_policies
+        WHERE schemaname = 'public' AND tablename = 'page_views'
+    LOOP
+        EXECUTE 'DROP POLICY IF EXISTS ' || quote_ident(p) || ' ON page_views';
+    END LOOP;
+END $$;
+
+ALTER TABLE page_views ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Public read" ON page_views
     FOR SELECT USING (true);
