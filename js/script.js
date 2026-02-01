@@ -841,33 +841,54 @@ window.handleLogin = async () => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
+    console.log('🔐 handleLogin 被調用');
+    console.log('Email:', email);
+
     if (!email || !password) {
+        console.warn('缺少 email 或 password');
         return window.showToast('請輸入電子郵件和密碼', 'error');
     }
 
     let client;
+    console.log('supabaseManager:', window.supabaseManager);
+    console.log('isConnectionReady:', window.supabaseManager?.isConnectionReady());
+
     if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
         client = window.supabaseManager.getClient();
+        console.log('客戶端獲取成功');
     } else {
+        console.error('Supabase 未連接');
         return window.showToast('資料庫連接失敗，請重新整理頁面', 'error');
     }
 
-    const { error, data } = await client.auth.signInWithPassword({ email, password });
-    if (error) return window.showToast('登入失敗：' + error.message, 'error');
+    try {
+        console.log('嘗試登入...');
+        const { error, data } = await client.auth.signInWithPassword({ email, password });
+        console.log('登入結果 error:', error);
+        console.log('登入結果 data:', data);
 
-    // 登入成功後，驗證是否為管理員
-    isAdmin = await window.checkIsAdmin(email);
+        if (error) {
+            console.error('登入錯誤:', error);
+            return window.showToast('登入失敗：' + error.message, 'error');
+        }
 
-    if (!isAdmin) {
-        // 登入成功但不是管理員
-        await client.auth.signOut();
-        window.showToast('⚠️ 您沒有管理員權限', 'error');
-        return;
+        // 登入成功後，驗證是否為管理員
+        isAdmin = await window.checkIsAdmin(email);
+        console.log('isAdmin:', isAdmin);
+
+        if (!isAdmin) {
+            await client.auth.signOut();
+            window.showToast('⚠️ 您沒有管理員權限', 'error');
+            return;
+        }
+
+        window.updateAdminMenu();
+        window.hideLoginModal();
+        window.showToast('✓ 登入成功', 'success');
+    } catch (err) {
+        console.error('登入異常:', err);
+        window.showToast('登入異常：' + err.message, 'error');
     }
-
-    window.updateAdminMenu();
-    window.hideLoginModal();
-    window.showToast('✓ 登入成功', 'success');
 };
 
 window.handleLogout = async () => {
