@@ -49,18 +49,45 @@ body {
 * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
 ::-webkit-scrollbar-thumb { background: transparent; }
 
-/* 網站統計信息 - 固定在左上角 */
-.site-version { 
+/* 網站標題區域 */
+.site-header {
     position: fixed !important;
     top: 10px !important;
     left: 10px !important;
+    z-index: 1000 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+}
+
+.site-title {
+    font-family: 'Orbitron', 'Space Mono', monospace !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    letter-spacing: 2px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.site-version {
+    font-family: 'Orbitron', 'Space Mono', monospace !important;
+    font-size: 10px !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.analytics-bar {
+    position: fixed !important;
+    top: 10px !important;
+    left: auto !important;
+    right: 10px !important;
     z-index: 1000 !important;
     background: rgba(0, 0, 0, 0.7) !important;
     padding: 5px 10px !important;
     border-radius: 5px !important;
     border: 1px solid rgba(0, 212, 255, 0.3) !important;
-    font-size: 10px !important;
-    color: rgba(255, 255, 255, 0.8) !important;
     backdrop-filter: blur(5px) !important;
 }
 
