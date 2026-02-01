@@ -2052,9 +2052,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: false });
 });
 
-// 啟動應用程式
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => window.initApp());
-} else {
-    window.initApp();
-}
+// 啟動應用程式（確保所有函數都已定義）
+setTimeout(() => {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => window.initApp());
+    } else {
+        window.initApp();
+    }
+}, 0);
