@@ -192,6 +192,91 @@ class SupabaseManager {
     }
 
     /**
+     * 檢查用戶是否為管理員
+     * @returns {Promise<boolean>} 是否為管理員
+     */
+    async checkIsAdmin() {
+        try {
+            const { data: { session } } = await this.client.auth.getSession();
+            if (!session) return false;
+
+            const { data, error } = await this.client
+                .rpc('is_admin');
+
+            if (error) {
+                console.warn('檢查管理員權限失敗:', error.message);
+                return false;
+            }
+
+            return data || false;
+        } catch (error) {
+            console.warn('檢查管理員權限錯誤:', error.message);
+            return false;
+        }
+    }
+
+    /**
+     * 使用電子郵件登入
+     * @param {string} email 電子郵件
+     * @param {string} password 密碼
+     * @returns {Promise<Object>} 登入結果
+     */
+    async signInWithEmail(email, password) {
+        try {
+            const { data, error } = await this.client.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) throw error;
+
+            return { success: true, user: data.user, session: data.session };
+        } catch (error) {
+            console.error('登入失敗:', error.message);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * 登出
+     * @returns {Promise<Object>} 登出結果
+     */
+    async signOut() {
+        try {
+            const { error } = await this.client.auth.signOut();
+            if (error) throw error;
+            return { success: true };
+        } catch (error) {
+            console.error('登出失敗:', error.message);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * 獲取當前會話
+     * @returns {Promise<Object>} 會話信息
+     */
+    async getSession() {
+        try {
+            const { data: { session }, error } = await this.client.auth.getSession();
+            if (error) throw error;
+            return { success: true, session };
+        } catch (error) {
+            return { success: false, session: null, error: error.message };
+        }
+    }
+
+    /**
+     * 監聽認證狀態變化
+     * @param {Function} callback 回調函數
+     */
+    onAuthStateChange(callback) {
+        this.client.auth.onAuthStateChange((event, session) => {
+            callback(event, session);
+        });
+    }
+
+    /**
      * 獲取客戶端實例
      * @returns {Object} Supabase 客戶端
      */
