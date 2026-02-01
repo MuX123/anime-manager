@@ -125,42 +125,7 @@ let isFirstLoad = true;
             return;
         }
         
-        // 2. 設置認證狀態監聽
-        client.auth.onAuthStateChange(async (event, session) => {
-            // 預設不是管理員
-            isAdmin = false;
-
-            if (session) {
-                // 檢查是否為管理員
-                isAdmin = await window.checkIsAdmin(session.user.email);
-                console.log('🔐 認證狀態變化:', { event, isAdmin, email: session.user.email });
-            } else {
-                console.log('🔐 用戶已登出');
-            }
-
-            window.updateAdminMenu();
-            if (document.querySelector('.admin-container')) {
-                window.renderAdmin();
-            } else {
-                window.renderApp();
-            }
-        });
-
-        // 3. 檢查當前認證狀態
-        try {
-            const { data: { session } } = await client.auth.getSession();
-            if (session) {
-                isAdmin = await window.checkIsAdmin(session.user.email);
-                console.log('👤 檢測到登入用戶:', session.user.email, '管理員:', isAdmin);
-            } else {
-                isAdmin = false;
-            }
-        } catch (err) {
-            console.warn('檢查認證狀態失敗:', err);
-            isAdmin = false;
-        }
-        
-        // 4. 獲取網站設定與選項資料 (優先載入)
+        // 2. 獲取網站設定與選項資料 (優先載入)
         try {
             const { data: settings, error: settingsError } = await client.from('site_settings').select('*');
             if (!settingsError && settings) {
@@ -253,46 +218,6 @@ window.loadData = async function() {
 /**
  * 驗證用戶是否為管理員
  * @param {string} userEmail 用戶電子郵件
- * @returns {Promise<boolean>} 是否為管理員
- */
-window.checkIsAdmin = async function(userEmail) {
-    if (!userEmail) return false;
-
-    // 優先使用 site_settings 中的管理員 email
-    const adminEmailFromSettings = siteSettings?.admin_email;
-    if (adminEmailFromSettings && userEmail.toLowerCase() === adminEmailFromSettings.toLowerCase()) {
-        return true;
-    }
-
-    // 檢查用戶的 role metadata（如果有）
-    try {
-        let client;
-        if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
-            client = window.supabaseManager.getClient();
-        }
-
-        if (client) {
-            const { data: { user } } = await client.auth.getUser();
-            const userMetadata = user?.user_metadata || {};
-            if (userMetadata.role === 'admin') {
-                return true;
-            }
-        }
-    } catch (err) {
-        console.warn('檢查用戶 role 失敗:', err);
-    }
-
-    return false;
-};
-
-window.updateAdminMenu = function() {
-    const container = document.getElementById('adminMenuOptions');
-    if (!container) return;
- container.innerHTML = isAdmin ?
- 	        `<div class="menu-item-v2" onclick="window.toggleAdminMode(true)">⚙ 管理後台</div><div class="menu-item-v2" onclick="window.handleLogout()">⊗ 登出系統</div>` :
- 	        `<div class="menu-item-v2" onclick="window.showLoginModal()">🔐 管理員登入</div>`;
-};
-
 window.renderApp = function() {
     const app = document.getElementById('app');
     if (!app) return;
@@ -819,79 +744,6 @@ window.switchCategory = async (cat) => {
         window.renderAdmin();
     } else {
         window.renderApp(); 
-    }
-};
-
-window.handleLogin = async () => {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-
-    console.log('🔐 handleLogin 被調用');
-    console.log('Email:', email);
-
-    if (!email || !password) {
-        console.warn('缺少 email 或 password');
-        return window.showToast('請輸入電子郵件和密碼', 'error');
-    }
-
-    let client;
-    console.log('supabaseManager:', window.supabaseManager);
-    console.log('isConnectionReady:', window.supabaseManager?.isConnectionReady());
-
-    if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
-        client = window.supabaseManager.getClient();
-        console.log('客戶端獲取成功');
-    } else {
-        console.error('Supabase 未連接');
-        return window.showToast('資料庫連接失敗，請重新整理頁面', 'error');
-    }
-
-    try {
-        console.log('嘗試登入...');
-        const { error, data } = await client.auth.signInWithPassword({ email, password });
-        console.log('登入結果 error:', error);
-        console.log('登入結果 data:', data);
-
-        if (error) {
-            console.error('登入錯誤:', error);
-            return window.showToast('登入失敗：' + error.message, 'error');
-        }
-
-        // 登入成功後，驗證是否為管理員
-        isAdmin = await window.checkIsAdmin(email);
-        console.log('isAdmin:', isAdmin);
-
-        if (!isAdmin) {
-            await client.auth.signOut();
-            window.showToast('⚠️ 您沒有管理員權限', 'error');
-            return;
-        }
-
-        window.updateAdminMenu();
-        window.hideLoginModal();
-        window.showToast('✓ 登入成功', 'success');
-    } catch (err) {
-        console.error('登入異常:', err);
-        window.showToast('登入異常：' + err.message, 'error');
-    }
-};
-
-window.handleLogout = async () => {
-    await supabaseClient.auth.signOut();
-    isAdmin = false;
-    window.toggleAdminMode(false);
-    window.showToast('✓ 已登出');
-};
-
-window.toggleAdminMode = (show) => {
-    currentSection = show ? 'admin' : currentCategory;
-    const topControlBar = document.getElementById('topControlBar');
-    if (show) {
-        if (topControlBar) topControlBar.style.display = 'none';
-        window.renderAdmin();
-    } else {
-        if (topControlBar) topControlBar.style.display = 'flex';
-        window.renderApp();
     }
 };
 
@@ -1547,12 +1399,6 @@ window.importData = (event) => {
 };
 
 window.saveSettings = async () => {
-    // Authorization check
-    if (!isAdmin) {
-        window.showToast('✗ 您沒有管理員權限', 'error');
-        return;
-    }
-
     try {
         const title = document.getElementById('set-title').value;
         const announcement = document.getElementById('set-announcement').value;
@@ -1599,12 +1445,6 @@ window.saveSettings = async () => {
 };
 
 window.deleteAnime = async (id) => {
-    // Authorization check
-    if (!isAdmin) {
-        window.showToast('✗ 您沒有管理員權限', 'error');
-        return;
-    }
-    
     if (!confirm('確定要刪除此作品嗎？')) return;
     try {
         const { error } = await supabaseClient.from('anime_list').delete().eq('id', id);
@@ -1616,12 +1456,6 @@ window.deleteAnime = async (id) => {
 };
 
 window.deleteAllInCategory = async () => {
-    // Authorization check
-    if (!isAdmin) {
-        window.showToast('✗ 您沒有管理員權限', 'error');
-        return;
-    }
-    
     // 統計該板塊有多少作品
     const count = animeData.filter(a => a.category === currentCategory).length;
     if (count === 0) {
@@ -1673,12 +1507,6 @@ window.updateBulkDeleteButton = () => {
 };
 
 window.bulkDeleteAnime = async () => {
-    // Authorization check
-    if (!isAdmin) {
-        window.showToast('✗ 您沒有管理員權限', 'error');
-        return;
-    }
-    
     const checkboxes = document.querySelectorAll('.item-checkbox:checked');
     const ids = Array.from(checkboxes).map(cb => cb.dataset.id);
     
@@ -2017,14 +1845,6 @@ window.deleteAnnouncement = async (id) => {
         console.error('Delete failed:', err);
         window.showToast('✗ 刪除失敗：' + (err.message || '未知錯誤'), 'error');
     }
-};
-
-window.showLoginModal = function() {
-    document.getElementById('loginModal').style.display = 'flex';
-};
-
-window.hideLoginModal = function() {
-    document.getElementById('loginModal').style.display = 'none';
 };
 
 
