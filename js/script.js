@@ -91,14 +91,14 @@ let isFirstLoad = true;
         tags.scrollLeft = tags.scrollLeftStart - walk;
     });
 	
-	window.initApp = async function() {
+window.initApp = async function() {
     try {
         console.log('🚀 系統初始化中...');
         
         // 等待所有模組載入完成
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        const waitForSupabaseReady = async (timeoutMs = 5000, intervalMs = 250) => {
+        const waitForSupabaseReady = async (timeoutMs = 10000, intervalMs = 250) => {
             const start = Date.now();
             while (Date.now() - start < timeoutMs) {
                 if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
@@ -119,53 +119,51 @@ let isFirstLoad = true;
         } else {
             console.warn('⚠️ Supabase 未連接，進入離線模式');
             window.showToast('資料庫連接失敗，系統將以離線模式運行', 'warning');
-            isFirstLoad = false;
-            window.renderApp();
-            return;
         }
         
         // 2. 獲取網站設定與選項資料 (優先載入)
-        try {
-            const { data: settings, error: settingsError } = await client.from('site_settings').select('*');
-            if (!settingsError && settings) {
-                settings.forEach(s => {
-                    if (s.id === 'site_title') siteSettings.site_title = s.value;
-                    if (s.id === 'announcement') siteSettings.announcement = s.value;
-                    if (s.id === 'title_color') siteSettings.title_color = s.value;
-                    if (s.id === 'announcement_color') siteSettings.announcement_color = s.value;
-                    if (s.id === 'admin_name') siteSettings.admin_name = s.value;
-                    if (s.id === 'admin_avatar') siteSettings.admin_avatar = s.value;
-                    if (s.id === 'admin_color') siteSettings.admin_color = s.value;
-                    if (s.id === 'admin_email') siteSettings.admin_email = s.value;
-                    if (s.id === 'custom_labels') {
-                        try { 
-                            siteSettings.custom_labels = JSON.parse(s.value); 
-                        } catch(e) { 
-                            console.warn('custom_labels 解析失敗:', e); 
-                        }
-                    }
-                    if (s.id === 'options_data') { 
-                        try { 
-                            const parsed = JSON.parse(s.value);
-                            if (parsed && parsed.genre) {
-                                optionsData = parsed;
+        if (client) {
+            try {
+                const { data: settings, error: settingsError } = await client.from('site_settings').select('*');
+                if (!settingsError && settings) {
+                    settings.forEach(s => {
+                        if (s.id === 'site_title') siteSettings.site_title = s.value;
+                        if (s.id === 'announcement') siteSettings.announcement = s.value;
+                        if (s.id === 'title_color') siteSettings.title_color = s.value;
+                        if (s.id === 'announcement_color') siteSettings.announcement_color = s.value;
+                        if (s.id === 'admin_name') siteSettings.admin_name = s.value;
+                        if (s.id === 'admin_avatar') siteSettings.admin_avatar = s.value;
+                        if (s.id === 'admin_color') siteSettings.admin_color = s.value;
+                        if (s.id === 'admin_email') siteSettings.admin_email = s.value;
+                        if (s.id === 'custom_labels') {
+                            try { 
+                                siteSettings.custom_labels = JSON.parse(s.value); 
+                            } catch(e) { 
+                                console.warn('custom_labels 解析失敗:', e); 
                             }
-                        } catch(e) {
-                            console.warn('options_data 解析失敗，使用預設選項:', e);
                         }
-                    }
-                });
-                console.log('✅ 網站設定載入成功');
-            } else {
-                console.warn('網站設定載入失敗或無資料:', settingsError);
+                        if (s.id === 'options_data') { 
+                            try { 
+                                const parsed = JSON.parse(s.value);
+                                if (parsed && parsed.genre) {
+                                    optionsData = parsed;
+                                }
+                            } catch(e) {
+                                console.warn('options_data 解析失敗，使用預設選項:', e);
+                            }
+                        }
+                    });
+                    console.log('✅ 網站設定載入成功');
+                } else {
+                    console.warn('網站設定載入失敗或無資料:', settingsError);
+                }
+            } catch (err) {
+                console.error('載入網站設定發生錯誤:', err);
             }
-        } catch (err) {
-            console.error('載入網站設定發生錯誤:', err);
-            // 使用預設設定
+            
+            // 5. 載入作品資料
+            await window.loadData();
         }
-        
-        // 5. 載入作品資料
-        await window.loadData();
         
         // 6. 設置全域變數
         window.animeData = animeData;
@@ -196,13 +194,27 @@ let isFirstLoad = true;
         // 即使失敗也嘗試渲染基本結構
         isFirstLoad = false;
         window.renderApp();
+        
+        // 確保隱藏載入畫面
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }
     }
 };
 
 window.loadData = async function() {
     try {
         console.log('📡 正在從 Supabase 抓取資料...');
-        const { data, error } = await supabaseClient.from('anime_list').select('*').order('created_at', { ascending: false });
+        const client = window.supabaseManager?.getClient();
+        if (!client) {
+            console.warn('Supabase 客戶端未就緒');
+            return [];
+        }
+        const { data, error } = await client.from('anime_list').select('*').order('created_at', { ascending: false });
         if (!error) {
             animeData = data || [];
             console.log('✅ 資料抓取成功，共', animeData.length, '筆');
@@ -1081,7 +1093,11 @@ window.addNewCustomList = async () => {
     
     input.value = '';
     await window.saveOptionsToDB();
-    await supabaseClient.from('site_settings').upsert({ id: 'custom_labels', value: JSON.stringify(siteSettings.custom_labels) });
+    
+    const client = window.supabaseManager?.getClient();
+    if (client) {
+        await client.from('site_settings').upsert({ id: 'custom_labels', value: JSON.stringify(siteSettings.custom_labels) });
+    }
     
     window.renderAdmin();
 };
@@ -1128,9 +1144,12 @@ window.saveAnime = async () => {
 		            extra_data: { ...extra_data, btn_bg: document.getElementById('form-btn-bg').value }
 		        };
         
+        const client = window.supabaseManager?.getClient();
+        if (!client) throw new Error('Supabase 未連接');
+        
         let { error } = editId ? 
-            await supabaseClient.from('anime_list').update(payload).eq('id', editId) : 
-            await supabaseClient.from('anime_list').insert([payload]);
+            await client.from('anime_list').update(payload).eq('id', editId) : 
+            await client.from('anime_list').insert([payload]);
         
         if (error) {
             // 如果是欄位缺失錯誤，嘗試不帶 extra_data 再次儲存
@@ -1138,8 +1157,8 @@ window.saveAnime = async () => {
                 window.showToast('⚠️ 偵測到資料庫欄位缺失，正在嘗試相容模式儲存...', 'info');
                 delete payload.extra_data;
                 const retry = editId ? 
-                    await supabaseClient.from('anime_list').update(payload).eq('id', editId) : 
-                    await supabaseClient.from('anime_list').insert([payload]);
+                    await client.from('anime_list').update(payload).eq('id', editId) : 
+                    await client.from('anime_list').insert([payload]);
                 if (!retry.error) {
                     window.showToast('✓ 已儲存 (自定義標籤需補齊資料庫欄位後生效)');
                     await window.loadData();
@@ -1182,7 +1201,9 @@ window.triggerColorPicker = (el) => {
 };
 
 window.saveOptionsToDB = async () => { 
-    await supabaseClient.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) }); 
+    const client = window.supabaseManager?.getClient();
+    if (!client) return;
+    await client.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) }); 
     window.showToast('✓ 設定已同步'); 
     // 強制重新渲染應用以同步搜尋過濾器
     if (typeof window.renderApp === 'function') window.renderApp();
@@ -1385,7 +1406,9 @@ window.importData = (event) => {
                 items.push(item);
             }
             
-            const { error } = await supabaseClient.from('anime_list').insert(items);
+            const client = window.supabaseManager?.getClient();
+            if (!client) throw new Error('Supabase 未連接');
+            const { error } = await client.from('anime_list').insert(items);
             if (error) throw error;
             
             window.showToast(`✓ 成功匯入 ${items.length} 筆資料`);
@@ -1410,7 +1433,10 @@ window.saveSettings = async () => {
         const adminAvatar = document.getElementById('set-admin-avatar').value;
         const adminColor = document.getElementById('set-admin-color').value;
 
-        const { error } = await supabaseClient.from('site_settings').upsert([
+        const client = window.supabaseManager?.getClient();
+        if (!client) throw new Error('Supabase 未連接');
+        
+        const { error } = await client.from('site_settings').upsert([
             { id: 'site_title', value: title },
             { id: 'announcement', value: announcement },
             { id: 'title_color', value: titleColor },
@@ -1449,7 +1475,9 @@ window.saveSettings = async () => {
 window.deleteAnime = async (id) => {
     if (!confirm('確定要刪除此作品嗎？')) return;
     try {
-        const { error } = await supabaseClient.from('anime_list').delete().eq('id', id);
+        const client = window.supabaseManager?.getClient();
+        if (!client) throw new Error('Supabase 未連接');
+        const { error } = await client.from('anime_list').delete().eq('id', id);
         if (error) throw error;
         window.showToast('✓ 已刪除');
         await window.loadData();
@@ -1473,7 +1501,9 @@ window.deleteAllInCategory = async () => {
     try {
         window.showToast('🗑 正在刪除...', 'info');
         
-        const { error } = await supabaseClient.from('anime_list').delete().eq('category', currentCategory);
+        const client = window.supabaseManager?.getClient();
+        if (!client) throw new Error('Supabase 未連接');
+        const { error } = await client.from('anime_list').delete().eq('category', currentCategory);
         if (error) throw error;
         
         window.showToast(`✓ 已刪除全部 ${count} 個 ${currentCategory} 作品`);
@@ -1517,7 +1547,9 @@ window.bulkDeleteAnime = async () => {
     if (!confirm(`確定要刪除選中的 ${ids.length} 個作品嗎？`)) return;
     
     try {
-        const { error } = await supabaseClient.from('anime_list').delete().in('id', ids);
+        const client = window.supabaseManager?.getClient();
+        if (!client) throw new Error('Supabase 未連接');
+        const { error } = await client.from('anime_list').delete().in('id', ids);
         if (error) throw error;
         window.showToast('✓ 公告已刪除');
         setTimeout(() => window.renderAnnouncements(), 300);
@@ -1637,7 +1669,10 @@ window.renderAnnouncements = async function() {
         </div>`;
 
     try {
-        const { data, error } = await supabaseClient
+        const client = window.supabaseManager?.getClient();
+        if (!client) throw new Error('Supabase 未連接');
+        
+        const { data, error } = await client
             .from('announcements')
             .select('*')
             .order('created_at', { ascending: false });
@@ -1648,7 +1683,7 @@ window.renderAnnouncements = async function() {
             container.innerHTML = `
                 <div style="text-align: center; padding: 80px 20px; color: var(--text-secondary); border: 1px dashed rgba(0,212,255,0.3); border-radius: 10px;">
                     <p>目前尚無永久公告資料</p>
-                    ${isAdmin ? '<button class="btn-primary" style="margin-top: 20px;" onclick="window.showAddAnnouncementModal()">+ 手動新增公告</button>' : ''}
+                    ${isAdminLoggedIn ? '<div style="display: flex; justify-content: center;"><button class="btn-primary" style="margin-top: 20px;" onclick="window.showAddAnnouncementModal()">+ 手動新增公告</button></div>' : ''}
                 </div>`;
             return;
         }
@@ -1674,7 +1709,7 @@ window.renderAnnouncements = async function() {
                                     <div style="color: ${item.author_color || siteSettings.admin_color || 'var(--neon-cyan)'}; font-weight: bold; font-size: 14px;">${item.author_name || siteSettings.admin_name || '管理員'}</div>
 	                            <div style="color: var(--text-secondary); font-size: 11px; font-family: 'Space Mono', monospace;">${new Date(item.created_at || item.timestamp || item.createdAt || item.created || Date.now()).toLocaleString()}</div>
                                 </div>
-                                ${isAdmin ? `
+                                ${isAdminLoggedIn ? `
                                     <div style="display: flex; gap: 10px;">
                                         <button onclick='window.showEditAnnouncementModal(${JSON.stringify(item).replace(/'/g, "&apos;")})' style="background: none; border: none; color: var(--neon-cyan); cursor: pointer; font-size: 12px;">編輯</button>
                                         <button onclick="window.deleteAnnouncement('${item.id}')" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 12px;">刪除</button>
@@ -1778,11 +1813,14 @@ window.submitAnnouncement = async (editId = null) => {
 
         console.log('🚀 發布公告，使用身分:', payload.author_name);
 
+        const client = window.supabaseManager?.getClient();
+        if (!client) throw new Error('Supabase 未連接');
+        
         let error;
         if (editId && editId !== 'null') {
             console.log('✏️ 編輯模式，ID:', editId);
             // 編輯時強制使用最新的管理員資訊覆蓋舊資料
-            const { error: err } = await supabaseClient.from('announcements')
+            const { error: err } = await client.from('announcements')
                 .update({
                     content: payload.content,
                     image_urls: payload.image_urls,
@@ -1795,11 +1833,11 @@ window.submitAnnouncement = async (editId = null) => {
         } else {
             console.log('➕ 新增模式，發送到 Supabase...');
             console.log('📦 Payload:', JSON.stringify(payload, null, 2));
-            const { error: err } = await supabaseClient.from('announcements').insert([payload]);
+            const { error: err } = await client.from('announcements').insert([payload]);
             console.log('📊 Supabase 返回錯誤:', err);
             if (err && /timestamp/i.test(err.message || '')) {
                 console.log('🔄 重試不含 created_at...');
-                const { error: err2 } = await supabaseClient.from('announcements').insert([
+                const { error: err2 } = await client.from('announcements').insert([
                     { ...basePayload, created_at: new Date().toISOString() }
                 ]);
                 error = err2;
@@ -1833,7 +1871,9 @@ window.deleteAnnouncement = async (id) => {
     try {
         // 確保 id 是數字類型（如果資料庫 id 是 BIGINT）
         const numericId = parseInt(id);
-        const { error } = await supabaseClient.from('announcements').delete().eq('id', numericId);
+        const client = window.supabaseManager?.getClient();
+        if (!client) throw new Error('Supabase 未連接');
+        const { error } = await client.from('announcements').delete().eq('id', numericId);
         
         if (error) {
             console.error('Delete error:', error);
