@@ -210,60 +210,6 @@ if (window.supabaseManager) {
 
 // --- Render Functions (必須在 initApp 之前定義) ---
 
-const getTagStyle = (color) => `font-size: 11px !important; color: ${color} !important; border: 1.5px solid ${color} !important; padding: 2px 10px !important; border-radius: 50px !important; background: ${color}22 !important; font-weight: bold !important; white-space: nowrap !important; display: inline-block !important; font-family: 'Microsoft JhengHei', sans-serif !important; box-shadow: 0 0 5px ${color}44 !important;`;
-
-window.renderCard = (item) => {
-    const starColor = item.star_color || optionsData.category_colors?.recommendation || '#ffcc00';
-    const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
-    const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
-    const nameColor = item.name_color || optionsData.category_colors?.name || '#ffffff';
-    const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
-    const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
-    const cyanBase = 'rgba(0, 212, 255, 0.1)';
-    const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
-    const extraTags = [];
-    if (item.extra_data) {
-        Object.entries(item.extra_data).forEach(([key, val]) => {
-            if (val) {
-                const customColor = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : '#ffffff';
-                extraTags.push({ val: val, key: key, color: customColor });
-            }
-        });
-    }
-    if (window.innerWidth <= 768) {
-        const starCount = (item.recommendation || '').split('★').length - 1;
-        const starText = `星X${starCount || 1}`;
-        return `<div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; flex-direction: column; justify-content: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 10px 15px !important; gap: 6px; width: 100%; height: 75px; overflow: hidden;">
-            <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
-                <span style="color: ${starColor}; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${starText}</span>
-                <h3 class="force-scroll" style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; font-weight: bold; scrollbar-width: none; flex: 1;">${escapeHtml(item.name)}</h3>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
-                <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-weight: 900; background: ${ratingColor}22; flex-shrink: 0;">${escapeHtml(item.rating || '普')}</span>
-                <div style="display: flex; gap: 8px; font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; align-items: center;">
-                    ${item.year ? `<span>${escapeHtml(item.year)}</span>` : ''}
-                    ${item.season ? `<span>${escapeHtml(item.season)}</span>` : ''}
-                    ${item.month ? `<span>${escapeHtml(item.month)}月</span>` : ''}
-                    ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${escapeHtml(item.episodes)} 集</span>` : ''}
-                </div>
-            </div>
-        </div>`;
-    }
-    return `<div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="border: 2px solid ${ratingColor}; background: ${cyanBase};">
-        <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
-            <img src="${item.poster_url || ''}" style="width: 100%; height: 100%; object-fit: cover;">
-            <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; backdrop-filter: blur(8px); z-index: 10;">
-                <span style="color: ${starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${starColor});">${escapeHtml(item.recommendation || '★')}</span>
-                <span style="color: ${ratingColor}; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 1px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.rating || '普')}</span>
-            </div>
-            <div class="episodes-badge-v38" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: ${episodesColor}; font-size: 14px; padding: 4px 16px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; z-index: 10;">全 ${escapeHtml(item.episodes || '0')} 集</div>
-        </div>
-        <div class="card-content-v38" style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4); width: 100%;">
-            <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${escapeHtml(item.name)}</h3>
-        </div>
-    </div>`;
-};
-
 window.renderPagination = (total) => {
     const totalPages = Math.ceil(total / itemsPerPage);
     if (totalPages <= 1) return '';
