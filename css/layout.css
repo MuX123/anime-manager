@@ -1,0 +1,112 @@
+/* =============================================
+   Layout Styles - 佈局系統
+   ACG 收藏庫 v6.0.0
+   ============================================= */
+
+/* 主容器 */
+.app-container,
+.admin-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* 頁首 */
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 32px;
+    letter-spacing: 4px;
+    margin-bottom: 10px;
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+/* 網格系統 */
+.anime-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns, 5), 1fr);
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.anime-grid.force-mobile-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 網格列數響應式 */
+@media (max-width: 1400px) {
+    .anime-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 1200px) {
+    .anime-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 1024px) {
+    .anime-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .anime-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+    .anime-grid { grid-template-columns: 1fr; }
+}
+
+/* 列表佈局 */
+.anime-grid.force-mobile-layout {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    gap: 15px;
+}
+
+.anime-grid.force-mobile-layout .anime-card {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-height: 80px;
+    margin: 0;
+    align-items: center;
+    padding: 10px 25px;
+}
+
+.anime-grid.force-mobile-layout .card-poster-v38 {
+    display: none;
+}
+
+.anime-grid.force-mobile-layout .card-content-v38 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0;
+    text-align: left;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .anime-grid.force-mobile-layout .anime-card {
+        flex-direction: column;
+        padding: 20px;
+    }
+    .anime-grid.force-mobile-layout .card-content-v38 {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+}

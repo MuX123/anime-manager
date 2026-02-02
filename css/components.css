@@ -1,0 +1,533 @@
+/* =============================================
+   Component Styles - UI 組件
+   ACG 收藏庫 v6.0.0
+   ============================================= */
+
+/* ========== 網站標題區域 ========== */
+.site-header {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.site-title {
+    font-family: 'Orbitron', 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+   2px;
+    color: rgba( letter-spacing: 255, 255, 255, 0.9);
+    margin: 0;
+    padding: 0;
+}
+
+.site-version {
+    font-family: 'Orbitron', 'Space Mono', monospace;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    padding: 0;
+}
+
+/* ========== 分析列 ========== */
+.analytics-bar {
+    position: fixed;
+    top: 10px;
+    left: auto;
+    right: 10px;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    backdrop-filter: blur(5px);
+}
+
+#analytics-display {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* ========== 卡片組件 ========== */
+.anime-card {
+    width: 100%;
+    min-width: 0;
+    background: var(--glass-bg);
+    border: 1.5px solid rgba(0, 212, 255, 0.2);
+    border-left: 4px solid var(--rating-color, rgba(0, 212, 255, 0.2));
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    position: relative;
+    backdrop-filter: blur(10px);
+}
+
+/* ========== 表單元素 ========== */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+    background: rgba(5, 6, 9, 0.8);
+    border: 1px solid var(--neon-blue);
+    color: var(--text-main);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Space Mono', monospace;
+    transition: var(--transition-smooth);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.1);
+    width: 100%;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+    background: rgba(5, 6, 9, 0.95);
+}
+
+select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300d4ff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 30px;
+}
+
+/* ========== 按鈕組件 ========== */
+.btn-primary {
+    background: var(--btn-bg-alpha, rgba(0, 212, 255, 0.1));
+    border: 1.5px solid var(--btn-bg, var(--neon-blue));
+    color: var(--btn-bg, var(--neon-cyan));
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition-bounce);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    min-width: 80px;
+    white-space: nowrap;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: rgba(0, 212, 255, 0.3);
+    box-shadow: 0 0 20px var(--neon-blue);
+    transform: scale(1.05);
+}
+
+.btn-primary.active {
+    background: var(--neon-blue);
+    color: var(--bg-dark);
+    box-shadow: 0 0 15px var(--neon-blue);
+}
+
+/* ========== 模態框 ========== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal.active {
+    display: flex;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background: var(--panel-bg);
+    border: 2px solid var(--neon-blue);
+    padding: 0;
+    border-radius: 16px;
+    position: relative;
+    max-width: 1100px;
+    width: 95%;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 0 50px rgba(0, 212, 255, 0.2);
+}
+
+/* ========== 詳情頁組件 ========== */
+.detail-container-v35 {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    max-height: 85vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.detail-poster-aside {
+    position: relative;
+    height: 100%;
+    border-right: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.detail-poster-aside img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.detail-content-main {
+    padding: 40px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    background: linear-gradient(135deg, rgba(10,14,26,0.9), rgba(5,6,9,0.98));
+    box-shadow: inset 0 0 30px rgba(0, 212, 255, 0.05);
+}
+
+/* ========== 標籤 ========== */
+.tag-pill-v35 {
+    display: inline-block;
+    padding: 6px 14px;
+    margin-right: 10px;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.tag-pill-v35:hover {
+    background: rgba(0, 212, 255, 0.2);
+    border-color: rgba(0, 212, 255, 0.6);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+}
+
+/* ========== 橫向滾動容器 ========== */
+.scroll-row-v35 {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 0;
+    white-space: nowrap;
+}
+
+.scroll-row-v35::-webkit-scrollbar {
+    height: 4px;
+}
+
+.scroll-row-v35::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scroll-row-v35::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 255, 0.3);
+    border-radius: 2px;
+}
+
+.scroll-row-v35::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 212, 255, 0.6);
+}
+
+/* ========== 浮動選單 ========== */
+.floating-menu-btn {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00d4ff, #b026ff);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    color: #050609;
+    font-size: 26px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-bounce);
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.6), 0 0 60px rgba(176, 38, 255, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.1);
+    z-index: 999;
+    font-weight: bold;
+    font-family: 'Orbitron', sans-serif;
+    padding: 0;
+}
+
+.floating-menu-btn:hover {
+    box-shadow: 0 0 50px rgba(0, 212, 255, 0.8), 0 0 100px rgba(176, 38, 255, 0.6), inset 0 0 30px rgba(255, 255, 255, 0.2);
+    transform: scale(1.2) rotate(-10deg);
+    background: linear-gradient(135deg, #00ffff, #ff006e);
+}
+
+.floating-menu-btn:active {
+    transform: scale(0.95);
+}
+
+#systemMenu {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 499;
+    background: var(--panel-bg);
+    border: 2px solid var(--neon-blue);
+    border-radius: 12px;
+    overflow: hidden;
+    min-width: 220px;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+#systemMenu.active {
+    display: block;
+}
+
+.menu-item-v2 {
+    padding: 14px 18px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+    color: var(--text-main);
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+.menu-item-v2:last-child {
+    border-bottom: none;
+}
+
+.menu-item-v2:hover {
+    background: rgba(0, 212, 255, 0.15);
+    color: var(--neon-cyan);
+    box-shadow: inset 0 0 10px rgba(0, 212, 255, 0.1);
+}
+
+/* ========== 選項管理區塊 ========== */
+.options-scroll-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 20px 15px;
+    margin-bottom: 30px;
+    width: 100%;
+    min-height: 550px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--neon-cyan) transparent;
+}
+
+.options-column {
+    flex: 0 0 auto;
+    min-width: 200px;
+    max-width: 450px;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(0, 212, 255, 0.03));
+    border: 2px solid rgba(0, 212, 255, 0.3);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 500px;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+}
+
+.options-column-header {
+    padding: 15px;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 212, 255, 0.05));
+    border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    color: var(--neon-cyan);
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.options-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--neon-cyan) transparent;
+}
+
+.option-item-row {
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.05);
+    transition: all 0.2s ease;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.option-item-row:hover {
+    background: rgba(0, 212, 255, 0.1);
+    padding-left: 18px;
+}
+
+/* ========== 公告區域 ========== */
+.announcement-wrapper {
+    height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    background: rgba(0, 212, 255, 0.02);
+}
+
+.announcement-card {
+    padding: 20px;
+    background: var(--glass-bg);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+/* ========== 管理後台 ========== */
+.admin-panel {
+    max-height: calc(100vh - 300px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
+}
+
+.admin-table-container {
+    overflow-x: auto;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(0,212,255,0.1);
+}
+
+.admin-table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.admin-table-container th,
+.admin-table-container td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid rgba(0,212,255,0.05);
+}
+
+.admin-table-container th {
+    background: rgba(0,212,255,0.05);
+    color: var(--neon-cyan);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+/* ========== 分頁 ========== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.pagination button {
+    min-width: 40px;
+}
+
+/* ========== Toast 提示 ========== */
+#toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: var(--neon-cyan);
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: 1px solid var(--neon-blue);
+    z-index: 100000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+#toast.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ========== 詳情頁邊條 ========== */
+.detail-border-v500 {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: var(--rating-color, var(--neon-blue));
+    z-index: 100;
+    box-shadow: 0 0 15px var(--rating-color, var(--neon-blue));
+    display: block;
+    visibility: visible;
+    opacity: 1;
+}
+
+/* ========== 色彩選擇器 ========== */
+.color-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.color-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 0;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.color-swatch:hover {
+    border-color: rgba(0, 212, 255, 0.6);
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.2);
+}
+
+.color-input-wrapper input[type="color"] {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    pointer-events: none;
+}

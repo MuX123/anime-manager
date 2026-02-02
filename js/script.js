@@ -321,9 +321,16 @@ window.renderApp = function() {
     }
     app.style.display = 'block';
     app.style.visibility = 'visible';
-    app.style.opacity = '1';
     const loadingScreen = document.getElementById('loading-screen');
-    if (loadingScreen) { loadingScreen.style.opacity = '0'; setTimeout(() => { loadingScreen.style.display = 'none'; }, 500); }
+    if (loadingScreen) {
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            document.getElementById('app').classList.add('loaded');
+        }, 500);
+    } else {
+        document.getElementById('app').classList.add('loaded');
+    }
 };
 
 // --- Core Functions ---
@@ -451,13 +458,18 @@ window.initApp = async function() {
         // 9. 渲染初始介面
         window.renderApp();
         
-        // 8. 隱藏載入畫面
+        // 10. 隱藏載入畫面並顯示內容
         const loadingScreen = document.getElementById('loading-screen');
+        const app = document.getElementById('app');
         if (loadingScreen) {
             loadingScreen.style.opacity = '0';
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
+                app.classList.add('loaded');
             }, 500);
+        } else {
+            app.classList.add('loaded');
+        }
         }
         
         isFirstLoad = false;
@@ -472,11 +484,15 @@ window.initApp = async function() {
         
         // 確保隱藏載入畫面
         const loadingScreen = document.getElementById('loading-screen');
+        const app = document.getElementById('app');
         if (loadingScreen) {
             loadingScreen.style.opacity = '0';
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
+                app.classList.add('loaded');
             }, 500);
+        } else {
+            app.classList.add('loaded');
         }
     }
 };

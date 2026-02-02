@@ -1,0 +1,180 @@
+/* =============================================
+   Base Styles - 基礎樣式
+   ACG 收藏庫 v6.0.0
+   ============================================= */
+
+/* 重置樣式 */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background-color: var(--bg-dark);
+    background-image:
+        radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(176, 38, 255, 0.05) 0%, transparent 50%),
+        linear-gradient(rgba(0, 212, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    background-attachment: fixed;
+    color: var(--text-main);
+    font-family: 'Space Mono', 'Microsoft JhengHei', monospace;
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+/* 滾動條樣式 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 212, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 255, 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 212, 255, 0.5);
+}
+
+/* 隱藏滾動條（可訪問性保留） */
+.hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
+}
+
+/* 基礎排版 */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    margin-bottom: 0.5em;
+    line-height: 1.3;
+}
+
+h1 { font-size: 2rem; letter-spacing: 0.1em; }
+h2 { font-size: 1.5rem; letter-spacing: 0.05em; }
+h3 { font-size: 1.25rem; }
+
+p {
+    line-height: 1.8;
+    margin-bottom: 1em;
+}
+
+a {
+    color: var(--neon-blue);
+    text-decoration: none;
+    transition: var(--transition-smooth);
+}
+
+a:hover {
+    color: var(--neon-cyan);
+}
+
+/* 圖片基礎 */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* 工具類別 */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+
+.hidden { display: none !important; }
+.visible { visibility: visible; }
+.invisible { visibility: hidden; }
+
+/* ========== 可訪問性 ========== */
+
+/* 聚焦樣式 - 鍵盤導航可見 */
+:focus {
+    outline: 2px solid var(--neon-cyan);
+    outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+:focus-visible {
+    outline: 2px solid var(--neon-cyan);
+    outline-offset: 2px;
+}
+
+/* 連結聚焦樣式 */
+a:focus {
+    outline: 2px solid var(--neon-cyan);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* 按鈕聚焦樣式 */
+button:focus {
+    outline: 2px solid var(--neon-cyan);
+    outline-offset: 2px;
+}
+
+/* 輸入框聚焦樣式 */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid var(--neon-cyan);
+    outline-offset: 2px;
+}
+
+/* 減少動畫偏好 */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* 高對比度模式支援 */
+@media (prefers-contrast: high) {
+    :root {
+        --neon-blue: #00ffff;
+        --neon-cyan: #00ffff;
+        --text-main: #ffffff;
+        --text-secondary: #ffffff;
+    }
+
+    .anime-card {
+        border-width: 2px;
+    }
+
+    .btn-primary {
+        border-width: 2px;
+    }
+}
