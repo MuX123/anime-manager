@@ -195,18 +195,9 @@ class PerformanceOptimizer {
      * 預載入關鍵資源
      */
     preloadCriticalResources() {
-        const criticalResources = [
-            { href: './css/style.css', as: 'style' },
-            { href: 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap', as: 'style' }
-        ];
-
-        criticalResources.forEach(resource => {
-            const link = document.createElement('link');
-            link.rel = 'preload';
-            link.href = resource.href;
-            link.as = resource.as;
-            document.head.appendChild(link);
-        });
+        // 關鍵資源已透過 HTML<link> 載入，此處無需額外 preload
+        // 避免重複載入導致控制台警告
+        window.logger?.debug('關鍵資源載入優化完成');
     }
 
     /**

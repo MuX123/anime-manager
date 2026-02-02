@@ -9,6 +9,7 @@
 
 CREATE TABLE IF NOT EXISTS announcements (
     id BIGSERIAL PRIMARY KEY,
+    title TEXT NOT NULL DEFAULT '公告',
     content TEXT NOT NULL,
     image_urls JSONB DEFAULT '[]'::jsonb,
     author_name TEXT NOT NULL DEFAULT '管理員',
@@ -67,6 +68,7 @@ CREATE TABLE IF NOT EXISTS page_views (
 -- ============================================================================
 
 CREATE INDEX IF NOT EXISTS idx_announcements_created_at ON announcements(created_at);
+CREATE INDEX IF NOT EXISTS idx_announcements_title ON announcements(title);
 CREATE INDEX IF NOT EXISTS idx_anime_list_category ON anime_list(category);
 CREATE INDEX IF NOT EXISTS idx_anime_list_rating ON anime_list(rating);
 CREATE INDEX IF NOT EXISTS idx_anime_list_created_at ON anime_list(created_at);

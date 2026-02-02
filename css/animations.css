@@ -27,12 +27,14 @@
 /* 應用容器進入動畫 */
 #app {
     animation: fadeInScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    will-change: opacity;
 }
 
 /* 內容區域過度動畫 */
 #main-grid-content,
 #notice-container {
     animation: slideInUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    will-change: opacity, transform;
 }
 
 /* ========== 載入畫面 ========== */
@@ -141,6 +143,7 @@
 /* ========== 模態框動畫 ========== */
 .modal.active .modal-content {
     animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: opacity, transform;
 }
 
 @keyframes modalSlideIn {
@@ -157,16 +160,19 @@
 /* ========== 搜尋過濾區域過渡 ========== */
 #search-filters {
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: opacity, transform;
 }
 
 /* ========== 分頁按鈕動畫 ========== */
 #pagination-container {
     animation: slideInUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards;
+    will-change: opacity, transform;
 }
 
 /* ========== 內容淡出淡入過渡 ========== */
 .fade-transition {
     animation: fadeTransition 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: opacity;
 }
 
 @keyframes fadeTransition {
@@ -195,6 +201,7 @@
 .floating-menu.active {
     display: flex;
     animation: menuSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: opacity, transform;
 }
 
 @keyframes menuSlideIn {
@@ -211,6 +218,7 @@
 /* ========== 選項列表演畫 ========== */
 .options-column {
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform, box-shadow, border-color;
 }
 
 .options-column:hover {

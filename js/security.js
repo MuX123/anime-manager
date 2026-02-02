@@ -187,9 +187,6 @@ class SecurityManager {
         // 設置 X-Content-Type-Options
         this.setMetaTag('X-Content-Type-Options', 'nosniff');
         
-        // 設置 X-Frame-Options
-        this.setMetaTag('X-Frame-Options', 'DENY');
-        
         // 設置 Referrer-Policy
         this.setMetaTag('Referrer-Policy', 'strict-origin-when-cross-origin');
         
@@ -234,14 +231,16 @@ class SecurityManager {
      * 設置安全標頭
      */
     setupSecurityHeaders() {
-        // 這些通常在伺服器端設置，但我們可以在客戶端提供一些保護
+        // 伺服器端標頭（GitHub Pages 不支援，此處記錄僅供參考）
         const securityHeaders = {
             'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
             'Expect-CT': 'max-age=86400, enforce'
         };
-
-        // 記錄建議的伺服器端配置
-        console.log('📋 建議的伺服器端安全標頭:', securityHeaders);
+        
+        // 可在伺服器配置中啟用這些標頭以獲得更好的安全性
+        if (this.config.cspEnabled && window.configManager?.getAppConfig().debug) {
+            console.log('📋 伺服器端安全標頭建議:', securityHeaders);
+        }
     }
 
     /**

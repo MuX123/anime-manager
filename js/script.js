@@ -1,4 +1,18 @@
 // TECH v6.0.0 - ACG Manager Logic (Security & Performance Optimized)
+
+// 生產環境配置 - 減少控制台輸出
+const IS_PRODUCTION = window.location.hostname !== 'localhost' && 
+                      !window.location.hostname.includes('127.0.0.1') &&
+                      !window.location.hostname.includes('github.io');
+
+// 生產環境覆蓋 console 減少噪音
+if (IS_PRODUCTION) {
+    const originalConsole = { ...console };
+    console.log = (...args) => originalConsole.log.call(originalConsole, '[INFO]', ...args);
+    console.warn = (...args) => originalConsole.warn.call(originalConsole, '[WARN]', ...args);
+    console.info = (...args) => { /* 生產環境隱藏 info */ };
+}
+
 let currentSection = 'notice';
 let animeData = [];
 let optionsData = {
@@ -23,7 +37,7 @@ let optionsData = {
 };
 let siteSettings = { 
     site_title: 'ACG 收藏庫', 
-    announcement: '⚡ 系統連線中 // 歡迎光臨 ⚡', 
+    announcement: '⚡ 離線演示模式 // 資料來源：演示數據', 
     title_color: '#ffffff', 
     announcement_color: '#ffffff', 
     admin_name: '管理員',
@@ -32,6 +46,150 @@ let siteSettings = {
     admin_email: '',
     custom_labels: {} 
 };
+
+// 演示數據（離線模式使用）
+const demoAnimeData = [
+    {
+        id: 1,
+        name: '刀劍神域',
+        original_name: 'Sword Art Online',
+        genre: '科幻',
+        year: '2024',
+        season: '冬',
+        episodes: '24集',
+        rating: '優',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1173/142080l.jpg',
+        description: '2022年，VRMMO遊戲「SAO」正式營運，玩家們被困在遊戲中無法登出，只有打倒BOSS才能離開...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 2,
+        name: '鬼滅之刃',
+        original_name: 'Demon Slayer',
+        genre: '熱血',
+        year: '2023',
+        season: '春',
+        episodes: '26集',
+        rating: '神',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1178/142083l.jpg',
+        description: '大正時期，名為「鬼」的怪物存在於世。主角炭治郎的家人被鬼殺害，他踏上了成為鬼殺隊的旅程...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 3,
+        name: '間諜家家酒',
+        original_name: 'Spy x Family',
+        genre: '喜劇',
+        year: '2024',
+        season: '春',
+        episodes: '12集',
+        rating: '優',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/3408/142078l.jpg',
+        description: '間諜「黃昏」為了完成任務，需要組建一個臨時家庭。他收養了具有讀心能力的女兒，展開了意想不到的生活...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 4,
+        name: '進擊的巨人',
+        original_name: 'Attack on Titan',
+        genre: '熱血',
+        year: '2023',
+        season: '秋',
+        episodes: '24集',
+        rating: '神',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1174/142081l.jpg',
+        description: '在巨人威脅下的人類最後的城堡，面對巨人捕食的恐懼，主角艾倫決定加入訓練兵團，展開復仇之旅...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 5,
+        name: '我的英雄學院',
+        original_name: 'My Hero Academia',
+        genre: '熱血',
+        year: '2024',
+        season: '夏',
+        episodes: '24集',
+        rating: '優',
+        recommendation: '★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1205/142085l.jpg',
+        description: '在80%的人類都擁有名為「個性」的超能力的時代，沒有力量的少年綠谷出久如何成為英雄？',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 6,
+        name: '咒術迴戰',
+        original_name: 'Jujutsu Kaisen',
+        genre: '熱血',
+        year: '2024',
+        season: '冬',
+        episodes: '24集',
+        rating: '神',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1173/142079l.jpg',
+        description: '高中生虎杖悠仁在吞下詛咒的手指後，成為了詛咒的容器，必須進入咒術高等學校學習...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 7,
+        name: '紫羅蘭永恆花園',
+        original_name: 'Violet Evergarden',
+        genre: '戀愛',
+        year: '2023',
+        season: '春',
+        episodes: '14集',
+        rating: '神',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1795/142084l.jpg',
+        description: '自動手記人偶「薇爾莉特·伊芙加登」在戰後尋找「愛」的意義，替人們代筆書信...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 8,
+        name: '你的名字',
+        original_name: 'Your Name',
+        genre: '戀愛',
+        year: '2022',
+        season: '秋',
+        episodes: '劇場版',
+        rating: '神',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1315/142086l.jpg',
+        description: '住在東京的少年與住在鄉下的少女，在夢中交換了身體。跨越時空的奇蹟就此展開...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 9,
+        name: 'Re:從零開始的異世界生活',
+        original_name: 'Re:Zero',
+        genre: '異世界',
+        year: '2024',
+        season: '夏',
+        episodes: '24集',
+        rating: '優',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/152/142088l.jpg',
+        description: '被召喚到異世界的少年菜月昴，擁有「死亡回歸」的能力，只有拯救他人才能打破詛咒...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 10,
+        name: '海賊王',
+        original_name: 'One Piece',
+        genre: '冒險',
+        year: '2024',
+        season: '夏',
+        episodes: '24集',
+        rating: '神',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/456/142090l.jpg',
+        description: '戴上草帽的少年魯夫踏上尋找「大海賊王」寶藏的冒險旅程，組建了草帽海賊團...',
+        created_at: new Date().toISOString()
+    }
+];
 let currentCategory = 'notice';
 let currentAdminTab = 'manage';
 let currentPage = 1;
@@ -257,82 +415,6 @@ window.getFilteredData = () => {
     return data;
 };
 
-window.renderApp = function() {
-    const app = document.getElementById('app');
-    if (!app) return;
-    const btnColor = optionsData.category_colors?.btn_bg || '#00d4ff';
-    document.documentElement.style.setProperty('--btn-bg', btnColor);
-    document.documentElement.style.setProperty('--btn-bg-alpha', btnColor + '22');
-    const isNotice = currentCategory === 'notice';
-    let noticeHTML = '';
-    if (isNotice) {
-        noticeHTML = `<div id="discord-section" style="margin-top: 20px; min-height: 400px;"><div style="text-align: center; padding: 50px; color: var(--neon-cyan);">⚡ 正在載入永久公告...</div></div>`;
-        setTimeout(() => { if (typeof window.renderAnnouncements === 'function') window.renderAnnouncements(); }, 300);
-    }
-    const filtered = window.getFilteredData();
-    const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
-    if (gridColumns !== 'mobile') document.documentElement.style.setProperty('--grid-columns', gridColumns);
-    let topControlBar = document.getElementById('topControlBar');
-    if (!topControlBar) { topControlBar = document.createElement('div'); topControlBar.id = 'topControlBar'; document.body.appendChild(topControlBar); }
-    topControlBar.style.cssText = `position: fixed !important; top: 50% !important; right: 20px !important; transform: translateY(-50%) !important; display: flex; flex-direction: column; align-items: flex-end; z-index: 9999 !important;`;
-    topControlBar.innerHTML = `<div style="display: flex; flex-direction: column; background: rgba(5,15,25,0.5); padding: 12px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.2); backdrop-filter: blur(15px); min-width: 160px; gap: 8px;">
-        <select onchange="window.changeGridLayout(this.value)" style="width: 100%; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.25); padding: 10px; font-size: 13px; color: #fff; border-radius: 6px;">
-            ${[3,4,5].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''}>${n} 欄</option>`).join('')}
-            <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''}>📱 資料列表</option>
-        </select>
-        <select onchange="window.changeSortOrder(this.value)" style="width: 100%; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.25); padding: 10px; font-size: 13px; color: #fff; border-radius: 6px;">
-            <option value="desc" ${sortOrder === 'desc' ? 'selected' : ''}>時間：從新到舊</option>
-            <option value="asc" ${sortOrder === 'asc' ? 'selected' : ''}>時間：從舊到新</option>
-            <option value="name" ${sortOrder === 'name' ? 'selected' : ''}>名稱：A-Z</option>
-        </select>
-        <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 6px;"></div>
-    </div>`;
-    app.innerHTML = `<div class="app-container">
-        <header><h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1></header>
-        <div class="category-buttons-container" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
-            <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">◆ 公告</button>
-            <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
-            <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
-            <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
-        </div>
-        <div style="border: 2px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 18px; margin-bottom: 30px; font-size: 14px; color: ${siteSettings.announcement_color || '#ffffff'}; text-align: center; border-radius: 10px; background: rgba(0,212,255,0.05); font-weight: bold;">
-            <span>📢 ${siteSettings.announcement}</span>
-        </div>
-        <div style="margin-bottom: 30px; display: ${isNotice ? 'none' : 'block'};">
-            <input type="text" id="search-input" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px; border-radius: 50px;">
-            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                <div id="search-filters" class="horizontal-scroll-container" style="display: flex; gap: 12px; flex: 1; overflow-x: auto; overflow-y: hidden; padding: 8px 0; white-space: nowrap;">
-                    ${window.renderSearchSelectsHTML()}
-                </div>
-            </div>
-        </div>
-        <div id="notice-container" style="display: ${isNotice ? 'block' : 'none'};">${noticeHTML}</div>
-        <div id="main-grid-content" style="display: ${isNotice ? 'none' : 'block'};">
-            <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}" style="display: ${gridColumns === 'mobile' ? 'flex' : 'grid'}; ${gridColumns === 'mobile' ? 'flex-direction: column; gap: 10px;' : `grid-template-columns: repeat(${gridColumns}, 1fr); gap: 20px;`}">
-                ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
-            </div>
-            <div id="pagination-container" style="display: flex; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
-        </div>
-    </div>`;
-    window.initGlobalScroll();
-    window.updateAdminMenu();
-    if (!document.getElementById('detailModal')) {
-        document.body.insertAdjacentHTML('beforeend', `<div id="detailModal" class="modal" onclick="if(event.target===this) window.closeAnimeDetail()"><div class="modal-content"><button class="btn-primary" style="position: absolute; top: 20px; right: 20px; z-index: 1000; width: 40px; height: 40px; padding: 0;" onclick="window.closeAnimeDetail()">×</button><div id="detailContent"></div></div></div>`);
-    }
-    app.style.display = 'block';
-    app.style.visibility = 'visible';
-    const loadingScreen = document.getElementById('loading-screen');
-    if (loadingScreen) {
-        loadingScreen.style.opacity = '0';
-        setTimeout(() => {
-            loadingScreen.style.display = 'none';
-            document.getElementById('app').classList.add('loaded');
-        }, 500);
-    } else {
-        document.getElementById('app').classList.add('loaded');
-    }
-};
-
 // --- Core Functions ---
 
     /**
@@ -342,9 +424,20 @@ window.renderApp = function() {
      */
     const escapeHtml = (str) => {
         if (str === null || str === undefined) return '';
-        const div = document.createElement('div');
-        div.textContent = String(str);
-        return div.innerHTML;
+        try {
+            const div = document.createElement('div');
+            div.textContent = String(str);
+            return div.innerHTML;
+        } catch (e) {
+            console.warn('HTML escape failed:', e);
+            return String(str).replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[char]);
+        }
     };
 
     // Mouse drag scroll for desktop tags
@@ -395,12 +488,14 @@ window.initApp = async function() {
         
         // 1. 檢查 Supabase 連接狀態
         let client = null;
+        let isOfflineMode = false;
         if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
             client = window.supabaseManager.getClient();
-            console.log('✅ 使用新的 Supabase 客戶端');
+            console.log('✅ 使用 Supabase 數據庫');
         } else {
-            console.warn('⚠️ Supabase 未連接，進入離線模式');
-            window.showToast('資料庫連接失敗，系統將以離線模式運行', 'warning');
+            console.warn('⚠️ Supabase 未連接，進入離線演示模式');
+            isOfflineMode = true;
+            window.showToast('資料庫未連接，使用演示數據', 'info');
         }
         
         // 2. 獲取網站設定與選項資料 (優先載入)
@@ -470,7 +565,6 @@ window.initApp = async function() {
         } else {
             app.classList.add('loaded');
         }
-        }
         
         isFirstLoad = false;
         console.log('✅ 系統初始化完成');
@@ -502,8 +596,11 @@ window.loadData = async function() {
         console.log('📡 正在從 Supabase 抓取資料...');
         const client = window.supabaseManager?.getClient();
         if (!client) {
-            console.warn('Supabase 客戶端未就緒');
-            return [];
+            console.warn('Supabase 客戶端未就緒，使用演示數據');
+            // 使用演示數據
+            animeData = [...demoAnimeData];
+            console.log('✅ 使用演示數據，共', animeData.length, '筆');
+            return animeData;
         }
         const { data, error } = await client.from('anime_list').select('*').order('created_at', { ascending: false });
         if (!error) {
@@ -511,12 +608,15 @@ window.loadData = async function() {
             console.log('✅ 資料抓取成功，共', animeData.length, '筆');
             return animeData;
         } else {
-            throw error;
+            console.warn('資料庫查詢失敗，切換至演示數據');
+            animeData = [...demoAnimeData];
+            return animeData;
         }
     } catch (e) {
-        console.error('Data load error:', e);
-        window.showToast('資料讀取失敗', 'error');
-        return [];
+        console.warn('數據載入失敗，使用演示數據:', e.message);
+        animeData = [...demoAnimeData];
+        window.showToast('已切換至離線演示模式', 'warning');
+        return animeData;
     }
 };
 
@@ -1995,6 +2095,7 @@ window.renderAnnouncements = async function() {
 
                         return `
                         <div class="announcement-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0,212,255,0.1); border-radius: 12px; padding: 20px; position: relative; transition: all 0.3s ease; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                            ${item.title ? `<div style="color: var(--neon-cyan); font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: bold; margin-bottom: 15px; text-shadow: 0 0 10px var(--neon-blue);">${item.title}</div>` : ''}
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid rgba(0,212,255,0.05); padding-bottom: 10px;">
                                 <img src="${item.author_avatar || siteSettings.admin_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--neon-blue);">
                                 <div style="flex: 1;">
@@ -2036,6 +2137,7 @@ window.showAddAnnouncementModal = () => {
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 500px;">
             <h2 style="color: var(--neon-cyan); margin-bottom: 20px;">📢 發布新公告</h2>
+            <input type="text" id="ann-title" placeholder="公告標題" style="width: 100%; margin-bottom: 15px;">
             <textarea id="ann-content" placeholder="輸入公告內容..." style="width: 100%; height: 150px; margin-bottom: 15px;"></textarea>
             <textarea id="ann-images" placeholder="輸入圖片網址 (多張請用換行分隔)..." style="width: 100%; height: 80px; margin-bottom: 20px; font-size: 12px;"></textarea>
             <div style="display: flex; gap: 10px;">
@@ -2054,6 +2156,7 @@ window.showEditAnnouncementModal = (item) => {
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 500px;">
             <h2 style="color: var(--neon-cyan); margin-bottom: 20px;">📝 編輯公告</h2>
+            <input type="text" id="ann-title" placeholder="公告標題" value="${item.title || ''}" style="width: 100%; margin-bottom: 15px;">
             <textarea id="ann-content" placeholder="輸入公告內容..." style="width: 100%; height: 150px; margin-bottom: 15px;">${item.content || ''}</textarea>
             <textarea id="ann-images" placeholder="輸入圖片網址 (多張請用換行分隔)..." style="width: 100%; height: 80px; margin-bottom: 20px; font-size: 12px;">${(item.image_urls || []).join('\n')}</textarea>
             <div style="display: flex; gap: 10px;">
@@ -2068,30 +2171,39 @@ window.showEditAnnouncementModal = (item) => {
 window.submitAnnouncement = async (editId = null) => {
     console.log('🚀 submitAnnouncement 被調用，editId:', editId);
     
+    const titleEl = document.getElementById('ann-title');
     const contentEl = document.getElementById('ann-content');
     const imagesEl = document.getElementById('ann-images');
     
-    if (!contentEl || !imagesEl) {
+    if (!titleEl || !contentEl || !imagesEl) {
         console.error('❌ 找不到公告表單元素');
         window.showToast('系統錯誤：找不到表單元素', 'error');
         return;
     }
     
+    const title = titleEl.value.trim();
     const content = contentEl.value;
     const imagesText = imagesEl.value;
     const images = imagesText.split('\n').map(url => url.trim()).filter(url => url !== '');
     
+    console.log('📝 公告標題:', title);
     console.log('📝 公告內容:', content.substring(0, 50), '...');
     console.log('🖼️ 圖片數量:', images.length);
 
+    if (!title) {
+        window.showToast('請輸入公告標題', 'error');
+        return;
+    }
+    
     if (!content && images.length === 0) {
         window.showToast('請輸入內容或圖片', 'error');
         return;
     }
-
+    
     try {
         // 確保抓取到最新的設定值
         const basePayload = {
+            title: title,
             content: content,
             image_urls: images,
             author_name: siteSettings.admin_name || '管理員',
@@ -2114,6 +2226,7 @@ window.submitAnnouncement = async (editId = null) => {
             // 編輯時強制使用最新的管理員資訊覆蓋舊資料
             const { error: err } = await client.from('announcements')
                 .update({
+                    title: payload.title,
                     content: payload.content,
                     image_urls: payload.image_urls,
                     author_name: siteSettings.admin_name || '管理員',
@@ -2137,7 +2250,7 @@ window.submitAnnouncement = async (editId = null) => {
                 error = err;
             }
         }
-
+        
         if (error) throw error;
         window.showToast(editId && editId !== 'null' ? '✓ 公告已更新' : '✓ 公告已發布');
         document.getElementById('announcement-modal').remove();
