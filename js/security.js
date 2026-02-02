@@ -238,7 +238,7 @@ class SecurityManager {
         };
         
         // 可在伺服器配置中啟用這些標頭以獲得更好的安全性
-        if (this.config.cspEnabled && window.configManager?.getAppConfig().debug) {
+        if (this.config?.cspEnabled && window.configManager?.getAppConfig()?.debug) {
             console.log('📋 伺服器端安全標頭建議:', securityHeaders);
         }
     }

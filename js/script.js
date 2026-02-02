@@ -312,28 +312,28 @@ window.checkAndUpdateAdminStatus = async () => {
         window.updateAdminMenu();
         return isAdminUser;
     } catch (err) {
-        console.warn('檢查管理員狀態失敗:', err);
         isAdminLoggedIn = false;
         return false;
     }
 };
 
 window.updateAdminMenu = () => {
-    const menuContainer = document.getElementById('adminMenuOptions');
+    const menuContainer = document.getElementById('adminSidebarMenu');
     if (!menuContainer) return;
 
     if (isAdminLoggedIn) {
         menuContainer.innerHTML = `
-            <button class="btn-primary" style="padding: 8px 12px; font-size: 12px; border-color: #ff4444; color: #ff4444; background: rgba(255,0,0,0.1);" onclick="window.toggleAdminMode(true)">⚙️ 後台管理</button>
-            <button class="btn-primary" style="padding: 8px 12px; font-size: 12px; border-color: #ffaa00; color: #ffaa00; background: rgba(255,170,0,0.1);" onclick="window.adminLogout()">🚪 登出</button>
+            <button class="admin-sidebar-btn admin" onclick="window.toggleAdminMode(true)">⚙️ 後台管理</button>
+            <button class="admin-sidebar-btn logout" onclick="window.adminLogout()">🚪 登出</button>
         `;
     } else {
         menuContainer.innerHTML = `
-            <button class="btn-primary" style="padding: 8px 12px; font-size: 12px;" onclick="window.showAdminLoginModal()">🔐 管理員登入</button>
+            <button class="admin-sidebar-btn login" onclick="window.showAdminLoginModal()">🔐 管理員登入</button>
         `;
     }
 };
 
+let lastFrontendCategory = 'notice';
 window.toggleAdminMode = (enable) => {
     if (enable && !isAdminLoggedIn) {
         window.showAdminLoginModal();
@@ -344,13 +344,15 @@ window.toggleAdminMode = (enable) => {
     const app = document.getElementById('app');
 
     if (enable) {
+        lastFrontendCategory = currentCategory;
         currentSection = 'admin';
         if (topControlBar) topControlBar.style.display = 'none';
         window.renderAdmin();
     } else {
         currentSection = 'notice';
+        currentCategory = lastFrontendCategory;
         if (topControlBar) topControlBar.style.display = 'flex';
-        window.switchCategory('notice');
+        window.renderApp();
     }
 };
 
@@ -553,7 +555,20 @@ window.initApp = async function() {
         // 9. 渲染初始介面
         window.renderApp();
         
-        // 10. 隱藏載入畫面並顯示內容
+        // 10. 檢查現有會話的管理員狀態
+        if (window.supabaseManager?.isConnectionReady()) {
+            const { data: { session } } = await window.supabaseManager.getClient().auth.getSession();
+            if (session) {
+                await window.checkAndUpdateAdminStatus();
+            }
+        }
+        
+        // 11. 顯示首次訪問彈窗
+        if (isFirstLoad) {
+            setTimeout(() => window.showFirstVisitPopups(), 1000);
+        }
+        
+        // 11. 隱藏載入畫面並顯示內容
         const loadingScreen = document.getElementById('loading-screen');
         const app = document.getElementById('app');
         if (loadingScreen) {
@@ -639,17 +654,7 @@ window.renderApp = function() {
     // 處理公告板塊的特殊顯示
     let noticeHTML = '';
     if (isNotice) {
-        noticeHTML = `
-            <div id="discord-section" class="admin-panel-v492" style="margin-top: 20px; min-height: 400px;">
-                <div style="text-align: center; padding: 50px; color: var(--neon-cyan);">⚡ 正在載入永久公告...</div>
-            </div>
-        `;
-        // 確保在 DOM 更新後執行
-        setTimeout(() => {
-            if (typeof window.renderAnnouncements === 'function') {
-                window.renderAnnouncements();
-            }
-        }, 300);
+        noticeHTML = '<div id="discord-section" style="min-height: 400px; display: flex; align-items: center; justify-content: center;"><div style="color: var(--neon-cyan);">⚡ 載入中...</div></div>';
     }
 
     const filtered = window.getFilteredData();
@@ -766,6 +771,20 @@ app.innerHTML = `
             loadingScreen.style.display = 'none';
         }, 500);
     }
+
+    // 公告板塊异步渲染
+    if (isNotice && typeof window.renderAnnouncements === 'function') {
+        setTimeout(async () => {
+            const container = document.getElementById('discord-section');
+            if (container) {
+                container.innerHTML = window.renderAnnouncements();
+                // 載入分頁內容
+                if (window.announcementSystem?.loadInitialContent) {
+                    await window.announcementSystem.loadInitialContent();
+                }
+            }
+        }, 100);
+    }
 };
 
 const getTagStyle = (color) => `font-size: 11px !important; color: ${color} !important; border: 1.5px solid ${color} !important; padding: 2px 10px !important; border-radius: 50px !important; background: ${color}22 !important; font-weight: bold !important; white-space: nowrap !important; display: inline-block !important; font-family: 'Microsoft JhengHei', sans-serif !important; box-shadow: 0 0 5px ${color}44 !important;`;
@@ -785,10 +804,24 @@ window.renderCard = (item) => {
 
     const extraTags = [];
     if (item.extra_data) {
+        const categoryColors = optionsData.category_colors || {};
+        const colorKeys = Object.keys(categoryColors);
+        const standardFields = ['genre', 'year', 'season', 'month', 'episodes', 'rating', 'recommendation', 'type', 'category', 'name', 'poster_url', 'description'];
+        const excludedKeys = [...standardFields, ...colorKeys];
+        
         Object.entries(item.extra_data).forEach(([key, val]) => {
-            if (val) {
-                const customColor = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : '#ffffff';
-                extraTags.push({ val: val, key: key, color: customColor });
+            const strVal = String(val || '').trim();
+            const strKey = String(key || '').trim();
+            
+            if (strVal && 
+                strKey && 
+                !excludedKeys.includes(strKey) && 
+                strVal !== strKey && 
+                !strKey.startsWith('btn_') &&
+                !strKey.includes('_color') &&
+                strKey.length > 2) {
+                const customColor = categoryColors[strKey] || '#ffffff';
+                extraTags.push({ val: strVal, key: strKey, color: customColor });
             }
         });
     }
@@ -797,7 +830,8 @@ window.renderCard = (item) => {
         const starCount = (item.recommendation || '').split('★').length - 1;
         const starText = `星X${starCount || 1}`;
         return `
-            <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; flex-direction: column; justify-content: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 10px 15px !important; gap: 6px; width: 100%; height: 75px; overflow: hidden;">
+            <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; flex-direction: column; justify-content: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 10px 15px !important; gap: 6px; width: 100%; height: 75px; overflow: hidden; position: relative;">
+                ${isAdminLoggedIn ? `<button onclick="event.stopPropagation(); window.editAnime('${item.id}')" style="position: absolute; top: 5px; right: 5px; background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; z-index: 10;">📝</button>` : ''}
                 <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
                     <span style="color: ${starColor}; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${starText}</span>
                     <h3 class="force-scroll" style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; font-weight: bold; scrollbar-width: none; flex: 1;">${escapeHtml(item.name)}</h3>
@@ -818,7 +852,8 @@ window.renderCard = (item) => {
         const starCount = (item.recommendation || '').split('★').length - 1;
         const starText = `星X${starCount || 1}`;
         return `
-            <div class="anime-card desktop-list-layout" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 12px 20px !important; gap: 0; width: 100%; overflow: hidden;">
+            <div class="anime-card desktop-list-layout" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 12px 20px !important; gap: 0; width: 100%; overflow: hidden; position: relative;">
+                ${isAdminLoggedIn ? `<button onclick="event.stopPropagation(); window.editAnime('${item.id}')" style="position: absolute; top: 8px; right: 8px; background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); border-radius: 4px; padding: 4px 8px; font-size: 12px; cursor: pointer; z-index: 10;">📝 編輯</button>` : ''}
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100px; flex-shrink: 0; border-right: 1px solid rgba(0,212,255,0.1); padding-right: 15px;">
                     <span style="color: ${starColor}; font-size: 15px; font-weight: bold; white-space: nowrap;">${starText}</span>
                     <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 900; background: ${ratingColor}22;">${escapeHtml(item.rating || '普')}</span>
@@ -849,9 +884,10 @@ window.renderCard = (item) => {
     } else {
         // Grid layout
         return `
-            <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="border: 2px solid ${ratingColor}; background: ${cyanBase};">
+            <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="border: 2px solid ${ratingColor}; background: ${cyanBase}; position: relative;">
+                ${isAdminLoggedIn ? `<button onclick="event.stopPropagation(); window.editAnime('${item.id}')" style="position: absolute; top: 8px; right: 8px; background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; z-index: 20;">📝</button>` : ''}
                 <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
-                    <img src="${item.poster_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22450%22 viewBox=%220 0 300 450%22%3E%3Crect fill=%22%231a1a2e%22 width=%22300%22 height=%22450%22/%3E%3Ctext fill=%22%23666%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENO+IMAGE%3C/text%3E%3C/svg%3E'}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <img src="${item.poster_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22450%22 viewBox=%220 0 300 450%22%3E%3Crect fill=%22%231a1a2e%22 width=%22300%22 height=%22450%22/%3E%3Ctext fill=%22%23666%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENO+IMAGE%3C/text%3E%3C/svg%3E'}" style="width: 100%; height: 100%; object-fit: cover;">
                     <div class="card-overlay-v38" style="position: absolute; inset: 0; box-shadow: inset 0 40px 30px -10px rgba(0,0,0,0.8), inset 0 -40px 30px -10px rgba(0,0,0,0.8), inset 40px 0 30px -10px rgba(0,0,0,0.4), inset -40px 0 30px -10px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
                     <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; backdrop-filter: blur(8px); z-index: 10;">
                         <div style="position: relative; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 50%;">
@@ -932,7 +968,10 @@ window.showAnimeDetail = (id) => {
 			                <!-- 標題與核心數據區塊 -->
 			                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative;">
 			                    <div style="padding: 12px 20px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.15), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
-		                        <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0; font-size: 24px;">${escapeHtml(item.name)}</h2>
+		                        <div style="display: flex; align-items: center; justify-content: space-between;">
+		                            <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0; font-size: 24px;">${escapeHtml(item.name)}</h2>
+		                            ${isAdminLoggedIn ? `<button onclick="window.closeAnimeDetail(); window.editAnime('${item.id}')" style="background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer;">📝 編輯作品</button>` : ''}
+		                        </div>
 		                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; margin-top: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
 		                            ${item.year ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${escapeHtml(item.year)}</div>` : ''}
 		                            ${item.season ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${escapeHtml(item.season)}</div>` : ''}
@@ -1171,8 +1210,11 @@ window.renderAdmin = () => {
             <div style="display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
                 <button class="btn-primary ${currentAdminTab === 'manage' ? 'active' : ''}" onclick="window.switchAdminTab('manage')">作品管理</button>
                 <button class="btn-primary ${currentAdminTab === 'add' ? 'active' : ''}" onclick="window.switchAdminTab('add')">＋ 新增作品</button>
-                <button class="btn-primary ${currentAdminTab === 'options' ? 'active' : ''}" onclick="window.switchAdminTab('options')">選項管理</button>
-                <button class="btn-primary ${currentAdminTab === 'settings' ? 'active' : ''}" onclick="window.switchAdminTab('settings')">網站設定</button>
+                <button class="btn-primary ${currentAdminTab === 'announcements' ? 'active' : ''}" onclick="window.switchAdminTab('announcements')">📢 公告管理</button>
+                <button class="btn-primary ${currentAdminTab === 'updates' ? 'active' : ''}" onclick="window.switchAdminTab('updates')">📋 更新管理</button>
+                <button class="btn-primary ${currentAdminTab === 'guestbook' ? 'active' : ''}" onclick="window.switchAdminTab('guestbook')">💬 留言板</button>
+                <button class="btn-primary ${currentAdminTab === 'options' ? 'active' : ''}" onclick="window.switchAdminTab('options')">⚙️ 選項管理</button>
+                <button class="btn-primary ${currentAdminTab === 'settings' ? 'active' : ''}" onclick="window.switchAdminTab('settings')">🌐 網站設定</button>
             </div>
             <div class="admin-panel">
                 ${window.renderAdminContent(paged, filtered.length)}
@@ -1293,6 +1335,12 @@ window.renderAdminContent = (pagedData, total) => {
                         </div>
 		            </div>
 		        `;
+        } else if (currentAdminTab === 'announcements') {
+            return window.renderAnnouncementsAdmin();
+        } else if (currentAdminTab === 'updates') {
+            return window.renderUpdatesAdmin();
+        } else if (currentAdminTab === 'guestbook') {
+            return window.renderGuestbookAdmin();
 	    }
     return '';
 };
@@ -1512,12 +1560,14 @@ window.saveAnime = async () => {
             const key = select.getAttribute('data-key');
             if (select.value) extra_data[key] = select.value;
         });
-
+        
+        const btnBg = document.getElementById('form-btn-bg').value;
+        if (btnBg) extra_data.btn_bg = btnBg;
+        
         const payload = {
             name: nameEl.value,
             poster_url: document.getElementById('form-poster').value,
             category: document.getElementById('form-category').value,
-                 // genre: Array.from(document.querySelectorAll('input[name="form-genre"]:checked')).map(cb => cb.value), // 暫時保留以防將來表結構恢復
             links: Array.from(document.querySelectorAll('#links-list > div')).map(row => {
                 const n = row.querySelector('.link-name');
                 const u = row.querySelector('.link-url');
@@ -1532,9 +1582,9 @@ window.saveAnime = async () => {
             episodes: document.getElementById('form-episodes').value,
             star_color: document.getElementById('form-star-color').value,
             name_color: document.getElementById('form-name-color').value,
-	            desc_color: document.getElementById('form-desc-color').value,
-		            extra_data: { ...extra_data, btn_bg: document.getElementById('form-btn-bg').value }
-		        };
+            desc_color: document.getElementById('form-desc-color').value,
+            extra_data: Object.keys(extra_data).length > 0 ? extra_data : null
+        };
         
         const client = window.supabaseManager?.getClient();
         if (!client) throw new Error('Supabase 未連接');
@@ -1616,6 +1666,364 @@ const labels = {
     if (labels[key]) return labels[key];
     if (siteSettings.custom_labels && siteSettings.custom_labels[key]) return siteSettings.custom_labels[key];
     return key;
+};
+
+// ========== 公告管理 ==========
+window.renderAnnouncementsAdmin = async () => {
+    const announcements = await window.loadAnnouncementsForAdmin();
+    return `
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="color: var(--neon-cyan); margin: 0; font-family: 'Orbitron', sans-serif;">📢 公告管理</h3>
+                <button class="btn-primary" onclick="window.showAnnouncementForm()">＋ 新增公告</button>
+            </div>
+            <div id="announcement-form-container" style="display: none; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2); border-radius: 12px; padding: 20px;">
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <input type="hidden" id="announcement-id">
+                    <div><label style="color: var(--neon-cyan); display: block; margin-bottom: 5px;">標題</label><input type="text" id="announcement-title" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 8px; color: #fff;"></div>
+                    <div><label style="color: var(--neon-cyan); display: block; margin-bottom: 5px;">內容</label><textarea id="announcement-content" rows="5" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 8px; color: #fff;"></textarea></div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="announcement-pinned" style="width: 18px; height: 18px;">
+                        <label for="announcement-pinned" style="color: var(--neon-cyan);">置頂顯示</label>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-primary" onclick="window.saveAnnouncement()">💾 儲存</button>
+                        <button class="btn-primary" style="border-color: #ff4444; color: #ff4444;" onclick="window.hideAnnouncementForm()">取消</button>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${announcements.length === 0 ? '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">暫無公告</div>' : ''}
+                ${announcements.map(a => `
+                    <div style="background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2); border-radius: 12px; padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                ${a.is_pinned ? '<span style="background: var(--neon-cyan); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">置頂</span>' : ''}
+                                <h4 style="margin: 0; color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">${escapeHtml(a.title)}</h4>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-primary" style="padding: 4px 10px; font-size: 12px;" onclick="window.editAnnouncement('${a.id}')">📝</button>
+                                <button class="btn-primary" style="padding: 4px 10px; font-size: 12px; border-color: #ff4444; color: #ff4444;" onclick="window.deleteAnnouncement('${a.id}')">✕</button>
+                            </div>
+                        </div>
+                        <div style="color: var(--text-secondary); margin-bottom: 10px; white-space: pre-wrap;">${escapeHtml(a.content)}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between;">
+                            <span>${new Date(a.created_at).toLocaleString('zh-TW')}</span>
+                            <span style="color: var(--neon-blue);">${escapeHtml(a.author_name)}</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+};
+
+window.loadAnnouncementsForAdmin = async () => {
+    try {
+        const client = window.supabaseManager?.getClient();
+        if (!client) return [];
+        const { data } = await client.from('announcements').select('*').order('created_at', { ascending: false });
+        return data || [];
+    } catch (err) {
+        return [];
+    }
+};
+
+window.showAnnouncementForm = (id = null) => {
+    const container = document.getElementById('announcement-form-container');
+    if (container) container.style.display = 'block';
+    if (id) {
+        const announcements = window.announcementData?.announcements || [];
+        const a = announcements.find(x => x.id == id);
+        if (a) {
+            document.getElementById('announcement-id').value = a.id;
+            document.getElementById('announcement-title').value = a.title;
+            document.getElementById('announcement-content').value = a.content;
+            document.getElementById('announcement-pinned').checked = a.is_pinned;
+        }
+    }
+};
+
+window.hideAnnouncementForm = () => {
+    const container = document.getElementById('announcement-form-container');
+    if (container) container.style.display = 'none';
+    document.getElementById('announcement-id').value = '';
+    document.getElementById('announcement-title').value = '';
+    document.getElementById('announcement-content').value = '';
+    document.getElementById('announcement-pinned').checked = false;
+};
+
+window.saveAnnouncement = async () => {
+    const id = document.getElementById('announcement-id').value;
+    const title = document.getElementById('announcement-title').value.trim();
+    const content = document.getElementById('announcement-content').value.trim();
+    const is_pinned = document.getElementById('announcement-pinned').checked;
+    
+    if (!title || !content) return window.showToast('請填寫標題和內容', 'error');
+    
+    try {
+        const client = window.supabaseManager?.getClient();
+        if (!client) throw new Error('系統維護中');
+        
+        const payload = {
+            title,
+            content,
+            is_pinned,
+            is_active: true,
+            author_name: siteSettings.admin_name || '管理員',
+            author_color: siteSettings.admin_color || '#00ffff',
+            updated_at: new Date().toISOString()
+        };
+        
+        if (id) {
+            await client.from('announcements').update(payload).eq('id', id);
+        } else {
+            await client.from('announcements').insert([payload]);
+        }
+        
+        window.showToast('✓ 已儲存');
+        window.hideAnnouncementForm();
+        window.renderAdmin();
+    } catch (err) {
+        window.showToast('✗ 儲存失敗: ' + err.message, 'error');
+    }
+};
+
+window.editAnnouncement = (id) => window.showAnnouncementForm(id);
+
+window.deleteAnnouncement = async (id) => {
+    if (!confirm('確定要刪除此公告？')) return;
+    try {
+        const client = window.supabaseManager?.getClient();
+        await client.from('announcements').delete().eq('id', id);
+        window.showToast('✓ 已刪除');
+        window.renderAdmin();
+    } catch (err) {
+        window.showToast('✗ 刪除失敗', 'error');
+    }
+};
+
+// ========== 更新管理 ==========
+window.renderUpdatesAdmin = async () => {
+    const updates = await window.loadUpdatesForAdmin();
+    return `
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="color: var(--neon-purple); margin: 0; font-family: 'Orbitron', sans-serif;">📋 更新內容管理</h3>
+                <button class="btn-primary" style="border-color: var(--neon-purple); color: var(--neon-purple);" onclick="window.showUpdateForm()">＋ 新增更新</button>
+            </div>
+            <div id="update-form-container" style="display: none; background: rgba(176,38,255,0.05); border: 1px solid rgba(176,38,255,0.2); border-radius: 12px; padding: 20px;">
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <input type="hidden" id="update-id">
+                    <div><label style="color: var(--neon-purple); display: block; margin-bottom: 5px;">版本號</label><input type="text" id="update-version" placeholder="如: 7.0.0" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(176,38,255,0.3); border-radius: 8px; color: #fff;"></div>
+                    <div><label style="color: var(--neon-purple); display: block; margin-bottom: 5px;">標題</label><input type="text" id="update-title" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(176,38,255,0.3); border-radius: 8px; color: #fff;"></div>
+                    <div><label style="color: var(--neon-purple); display: block; margin-bottom: 5px;">更新內容</label><textarea id="update-content" rows="5" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(176,38,255,0.3); border-radius: 8px; color: #fff;"></textarea></div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-primary" style="background: rgba(176,38,255,0.2); border-color: var(--neon-purple); color: var(--neon-purple);" onclick="window.saveUpdate()">💾 儲存</button>
+                        <button class="btn-primary" style="border-color: #ff4444; color: #ff4444;" onclick="window.hideUpdateForm()">取消</button>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${updates.length === 0 ? '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">暫無更新記錄</div>' : ''}
+                ${updates.map(u => `
+                    <div style="background: rgba(176,38,255,0.05); border: 1px solid rgba(176,38,255,0.2); border-radius: 12px; padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="background: var(--neon-purple); color: #000; padding: 2px 10px; border-radius: 4px; font-size: 13px; font-weight: bold;">v${escapeHtml(u.version)}</span>
+                                <h4 style="margin: 0; color: var(--neon-purple); font-family: 'Orbitron', sans-serif;">${escapeHtml(u.title)}</h4>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-primary" style="padding: 4px 10px; font-size: 12px; background: rgba(176,38,255,0.2); border-color: var(--neon-purple); color: var(--neon-purple);" onclick="window.editUpdate('${u.id}')">📝</button>
+                                <button class="btn-primary" style="padding: 4px 10px; font-size: 12px; border-color: #ff4444; color: #ff4444;" onclick="window.deleteUpdate('${u.id}')">✕</button>
+                            </div>
+                        </div>
+                        <div style="color: var(--text-secondary); white-space: pre-wrap;">${escapeHtml(u.content)}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 10px;">${new Date(u.created_at).toLocaleString('zh-TW')}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+};
+
+window.loadUpdatesForAdmin = async () => {
+    try {
+        const client = window.supabaseManager?.getClient();
+        if (!client) return [];
+        const { data } = await client.from('updates').select('*').order('created_at', { ascending: false });
+        return data || [];
+    } catch (err) {
+        return [];
+    }
+};
+
+window.showUpdateForm = (id = null) => {
+    const container = document.getElementById('update-form-container');
+    if (container) container.style.display = 'block';
+    if (id) {
+        const updates = window.announcementData?.updates || [];
+        const u = updates.find(x => x.id == id);
+        if (u) {
+            document.getElementById('update-id').value = u.id;
+            document.getElementById('update-version').value = u.version;
+            document.getElementById('update-title').value = u.title;
+            document.getElementById('update-content').value = u.content;
+        }
+    }
+};
+
+window.hideUpdateForm = () => {
+    const container = document.getElementById('update-form-container');
+    if (container) container.style.display = 'none';
+    document.getElementById('update-id').value = '';
+    document.getElementById('update-version').value = '';
+    document.getElementById('update-title').value = '';
+    document.getElementById('update-content').value = '';
+};
+
+window.saveUpdate = async () => {
+    const id = document.getElementById('update-id').value;
+    const version = document.getElementById('update-version').value.trim();
+    const title = document.getElementById('update-title').value.trim();
+    const content = document.getElementById('update-content').value.trim();
+    
+    if (!version || !title || !content) return window.showToast('請填寫所有欄位', 'error');
+    
+    try {
+        const client = window.supabaseManager?.getClient();
+        if (!client) throw new Error('系統維護中');
+        
+        const payload = {
+            version,
+            title,
+            content,
+            is_active: true,
+            author_color: siteSettings.admin_color || '#00ffff',
+            updated_at: new Date().toISOString()
+        };
+        
+        if (id) {
+            await client.from('updates').update(payload).eq('id', id);
+        } else {
+            await client.from('updates').insert([payload]);
+        }
+        
+        window.showToast('✓ 已儲存');
+        window.hideUpdateForm();
+        window.renderAdmin();
+    } catch (err) {
+        window.showToast('✗ 儲存失敗: ' + err.message, 'error');
+    }
+};
+
+window.editUpdate = (id) => window.showUpdateForm(id);
+
+window.deleteUpdate = async (id) => {
+    if (!confirm('確定要刪除此更新？')) return;
+    try {
+        const client = window.supabaseManager?.getClient();
+        await client.from('updates').delete().eq('id', id);
+        window.showToast('✓ 已刪除');
+        window.renderAdmin();
+    } catch (err) {
+        window.showToast('✗ 刪除失敗', 'error');
+    }
+};
+
+// ========== 留言板管理 ==========
+window.renderGuestbookAdmin = async () => {
+    const messages = await window.loadGuestbookMessagesForAdmin();
+    const pending = messages.filter(m => m.status === 'pending');
+    const approved = messages.filter(m => m.status === 'approved');
+    const rejected = messages.filter(m => m.status === 'rejected');
+    
+    return `
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div style="background: rgba(255,200,0,0.1); border: 1px solid rgba(255,200,0,0.3); border-radius: 8px; padding: 15px 20px;">
+                    <div style="color: rgba(255,200,0,0.8); font-size: 24px; font-weight: bold;">${pending.length}</div>
+                    <div style="color: var(--text-secondary); font-size: 12px;">待審核</div>
+                </div>
+                <div style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); border-radius: 8px; padding: 15px 20px;">
+                    <div style="color: var(--neon-cyan); font-size: 24px; font-weight: bold;">${approved.length}</div>
+                    <div style="color: var(--text-secondary); font-size: 12px;">已通過</div>
+                </div>
+                <div style="background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.3); border-radius: 8px; padding: 15px 20px;">
+                    <div style="color: #ff4444; font-size: 24px; font-weight: bold;">${rejected.length}</div>
+                    <div style="color: var(--text-secondary); font-size: 12px;">已拒絕</div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; border-bottom: 2px solid rgba(0,212,255,0.2); padding-bottom: 15px;">
+                <button class="btn-primary ${window.currentGuestbookTab !== 'pending' ? '' : 'active'}" onclick="window.switchGuestbookTab('pending')">待審核 (${pending.length})</button>
+                <button class="btn-primary ${window.currentGuestbookTab !== 'approved' ? '' : 'active'}" onclick="window.switchGuestbookTab('approved')">已通過 (${approved.length})</button>
+                <button class="btn-primary ${window.currentGuestbookTab !== 'rejected' ? '' : 'active'}" onclick="window.switchGuestbookTab('rejected')">已拒絕 (${rejected.length})</button>
+            </div>
+            
+            <div id="guestbook-list" style="display: flex; flex-direction: column; gap: 12px;">
+                ${window.renderGuestbookList(messages)}
+            </div>
+        </div>
+    `;
+};
+
+window.currentGuestbookTab = 'pending';
+
+window.switchGuestbookTab = async (tab) => {
+    window.currentGuestbookTab = tab;
+    const messages = await window.loadGuestbookMessagesForAdmin();
+    const list = document.getElementById('guestbook-list');
+    if (list) list.innerHTML = window.renderGuestbookList(messages);
+};
+
+window.renderGuestbookList = (messages) => {
+    const filtered = messages.filter(m => m.status === window.currentGuestbookTab);
+    return filtered.length === 0 ? '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">暫無留言</div>' : 
+        filtered.map(m => `
+            <div style="background: rgba(0,212,255,0.03); border-radius: 8px; padding: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="color: var(--neon-cyan); font-weight: bold;">${escapeHtml(m.nickname)}</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="color: var(--text-secondary); font-size: 12px;">${m.ip_address || '未知IP'}</span>
+                        <span style="color: var(--text-secondary); font-size: 12px;">${new Date(m.created_at).toLocaleString('zh-TW')}</span>
+                    </div>
+                </div>
+                <div style="color: var(--text-secondary); margin-bottom: 10px; white-space: pre-wrap;">${escapeHtml(m.content)}</div>
+                ${window.currentGuestbookTab === 'pending' ? `
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="window.moderateGuestbook('${m.id}', 'approved')">✅ 通過</button>
+                        <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; border-color: #ff4444; color: #ff4444;" onclick="window.moderateGuestbook('${m.id}', 'rejected')">❌ 拒絕</button>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+};
+
+window.loadGuestbookMessagesForAdmin = async () => {
+    try {
+        const client = window.supabaseManager?.getClient();
+        if (!client) return [];
+        const { data } = await client.from('guestbook_messages').select('*').order('created_at', { ascending: false }).limit(100);
+        return data || [];
+    } catch (err) {
+        return [];
+    }
+};
+
+window.moderateGuestbook = async (id, status) => {
+    try {
+        const client = window.supabaseManager?.getClient();
+        await client.from('guestbook_messages').update({ 
+            status, 
+            approved_by: siteSettings.admin_name || '管理員',
+            updated_at: new Date().toISOString()
+        }).eq('id', id);
+        window.showToast('✓ 已處理');
+        window.renderAdmin();
+    } catch (err) {
+        window.showToast('✗ 處理失敗', 'error');
+    }
 };
 
 window.exportCSV = (cat) => {
@@ -2032,268 +2440,19 @@ window.showToast = (msg, type = 'info') => {
     setTimeout(() => toast.classList.remove('active'), 3000);
 };
 
-document.addEventListener('click', () => { 
+window.showFirstVisitPopups = async () => {
+    if (typeof window.showAnnouncementPopups === 'function') {
+        await window.showAnnouncementPopups();
+    }
+};
+
+document.addEventListener('click', () => {
     const m = document.getElementById('systemMenu'); 
     if (m) m.classList.remove('active'); 
 });
 
-// 啟動應用
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => window.initApp());
-} else {
-    window.initApp();
-}
-
 // Discord integration disabled - webhook URLs must not be exposed in client code
 // Announcements are managed via Supabase database
-
-window.renderAnnouncements = async function() {
-    const container = document.getElementById('discord-section');
-    if (!container) return;
-
-    container.innerHTML = `
-        <div style="text-align: center; padding: 80px 20px; color: var(--neon-cyan); display: flex; flex-direction: column; align-items: center; gap: 20px;">
-            <div class="loading-spinner" style="width: 40px; height: 40px; border: 3px solid rgba(0,212,255,0.1); border-top: 3px solid var(--neon-cyan); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-            <div style="font-family: 'Orbitron', sans-serif; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-cyan);">⚡ 正在載入永久公告...</div>
-            <style>
-                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-            </style>
-        </div>`;
-
-    try {
-        const client = window.supabaseManager?.getClient();
-        if (!client) throw new Error('Supabase 未連接');
-        
-        const { data, error } = await client
-            .from('announcements')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-            container.innerHTML = `
-                <div style="text-align: center; padding: 80px 20px; color: var(--text-secondary); border: 1px dashed rgba(0,212,255,0.3); border-radius: 10px;">
-                    <p>目前尚無永久公告資料</p>
-                    ${isAdminLoggedIn ? '<div style="display: flex; justify-content: center;"><button class="btn-primary" style="margin-top: 20px;" onclick="window.showAddAnnouncementModal()">+ 手動新增公告</button></div>' : ''}
-                </div>`;
-            return;
-        }
-
-        container.innerHTML = `
-            <div class="announcement-wrapper" style="height: 70vh; overflow-y: auto; padding-right: 10px; margin-bottom: 20px;" class="force-scroll">
-                <div class="announcement-list" style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 30px;">
-                    ${data.map(item => {
-	                        let images = item.image_urls || [];
-	                        if (typeof images === 'string') {
-	                            try { images = JSON.parse(images); } catch(e) { images = images.split('\n').filter(u => u.trim()); }
-	                        }
-	                        if (!Array.isArray(images)) images = [];
-	                        if (item.image_url && !images.includes(item.image_url)) images.push(item.image_url);
-	                        images = images.filter(u => u && typeof u === 'string' && u.startsWith('http'));
-                        let gridStyle = 'grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); max-width: 100%;';
-
-                        return `
-                        <div class="announcement-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0,212,255,0.1); border-radius: 12px; padding: 20px; position: relative; transition: all 0.3s ease; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
-                            ${item.title ? `<div style="color: var(--neon-cyan); font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: bold; margin-bottom: 15px; text-shadow: 0 0 10px var(--neon-blue);">${item.title}</div>` : ''}
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid rgba(0,212,255,0.05); padding-bottom: 10px;">
-                                <img src="${item.author_avatar || siteSettings.admin_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--neon-blue);">
-                                <div style="flex: 1;">
-                                    <div style="color: ${item.author_color || siteSettings.admin_color || 'var(--neon-cyan)'}; font-weight: bold; font-size: 14px;">${item.author_name || siteSettings.admin_name || '管理員'}</div>
-	                            <div style="color: var(--text-secondary); font-size: 11px; font-family: 'Space Mono', monospace;">${new Date(item.created_at || item.timestamp || item.createdAt || item.created || Date.now()).toLocaleString()}</div>
-                                </div>
-                                ${isAdminLoggedIn ? `
-                                    <div style="display: flex; gap: 10px;">
-                                        <button onclick='window.showEditAnnouncementModal(${JSON.stringify(item).replace(/'/g, "&apos;")})' style="background: none; border: none; color: var(--neon-cyan); cursor: pointer; font-size: 12px;">編輯</button>
-                                        <button onclick="window.deleteAnnouncement('${item.id}')" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 12px;">刪除</button>
-                                    </div>
-                                ` : ''}
-                            </div>
-                            <div style="color: #ffffff; line-height: 1.8; font-size: 15px; white-space: pre-wrap; word-break: break-word; margin-bottom: 15px;">${item.content}</div>
-                            ${images.length > 0 ? `
-                                <div style="display: grid; gap: 12px; ${gridStyle} margin-top: 15px;">
-                                    ${images.map(url => `
-                                        <div style="aspect-ratio: 1/1; background: #000; cursor: zoom-in; border: 2px solid rgba(0,212,255,0.3); border-radius: 10px; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 0 15px rgba(0,212,255,0.1);" onclick="window.openLightbox('${url}')" title="點擊查看大圖">
-                                            <img src="${url}" style="width: 100%; height: 100%; object-fit: cover; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'; this.style.filter='brightness(1.1)'" onmouseout="this.style.transform='scale(1)'; this.style.filter='brightness(1)'">
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            ` : ''}
-                        </div>
-                    `}).join('')}
-                </div>
-            </div>
-            ${isAdminLoggedIn ? '<div style="display: flex; justify-content: center;"><button class="btn-primary" onclick="window.showAddAnnouncementModal()">+ 新增公告</button></div>' : ''}
-        `;
-    } catch (err) {
-        container.innerHTML = '<div style="color: #ff4444; text-align: center; padding: 20px;">讀取公告失敗</div>';
-    }
-};
-
-window.showAddAnnouncementModal = () => {
-    const modal = document.createElement('div');
-    modal.id = 'announcement-modal';
-    modal.className = 'modal active';
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 500px;">
-            <h2 style="color: var(--neon-cyan); margin-bottom: 20px;">📢 發布新公告</h2>
-            <input type="text" id="ann-title" placeholder="公告標題" style="width: 100%; margin-bottom: 15px;">
-            <textarea id="ann-content" placeholder="輸入公告內容..." style="width: 100%; height: 150px; margin-bottom: 15px;"></textarea>
-            <textarea id="ann-images" placeholder="輸入圖片網址 (多張請用換行分隔)..." style="width: 100%; height: 80px; margin-bottom: 20px; font-size: 12px;"></textarea>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-primary" style="flex: 1;" onclick="window.submitAnnouncement()">發布</button>
-                <button class="btn-primary" style="flex: 1; border-color: #ff4444; color: #ff4444;" onclick="document.getElementById('announcement-modal').remove()">取消</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-};
-
-window.showEditAnnouncementModal = (item) => {
-    const modal = document.createElement('div');
-    modal.id = 'announcement-modal';
-    modal.className = 'modal active';
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 500px;">
-            <h2 style="color: var(--neon-cyan); margin-bottom: 20px;">📝 編輯公告</h2>
-            <input type="text" id="ann-title" placeholder="公告標題" value="${item.title || ''}" style="width: 100%; margin-bottom: 15px;">
-            <textarea id="ann-content" placeholder="輸入公告內容..." style="width: 100%; height: 150px; margin-bottom: 15px;">${item.content || ''}</textarea>
-            <textarea id="ann-images" placeholder="輸入圖片網址 (多張請用換行分隔)..." style="width: 100%; height: 80px; margin-bottom: 20px; font-size: 12px;">${(item.image_urls || []).join('\n')}</textarea>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-primary" style="flex: 1;" onclick="window.submitAnnouncement('${item.id}')">儲存修改</button>
-                <button class="btn-primary" style="flex: 1; border-color: #ff4444; color: #ff4444;" onclick="document.getElementById('announcement-modal').remove()">取消</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-};
-
-window.submitAnnouncement = async (editId = null) => {
-    console.log('🚀 submitAnnouncement 被調用，editId:', editId);
-    
-    const titleEl = document.getElementById('ann-title');
-    const contentEl = document.getElementById('ann-content');
-    const imagesEl = document.getElementById('ann-images');
-    
-    if (!titleEl || !contentEl || !imagesEl) {
-        console.error('❌ 找不到公告表單元素');
-        window.showToast('系統錯誤：找不到表單元素', 'error');
-        return;
-    }
-    
-    const title = titleEl.value.trim();
-    const content = contentEl.value;
-    const imagesText = imagesEl.value;
-    const images = imagesText.split('\n').map(url => url.trim()).filter(url => url !== '');
-    
-    console.log('📝 公告標題:', title);
-    console.log('📝 公告內容:', content.substring(0, 50), '...');
-    console.log('🖼️ 圖片數量:', images.length);
-
-    if (!title) {
-        window.showToast('請輸入公告標題', 'error');
-        return;
-    }
-    
-    if (!content && images.length === 0) {
-        window.showToast('請輸入內容或圖片', 'error');
-        return;
-    }
-    
-    try {
-        // 確保抓取到最新的設定值
-        const basePayload = {
-            title: title,
-            content: content,
-            image_urls: images,
-            author_name: siteSettings.admin_name || '管理員',
-            author_avatar: siteSettings.admin_avatar || '',
-            author_color: siteSettings.admin_color || '#00ffff'
-        };
-        const payload = {
-            ...basePayload,
-            created_at: new Date().toISOString()
-        };
-
-        console.log('🚀 發布公告，使用身分:', payload.author_name);
-
-        const client = window.supabaseManager?.getClient();
-        if (!client) throw new Error('Supabase 未連接');
-        
-        let error;
-        if (editId && editId !== 'null') {
-            console.log('✏️ 編輯模式，ID:', editId);
-            // 編輯時強制使用最新的管理員資訊覆蓋舊資料
-            const { error: err } = await client.from('announcements')
-                .update({
-                    title: payload.title,
-                    content: payload.content,
-                    image_urls: payload.image_urls,
-                    author_name: siteSettings.admin_name || '管理員',
-                    author_avatar: siteSettings.admin_avatar || '',
-                    author_color: siteSettings.admin_color || '#00ffff'
-                })
-                .eq('id', Number(editId));
-            error = err;
-        } else {
-            console.log('➕ 新增模式，發送到 Supabase...');
-            console.log('📦 Payload:', JSON.stringify(payload, null, 2));
-            const { error: err } = await client.from('announcements').insert([payload]);
-            console.log('📊 Supabase 返回錯誤:', err);
-            if (err && /timestamp/i.test(err.message || '')) {
-                console.log('🔄 重試不含 created_at...');
-                const { error: err2 } = await client.from('announcements').insert([
-                    { ...basePayload, created_at: new Date().toISOString() }
-                ]);
-                error = err2;
-            } else {
-                error = err;
-            }
-        }
-        
-        if (error) throw error;
-        window.showToast(editId && editId !== 'null' ? '✓ 公告已更新' : '✓ 公告已發布');
-        document.getElementById('announcement-modal').remove();
-        
-        // 延遲一下再重新渲染，確保資料庫已完成寫入
-        setTimeout(() => window.renderAnnouncements(), 300);
-    } catch (err) {
-        console.error('Announcement submit error:', err);
-        window.showToast('✗ 操作失敗：' + (err?.message || '未知錯誤'), 'error');
-    }
-};
-
-window.openLightbox = (url) => {
-    const lb = document.createElement('div');
-    lb.style = 'position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; cursor: zoom-out;';
-    lb.onclick = () => lb.remove();
-    lb.innerHTML = `<img src="${url}" style="max-width: 95%; max-height: 95%; object-fit: contain; box-shadow: 0 0 30px rgba(0,212,255,0.3); border-radius: 4px;">`;
-    document.body.appendChild(lb);
-};
-
-window.deleteAnnouncement = async (id) => {
-    if (!confirm('確定要刪除此公告嗎？')) return;
-    try {
-        // 確保 id 是數字類型（如果資料庫 id 是 BIGINT）
-        const numericId = parseInt(id);
-        const client = window.supabaseManager?.getClient();
-        if (!client) throw new Error('Supabase 未連接');
-        const { error } = await client.from('announcements').delete().eq('id', numericId);
-        
-        if (error) {
-            console.error('Delete error:', error);
-            throw error;
-        }
-        
-        window.showToast('✓ 已刪除');
-        // 延遲一下再重新渲染，確保資料庫已更新
-        setTimeout(() => window.renderAnnouncements(), 300);
-    } catch (err) {
-        console.error('Delete failed:', err);
-        window.showToast('✗ 刪除失敗：' + (err.message || '未知錯誤'), 'error');
-    }
-};
-
 
 /* 滾輪支持所有滾動軸（排除輸入框） */
 document.addEventListener('DOMContentLoaded', () => {

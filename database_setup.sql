@@ -1,5 +1,5 @@
 -- ============================================================================
--- ACG 收藏庫 - 資料庫初始化
+-- ACG 收藏庫 - 資料庫初始化 v7.0.0
 -- 使用 Supabase Auth 管理員認證
 -- ============================================================================
 
@@ -7,15 +7,56 @@
 -- 資料表結構
 -- ============================================================================
 
+-- 公告表
 CREATE TABLE IF NOT EXISTS announcements (
     id BIGSERIAL PRIMARY KEY,
     title TEXT NOT NULL DEFAULT '公告',
     content TEXT NOT NULL,
     image_urls JSONB DEFAULT '[]'::jsonb,
+    is_pinned BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
     author_name TEXT NOT NULL DEFAULT '管理員',
     author_avatar TEXT,
     author_color TEXT DEFAULT '#00ffff',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 更新內容表
+CREATE TABLE IF NOT EXISTS updates (
+    id BIGSERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    version TEXT NOT NULL,
+    image_urls JSONB DEFAULT '[]'::jsonb,
+    is_active BOOLEAN DEFAULT TRUE,
+    author_name TEXT NOT NULL DEFAULT '管理員',
+    author_color TEXT DEFAULT '#00ffff',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 留言板表
+CREATE TABLE IF NOT EXISTS guestbook_messages (
+    id BIGSERIAL PRIMARY KEY,
+    nickname TEXT NOT NULL DEFAULT '匿名',
+    content TEXT NOT NULL,
+    ip_address TEXT NOT NULL,
+    user_agent TEXT,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    admin_note TEXT,
+    approved_by TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 系統彈窗記錄表（追蹤哪些彈窗已顯示）
+CREATE TABLE IF NOT EXISTS shown_popups (
+    id BIGSERIAL PRIMARY KEY,
+    popup_type TEXT NOT NULL CHECK (popup_type IN ('update', 'announcement')),
+    popup_id BIGINT,
+    visitor_id TEXT NOT NULL,
+    shown_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(popup_type, popup_id, visitor_id)
 );
 
 CREATE TABLE IF NOT EXISTS anime_list (
@@ -69,6 +110,13 @@ CREATE TABLE IF NOT EXISTS page_views (
 
 CREATE INDEX IF NOT EXISTS idx_announcements_created_at ON announcements(created_at);
 CREATE INDEX IF NOT EXISTS idx_announcements_title ON announcements(title);
+CREATE INDEX IF NOT EXISTS idx_announcements_active ON announcements(is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_updates_created_at ON updates(created_at);
+CREATE INDEX IF NOT EXISTS idx_updates_active ON updates(is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_guestbook_status ON guestbook_messages(status);
+CREATE INDEX IF NOT EXISTS idx_guestbook_ip ON guestbook_messages(ip_address);
+CREATE INDEX IF NOT EXISTS idx_guestbook_created_at ON guestbook_messages(created_at);
+CREATE INDEX IF NOT EXISTS idx_shown_popups_visitor ON shown_popups(visitor_id);
 CREATE INDEX IF NOT EXISTS idx_anime_list_category ON anime_list(category);
 CREATE INDEX IF NOT EXISTS idx_anime_list_rating ON anime_list(rating);
 CREATE INDEX IF NOT EXISTS idx_anime_list_created_at ON anime_list(created_at);
@@ -98,6 +146,9 @@ ON CONFLICT (id) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 -- ============================================================================
 
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE updates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE guestbook_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE shown_popups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE anime_list ENABLE ROW LEVEL SECURITY;
 ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE site_visitors ENABLE ROW LEVEL SECURITY;
@@ -127,8 +178,29 @@ $$;
 DROP POLICY IF EXISTS "Public read announcements" ON announcements;
 DROP POLICY IF EXISTS "Admin full access announcements" ON announcements;
 
-CREATE POLICY "Public read announcements" ON announcements FOR SELECT USING (true);
+CREATE POLICY "Public read announcements" ON announcements FOR SELECT USING (is_active = true);
 CREATE POLICY "Admin full access announcements" ON announcements FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- updates：公開讀、管理員寫
+DROP POLICY IF EXISTS "Public read updates" ON updates;
+DROP POLICY IF EXISTS "Admin full access updates" ON updates;
+
+CREATE POLICY "Public read updates" ON updates FOR SELECT USING (is_active = true);
+CREATE POLICY "Admin full access updates" ON updates FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- guestbook_messages：公開插入、公開讀審核通過、管理員完全控制
+DROP POLICY IF EXISTS "Public insert guestbook" ON guestbook_messages;
+DROP POLICY IF EXISTS "Public read approved guestbook" ON guestbook_messages;
+DROP POLICY IF EXISTS "Admin full access guestbook" ON guestbook_messages;
+
+CREATE POLICY "Public insert guestbook" ON guestbook_messages FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public read approved guestbook" ON guestbook_messages FOR SELECT USING (status = 'approved');
+CREATE POLICY "Admin full access guestbook" ON guestbook_messages FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- shown_popups：公開寫、公開讀（用於追蹤已顯示的彈窗）
+DROP POLICY IF EXISTS "Public insert shown_popups" ON shown_popups;
+CREATE POLICY "Public insert shown_popups" ON shown_popups FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public read shown_popups" ON shown_popups FOR SELECT USING (true);
 
 -- anime_list：完全公開（展示用）
 DROP POLICY IF EXISTS "Public anime_list" ON anime_list;

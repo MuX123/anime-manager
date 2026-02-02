@@ -1,6 +1,6 @@
 /* =============================================
    Base Styles - 基礎樣式
-   ACG 收藏庫 v6.0.0
+   ACG 收藏庫 v7.0.0
    ============================================= */
 
 /* 重置樣式 */
@@ -31,6 +31,77 @@ body {
     overflow-y: auto;
     min-height: 100vh;
     line-height: 1.6;
+}
+
+/* 站點標題區域 */
+.site-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.site-version {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+/* 側邊管理員選單 */
+.admin-sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.admin-sidebar-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.admin-sidebar-btn.admin {
+    background: rgba(255, 68, 68, 0.15);
+    border: 1px solid rgba(255, 68, 68, 0.5);
+    color: #ff6b6b;
+}
+
+.admin-sidebar-btn.admin:hover {
+    background: rgba(255, 68, 68, 0.25);
+    border-color: #ff4444;
+    color: #ff4444;
+}
+
+.admin-sidebar-btn.logout {
+    background: rgba(255, 170, 0, 0.15);
+    border: 1px solid rgba(255, 170, 0, 0.5);
+    color: #ffb347;
+}
+
+.admin-sidebar-btn.logout:hover {
+    background: rgba(255, 170, 0, 0.25);
+    border-color: #ffaa00;
+    color: #ffaa00;
+}
+
+.admin-sidebar-btn.login {
+    background: rgba(0, 212, 255, 0.15);
+    border: 1px solid rgba(0, 212, 255, 0.5);
+    color: var(--neon-cyan);
+}
+
+.admin-sidebar-btn.login:hover {
+    background: rgba(0, 212, 255, 0.25);
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
 }
 
 /* 滾動條樣式 */

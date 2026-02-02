@@ -45,6 +45,31 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         #app { display: block; min-height: 100vh; }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 999999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .toast.active {
+            opacity: 1;
+        }
+        .admin-sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-left: auto;
+        }
     </style>
 </head>
 <body style="background-color: #0a0e1a; background-image: radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(176, 38, 255, 0.05) 0%, transparent 50%), linear-gradient(rgba(0, 212, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.02) 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px; background-attachment: fixed; margin: 0;">
@@ -53,8 +78,8 @@
     </div>
 
     <div class="site-header">
-        <h1 class="site-title">ACG 收藏庫</h1>
-        <div class="site-version">v6.0.0</div>
+        <div class="site-version">v7.0.0</div>
+        <div id="adminSidebarMenu" class="admin-sidebar-menu"></div>
     </div>
 
     <div class="analytics-bar">
@@ -83,7 +108,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./js/supabase.js?v=20260202_v1"></script>
     <script src="./js/analytics.js?v=20260202_v1"></script>
-    <script src="./js/script.js?v=20260202_v2"></script>
+    <script src="./js/announcements.js?v=20260202_v1"></script>
+    <script src="./js/script.js?v=20260202_v3"></script>
     
     <!-- 調試工具 (開發模式) -->
     <script src="./js/debug.js?v=20260202_v1"></script>

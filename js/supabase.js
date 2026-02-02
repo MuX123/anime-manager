@@ -200,17 +200,27 @@ class SupabaseManager {
             const { data: { session } } = await this.client.auth.getSession();
             if (!session) return false;
 
-            const { data, error } = await this.client
-                .rpc('is_admin');
+            // 先嘗試 RPC 函數
+            try {
+                const { data, error } = await this.client
+                    .rpc('is_admin');
 
-            if (error) {
-                console.warn('檢查管理員權限失敗:', error.message);
-                return false;
+                if (!error && data) return true;
+            } catch (rpcError) {}
+
+            // 備用方案：檢查用戶 email 是否與 admin_email 匹配
+            const { data: settings } = await this.client
+                .from('site_settings')
+                .select('value')
+                .eq('id', 'admin_email')
+                .single();
+
+            if (settings?.value && session.user?.email) {
+                return session.user.email === settings.value;
             }
 
-            return data || false;
+            return false;
         } catch (error) {
-            console.warn('檢查管理員權限錯誤:', error.message);
             return false;
         }
     }
@@ -232,7 +242,6 @@ class SupabaseManager {
 
             return { success: true, user: data.user, session: data.session };
         } catch (error) {
-            console.error('登入失敗:', error.message);
             return { success: false, error: error.message };
         }
     }
