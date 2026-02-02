@@ -208,6 +208,178 @@ if (window.supabaseManager) {
     });
 }
 
+// --- Render Functions (必須在 initApp 之前定義) ---
+
+const getTagStyle = (color) => `font-size: 11px !important; color: ${color} !important; border: 1.5px solid ${color} !important; padding: 2px 10px !important; border-radius: 50px !important; background: ${color}22 !important; font-weight: bold !important; white-space: nowrap !important; display: inline-block !important; font-family: 'Microsoft JhengHei', sans-serif !important; box-shadow: 0 0 5px ${color}44 !important;`;
+
+window.renderCard = (item) => {
+    const starColor = item.star_color || optionsData.category_colors?.recommendation || '#ffcc00';
+    const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
+    const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
+    const nameColor = item.name_color || optionsData.category_colors?.name || '#ffffff';
+    const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
+    const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
+    const cyanBase = 'rgba(0, 212, 255, 0.1)';
+    const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
+    const extraTags = [];
+    if (item.extra_data) {
+        Object.entries(item.extra_data).forEach(([key, val]) => {
+            if (val) {
+                const customColor = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : '#ffffff';
+                extraTags.push({ val: val, key: key, color: customColor });
+            }
+        });
+    }
+    if (window.innerWidth <= 768) {
+        const starCount = (item.recommendation || '').split('★').length - 1;
+        const starText = `星X${starCount || 1}`;
+        return `<div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; flex-direction: column; justify-content: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 10px 15px !important; gap: 6px; width: 100%; height: 75px; overflow: hidden;">
+            <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
+                <span style="color: ${starColor}; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${starText}</span>
+                <h3 class="force-scroll" style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; font-weight: bold; scrollbar-width: none; flex: 1;">${escapeHtml(item.name)}</h3>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
+                <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-weight: 900; background: ${ratingColor}22; flex-shrink: 0;">${escapeHtml(item.rating || '普')}</span>
+                <div style="display: flex; gap: 8px; font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; align-items: center;">
+                    ${item.year ? `<span>${escapeHtml(item.year)}</span>` : ''}
+                    ${item.season ? `<span>${escapeHtml(item.season)}</span>` : ''}
+                    ${item.month ? `<span>${escapeHtml(item.month)}月</span>` : ''}
+                    ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${escapeHtml(item.episodes)} 集</span>` : ''}
+                </div>
+            </div>
+        </div>`;
+    }
+    return `<div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="border: 2px solid ${ratingColor}; background: ${cyanBase};">
+        <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
+            <img src="${item.poster_url || ''}" style="width: 100%; height: 100%; object-fit: cover;">
+            <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; backdrop-filter: blur(8px); z-index: 10;">
+                <span style="color: ${starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${starColor});">${escapeHtml(item.recommendation || '★')}</span>
+                <span style="color: ${ratingColor}; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 1px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.rating || '普')}</span>
+            </div>
+            <div class="episodes-badge-v38" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: ${episodesColor}; font-size: 14px; padding: 4px 16px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; z-index: 10;">全 ${escapeHtml(item.episodes || '0')} 集</div>
+        </div>
+        <div class="card-content-v38" style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4); width: 100%;">
+            <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${escapeHtml(item.name)}</h3>
+        </div>
+    </div>`;
+};
+
+window.renderPagination = (total) => {
+    const totalPages = Math.ceil(total / itemsPerPage);
+    if (totalPages <= 1) return '';
+    let html = '';
+    const maxVisible = 5;
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
+    if (currentPage > 1) html += `<button class="btn-primary" onclick="window.goToPage(${currentPage - 1})">◀</button>`;
+    for (let i = start; i <= end; i++) {
+        html += i === currentPage ? `<button class="btn-primary active">${i}</button>` : `<button class="btn-primary" onclick="window.goToPage(${i})">${i}</button>`;
+    }
+    if (currentPage < totalPages) html += `<button class="btn-primary" onclick="window.goToPage(${currentPage + 1})">▶</button>`;
+    return html;
+};
+
+window.renderSearchSelectsHTML = () => {
+    const createSelect = (id, label, options, currentVal, onChange) => {
+        return `<select id="${id}" onchange="${onChange}" style="min-width: 100px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.25); padding: 8px; font-size: 13px; cursor: pointer; color: #fff; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif;">
+            <option value="" style="background: var(--bg-dark);">${label}</option>
+            ${options.map(o => `<option value="${o}" ${o === currentVal ? 'selected' : ''} style="background: var(--bg-dark);">${o}</option>`).join('')}
+        </select>`;
+    };
+    return `${createSelect('filter-genre', '類型', optionsData.genre, filters.genre, "window.applyFilters(this.value, 'genre')")}
+           ${createSelect('filter-year', '年份', optionsData.year, filters.year, "window.applyFilters(this.value, 'year')")}
+           ${createSelect('filter-season', '季度', optionsData.season, filters.season, "window.applyFilters(this.value, 'season')")}
+           ${createSelect('filter-month', '月份', optionsData.month, filters.month, "window.applyFilters(this.value, 'month')")}
+           ${createSelect('filter-rating', '評分', optionsData.rating, filters.rating, "window.applyFilters(this.value, 'rating')")}`;
+};
+
+window.getFilteredData = () => {
+    let data = animeData.filter(a => a.category === currentCategory);
+    if (filters.search) {
+        const term = filters.search.toLowerCase();
+        data = data.filter(a => (a.name && a.name.toLowerCase().includes(term)) || (a.genre && a.genre.toLowerCase().includes(term)));
+    }
+    if (filters.genre) data = data.filter(a => a.genre && a.genre.includes(filters.genre));
+    if (filters.year) data = data.filter(a => a.year === filters.year);
+    if (filters.season) data = data.filter(a => a.season === filters.season);
+    if (filters.month) data = data.filter(a => a.month === filters.month);
+    if (filters.rating) data = data.filter(a => a.rating === filters.rating);
+    if (sortOrder === 'desc') data.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    else if (sortOrder === 'asc') data.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+    else if (sortOrder === 'name') data.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    return data;
+};
+
+window.renderApp = function() {
+    const app = document.getElementById('app');
+    if (!app) return;
+    const btnColor = optionsData.category_colors?.btn_bg || '#00d4ff';
+    document.documentElement.style.setProperty('--btn-bg', btnColor);
+    document.documentElement.style.setProperty('--btn-bg-alpha', btnColor + '22');
+    const isNotice = currentCategory === 'notice';
+    let noticeHTML = '';
+    if (isNotice) {
+        noticeHTML = `<div id="discord-section" style="margin-top: 20px; min-height: 400px;"><div style="text-align: center; padding: 50px; color: var(--neon-cyan);">⚡ 正在載入永久公告...</div></div>`;
+        setTimeout(() => { if (typeof window.renderAnnouncements === 'function') window.renderAnnouncements(); }, 300);
+    }
+    const filtered = window.getFilteredData();
+    const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
+    if (gridColumns !== 'mobile') document.documentElement.style.setProperty('--grid-columns', gridColumns);
+    let topControlBar = document.getElementById('topControlBar');
+    if (!topControlBar) { topControlBar = document.createElement('div'); topControlBar.id = 'topControlBar'; document.body.appendChild(topControlBar); }
+    topControlBar.style.cssText = `position: fixed !important; top: 50% !important; right: 20px !important; transform: translateY(-50%) !important; display: flex; flex-direction: column; align-items: flex-end; z-index: 9999 !important;`;
+    topControlBar.innerHTML = `<div style="display: flex; flex-direction: column; background: rgba(5,15,25,0.5); padding: 12px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.2); backdrop-filter: blur(15px); min-width: 160px; gap: 8px;">
+        <select onchange="window.changeGridLayout(this.value)" style="width: 100%; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.25); padding: 10px; font-size: 13px; color: #fff; border-radius: 6px;">
+            ${[3,4,5].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''}>${n} 欄</option>`).join('')}
+            <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''}>📱 資料列表</option>
+        </select>
+        <select onchange="window.changeSortOrder(this.value)" style="width: 100%; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.25); padding: 10px; font-size: 13px; color: #fff; border-radius: 6px;">
+            <option value="desc" ${sortOrder === 'desc' ? 'selected' : ''}>時間：從新到舊</option>
+            <option value="asc" ${sortOrder === 'asc' ? 'selected' : ''}>時間：從舊到新</option>
+            <option value="name" ${sortOrder === 'name' ? 'selected' : ''}>名稱：A-Z</option>
+        </select>
+        <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 6px;"></div>
+    </div>`;
+    app.innerHTML = `<div class="app-container">
+        <header><h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1></header>
+        <div class="category-buttons-container" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
+            <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">◆ 公告</button>
+            <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
+            <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
+            <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
+        </div>
+        <div style="border: 2px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 18px; margin-bottom: 30px; font-size: 14px; color: ${siteSettings.announcement_color || '#ffffff'}; text-align: center; border-radius: 10px; background: rgba(0,212,255,0.05); font-weight: bold;">
+            <span>📢 ${siteSettings.announcement}</span>
+        </div>
+        <div style="margin-bottom: 30px; display: ${isNotice ? 'none' : 'block'};">
+            <input type="text" id="search-input" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px; border-radius: 50px;">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                <div id="search-filters" class="horizontal-scroll-container" style="display: flex; gap: 12px; flex: 1; overflow-x: auto; overflow-y: hidden; padding: 8px 0; white-space: nowrap;">
+                    ${window.renderSearchSelectsHTML()}
+                </div>
+            </div>
+        </div>
+        <div id="notice-container" style="display: ${isNotice ? 'block' : 'none'};">${noticeHTML}</div>
+        <div id="main-grid-content" style="display: ${isNotice ? 'none' : 'block'};">
+            <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}" style="display: ${gridColumns === 'mobile' ? 'flex' : 'grid'}; ${gridColumns === 'mobile' ? 'flex-direction: column; gap: 10px;' : `grid-template-columns: repeat(${gridColumns}, 1fr); gap: 20px;`}">
+                ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
+            </div>
+            <div id="pagination-container" style="display: flex; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
+        </div>
+    </div>`;
+    window.initGlobalScroll();
+    window.updateAdminMenu();
+    if (!document.getElementById('detailModal')) {
+        document.body.insertAdjacentHTML('beforeend', `<div id="detailModal" class="modal" onclick="if(event.target===this) window.closeAnimeDetail()"><div class="modal-content"><button class="btn-primary" style="position: absolute; top: 20px; right: 20px; z-index: 1000; width: 40px; height: 40px; padding: 0;" onclick="window.closeAnimeDetail()">×</button><div id="detailContent"></div></div></div>`);
+    }
+    app.style.display = 'block';
+    app.style.visibility = 'visible';
+    app.style.opacity = '1';
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) { loadingScreen.style.opacity = '0'; setTimeout(() => { loadingScreen.style.display = 'none'; }, 500); }
+};
+
 // --- Core Functions ---
 
     /**
@@ -389,6 +561,7 @@ window.loadData = async function() {
 /**
  * 驗證用戶是否為管理員
  * @param {string} userEmail 用戶電子郵件
+ */
 window.renderApp = function() {
     const app = document.getElementById('app');
     if (!app) return;
