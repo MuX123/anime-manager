@@ -4,52 +4,10 @@
    ============================================= */
 
 /* ========== 網站標題區域 ========== */
-.site-header {
-    position: relative;
-    top: auto;
-    left: auto;
-    z-index: auto;
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.site-title {
-    font-family: 'Orbitron', 'Space Mono', monospace;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.9);
-    margin: 0;
-    padding: 0;
-}
-
-.site-version {
-    font-family: 'Orbitron', 'Space Mono', monospace;
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.6);
-    margin: 0;
-    padding: 0;
-}
+/* 注意：標題樣式已在 base.css 中定義 */
 
 /* ========== 分析列 ========== */
-.analytics-bar {
-    position: relative;
-    top: auto;
-    left: auto;
-    right: auto;
-    z-index: auto;
-    background: transparent;
-    padding: 0;
-    border-radius: 0;
-    border: none;
-    backdrop-filter: none;
-}
-
-#analytics-display {
-    font-size: 10px;
+/* 注意：analytics-bar 樣式已在 base.css 中定義 */
     color: rgba(255, 255, 255, 0.8);
 }
 

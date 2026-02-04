@@ -72,23 +72,17 @@
     </div>
 
     <div class="site-header">
-        <div class="site-title-area">
-            <div id="siteVersion" class="site-version">v7.0.0</div>
-            <h1 class="site-title" onclick="window.showAnnouncementModal?.()">ACG 收藏庫</h1>
-        </div>
-        <div class="analytics-bar">
-            <div id="analytics-display">
-                <span style="margin-right: 15px;">👤 <span style="display: inline-block; min-width: 60px; text-align: left;">--</span></span>
-                <span style="margin-right: 15px;">🖱️ <span style="display: inline-block; min-width: 60px; text-align: left;">--</span></span>
-                <span>📄 <span style="display: inline-block; min-width: 60px; text-align: left;">--</span></span>
-            </div>
-        </div>
+        <div id="siteVersion" class="site-version">v7.0.0</div>
         <div id="adminHeaderBar" class="admin-header-bar"></div>
-        <button class="header-menu-btn" onclick="window.toggleSystemMenu(event)">☰</button>
     </div>
 
-    <!-- 系統選單 -->
-    <div id="systemMenu" class="system-menu"></div>
+    <div class="analytics-bar">
+        <div id="analytics-display">
+            <span style="margin-right: 15px;">👤 <span style="display: inline-block; min-width: 60px; text-align: left;">--</span></span>
+            <span style="margin-right: 15px;">🖱️ <span style="display: inline-block; min-width: 60px; text-align: left;">--</span></span>
+            <span>📄 <span style="display: inline-block; min-width: 60px; text-align: left;">--</span></span>
+        </div>
+    </div>
 
     <div id="app"></div>
 
@@ -109,7 +103,7 @@
     <script src="./js/supabase.js?v=20260202_v3"></script>
     <script src="./js/analytics.js?v=20260202_v1"></script>
     <script src="./js/announcements.js?v=20260202_v3"></script>
-    <script src="./js/script.js?v=20260202_v10"></script>
+    <script src="./js/script.js?v=20260202_v12"></script>
     
     <!-- 調試工具 (開發模式) -->
     <script src="./js/debug.js?v=20260202_v1"></script>
