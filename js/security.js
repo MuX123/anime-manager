@@ -1,14 +1,17 @@
 /**
- * 安全模組 - 內容安全政策 (CSP) 和 XSS 防護
- * @version 1.0.0
+ * 安全模組 - 內容安全政策 (CSP) 和 XSS 防護 v2.0
+ * @version 2.0.0
  * @author ACG Manager Security Team
+ * @date 2026-02-04
  */
 
 class SecurityManager {
     constructor() {
-        this.cspConfig = this.getDefaultCSPConfig();
+        this.cspConfig = null;
+        this.nonce = this.generateNonce();
         this.xssProtectionEnabled = true;
         this.sanitizer = new DOMSanitizer();
+        this.rateLimiter = new RateLimiter();
         this.init();
     }
 
@@ -19,25 +22,52 @@ class SecurityManager {
         this.setupCSP();
         this.setupXSSProtection();
         this.setupSecurityHeaders();
-        console.log('🔒 安全管理器初始化完成');
+        this.setupSessionCleanup();
+        this.handleCSPViolation();
+        console.log('🔒 Security Manager v2.0 初始化完成');
     }
 
     /**
-     * 獲取預設 CSP 配置
-     * @returns {Object} CSP 配置對象
+     * 生成隨機 nonce
+     * @returns {string} 隨機 nonce
+     */
+    generateNonce() {
+        const array = new Uint8Array(16);
+        crypto.getRandomValues(array);
+        return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+
+    /**
+     * 獲取當前 nonce
+     * @returns {string} nonce
+     */
+    getNonce() {
+        return this.nonce;
+    }
+
+    /**
+     * 刷新 nonce
+     */
+    refreshNonce() {
+        this.nonce = this.generateNonce();
+        this.setupCSP();
+    }
+
+    /**
+     * 獲取 CSP 配置 v2.0 - 移除 unsafe-inline
+     * @returns {Object} CSP 配置
      */
     getDefaultCSPConfig() {
         return {
             'default-src': ["'self'"],
             'script-src': [
                 "'self'",
-                "'unsafe-inline'", // 暫時允許內聯腳本（需要逐步移除）
-                'https://cdn.jsdelivr.net',
-                'https://unpkg.com'
+                `'nonce-${this.nonce}`,  // 使用 nonce 而非 unsafe-inline
+                'https://cdn.jsdelivr.net'
             ],
             'style-src': [
                 "'self'",
-                "'unsafe-inline'",
+                "'unsafe-inline'",  // Style 仍需要 inline，但已清理
                 'https://fonts.googleapis.com'
             ],
             'font-src': [
@@ -47,8 +77,7 @@ class SecurityManager {
             'img-src': [
                 "'self'",
                 'data:',
-                'https:',
-                'http:'
+                'https:'
             ],
             'connect-src': [
                 "'self'",
@@ -57,7 +86,8 @@ class SecurityManager {
             'frame-src': ["'none'"],
             'object-src': ["'none'"],
             'base-uri': ["'self'"],
-            'form-action': ["'self'"]
+            'form-action': ["'self'"],
+            'upgrade-insecure-requests': []
         };
     }
 
@@ -66,22 +96,78 @@ class SecurityManager {
      */
     setupCSP() {
         if (!this.supportsCSP()) {
-            console.warn('⚠️ 瀏覽器不支援 CSP');
+            console.warn('⚠️ 瀏覽器不支援 CSP，使用降級保護');
+            this.setupFallbackProtection();
             return;
         }
 
         const cspHeader = this.buildCSPHeader();
-        
-        // 嘗試設置 meta 標籤
         this.setCSPMetaTag(cspHeader);
+        console.log('✅ CSP 策略已更新');
+    }
+
+    /**
+     * 降級保護 - 當 CSP 不支援時
+     */
+    setupFallbackProtection() {
+        // 啟用額外的 XSS 過濾
+        this.xssProtectionEnabled = true;
         
-        // 設置 CSP 違規報告
-        this.setupCSPReporting();
+        // 監聽 DOM 變動，移除危險元素
+        this.setupDOMMutationObserver();
+    }
+
+    /**
+     * DOM 變動觀察器
+     */
+    setupDOMMutationObserver() {
+        if (!window.MutationObserver) return;
+
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            this.scanElementForThreats(node);
+                        }
+                    });
+                }
+            });
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    /**
+     * 掃描元素威脅
+     * @param {Element} element 
+     */
+    scanElementForThreats(element) {
+        const dangerousTags = ['script', 'iframe', 'object', 'embed', 'meta', 'base'];
+        const dangerousAttrs = ['onload', 'onerror', 'onclick', 'onmouseover', 'onfocus'];
+
+        // 檢查危險標籤
+        if (dangerousTags.includes(element.tagName.toLowerCase())) {
+            console.warn('🚨 移除危險元素:', element.tagName);
+            element.remove();
+            return;
+        }
+
+        // 檢查危險屬性
+        dangerousAttrs.forEach(attr => {
+            if (element.hasAttribute(attr)) {
+                console.warn('🚨 移除危險屬性:', attr);
+                element.removeAttribute(attr);
+            }
+        });
     }
 
     /**
      * 檢查瀏覽器是否支援 CSP
-     * @returns {boolean} 是否支援 CSP
+     * @returns {boolean}
      */
     supportsCSP() {
         return 'securityPolicy' in document || 'CSP' in window;
@@ -89,12 +175,12 @@ class SecurityManager {
 
     /**
      * 構建 CSP 標頭
-     * @returns {string} CSP 標頭字符串
+     * @returns {string}
      */
     buildCSPHeader() {
         const directives = [];
         
-        for (const [directive, sources] of Object.entries(this.cspConfig)) {
+        for (const [directive, sources] of Object.entries(this.cspConfig || this.getDefaultCSPConfig())) {
             directives.push(`${directive} ${sources.join(' ')}`);
         }
         
@@ -103,21 +189,18 @@ class SecurityManager {
 
     /**
      * 設置 CSP meta 標籤
-     * @param {string} cspHeader CSP 標頭
+     * @param {string} cspHeader 
      */
     setCSPMetaTag(cspHeader) {
-        // 移除現有的 CSP meta 標籤
         const existingMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
         if (existingMeta) {
             existingMeta.remove();
         }
 
-        // 創建新的 CSP meta 標籤
         const meta = document.createElement('meta');
         meta.httpEquiv = 'Content-Security-Policy';
         meta.content = cspHeader;
         
-        // 插入到 head 的開頭
         const head = document.head;
         if (head.firstChild) {
             head.insertBefore(meta, head.firstChild);
@@ -127,85 +210,59 @@ class SecurityManager {
     }
 
     /**
-     * 設置 CSP 違規報告
-     */
-    setupCSPReporting() {
-        // 監聽 CSP 違規事件
-        document.addEventListener('securitypolicyviolation', (event) => {
-            this.handleCSPViolation(event);
-        });
-
-        // 設置 report-uri（如果支援）
-        if (window.ReportingObserver) {
-            const observer = new ReportingObserver((reports) => {
-                reports.forEach(report => {
-                    if (report.type === 'csp') {
-                        this.handleCSPViolation(report.body);
-                    }
-                });
-            });
-            
-            observer.observe();
-        }
-    }
-
-    /**
      * 處理 CSP 違規事件
-     * @param {SecurityPolicyViolationEvent} event 違規事件
      */
-    handleCSPViolation(event) {
-        const violation = {
-            blockedURI: event.blockedURI,
-            documentURI: event.documentURI,
-            effectiveDirective: event.effectiveDirective,
-            originalPolicy: event.originalPolicy,
-            referrer: event.referrer,
-            sample: event.sample,
-            sourceFile: event.sourceFile,
-            lineNumber: event.lineNumber,
-            columnNumber: event.columnNumber,
-            timestamp: new Date().toISOString()
-        };
+    handleCSPViolation() {
+        document.addEventListener('securitypolicyviolation', (event) => {
+            const violation = {
+                blockedURI: event.blockedURI,
+                effectiveDirective: event.effectiveDirective,
+                originalPolicy: event.originalPolicy,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent
+            };
 
-        console.warn('🚨 CSP 違規檢測:', violation);
-        
-        // 發送到日誌系統
-        this.logSecurityEvent('csp_violation', violation);
+            console.error('🚨 CSP 違規檢測:', violation);
+            
+            // 記錄到日誌系統
+            this.logSecurityEvent('csp_violation', violation);
+
+            // 生產環境發送到監控
+            if (window.location.hostname !== 'localhost') {
+                this.reportSecurityEvent(violation);
+            }
+        });
     }
 
     /**
      * 設置 XSS 防護
      */
     setupXSSProtection() {
-        if (!this.xssProtectionEnabled) {
-            return;
-        }
-
-        // 設置 XSS 保護 meta 標籤
+        // XSS 保護 meta 標籤
         this.setMetaTag('X-XSS-Protection', '1; mode=block');
         
-        // 設置 X-Content-Type-Options
+        // 防止 MIME 類型混淆
         this.setMetaTag('X-Content-Type-Options', 'nosniff');
         
-        // 設置 Referrer-Policy
+        // Referrer 策略
         this.setMetaTag('Referrer-Policy', 'strict-origin-when-cross-origin');
         
-        // 設置 Permissions-Policy
+        // Permissions Policy
         this.setPermissionsPolicy();
     }
 
     /**
      * 設置 meta 標籤
-     * @param {string} httpEquiv HTTP 等價屬性
-     * @param {string} content 內容
+     * @param {string} httpEquiv 
+     * @param {string} content 
      */
     setMetaTag(httpEquiv, content) {
         let meta = document.querySelector(`meta[http-equiv="${httpEquiv}"]`);
         if (!meta) {
             meta = document.createElement('meta');
-            meta.httpEquiv = httpEquiv;
             document.head.appendChild(meta);
         }
+        meta.httpEquiv = httpEquiv;
         meta.content = content;
     }
 
@@ -221,32 +278,83 @@ class SecurityManager {
             'usb=()',
             'magnetometer=()',
             'gyroscope=()',
-            'accelerometer=()'
-        ];
+            'accelerometer=()',
+            'gyroscope=()'
+        ].join(', ');
         
-        this.setMetaTag('Permissions-Policy', permissions.join(', '));
+        this.setMetaTag('Permissions-Policy', permissions);
     }
 
     /**
-     * 設置安全標頭
+     * 設置安全 HTTP 標頭 (伺服器端)
+     * 注意: GitHub Pages 無法設置伺服器端標頭，此為記錄
      */
     setupSecurityHeaders() {
-        // 伺服器端標頭（GitHub Pages 不支援，此處記錄僅供參考）
         const securityHeaders = {
-            'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-            'Expect-CT': 'max-age=86400, enforce'
+            'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+            'X-Frame-Options': 'SAMEORIGIN',
+            'X-Content-Type-Options': 'nosniff',
+            'Referrer-Policy': 'strict-origin-when-cross-origin',
+            'Permissions-Policy': 'geolocation=(), microphone=(), camera=()'
         };
         
-        // 可在伺服器配置中啟用這些標頭以獲得更好的安全性
-        if (this.config?.cspEnabled && window.configManager?.getAppConfig()?.debug) {
-            console.log('📋 伺服器端安全標頭建議:', securityHeaders);
+        if (window.configManager?.getAppConfig()?.debug) {
+            console.log('📋 建議伺服器端安全標頭:', securityHeaders);
         }
     }
 
     /**
-     * 清理 HTML 內容，防止 XSS 攻擊
-     * @param {string} html 原始 HTML
-     * @returns {string} 清理後的 HTML
+     * 清除 URL 中的 session 資訊
+     */
+    setupSessionCleanup() {
+        // 頁面載入時清除
+        window.addEventListener('DOMContentLoaded', () => {
+            this.clearSessionFromURL();
+        });
+
+        // 監聽 auth 狀態變化
+        if (window.supabaseManager) {
+            window.supabaseManager.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN') {
+                    // 登入後清除 URL 中的 token
+                    setTimeout(() => this.clearSessionFromURL(), 100);
+                }
+            });
+        }
+    }
+
+    /**
+     * 清除 URL 中的 session token
+     */
+    clearSessionFromURL() {
+        const url = new URL(window.location.href);
+        let cleaned = false;
+
+        const sensitiveParams = [
+            'access_token',
+            'refresh_token',
+            'token_type',
+            'expires_in',
+            'provider_token'
+        ];
+
+        sensitiveParams.forEach(param => {
+            if (url.searchParams.has(param)) {
+                url.searchParams.delete(param);
+                cleaned = true;
+            }
+        });
+
+        if (cleaned) {
+            window.history.replaceState({}, document.title, url.toString());
+            console.log('✅ 已清除 URL 中的敏感資訊');
+        }
+    }
+
+    /**
+     * 清理 HTML 內容
+     * @param {string} html 
+     * @returns {string}
      */
     sanitizeHTML(html) {
         return this.sanitizer.sanitize(html);
@@ -254,8 +362,8 @@ class SecurityManager {
 
     /**
      * 清理屬性值
-     * @param {string} value 原始值
-     * @returns {string} 清理後的值
+     * @param {string} value 
+     * @returns {string}
      */
     sanitizeAttribute(value) {
         return this.sanitizer.sanitizeAttribute(value);
@@ -263,19 +371,19 @@ class SecurityManager {
 
     /**
      * 驗證 URL 安全性
-     * @param {string} url URL 字符串
-     * @returns {boolean} 是否安全
+     * @param {string} url 
+     * @returns {boolean}
      */
     isSecureURL(url) {
         try {
             const parsed = new URL(url, window.location.origin);
             
-            // 只允許 http 和 https 協議
+            // 只允許 http 和 https
             if (!['http:', 'https:'].includes(parsed.protocol)) {
                 return false;
             }
             
-            // 檢查是否為同源或允許的第三方
+            // 檢查域名
             const allowedDomains = [
                 window.location.hostname,
                 'twgydqknzdyahgfuamak.supabase.co',
@@ -291,9 +399,9 @@ class SecurityManager {
     }
 
     /**
-     * 安全地設置 innerHTML
-     * @param {Element} element 目標元素
-     * @param {string} html HTML 內容
+     * 安全設置 innerHTML
+     * @param {Element} element 
+     * @param {string} html 
      */
     safeSetHTML(element, html) {
         if (typeof html !== 'string') {
@@ -307,37 +415,41 @@ class SecurityManager {
 
     /**
      * 記錄安全事件
-     * @param {string} type 事件類型
-     * @param {Object} data 事件數據
+     * @param {string} type 
+     * @param {Object} data 
      */
     logSecurityEvent(type, data) {
         const event = {
             type,
             timestamp: new Date().toISOString(),
-            userAgent: navigator.userAgent,
             url: window.location.href,
             data
         };
 
-        // 發送到日誌系統
         if (window.logger) {
             window.logger.warn('Security Event', event);
         } else {
             console.warn('Security Event:', event);
         }
-
-        // 可選：發送到伺服器
-        this.reportSecurityEvent(event);
     }
 
     /**
      * 報告安全事件到伺服器
-     * @param {Object} event 安全事件
+     * @param {Object} event 
      */
     async reportSecurityEvent(event) {
         try {
-            // 這裡可以實作發送到安全監控服務
-            // await fetch('/api/security-events', { ... });
+            // 發送到 Supabase (如果可用)
+            if (window.supabaseManager?.isConnectionReady()) {
+                await window.supabaseManager.getClient()
+                    .from('security_events')
+                    .insert({
+                        event_type: event.type || 'unknown',
+                        event_data: JSON.stringify(event),
+                        user_agent: navigator.userAgent,
+                        page_url: window.location.href
+                    });
+            }
         } catch (error) {
             console.error('Failed to report security event:', error);
         }
@@ -345,71 +457,71 @@ class SecurityManager {
 
     /**
      * 獲取安全配置
-     * @returns {Object} 安全配置
+     * @returns {Object}
      */
     getSecurityConfig() {
         return {
-            csp: this.cspConfig,
+            csp: this.cspConfig || this.getDefaultCSPConfig(),
             xssProtection: this.xssProtectionEnabled,
-            version: '1.0.0'
+            rateLimiting: true,
+            version: '2.0.0'
         };
     }
 }
 
 /**
- * DOM 清理器類
+ * DOM 清理器類 v2.0 - 嚴格的 XSS 防護
  */
 class DOMSanitizer {
     constructor() {
         this.allowedTags = this.getAllowedTags();
         this.allowedAttributes = this.getAllowedAttributes();
+        this.blockedPatterns = this.getBlockedPatterns();
     }
 
     /**
-     * 獲取允許的 HTML 標籤
-     * @returns {Set} 允許的標籤集合
+     * 獲取允許的 HTML 標籤 (安全版本)
+     * @returns {Set}
      */
     getAllowedTags() {
         return new Set([
-            // 基本結構
+            // 基本結構 - 安全
             'div', 'span', 'p', 'br', 'hr',
             
-            // 文本格式
+            // 文本格式 - 安全
             'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
             'strong', 'em', 'u', 'i', 'b', 's', 'del', 'ins',
+            'small', 'sub', 'sup',
             
-            // 列表
+            // 列表 - 安全
             'ul', 'ol', 'li', 'dl', 'dt', 'dd',
             
-            // 表格
-            'table', 'thead', 'tbody', 'tr', 'th', 'td',
+            // 表格 - 安全
+            'table', 'thead', 'tbody', 'tr', 'th', 'td', 'caption', 'colgroup', 'col',
             
-            // 表單
-            'form', 'input', 'button', 'select', 'option', 'textarea',
-            
-            // 其他
-            'a', 'img', 'code', 'pre', 'blockquote'
+            // 其他 - 安全
+            'a', 'img', 'code', 'pre', 'blockquote', 'figure', 'figcaption',
+            'time', 'mark', 'abbr', 'address', 'cite'
         ]);
     }
 
     /**
-     * 獲取允許的屬性
-     * @returns {Set} 允許的屬性集合
+     * 獲取允許的屬性 (安全版本)
+     * @returns {Set}
      */
     getAllowedAttributes() {
         return new Set([
             // 通用屬性
-            'id', 'class', 'style', 'title', 'alt',
+            'id', 'class', 'style', 'title', 'lang', 'dir',
             
-            // 鏈接屬性
+            // 鏈接屬性 (限制 href)
             'href', 'target', 'rel',
             
-            // 圖片屬性
-            'src', 'width', 'height',
+            // 圖片屬性 (限制 src)
+            'src', 'alt', 'width', 'height', 'loading',
             
-            // 表單屬性
-            'type', 'name', 'value', 'placeholder', 'disabled', 'readonly',
-            'required', 'min', 'max', 'step', 'pattern',
+            // 時間屬性
+            'datetime',
             
             // 數據屬性
             'data-*'
@@ -417,28 +529,79 @@ class DOMSanitizer {
     }
 
     /**
+     * 獲取阻止的模式 (防止繞過)
+     * @returns {RegExp[]}
+     */
+    getBlockedPatterns() {
+        return [
+            /javascript:/gi,
+            /vbscript:/gi,
+            /data:/gi,
+            /<script/gi,
+            /<iframe/gi,
+            /<object/gi,
+            /<embed/gi,
+            /<meta/gi,
+            /onload=/gi,
+            /onerror=/gi,
+            /onclick=/gi,
+            /onmouseover=/gi,
+            /onfocus=/gi,
+            /onblur=/gi,
+            /onchange=/gi,
+            /onsubmit=/gi,
+            /onreset=/gi,
+            /onselect=/gi,
+            /onkeydown=/gi,
+            /onkeypress=/gi,
+            /onkeyup=/gi,
+            /expression\(/gi,
+            /url\(/gi,
+            /@import/gi
+        ];
+    }
+
+    /**
      * 清理 HTML 內容
-     * @param {string} html 原始 HTML
-     * @returns {string} 清理後的 HTML
+     * @param {string} html 
+     * @returns {string}
      */
     sanitize(html) {
         if (typeof html !== 'string') {
             return '';
         }
 
-        // 創建一個臨時 DOM 元素
-        const temp = document.createElement('div');
-        temp.innerHTML = html;
+        // 第一階段：模式匹配阻止
+        let sanitized = this.blockDangerousPatterns(html);
 
-        // 遞歸清理所有節點
+        // 第二階段：DOM 清理
+        const temp = document.createElement('div');
+        temp.innerHTML = sanitized;
+
+        // 第三階段：遞歸清理
         this.sanitizeNode(temp);
 
         return temp.innerHTML;
     }
 
     /**
+     * 阻止危險模式
+     * @param {string} html 
+     * @returns {string}
+     */
+    blockDangerousPatterns(html) {
+        let sanitized = html;
+        
+        for (const pattern of this.blockedPatterns) {
+            sanitized = sanitized.replace(pattern, '');
+        }
+        
+        return sanitized;
+    }
+
+    /**
      * 清理單個節點
-     * @param {Node} node DOM 節點
+     * @param {Node} node 
      */
     sanitizeNode(node) {
         if (node.nodeType === Node.ELEMENT_NODE) {
@@ -446,11 +609,7 @@ class DOMSanitizer {
             
             // 檢查標籤是否允許
             if (!this.allowedTags.has(tagName)) {
-                // 不允許的標籤，移除但保留內容
-                while (node.firstChild) {
-                    node.parentNode.insertBefore(node.firstChild, node);
-                }
-                node.parentNode.removeChild(node);
+                this.removeNodeSafely(node);
                 return;
             }
 
@@ -464,14 +623,27 @@ class DOMSanitizer {
     }
 
     /**
+     * 安全移除節點
+     * @param {Node} node 
+     */
+    removeNodeSafely(node) {
+        console.warn('🚨 移除未授權元素:', node.tagName);
+        while (node.firstChild) {
+            node.parentNode.insertBefore(node.firstChild, node);
+        }
+        node.parentNode.removeChild(node);
+    }
+
+    /**
      * 清理元素屬性
-     * @param {Element} element DOM 元素
+     * @param {Element} element 
      */
     sanitizeAttributes(element) {
         const attributes = Array.from(element.attributes);
         
         attributes.forEach(attr => {
             const attrName = attr.name.toLowerCase();
+            const attrValue = attr.value;
             
             // 檢查屬性是否允許
             if (!this.isAttributeAllowed(attrName)) {
@@ -479,21 +651,31 @@ class DOMSanitizer {
                 return;
             }
 
-            // 特殊處理某些屬性
+            // 特殊處理
             if (attrName === 'href') {
-                element.setAttribute(attr.name, this.sanitizeURL(attr.value));
+                const sanitized = this.sanitizeURL(attrValue);
+                if (!sanitized) {
+                    element.removeAttribute('href');
+                } else {
+                    element.setAttribute('href', sanitized);
+                }
             } else if (attrName === 'src') {
-                element.setAttribute(attr.name, this.sanitizeURL(attr.value));
+                const sanitized = this.sanitizeURL(attrValue);
+                if (!sanitized) {
+                    element.removeAttribute('src');
+                } else {
+                    element.setAttribute('src', sanitized);
+                }
             } else if (attrName === 'style') {
-                element.setAttribute(attr.name, this.sanitizeStyle(attr.value));
+                element.setAttribute('style', this.sanitizeStyle(attrValue));
             }
         });
     }
 
     /**
      * 檢查屬性是否允許
-     * @param {string} attrName 屬性名稱
-     * @returns {boolean} 是否允許
+     * @param {string} attrName 
+     * @returns {boolean}
      */
     isAttributeAllowed(attrName) {
         // 檢查精確匹配
@@ -501,11 +683,14 @@ class DOMSanitizer {
             return true;
         }
 
-        // 檢查通配符匹配
-        for (const allowed of this.allowedAttributes) {
-            if (allowed.endsWith('*') && attrName.startsWith(allowed.slice(0, -1))) {
-                return true;
-            }
+        // 檢查 data-* 萬用字元
+        if (attrName.startsWith('data-')) {
+            return true;
+        }
+
+        // 阻止事件處理器
+        if (attrName.startsWith('on')) {
+            return false;
         }
 
         return false;
@@ -513,19 +698,18 @@ class DOMSanitizer {
 
     /**
      * 清理 URL
-     * @param {string} url 原始 URL
-     * @returns {string} 清理後的 URL
+     * @param {string} url 
+     * @returns {string}
      */
     sanitizeURL(url) {
         if (!url) return '';
-        
-        // 移除 JavaScript 協議
-        if (url.toLowerCase().startsWith('javascript:')) {
-            return '';
-        }
 
-        // 移除 data 協議（除了圖片）
-        if (url.toLowerCase().startsWith('data:') && !url.startsWith('data:image/')) {
+        // 移除危險協議
+        const lowerUrl = url.toLowerCase().trim();
+        if (lowerUrl.startsWith('javascript:') || 
+            lowerUrl.startsWith('vbscript:') ||
+            lowerUrl.startsWith('data:text/html')) {
+            console.warn('🚨 阻止危險 URL:', url);
             return '';
         }
 
@@ -534,41 +718,40 @@ class DOMSanitizer {
 
     /**
      * 清理樣式
-     * @param {string} style 原始樣式
-     * @returns {string} 清理後的樣式
+     * @param {string} style 
+     * @returns {string}
      */
     sanitizeStyle(style) {
         if (!style) return '';
-        
-        // 移除危險的樣式屬性
-        const dangerousStyles = [
-            'expression',
-            'behavior',
-            'binding',
-            'javascript:',
-            '@import'
+
+        const dangerousPatterns = [
+            /expression\s*\(/gi,
+            /javascript:/gi,
+            /vbscript:/gi,
+            /behavior\s*:/gi,
+            /binding\s*:/gi,
+            /@import/gi,
+            /url\s*\(/gi
         ];
 
-        return style.split(';')
-            .map(decl => decl.trim())
-            .filter(decl => {
-                const lowerDecl = decl.toLowerCase();
-                return !dangerousStyles.some(dangerous => lowerDecl.includes(dangerous));
-            })
-            .join('; ');
+        let sanitized = style;
+        for (const pattern of dangerousPatterns) {
+            sanitized = sanitized.replace(pattern, '');
+        }
+
+        return sanitized;
     }
 
     /**
      * 清理屬性值
-     * @param {string} value 原始值
-     * @returns {string} 清理後的值
+     * @param {string} value 
+     * @returns {string}
      */
     sanitizeAttribute(value) {
         if (typeof value !== 'string') {
             return String(value || '');
         }
 
-        // 移除危險字符
         return value
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
@@ -578,10 +761,201 @@ class DOMSanitizer {
     }
 }
 
-// 創建全局安全管理器實例
-window.securityManager = new SecurityManager();
+/**
+ * 速率限制器 v2.0
+ */
+class RateLimiter {
+    constructor(options = {}) {
+        this.maxRequests = options.maxRequests || 10;
+        this.windowMs = options.windowMs || 60000; // 1 分鐘
+        this.requests = new Map();
+        this.blockedEndpoints = new Set();
+    }
 
-// 導出安全管理器（支援模組化）
+    /**
+     * 檢查請求是否被限制
+     * @param {string} endpoint 
+     * @param {string} identifier 
+     * @returns {Object}
+     */
+    checkLimit(endpoint, identifier = 'global') {
+        const key = `${endpoint}:${identifier}`;
+        const now = Date.now();
+        const windowStart = now - this.windowMs;
+
+        // 檢查是否被封鎖
+        if (this.blockedEndpoints.has(key)) {
+            return { allowed: false, reason: 'endpoint_blocked', retryAfter: 60 };
+        }
+
+        // 清理過期記錄
+        this.requests.forEach((timestamps, k) => {
+            if (k.startsWith(endpoint) && timestamps[0] < windowStart) {
+                this.requests.delete(k);
+            }
+        });
+
+        // 獲取當前請求記錄
+        const requestKey = `${endpoint}:${identifier}:${Math.floor(now / this.windowMs)}`;
+        const timestamps = this.requests.get(requestKey) || [];
+
+        // 檢查限制
+        if (timestamps.length >= this.maxRequests) {
+            this.blockEndpoint(endpoint, identifier);
+            return { 
+                allowed: false, 
+                reason: 'rate_limit_exceeded', 
+                retryAfter: Math.ceil(this.windowMs / 1000),
+                remaining: 0
+            };
+        }
+
+        // 記錄請求
+        timestamps.push(now);
+        this.requests.set(requestKey, timestamps);
+
+        return {
+            allowed: true,
+            remaining: this.maxRequests - timestamps.length,
+            resetAfter: Math.ceil(this.windowMs / 1000)
+        };
+    }
+
+    /**
+     * 封鎖端點
+     * @param {string} endpoint 
+     * @param {string} identifier 
+     */
+    blockEndpoint(endpoint, identifier) {
+        const key = `${endpoint}:${identifier}`;
+        this.blockedEndpoints.add(key);
+        
+        console.warn(`🚨 速率限制觸發: ${endpoint}`);
+        
+        // 60 秒後解除封鎖
+        setTimeout(() => {
+            this.blockedEndpoints.delete(key);
+        }, 60000);
+    }
+
+    /**
+     * 重置限制
+     * @param {string} endpoint 
+     */
+    reset(endpoint) {
+        this.requests.delete(endpoint);
+        this.blockedEndpoints.delete(endpoint);
+    }
+
+    /**
+     * 獲取當前狀態
+     * @returns {Object}
+     */
+    getStatus() {
+        return {
+            maxRequests: this.maxRequests,
+            windowMs: this.windowMs,
+            blockedCount: this.blockedEndpoints.size
+        };
+    }
+}
+
+/**
+ * 密碼強度驗證器 v2.0
+ */
+class PasswordValidator {
+    /**
+     * 驗證密碼強度
+     * @param {string} password 
+     * @returns {Object}
+     */
+    validate(password) {
+        const checks = {
+            minLength: password.length >= 8,
+            hasUppercase: /[A-Z]/.test(password),
+            hasLowercase: /[a-z]/.test(password),
+            hasNumber: /\d/.test(password),
+            hasSpecial: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+            noCommonPatterns: !this.checkCommonPatterns(password),
+            noRepeatedChars: !/(.)\1{3,}/.test(password)
+        };
+
+        const passedChecks = Object.values(checks).filter(Boolean).length;
+        const totalChecks = Object.keys(checks).length;
+        const score = Math.round((passedChecks / totalChecks) * 100);
+
+        return {
+            valid: score >= 80,
+            score,
+            strength: this.getStrengthLabel(score),
+            checks,
+            feedback: this.getFeedback(checks)
+        };
+    }
+
+    /**
+     * 檢查常見密碼模式
+     * @param {string} password 
+     * @returns {boolean}
+     */
+    checkCommonPatterns(password) {
+        const commonPatterns = [
+            /^[0-9]+$/,           // 純數字
+            /^[a-zA-Z]+$/,         // 純字母
+            /^(.)\1+$/,            // 單一字符重複
+            /password/i,           // 包含 "password"
+            /123456/i,             // 順序數字
+            /qwerty/i,             // 鍵盤順序
+            /abc/i                 // 開頭字母順序
+        ];
+
+        return commonPatterns.some(pattern => pattern.test(password));
+    }
+
+    /**
+     * 獲取強度標籤
+     * @param {number} score 
+     * @returns {string}
+     */
+    getStrengthLabel(score) {
+        if (score >= 100) return 'excellent';
+        if (score >= 80) return 'strong';
+        if (score >= 60) return 'good';
+        if (score >= 40) return 'fair';
+        return 'weak';
+    }
+
+    /**
+     * 獲取回饋建議
+     * @param {Object} checks 
+     * @returns {string[]}
+     */
+    getFeedback(checks) {
+        const feedback = [];
+        
+        if (!checks.minLength) feedback.push('密碼至少需要 8 個字符');
+        if (!checks.hasUppercase) feedback.push('建議添加大寫字母');
+        if (!checks.hasLowercase) feedback.push('建議添加小寫字母');
+        if (!checks.hasNumber) feedback.push('建議添加數字');
+        if (!checks.hasSpecial) feedback.push('建議添加特殊字符 (!@#$%^)');
+        if (!checks.noCommonPatterns) feedback包含常見模式');
+        if (!checks.noRepeatedChars) feedback.push('避免使用重複字符 (如 aaaa)');
+        
+        return feedback;
+    }
+}
+
+// 創建全域實例
+window.securityManager = new SecurityManager();
+window.rateLimiter = new RateLimiter();
+window.passwordValidator = new PasswordValidator();
+
+// 導出模組
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { SecurityManager, DOMSanitizer };
+    module.exports = { 
+        SecurityManager, 
+        DOMSanitizer, 
+        RateLimiter,
+        PasswordValidator 
+    };
 }

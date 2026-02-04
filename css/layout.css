@@ -32,6 +32,25 @@ h1 {
     text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
 }
 
+/* App 容器內的標題樣式 */
+.app-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.app-header h1 {
+    margin-bottom: 8px;
+}
+
+.app-version {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+}
+
 /* 網格系統 */
 .anime-grid {
     display: grid;

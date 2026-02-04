@@ -742,9 +742,9 @@ window.renderApp = function() {
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
         <div class="app-container">
-            <header>
-                <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue);">${siteSettings.site_title}</h1>
-                <div class="site-version" style="font-size: 14px; margin-top: 5px;">v7.0.0</div>
+            <header class="app-header">
+                <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue); margin-bottom: 8px;">${siteSettings.site_title}</h1>
+                <div class="app-version">v7.0.0</div>
             </header>
             <div class="category-buttons-container" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; position: relative; z-index: 100;">
                 <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">◆ 公告</button>

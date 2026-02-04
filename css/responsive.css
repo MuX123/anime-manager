@@ -61,7 +61,8 @@
     #topControlBar,
     #systemMenu,
     .header-menu-btn,
-    .admin-header-bar {
+    .admin-header-bar,
+    .site-header {
         display: none !important;
     }
 
@@ -98,60 +99,28 @@
     }
 
     /* 標題調整 */
-    .site-version {
-        font-size: 14px;
+    .app-header {
+        margin-bottom: 20px;
     }
 
-    .analytics-bar {
-        margin-left: 15px;
-        margin-right: 15px;
-        margin-top: 5px;
-        display: flex;
-        justify-content: center;
-        width: calc(100% - 30px);
+    .app-header h1 {
+        font-size: 24px;
+        letter-spacing: 2px;
     }
 
-    #analytics-display {
-        font-size: 10px;
-    }
-
-    /* 手機版隱藏側邊菜單 */
-    .admin-sidebar {
-        display: none !important;
-    }
-
-    /* 手機版隱藏登入按鈕文字 */
-    .admin-header-btn.login .login-text {
-        display: none;
-    }
-
-    .admin-header-btn.login {
-        padding: 6px 10px;
-        min-width: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .admin-header-btn.login::before {
-        content: '🔐';
-        font-size: 16px;
-    }
-
-    .site-version {
+    .app-version {
         font-size: 12px;
     }
 
-    .site-title {
-        font-size: 20px;
-    }
-
+    /* 統計列居中 */
     .analytics-bar {
-        position: static;
-        order: 3;
-        width: 100%;
-        margin-top: 8px;
-        padding: 0;
+        margin-left: 15px;
+        margin-right: 15px;
+        margin-top: 0;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: center;
+        width: calc(100% - 30px);
     }
 
     #analytics-display {
@@ -268,17 +237,23 @@
         padding: 20px 10px;
     }
 
-    .site-title {
-        font-size: 16px;
+    .app-header {
+        margin-bottom: 15px;
+    }
+
+    .app-header h1 {
+        font-size: 20px;
         letter-spacing: 1px;
     }
 
-    .site-version {
+    .app-version {
         font-size: 10px;
     }
 
+    /* 統計列居中 */
     .analytics-bar {
-        margin-top: 5px;
+        margin-top: 0;
+        margin-bottom: 12px;
         display: flex;
         justify-content: center;
         width: 100%;

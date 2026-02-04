@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <!-- 安全性強化 Head -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="theme-color" content="#050609">
     <title>ACG 收藏庫</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -89,12 +96,12 @@
     <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
     <!-- GitHub Pages 配置 (最先載入) -->
-    <script src="./js/github-pages-config.js?v=20260202_v1"></script>
+    <script src="./js/github-pages-config.js?v=20260204_v1"></script>
     
     <!-- 核心基礎模組 (載入順序重要) -->
-    <script src="./js/config.js?v=20260202_v1"></script>
+    <script src="./js/config.js?v=20260204_v2"></script>
     <script src="./js/logger.js?v=20260202_v1"></script>
-    <script src="./js/security.js?v=20260202_v1"></script>
+    <script src="./js/security.js?v=20260204_v2"></script>
     <script src="./js/performance.js?v=20260202_v1"></script>
     
     <!-- 應用功能模組 -->
@@ -102,12 +109,12 @@
     <script src="./js/supabase.js?v=20260202_v3"></script>
     <script src="./js/analytics.js?v=20260202_v1"></script>
     <script src="./js/announcements.js?v=20260202_v3"></script>
-    <script src="./js/script.js?v=20260202_v12"></script>
+    <script src="./js/script.js?v=20260204_v13"></script>
     
     <!-- 調試工具 (開發模式) -->
     <script src="./js/debug.js?v=20260202_v1"></script>
     
     <!-- 問題修復補丁 -->
-    <script src="./js/fix-recommendation.js?v=20260202_v1"></script>
+    <script src="./js/fix-recommendation.js?v=20260204_v1"></script>
 </body>
 </html>
