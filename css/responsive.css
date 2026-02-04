@@ -53,7 +53,7 @@
 
     /* 隱藏桌面版元素 */
     .desktop-only {
-        display: none;
+        display: none !important;
     }
 
     .floating-menu-btn,
@@ -64,6 +64,11 @@
 
     .grid-layout-selector {
         display: none;
+    }
+
+    /* 隱藏後台側邊欄 */
+    .admin-sidebar {
+        display: none !important;
     }
 
     /* 網格調整 */
@@ -94,16 +99,75 @@
         font-size: 24px;
     }
 
+    .site-title-area {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .site-title {
+        font-size: 20px;
+        letter-spacing: 2px;
+    }
+
     .site-version {
         font-size: 10px;
+        position: static;
+        background: transparent;
+        padding: 0;
+        border: none;
+    }
+
+    .analytics-bar {
+        position: static;
+        top: auto;
+        right: auto;
+        transform: none;
+        padding: 0;
+        order: 3;
+        width: 100%;
+        margin-top: 8px;
+    }
+
+    /* 手機版顯示菜單按鈕 */
+    .header-menu-btn {
+        display: flex !important;
         position: fixed;
         top: 10px;
+        right: 10px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* 系統選單位置調整 */
+    #systemMenu {
+        position: fixed;
+        top: 60px;
+        right: 10px;
         left: 10px;
-        z-index: 1000;
-        background: rgba(0, 0, 0, 0.7);
-        padding: 5px 10px;
-        border-radius: 5px;
-        border: 1px solid rgba(0, 212, 255, 0.3);
+        min-width: auto;
+    }
+
+    #analytics-display {
+        font-size: 10px;
+    }
+
+    /* 手機版隱藏登入按鈕文字 */
+    .admin-header-btn.login .login-text {
+        display: none;
+    }
+
+    .admin-header-btn.login {
+        padding: 6px 10px;
+        min-width: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .admin-header-btn.login::before {
+        content: '🔐';
+        font-size: 16px;
     }
 
     /* 詳情頁手機版優化 */
@@ -198,28 +262,35 @@
         padding: 20px 10px;
     }
 
-    h1 {
-        font-size: 20px;
-        letter-spacing: 2px;
+    .site-title {
+        font-size: 18px;
+        letter-spacing: 1px;
     }
 
     .site-header {
-        top: 5px;
-        left: 5px;
-    }
-
-    .site-title {
-        font-size: 12px;
+        padding: 8px 12px;
     }
 
     .analytics-bar {
-        top: 5px;
-        right: 5px;
-        padding: 3px 8px;
+        margin-top: 5px;
     }
 
     #analytics-display {
         font-size: 9px;
+    }
+
+    .header-menu-btn {
+        top: 8px;
+        right: 8px;
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+
+    #systemMenu {
+        top: 55px;
+        right: 5px;
+        left: 5px;
     }
 
     .btn-primary {

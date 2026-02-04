@@ -5,21 +5,23 @@
 
 /* ========== 網站標題區域 ========== */
 .site-header {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 1000;
+    position: relative;
+    top: auto;
+    left: auto;
+    z-index: auto;
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    flex-direction: row;
+    gap: 20px;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .site-title {
     font-family: 'Orbitron', 'Space Mono', monospace;
     font-size: 14px;
     font-weight: 700;
-   2px;
-    color: rgba( letter-spacing: 255, 255, 255, 0.9);
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.9);
     margin: 0;
     padding: 0;
 }
@@ -34,16 +36,16 @@
 
 /* ========== 分析列 ========== */
 .analytics-bar {
-    position: fixed;
-    top: 10px;
+    position: relative;
+    top: auto;
     left: auto;
-    right: 10px;
-    z-index: 1000;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 5px 10px;
-    border-radius: 5px;
-    border: 1px solid rgba(0, 212, 255, 0.3);
-    backdrop-filter: blur(5px);
+    right: auto;
+    z-index: auto;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    border: none;
+    backdrop-filter: none;
 }
 
 #analytics-display {
