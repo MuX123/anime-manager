@@ -192,35 +192,60 @@ class SupabaseManager {
     }
 
     /**
+     * 安全查詢 - 處理 403 權限錯誤
+     * @param {Function} operation 查詢操作函數
+     * @param {Object} options 選項
+     * @returns {Promise<Object>} 查詢結果
+     */
+    async safeQuery(operation, options = {}) {
+        const {
+            fallbackOn403 = null,
+            logError = true
+        } = options;
+
+        try {
+            return await operation(this.client);
+        } catch (error) {
+            if (error.code === '403' || error.message?.includes('403') || error.code === '42501') {
+                if (logError) {
+                    window.logger?.warn('資料庫權限不足，使用備用值', {
+                        error: error.message,
+                        operation: operation.name
+                    });
+                }
+                return { data: fallbackOn403, error: null };
+            }
+            throw error;
+        }
+    }
+
+    /**
      * 檢查用戶是否為管理員
      * @returns {Promise<boolean>} 是否為管理員
      */
     async checkIsAdmin() {
         try {
+            // 優先從 session 獲取用戶信息（更穩定）
             const { data: { session } } = await this.client.auth.getSession();
-            if (!session) return false;
+            if (!session?.user) return false;
 
-            // 先嘗試 RPC 函數
-            try {
-                const { data, error } = await this.client
-                    .rpc('is_admin');
+            const userEmail = session.user.email;
+            if (!userEmail) return false;
 
-                if (!error && data) return true;
-            } catch (rpcError) {}
-
-            // 備用方案：檢查用戶 email 是否與 admin_email 匹配
+            // 檢查 admin_email 設定
             const { data: settings } = await this.client
                 .from('site_settings')
                 .select('value')
                 .eq('id', 'admin_email')
                 .single();
 
-            if (settings?.value && session.user?.email) {
-                return session.user.email === settings.value;
+            if (settings?.value) {
+                return userEmail === settings.value;
             }
 
             return false;
         } catch (error) {
+            console.warn('檢查管理員狀態失敗:', error);
             return false;
         }
     }

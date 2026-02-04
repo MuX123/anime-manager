@@ -81,32 +81,44 @@ async function trackVisit() {
         
         // 如果是新訪客，記錄到訪客表
         if (!existingVisitor) {
-            await client
-                .from('site_visitors')
-                .insert([{ 
-                    visitor_id: visitorId,
-                    first_visit: new Date().toISOString(),
-                    last_visit: new Date().toISOString()
-                }]);
+            try {
+                await client
+                    .from('site_visitors')
+                    .insert([{ 
+                        visitor_id: visitorId,
+                        first_visit: new Date().toISOString(),
+                        last_visit: new Date().toISOString()
+                    }]);
+            } catch (insertErr) {
+                console.warn('記錄新訪客失敗:', insertErr);
+            }
         } else {
             // 更新最後訪問時間
-            await client
-                .from('site_visitors')
-                .update({
-                    last_visit: new Date().toISOString()
-                })
-                .eq('visitor_id', visitorId);
+            try {
+                await client
+                    .from('site_visitors')
+                    .update({
+                        last_visit: new Date().toISOString()
+                    })
+                    .eq('visitor_id', visitorId);
+            } catch (updateErr) {
+                console.warn('更新訪客時間失敗:', updateErr);
+            }
         }
         
         // 記錄頁面訪問
-        await client
-            .from('page_views')
-            .insert([{ 
-                visitor_id: visitorId,
-                page_url: window.location.href,
-                page_title: document.title,
-                view_timestamp: new Date().toISOString()
-            }]);
+        try {
+            await client
+                .from('page_views')
+                .insert([{ 
+                    visitor_id: visitorId,
+                    page_url: window.location.href,
+                    page_title: document.title,
+                    view_timestamp: new Date().toISOString()
+                }]);
+        } catch (pageViewErr) {
+            console.warn('記錄頁面訪問失敗:', pageViewErr);
+        }
         
         await loadAnalytics();
     } catch (err) {
@@ -268,7 +280,7 @@ function trackCategorySwitch(categoryName) {
                 updateClickCount();
             })
             .catch(err => {
-                console.warn('板塊切換追蹤失敗:', err);
+                // 靜默失敗
             });
             
     } catch (err) {

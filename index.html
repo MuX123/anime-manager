@@ -64,12 +64,6 @@
         .toast.active {
             opacity: 1;
         }
-        .admin-sidebar-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-left: auto;
-        }
     </style>
 </head>
 <body style="background-color: #0a0e1a; background-image: radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(176, 38, 255, 0.05) 0%, transparent 50%), linear-gradient(rgba(0, 212, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.02) 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px; background-attachment: fixed; margin: 0;">
@@ -78,8 +72,8 @@
     </div>
 
     <div class="site-header">
-        <div class="site-version">v7.0.0</div>
-        <div id="adminSidebarMenu" class="admin-sidebar-menu"></div>
+        <div id="siteVersion" class="site-version">v7.0.0</div>
+        <div id="adminHeaderBar" class="admin-header-bar"></div>
     </div>
 
     <div class="analytics-bar">
@@ -106,9 +100,9 @@
     
     <!-- 應用功能模組 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./js/supabase.js?v=20260202_v1"></script>
+    <script src="./js/supabase.js?v=20260202_v2"></script>
     <script src="./js/analytics.js?v=20260202_v1"></script>
-    <script src="./js/announcements.js?v=20260202_v1"></script>
+    <script src="./js/announcements.js?v=20260202_v2"></script>
     <script src="./js/script.js?v=20260202_v3"></script>
     
     <!-- 調試工具 (開發模式) -->

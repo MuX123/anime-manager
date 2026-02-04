@@ -35,7 +35,45 @@ let optionsData = {
     },
     custom_lists: []
 };
-let siteSettings = { 
+
+window.getOptionLabel = (key) => {
+    const labels = { 
+        genre: '類型', 
+        year: '年份', 
+        month: '月份', 
+        season: '季度', 
+        episodes: '集數', 
+        rating: '評分', 
+        recommendation: '推薦'
+    };
+    return labels[key] || key;
+};
+
+// 全局滑鼠滾輪橫向捲動
+window.initGlobalScroll = () => {
+    const containers = document.querySelectorAll('.force-scroll, .options-scroll-wrapper');
+    containers.forEach(container => {
+        container.removeEventListener('wheel', window.handleWheelScroll);
+        container.addEventListener('wheel', window.handleWheelScroll, { passive: false });
+    });
+};
+
+window.handleWheelScroll = (e) => {
+    if (e.currentTarget.scrollWidth > e.currentTarget.clientWidth) {
+        if (e.deltaY !== 0) {
+            e.preventDefault();
+            e.currentTarget.scrollLeft += e.deltaY;
+        }
+    }
+};
+
+window.showFirstVisitPopups = async () => {
+    if (typeof window.showAnnouncementPopups === 'function') {
+        await window.showAnnouncementPopups();
+    }
+};
+
+let siteSettings = {
     site_title: 'ACG 收藏庫', 
     announcement: '⚡ 離線演示模式 // 資料來源：演示數據', 
     title_color: '#ffffff', 
@@ -318,18 +356,12 @@ window.checkAndUpdateAdminStatus = async () => {
 };
 
 window.updateAdminMenu = () => {
-    const menuContainer = document.getElementById('adminSidebarMenu');
-    if (!menuContainer) return;
-
-    if (isAdminLoggedIn) {
-        menuContainer.innerHTML = `
-            <button class="admin-sidebar-btn admin" onclick="window.toggleAdminMode(true)">⚙️ 後台管理</button>
-            <button class="admin-sidebar-btn logout" onclick="window.adminLogout()">🚪 登出</button>
-        `;
-    } else {
-        menuContainer.innerHTML = `
-            <button class="admin-sidebar-btn login" onclick="window.showAdminLoginModal()">🔐 管理員登入</button>
-        `;
+    // 管理按鈕現在在右側選單中，這裡只更新 header 中的簡單狀態指示
+    const headerContainer = document.getElementById('adminHeaderBar');
+    if (headerContainer) {
+        headerContainer.innerHTML = isAdminLoggedIn ? 
+            '<span style="color: var(--neon-cyan); font-size: 12px;">⚙️ 已登入</span>' : 
+            '';
     }
 };
 
@@ -341,17 +373,29 @@ window.toggleAdminMode = (enable) => {
     }
 
     const topControlBar = document.getElementById('topControlBar');
+    const adminHeaderBar = document.getElementById('adminHeaderBar');
+    const siteVersion = document.getElementById('siteVersion');
+    const analyticsBar = document.querySelector('.analytics-bar');
     const app = document.getElementById('app');
+    const systemMenu = document.getElementById('systemMenu');
 
     if (enable) {
         lastFrontendCategory = currentCategory;
         currentSection = 'admin';
         if (topControlBar) topControlBar.style.display = 'none';
+        if (adminHeaderBar) adminHeaderBar.style.display = 'none';
+        if (siteVersion) siteVersion.style.display = 'none';
+        if (analyticsBar) analyticsBar.style.display = 'none';
+        if (systemMenu) systemMenu.classList.add('active');
         window.renderAdmin();
     } else {
         currentSection = 'notice';
         currentCategory = lastFrontendCategory;
         if (topControlBar) topControlBar.style.display = 'flex';
+        if (adminHeaderBar) adminHeaderBar.style.display = 'flex';
+        if (siteVersion) siteVersion.style.display = 'block';
+        if (analyticsBar) analyticsBar.style.display = 'block';
+        if (systemMenu) systemMenu.classList.remove('active');
         window.renderApp();
     }
 };
@@ -684,6 +728,11 @@ window.renderApp = function() {
                 <option value="asc" ${sortOrder === 'asc' ? 'selected' : ''} style="background: var(--bg-dark);">時間：從舊到新</option>
                 <option value="name" ${sortOrder === 'name' ? 'selected' : ''} style="background: var(--bg-dark);">名稱：A-Z</option>
             </select>
+            <div style="height: 1px; background: rgba(0,212,255,0.2); margin: 4px 0;"></div>
+            ${isAdminLoggedIn ? `
+                <button onclick="window.toggleAdminMode(true)" style="width: 100%; background: rgba(0,212,255,0.1) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: var(--neon-cyan) !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">⚙️ 後台管理</button>
+                <button onclick="window.adminLogout()" style="width: 100%; background: rgba(255,68,68,0.1) !important; border: 1px solid rgba(255,68,68,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #ff6b6b !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">🚪 登出</button>
+            ` : ''}
             <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 6px;"></div>
         </div>
     `;
@@ -1148,31 +1197,39 @@ window.switchCategory = async (cat) => {
     }
     
     currentCategory = cat;
-    currentSection = cat; 
     currentPage = 1; 
-    adminPage = 1; // 同步重置後台分頁
+    adminPage = 1;
     filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' }; 
     
     // 判斷目前是否在後台模式
     const isAdminMode = document.querySelector('.admin-container') !== null;
 
-    // 如果是公告，直接渲染前台
+    // 如果是公告，直接渲染前台（公告只有前台模式）
     if (cat === 'notice') {
+        currentSection = 'notice';
         window.renderApp();
         return;
     }
 
-    // 只有在前台模式才顯示載入中提示
-    if (!isAdminMode) {
-        const grid = document.getElementById('anime-grid-container');
-        const mainContent = document.getElementById('main-grid-content');
-        if (mainContent) {
-            mainContent.style.opacity = '0';
-            mainContent.style.transition = 'opacity 0.3s ease';
-        }
-        if (grid) grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--neon-cyan); animation: pulse 1.5s ease-in-out infinite;">⚡ 正在同步資料...</div>';
+    // 如果在後台模式，保持後台狀態，不要切換到前台
+    if (isAdminMode) {
+        await window.loadData();
+        window.renderAdmin();
+        return;
     }
-
+    
+    // 前台模式
+    currentSection = cat; 
+    
+    // 只有在前台模式才顯示載入中提示
+    const grid = document.getElementById('anime-grid-container');
+    const mainContent = document.getElementById('main-grid-content');
+    if (mainContent) {
+        mainContent.style.opacity = '0';
+        mainContent.style.transition = 'opacity 0.3s ease';
+    }
+    if (grid) grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--neon-cyan); animation: pulse 1.5s ease-in-out infinite;">⚡ 正在同步資料...</div>';
+    
     // 確保資料載入完成後淡入
     setTimeout(() => {
         const mainContent = document.getElementById('main-grid-content');
@@ -1181,14 +1238,102 @@ window.switchCategory = async (cat) => {
         }
     }, 100);
     
-    // 確保資料載入完成
     await window.loadData();
+    window.renderApp(); 
+};
+
+// ========== 留言板管理 ==========
+window.renderGuestbookAdmin = async () => {
+    const messages = await window.loadGuestbookMessagesForAdmin();
+    const pending = messages.filter(m => m.status === 'pending');
+    const approved = messages.filter(m => m.status === 'approved');
+    const rejected = messages.filter(m => m.status === 'rejected');
     
-    // 根據目前模式決定渲染哪個介面
-    if (isAdminMode) {
+    return `
+        <div id="guestbook-admin-container" style="display: flex; flex-direction: column; min-height: 100%; overflow-y: auto;">
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; flex-shrink: 0;">
+                <div style="background: rgba(255,200,0,0.1); border: 1px solid rgba(255,200,0,0.3); border-radius: 8px; padding: 15px 20px;">
+                    <div style="color: rgba(255,200,0,0.8); font-size: 24px; font-weight: bold;">${pending.length}</div>
+                    <div style="color: var(--text-secondary); font-size: 12px;">待審核</div>
+                </div>
+                <div style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); border-radius: 8px; padding: 15px 20px;">
+                    <div style="color: var(--neon-cyan); font-size: 24px; font-weight: bold;">${approved.length}</div>
+                    <div style="color: var(--text-secondary); font-size: 12px;">已通過</div>
+                </div>
+                <div style="background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.3); border-radius: 8px; padding: 15px 20px;">
+                    <div style="color: #ff4444; font-size: 24px; font-weight: bold;">${rejected.length}</div>
+                    <div style="color: var(--text-secondary); font-size: 12px;">已拒絕</div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; border-bottom: 2px solid rgba(0,212,255,0.2); padding-bottom: 15px; flex-shrink: 0;">
+                <button class="btn-primary ${window.currentGuestbookTab !== 'pending' ? '' : 'active'}" onclick="window.switchGuestbookTab('pending')">待審核 (${pending.length})</button>
+                <button class="btn-primary ${window.currentGuestbookTab !== 'approved' ? '' : 'active'}" onclick="window.switchGuestbookTab('approved')">已通過 (${approved.length})</button>
+                <button class="btn-primary ${window.currentGuestbookTab !== 'rejected' ? '' : 'active'}" onclick="window.switchGuestbookTab('rejected')">已拒絕 (${rejected.length})</button>
+            </div>
+            
+            <div id="guestbook-list" style="display: flex; flex-direction: column; gap: 12px; flex: 1; overflow-y: auto;">
+                ${window.renderGuestbookList(messages)}
+            </div>
+        </div>
+    `;
+};
+
+window.currentGuestbookTab = 'pending';
+
+window.switchGuestbookTab = async (tab) => {
+    window.currentGuestbookTab = tab;
+    const messages = await window.loadGuestbookMessagesForAdmin();
+    const list = document.getElementById('guestbook-list');
+    if (list) list.innerHTML = window.renderGuestbookList(messages);
+};
+
+window.renderGuestbookList = (messages) => {
+    const filtered = messages.filter(m => m.status === window.currentGuestbookTab);
+    return filtered.length === 0 ? '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">暫無留言</div>' : 
+        filtered.map(m => `
+            <div style="background: rgba(0,212,255,0.03); border-radius: 8px; padding: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="color: var(--neon-cyan); font-weight: bold;">${escapeHtml(m.nickname)}</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="color: var(--text-secondary); font-size: 12px;">${m.ip_address || '未知IP'}</span>
+                        <span style="color: var(--text-secondary); font-size: 12px;">${new Date(m.created_at).toLocaleString('zh-TW')}</span>
+                    </div>
+                </div>
+                <div style="color: var(--text-secondary); margin-bottom: 10px; white-space: pre-wrap;">${escapeHtml(m.content)}</div>
+                ${window.currentGuestbookTab === 'pending' ? `
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="window.moderateGuestbook('${m.id}', 'approved')">✅ 通過</button>
+                        <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; border-color: #ff4444; color: #ff4444;" onclick="window.moderateGuestbook('${m.id}', 'rejected')">❌ 拒絕</button>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+};
+
+window.loadGuestbookMessagesForAdmin = async () => {
+    try {
+        const client = window.supabaseManager?.getClient();
+        if (!client) return [];
+        const { data } = await client.from('guestbook_messages').select('*').order('created_at', { ascending: false }).limit(100);
+        return data || [];
+    } catch (err) {
+        return [];
+    }
+};
+
+window.moderateGuestbook = async (id, status) => {
+    try {
+        const client = window.supabaseManager?.getClient();
+        await client.from('guestbook_messages').update({ 
+            status, 
+            approved_by: siteSettings.admin_name || '管理員',
+            updated_at: new Date().toISOString()
+        }).eq('id', id);
+        window.showToast('✓ 已處理');
         window.renderAdmin();
-    } else {
-        window.renderApp(); 
+    } catch (err) {
+        window.showToast('✗ 處理失敗', 'error');
     }
 };
 
@@ -1201,26 +1346,65 @@ window.renderAdmin = () => {
     const optionsWrapper = document.getElementById('optionsWrapper');
     const scrollLeft = optionsWrapper ? optionsWrapper.scrollLeft : 0;
 
+    const adminHeaderBar = document.getElementById('adminHeaderBar');
+    if (adminHeaderBar) {
+        adminHeaderBar.style.display = 'none';
+    }
+    
+    const adminTabs = [
+        { id: 'manage', icon: '📋', label: '作品管理' },
+        { id: 'add', icon: '➕', label: '新增作品' },
+        { id: 'guestbook', icon: '💬', label: '留言板' },
+        { id: 'options', icon: '⚙️', label: '選項管理' },
+        { id: 'settings', icon: '🌐', label: '網站設定' }
+    ];
+
     app.innerHTML = `
-        <div class="admin-container">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <h2 style="font-family: 'Orbitron', sans-serif; color: var(--neon-cyan);">⚙ 系統管理後台</h2>
-                <button class="btn-primary" onclick="window.toggleAdminMode(false)">↩ 返回前台</button>
-            </div>
-            <div style="display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
-                <button class="btn-primary ${currentAdminTab === 'manage' ? 'active' : ''}" onclick="window.switchAdminTab('manage')">作品管理</button>
-                <button class="btn-primary ${currentAdminTab === 'add' ? 'active' : ''}" onclick="window.switchAdminTab('add')">＋ 新增作品</button>
-                <button class="btn-primary ${currentAdminTab === 'announcements' ? 'active' : ''}" onclick="window.switchAdminTab('announcements')">📢 公告管理</button>
-                <button class="btn-primary ${currentAdminTab === 'updates' ? 'active' : ''}" onclick="window.switchAdminTab('updates')">📋 更新管理</button>
-                <button class="btn-primary ${currentAdminTab === 'guestbook' ? 'active' : ''}" onclick="window.switchAdminTab('guestbook')">💬 留言板</button>
-                <button class="btn-primary ${currentAdminTab === 'options' ? 'active' : ''}" onclick="window.switchAdminTab('options')">⚙️ 選項管理</button>
-                <button class="btn-primary ${currentAdminTab === 'settings' ? 'active' : ''}" onclick="window.switchAdminTab('settings')">🌐 網站設定</button>
-            </div>
-            <div class="admin-panel">
-                ${window.renderAdminContent(paged, filtered.length)}
-            </div>
+        <div class="admin-layout">
+            <aside class="admin-sidebar">
+                <div class="admin-sidebar-header">
+                    <h2 style="font-family: 'Orbitron', sans-serif; color: var(--neon-cyan); margin: 0;">⚙️ 管理後台</h2>
+                </div>
+                <nav class="admin-sidebar-nav">
+                    ${adminTabs.map(tab => `
+                        <button class="admin-nav-item ${currentAdminTab === tab.id ? 'active' : ''}" onclick="window.switchAdminTab('${tab.id}')">
+                            <span class="nav-icon">${tab.icon}</span>
+                            <span class="nav-label">${tab.label}</span>
+                        </button>
+                    `).join('')}
+                </nav>
+                <div class="admin-sidebar-footer">
+                    <button class="admin-nav-item logout" onclick="window.toggleAdminMode(false)">
+                        <span class="nav-icon">↩️</span>
+                        <span class="nav-label">返回前台</span>
+                    </button>
+                </div>
+            </aside>
+            <main class="admin-main">
+                <div class="admin-content-header">
+                    <h1 style="font-family: 'Orbitron', sans-serif; color: var(--neon-cyan); margin: 0;">${adminTabs.find(t => t.id === currentAdminTab)?.label}</h1>
+                    <div class="admin-breadcrumb">
+                        <span>後台</span>
+                        <span class="separator">/</span>
+                        <span>${adminTabs.find(t => t.id === currentAdminTab)?.label}</span>
+                    </div>
+                </div>
+                <div id="admin-content-body" class="admin-content-body">
+                    ${currentAdminTab === 'guestbook' ? '<div id="guestbook-loading">載入中...</div>' : window.renderAdminContent(paged, filtered.length)}
+                </div>
+            </main>
         </div>
     `;
+    
+    // 處理需要異步載入的標籤（留言板）
+    if (currentAdminTab === 'guestbook') {
+        const loadingDiv = document.getElementById('guestbook-loading');
+        if (loadingDiv) {
+            window.renderGuestbookAdmin().then(html => {
+                loadingDiv.outerHTML = html;
+            });
+        }
+    }
     
     // 恢復滾動位置
     if (currentAdminTab === 'options') {
@@ -1231,63 +1415,159 @@ window.renderAdmin = () => {
     window.initGlobalScroll();
 };
 
-window.switchAdminTab = (tab, id = null) => { 
-    currentAdminTab = tab; 
+window.switchAdminTab = (tab, id = null) => {
+    currentAdminTab = tab;
     editId = id;
-    window.renderAdmin(); 
+    // 如果當前不在 admin 模式，切換到 admin 模式
+    if (currentSection !== 'admin') {
+        window.toggleAdminMode(true);
+    } else {
+        window.renderAdmin();
+    }
+};
+
+window.renderAdminPagination = (total) => {
+    const pages = Math.ceil(total / adminItemsPerPage);
+    if (pages <= 1) return '';
+    let btns = [];
+    const maxVisible = 5;
+    let start = Math.max(1, adminPage - 2);
+    let end = Math.min(pages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+    if (start > 1) {
+        btns.push(`<button class="btn-primary" style="width: 40px; padding: 8px 0;" onclick="window.changeAdminPage(1)">1</button>`);
+        if (start > 2) btns.push(`<span style="color: var(--neon-cyan); align-self: center; padding: 0 5px;">...</span>`);
+    }
+    for (let i = start; i <= end; i++) {
+        btns.push(`<button class="btn-primary ${adminPage === i ? 'active' : ''}" style="width: 40px; padding: 8px 0;" onclick="window.changeAdminPage(${i})">${i}</button>`);
+    }
+    if (end < pages) {
+        if (end < pages - 1) btns.push(`<span style="color: var(--neon-cyan); align-self: center; padding: 0 5px;">...</span>`);
+        btns.push(`<button class="btn-primary" style="width: 40px; padding: 8px 0;" onclick="window.changeAdminPage(${pages})">${pages}</button>`);
+    }
+    return btns.join('');
+};
+
+window.renderOptionsManager = () => {
+    const defaultKeys = ['genre', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation'];
+    const customKeys = optionsData.custom_lists || [];
+    const allKeys = [...defaultKeys, ...customKeys];
+
+    return `
+        <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center;">
+            <input type="text" id="new-list-name" placeholder="輸入新列表名稱 (如: 載體)" style="width: 250px;">
+            <button class="btn-primary" onclick="window.addNewCustomList()">＋ 新增自定義列表</button>
+        </div>
+        <div class="options-scroll-wrapper force-scroll" id="optionsWrapper">
+            ${allKeys.map(key => {
+                const color = optionsData.category_colors[key] || '#ffffff';
+                return `
+                    <div class="options-column">
+                        <div class="options-column-header">
+                            ${(key !== 'recommendation' && key !== 'rating') ? `
+                                <div class="color-input-wrapper">
+                                    <div class="color-swatch" style="background: ${color};" onclick="this.nextElementSibling.click()"></div>
+                                    <input type="color" value="${color}" onchange="window.updateCategoryColor('${key}', this.value); this.previousElementSibling.style.background = this.value">
+                                </div>
+                            ` : ''}
+                            <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center;">
+                                <span style="${(key !== 'recommendation' && key !== 'rating') ? 'margin-left: 8px;' : ''}">${window.getOptionLabel(key)}</span>
+                                ${customKeys.includes(key) ? `<button style="background:none; border:none; color:#ff4444; cursor:pointer; font-size:12px;" onclick="window.deleteCustomList('${key}')">🗑</button>` : ''}
+                            </div>
+                        </div>
+                        <div class="options-list force-scroll">
+                            ${(optionsData[key] || []).map((opt, idx) => {
+                                const itemColor = (key === 'rating') ? (optionsData.rating_colors?.[opt] || color) : color;
+                                return `
+                                    <div class="option-item-row" style="display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid rgba(0,212,255,0.05);">
+                                        ${key === 'rating' ? `
+                                            <div class="color-input-wrapper">
+                                                <div class="color-swatch" style="background: ${itemColor}; width: 20px; height: 20px; border-radius: 0px;" onclick="this.nextElementSibling.click()"></div>
+                                                <input type="color" value="${itemColor}" onchange="window.updateRatingItemColor('${opt}', this.value); this.previousElementSibling.style.background = this.value">
+                                            </div>
+                                        ` : ''}
+                                        <span style="flex: 1; ${getTagStyle(itemColor)}">${opt}</span>
+                                        <span style="cursor: pointer; color: #ff4444; font-weight: bold; padding: 5px;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        <div style="padding: 15px; border-top: 1px solid rgba(0,212,255,0.1); display: flex; gap: 5px; align-items: center;">
+                            <input type="text" id="add-opt-${key}" placeholder="新增..." style="width: 120px; font-size: 12px; padding: 6px !important; flex-shrink: 0;">
+                            <button class="btn-primary" style="padding: 6px 10px; font-size: 12px; flex-shrink: 0; min-width: 40px;" onclick="window.addOptionItem('${key}')">＋</button>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
 };
 
 window.renderAdminContent = (pagedData, total) => {
     if (currentAdminTab === 'manage') {
         return `
-            <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
-                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">動畫板塊</button>
-                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">漫畫板塊</button>
-                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">電影板塊</button>
-            </div>
-		            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-		                <div style="display: flex; gap: 10px;">
-		                    <button class="btn-primary" id="bulk-delete-btn" style="font-size: 12px; padding: 8px 16px; border-color: #ff4444; color: #ff4444; display: none;" onclick="window.bulkDeleteAnime()">🗑 批量刪除 (<span id="selected-count">0</span>)</button>
-		                    <button class="btn-primary" style="font-size: 12px; padding: 8px 16px; border-color: #ff4444; color: #ff4444; background: rgba(255,0,0,0.1);" onclick="window.deleteAllInCategory()">💀 刪除全部 ${currentCategory} 數據</button>
-		                </div>
-		                <div style="display: flex; gap: 12px;">
-		                    <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.exportCSV('${currentCategory}')">📥 匯出資料 (CSV)</button>
-		                    <button class="btn-primary" style="font-size: 12px; padding: 8px 16px;" onclick="window.triggerImport('${currentCategory}')">📤 匯入資料 (CSV)</button>
-		                </div>
-		            </div>
-            <div class="admin-table-container" style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                    <thead>
-                        <tr style="border-bottom: 2px solid var(--neon-blue); color: var(--neon-cyan); text-align: left;">
-                            <th style="padding: 15px; width: 50px;">
-                                <input type="checkbox" id="select-all" onchange="window.toggleSelectAll(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
-                            </th>
-                            <th style="padding: 15px;">名稱</th>
-                            <th style="padding: 15px;">年份</th>
-                            <th style="padding: 15px;">評分</th>
-                            <th style="padding: 15px;">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${pagedData.map(item => `
-                            <tr style="border-bottom: 1px solid rgba(0,212,255,0.1);">
-                                <td style="padding: 15px;">
-                                    <input type="checkbox" class="item-checkbox" data-id="${item.id}" onchange="window.updateBulkDeleteButton()" style="width: 18px; height: 18px; cursor: pointer;">
-                                </td>
-                                <td style="padding: 15px; font-weight: bold;">${item.name}</td>
-                                <td style="padding: 15px;">${item.year || ''}</td>
-                                <td style="padding: 15px;">${item.rating || ''}</td>
-                                <td style="padding: 15px; white-space: nowrap;">
-                                    <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;" onclick="window.editAnime('${item.id}')">📝 編輯</button>
-                                    <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; border-color: #ff4444; color: #ff4444;" onclick="window.deleteAnime('${item.id}')">✕ 刪除</button>
-                                </td>
+            <div class="admin-section">
+                <div class="admin-section-header">
+                    <div class="admin-category-tabs">
+                        <button class="category-tab ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">🎬 動畫</button>
+                        <button class="category-tab ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">📚 漫畫</button>
+                        <button class="category-tab ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">🎥 電影</button>
+                    </div>
+                    <div class="admin-actions">
+                        <span class="data-count">共 ${total} 筆資料</span>
+                        <button class="btn-secondary" onclick="window.exportCSV('${currentCategory}')">📥 匯出</button>
+                        <button class="btn-secondary" onclick="window.triggerImport('${currentCategory}')">📤 匯入</button>
+                    </div>
+                </div>
+                
+                <div class="admin-toolbar">
+                    <div class="toolbar-left">
+                        <button class="btn-danger" id="bulk-delete-btn" style="display: none;" onclick="window.bulkDeleteAnime()">
+                            🗑 刪除選中 (<span id="selected-count">0</span>)
+                        </button>
+                        <button class="btn-danger-outline" onclick="window.deleteAllInCategory()">
+                            💀 刪除全部
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">
+                                    <input type="checkbox" id="select-all" onchange="window.toggleSelectAll(this.checked)">
+                                </th>
+                                <th>作品名稱</th>
+                                <th>年份</th>
+                                <th>季度</th>
+                                <th>評分</th>
+                                <th style="width: 180px;">操作</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-            <div style="display: flex; justify-content: center; gap: 12px; margin-top: 25px;">
-                ${window.renderAdminPagination(total)}
+                        </thead>
+                        <tbody>
+                            ${pagedData.map(item => `
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="item-checkbox" data-id="${item.id}" onchange="window.updateBulkDeleteButton()">
+                                    </td>
+                                    <td class="item-name">${item.name}</td>
+                                    <td>${item.year || '-'}</td>
+                                    <td>${item.season || '-'}</td>
+                                    <td><span class="rating-badge">${item.rating || '-'}</span></td>
+                                    <td class="item-actions">
+                                        <button class="btn-icon edit" onclick="window.editAnime('${item.id}')" title="編輯">📝</button>
+                                        <button class="btn-icon delete" onclick="window.deleteAnime('${item.id}')" title="刪除">✕</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="admin-pagination">
+                    ${window.renderAdminPagination(total)}
+                </div>
             </div>
         `;
     } else if (currentAdminTab === 'add' || currentAdminTab === 'edit') {
@@ -1295,8 +1575,18 @@ window.renderAdminContent = (pagedData, total) => {
         return window.renderAnimeForm(item);
     } else if (currentAdminTab === 'options') {
         return window.renderOptionsManager();
-			    } else if (currentAdminTab === 'settings') {
-			        return `
+    } else if (currentAdminTab === 'guestbook') {
+        return `<div id="guestbook-admin-container" style="padding: 20px; text-align: center; color: var(--neon-cyan);">載入中...</div>
+                <script>
+                    (function() {
+                        window.renderGuestbookAdmin().then(function(html) {
+                            var container = document.getElementById('guestbook-admin-container');
+                            if (container) container.outerHTML = html;
+                        });
+                    })();
+                <\/script>`;
+    } else if (currentAdminTab === 'settings') {
+        return `
 			            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%; margin: 0 auto; padding-bottom: 50px;">
 	                        <div class="admin-panel-v492" style="background: rgba(0,212,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2);">
 		                    <h3 style="color: var(--neon-cyan); border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; margin-bottom: 20px; font-family: 'Orbitron';">🌐 網站基本設定</h3>
@@ -1335,13 +1625,83 @@ window.renderAdminContent = (pagedData, total) => {
                         </div>
 		            </div>
 		        `;
-        } else if (currentAdminTab === 'announcements') {
-            return window.renderAnnouncementsAdmin();
-        } else if (currentAdminTab === 'updates') {
-            return window.renderUpdatesAdmin();
         } else if (currentAdminTab === 'guestbook') {
-            return window.renderGuestbookAdmin();
-	    }
+            return `<div id="guestbook-admin-container" style="padding: 20px; text-align: center; color: var(--neon-cyan);">載入中...</div>
+                    <script>
+                        (function() {
+                            window.renderGuestbookAdmin().then(function(html) {
+                                var container = document.getElementById('guestbook-admin-container');
+                                if (container) container.outerHTML = html;
+                            });
+                        })();
+                    <\/script>`;
+        }
+    return '';
+};
+
+/**
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%; margin: 0 auto; padding-bottom: 50px;">
+                    <div class="admin-panel-v492" style="background: rgba(0,212,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2);">
+                        <h3 style="color: var(--neon-cyan); border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; margin-bottom: 20px; font-family: 'Orbitron';">🌐 網站基本設定</h3>
+                        <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">網站標題</label><input type="text" id="set-title" value="${siteSettings.site_title}" style="width: 100%;" onclick="event.stopPropagation()" onfocus="event.stopPropagation()"></div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">標題顏色</label>
+                            <div class="color-input-wrapper" style="width: 100%;">
+                                <div class="color-swatch" style="background: ${siteSettings.title_color || '#ffffff'}; width: 100%; height: 40px; border-radius: 8px;" onclick="document.getElementById('set-title-color').click()"></div>
+                                <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">公告內容</label><textarea id="set-announcement" style="width: 100%; height: 120px; resize: vertical;" onclick="event.stopPropagation()" onfocus="event.stopPropagation()">${siteSettings.announcement}</textarea></div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">公告顏色</label>
+                            <div class="color-input-wrapper" style="width: 100%;">
+                                <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 100%; height: 40px; border-radius: 8px;" onclick="document.getElementById('set-announcement-color').click()"></div>
+                                <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                            </div>
+                        </div>
+                        <h4 style="color: var(--neon-cyan); border-bottom: 1px solid rgba(0,212,255,0.2); padding-bottom: 8px; margin: 25px 0 15px 0; font-family: 'Orbitron';">🎨 卡片顏色設定</h4>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                            <div>
+                                <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">作品名稱</label>
+                                <div class="color-input-wrapper" style="width: 100%;">
+                                    <div class="color-swatch" style="background: ${optionsData.category_colors?.name || '#ffffff'}; width: 100%; height: 35px; border-radius: 6px;" onclick="document.getElementById('set-name-color').click()"></div>
+                                    <input type="color" id="set-name-color" value="${optionsData.category_colors?.name || '#ffffff'}" onchange="window.updateCategoryColorDirect('name', this.value); this.previousElementSibling.style.background = this.value">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">簡介文字</label>
+                                <div class="color-input-wrapper" style="width: 100%;">
+                                    <div class="color-swatch" style="background: ${optionsData.category_colors?.desc || '#ffffff'}; width: 100%; height: 35px; border-radius: 6px;" onclick="document.getElementById('set-desc-color').click()"></div>
+                                    <input type="color" id="set-desc-color" value="${optionsData.category_colors?.desc || '#ffffff'}" onchange="window.updateCategoryColorDirect('desc', this.value); this.previousElementSibling.style.background = this.value">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px;">按鈕顏色</label>
+                                <div class="color-input-wrapper" style="width: 100%;">
+                                    <div class="color-swatch" style="background: ${optionsData.category_colors?.btn_bg || '#00d4ff'}; width: 100%; height: 35px; border-radius: 6px;" onclick="document.getElementById('set-btn-color').click()"></div>
+                                    <input type="color" id="set-btn-color" value="${optionsData.category_colors?.btn_bg || '#00d4ff'}" onchange="window.updateCategoryColorDirect('btn_bg', this.value); this.previousElementSibling.style.background = this.value">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="admin-panel-v492" style="background: rgba(0,212,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2);">
+                        <h3 style="color: var(--neon-cyan); border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; margin-bottom: 20px; font-family: 'Orbitron';">👤 管理員個人化</h3>
+                        <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">顯示名稱</label><input type="text" id="set-admin-name" value="${siteSettings.admin_name || '管理員'}" style="width: 100%;" onclick="event.stopPropagation()" onfocus="event.stopPropagation()"></div>
+                        <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">頭像網址</label><input type="text" id="set-admin-avatar" value="${siteSettings.admin_avatar || ''}" style="width: 100%;" placeholder="https://..." onclick="event.stopPropagation()" onfocus="event.stopPropagation()"></div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">名稱顏色</label>
+                            <div class="color-input-wrapper" style="width: 100%;">
+                                <div class="color-swatch" style="background: ${siteSettings.admin_color || '#00ffff'}; width: 100%; height: 40px; border-radius: 8px;" onclick="document.getElementById('set-admin-color').click()"></div>
+                                <input type="color" id="set-admin-color" value="${siteSettings.admin_color || '#00ffff'}" onchange="this.previousElementSibling.style.background = this.value">
+                            </div>
+                        </div>
+                        <div style="margin-top: 40px; text-align: center;">
+                            <button class="btn-primary" style="width: 100%; padding: 20px; font-size: 18px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,212,255,0.2);" onclick="window.saveSettings()">💾 儲存所有設定</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
     return '';
 };
 
@@ -1459,61 +1819,6 @@ window.renderAnimeForm = (item) => {
                     </div>
                 </div>
             </div>
-        </div>
-    `;
-};
-
-window.renderOptionsManager = () => {
-    const defaultKeys = ['genre', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'name', 'desc', 'btn_bg'];
-    const customKeys = optionsData.custom_lists || [];
-    const allKeys = [...defaultKeys, ...customKeys];
-
-    return `
-        <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center;">
-            <input type="text" id="new-list-name" placeholder="輸入新列表名稱 (如: 載體)" style="width: 250px;">
-            <button class="btn-primary" onclick="window.addNewCustomList()">＋ 新增自定義列表</button>
-        </div>
-        <div class="options-scroll-wrapper force-scroll" id="optionsWrapper">
-            ${allKeys.map(key => {
-                const color = optionsData.category_colors[key] || '#ffffff';
-                return `
-                    <div class="options-column">
-                        <div class="options-column-header">
-                            ${(key !== 'recommendation' && key !== 'rating') ? `
-                                <div class="color-input-wrapper">
-                                    <div class="color-swatch" style="background: ${color};" onclick="this.nextElementSibling.click()"></div>
-                                    <input type="color" value="${color}" onchange="window.updateCategoryColor('${key}', this.value); this.previousElementSibling.style.background = this.value">
-                                </div>
-                            ` : ''}
-                            <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center;">
-                                <span style="${(key !== 'recommendation' && key !== 'rating') ? 'margin-left: 8px;' : ''}">${window.getOptionLabel(key)}</span>
-                                ${customKeys.includes(key) ? `<button style="background:none; border:none; color:#ff4444; cursor:pointer; font-size:12px;" onclick="window.deleteCustomList('${key}')">🗑</button>` : ''}
-                            </div>
-                        </div>
-                        <div class="options-list force-scroll">
-                            ${(optionsData[key] || []).map((opt, idx) => {
-                                const itemColor = (key === 'rating') ? (optionsData.rating_colors?.[opt] || color) : color;
-                                return `
-	                                    <div class="option-item-row" style="display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid rgba(0,212,255,0.05);">
-	                                        ${key === 'rating' ? `
-	                                            <div class="color-input-wrapper">
-	                                                <div class="color-swatch" style="background: ${itemColor}; width: 20px; height: 20px; border-radius: 0px;" onclick="this.nextElementSibling.click()"></div>
-	                                                <input type="color" value="${itemColor}" onchange="window.updateRatingItemColor('${opt}', this.value); this.previousElementSibling.style.background = this.value">
-	                                            </div>
-	                                        ` : ''}
-	                                        <span style="flex: 1; ${getTagStyle(itemColor)}">${opt}</span>
-	                                        <span style="cursor: pointer; color: #ff4444; font-weight: bold; padding: 5px;" onclick="window.deleteOptionItem('${key}', ${idx})">✕</span>
-	                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                        <div style="padding: 15px; border-top: 1px solid rgba(0,212,255,0.1); display: flex; gap: 5px; align-items: center;">
-                            <input type="text" id="add-opt-${key}" placeholder="新增..." style="width: 120px; font-size: 12px; padding: 6px !important; flex-shrink: 0;">
-                            <button class="btn-primary" style="padding: 6px 10px; font-size: 12px; flex-shrink: 0; min-width: 40px;" onclick="window.addOptionItem('${key}')">＋</button>
-                        </div>
-                    </div>
-                `;
-            }).join('')}
         </div>
     `;
 };
@@ -1649,381 +1954,6 @@ window.saveOptionsToDB = async () => {
     window.showToast('✓ 設定已同步'); 
     // 強制重新渲染應用以同步搜尋過濾器
     if (typeof window.renderApp === 'function') window.renderApp();
-};
-window.getOptionLabel = (key) => {
-const labels = { 
-	        genre: '類型', 
-	        year: '年份', 
-	        month: '月份', 
-	        season: '季度', 
-	        episodes: '集數', 
-	        rating: '評分', 
-	        recommendation: '推薦',
-	        name: '名稱',
-	        desc: '簡介',
-            btn_bg: '按鈕顏色'
-	    };
-    if (labels[key]) return labels[key];
-    if (siteSettings.custom_labels && siteSettings.custom_labels[key]) return siteSettings.custom_labels[key];
-    return key;
-};
-
-// ========== 公告管理 ==========
-window.renderAnnouncementsAdmin = async () => {
-    const announcements = await window.loadAnnouncementsForAdmin();
-    return `
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="color: var(--neon-cyan); margin: 0; font-family: 'Orbitron', sans-serif;">📢 公告管理</h3>
-                <button class="btn-primary" onclick="window.showAnnouncementForm()">＋ 新增公告</button>
-            </div>
-            <div id="announcement-form-container" style="display: none; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2); border-radius: 12px; padding: 20px;">
-                <div style="display: flex; flex-direction: column; gap: 15px;">
-                    <input type="hidden" id="announcement-id">
-                    <div><label style="color: var(--neon-cyan); display: block; margin-bottom: 5px;">標題</label><input type="text" id="announcement-title" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 8px; color: #fff;"></div>
-                    <div><label style="color: var(--neon-cyan); display: block; margin-bottom: 5px;">內容</label><textarea id="announcement-content" rows="5" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 8px; color: #fff;"></textarea></div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="announcement-pinned" style="width: 18px; height: 18px;">
-                        <label for="announcement-pinned" style="color: var(--neon-cyan);">置頂顯示</label>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-primary" onclick="window.saveAnnouncement()">💾 儲存</button>
-                        <button class="btn-primary" style="border-color: #ff4444; color: #ff4444;" onclick="window.hideAnnouncementForm()">取消</button>
-                    </div>
-                </div>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                ${announcements.length === 0 ? '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">暫無公告</div>' : ''}
-                ${announcements.map(a => `
-                    <div style="background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2); border-radius: 12px; padding: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                ${a.is_pinned ? '<span style="background: var(--neon-cyan); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">置頂</span>' : ''}
-                                <h4 style="margin: 0; color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">${escapeHtml(a.title)}</h4>
-                            </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button class="btn-primary" style="padding: 4px 10px; font-size: 12px;" onclick="window.editAnnouncement('${a.id}')">📝</button>
-                                <button class="btn-primary" style="padding: 4px 10px; font-size: 12px; border-color: #ff4444; color: #ff4444;" onclick="window.deleteAnnouncement('${a.id}')">✕</button>
-                            </div>
-                        </div>
-                        <div style="color: var(--text-secondary); margin-bottom: 10px; white-space: pre-wrap;">${escapeHtml(a.content)}</div>
-                        <div style="font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between;">
-                            <span>${new Date(a.created_at).toLocaleString('zh-TW')}</span>
-                            <span style="color: var(--neon-blue);">${escapeHtml(a.author_name)}</span>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-    `;
-};
-
-window.loadAnnouncementsForAdmin = async () => {
-    try {
-        const client = window.supabaseManager?.getClient();
-        if (!client) return [];
-        const { data } = await client.from('announcements').select('*').order('created_at', { ascending: false });
-        return data || [];
-    } catch (err) {
-        return [];
-    }
-};
-
-window.showAnnouncementForm = (id = null) => {
-    const container = document.getElementById('announcement-form-container');
-    if (container) container.style.display = 'block';
-    if (id) {
-        const announcements = window.announcementData?.announcements || [];
-        const a = announcements.find(x => x.id == id);
-        if (a) {
-            document.getElementById('announcement-id').value = a.id;
-            document.getElementById('announcement-title').value = a.title;
-            document.getElementById('announcement-content').value = a.content;
-            document.getElementById('announcement-pinned').checked = a.is_pinned;
-        }
-    }
-};
-
-window.hideAnnouncementForm = () => {
-    const container = document.getElementById('announcement-form-container');
-    if (container) container.style.display = 'none';
-    document.getElementById('announcement-id').value = '';
-    document.getElementById('announcement-title').value = '';
-    document.getElementById('announcement-content').value = '';
-    document.getElementById('announcement-pinned').checked = false;
-};
-
-window.saveAnnouncement = async () => {
-    const id = document.getElementById('announcement-id').value;
-    const title = document.getElementById('announcement-title').value.trim();
-    const content = document.getElementById('announcement-content').value.trim();
-    const is_pinned = document.getElementById('announcement-pinned').checked;
-    
-    if (!title || !content) return window.showToast('請填寫標題和內容', 'error');
-    
-    try {
-        const client = window.supabaseManager?.getClient();
-        if (!client) throw new Error('系統維護中');
-        
-        const payload = {
-            title,
-            content,
-            is_pinned,
-            is_active: true,
-            author_name: siteSettings.admin_name || '管理員',
-            author_color: siteSettings.admin_color || '#00ffff',
-            updated_at: new Date().toISOString()
-        };
-        
-        if (id) {
-            await client.from('announcements').update(payload).eq('id', id);
-        } else {
-            await client.from('announcements').insert([payload]);
-        }
-        
-        window.showToast('✓ 已儲存');
-        window.hideAnnouncementForm();
-        window.renderAdmin();
-    } catch (err) {
-        window.showToast('✗ 儲存失敗: ' + err.message, 'error');
-    }
-};
-
-window.editAnnouncement = (id) => window.showAnnouncementForm(id);
-
-window.deleteAnnouncement = async (id) => {
-    if (!confirm('確定要刪除此公告？')) return;
-    try {
-        const client = window.supabaseManager?.getClient();
-        await client.from('announcements').delete().eq('id', id);
-        window.showToast('✓ 已刪除');
-        window.renderAdmin();
-    } catch (err) {
-        window.showToast('✗ 刪除失敗', 'error');
-    }
-};
-
-// ========== 更新管理 ==========
-window.renderUpdatesAdmin = async () => {
-    const updates = await window.loadUpdatesForAdmin();
-    return `
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="color: var(--neon-purple); margin: 0; font-family: 'Orbitron', sans-serif;">📋 更新內容管理</h3>
-                <button class="btn-primary" style="border-color: var(--neon-purple); color: var(--neon-purple);" onclick="window.showUpdateForm()">＋ 新增更新</button>
-            </div>
-            <div id="update-form-container" style="display: none; background: rgba(176,38,255,0.05); border: 1px solid rgba(176,38,255,0.2); border-radius: 12px; padding: 20px;">
-                <div style="display: flex; flex-direction: column; gap: 15px;">
-                    <input type="hidden" id="update-id">
-                    <div><label style="color: var(--neon-purple); display: block; margin-bottom: 5px;">版本號</label><input type="text" id="update-version" placeholder="如: 7.0.0" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(176,38,255,0.3); border-radius: 8px; color: #fff;"></div>
-                    <div><label style="color: var(--neon-purple); display: block; margin-bottom: 5px;">標題</label><input type="text" id="update-title" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(176,38,255,0.3); border-radius: 8px; color: #fff;"></div>
-                    <div><label style="color: var(--neon-purple); display: block; margin-bottom: 5px;">更新內容</label><textarea id="update-content" rows="5" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(176,38,255,0.3); border-radius: 8px; color: #fff;"></textarea></div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-primary" style="background: rgba(176,38,255,0.2); border-color: var(--neon-purple); color: var(--neon-purple);" onclick="window.saveUpdate()">💾 儲存</button>
-                        <button class="btn-primary" style="border-color: #ff4444; color: #ff4444;" onclick="window.hideUpdateForm()">取消</button>
-                    </div>
-                </div>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                ${updates.length === 0 ? '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">暫無更新記錄</div>' : ''}
-                ${updates.map(u => `
-                    <div style="background: rgba(176,38,255,0.05); border: 1px solid rgba(176,38,255,0.2); border-radius: 12px; padding: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="background: var(--neon-purple); color: #000; padding: 2px 10px; border-radius: 4px; font-size: 13px; font-weight: bold;">v${escapeHtml(u.version)}</span>
-                                <h4 style="margin: 0; color: var(--neon-purple); font-family: 'Orbitron', sans-serif;">${escapeHtml(u.title)}</h4>
-                            </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button class="btn-primary" style="padding: 4px 10px; font-size: 12px; background: rgba(176,38,255,0.2); border-color: var(--neon-purple); color: var(--neon-purple);" onclick="window.editUpdate('${u.id}')">📝</button>
-                                <button class="btn-primary" style="padding: 4px 10px; font-size: 12px; border-color: #ff4444; color: #ff4444;" onclick="window.deleteUpdate('${u.id}')">✕</button>
-                            </div>
-                        </div>
-                        <div style="color: var(--text-secondary); white-space: pre-wrap;">${escapeHtml(u.content)}</div>
-                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 10px;">${new Date(u.created_at).toLocaleString('zh-TW')}</div>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-    `;
-};
-
-window.loadUpdatesForAdmin = async () => {
-    try {
-        const client = window.supabaseManager?.getClient();
-        if (!client) return [];
-        const { data } = await client.from('updates').select('*').order('created_at', { ascending: false });
-        return data || [];
-    } catch (err) {
-        return [];
-    }
-};
-
-window.showUpdateForm = (id = null) => {
-    const container = document.getElementById('update-form-container');
-    if (container) container.style.display = 'block';
-    if (id) {
-        const updates = window.announcementData?.updates || [];
-        const u = updates.find(x => x.id == id);
-        if (u) {
-            document.getElementById('update-id').value = u.id;
-            document.getElementById('update-version').value = u.version;
-            document.getElementById('update-title').value = u.title;
-            document.getElementById('update-content').value = u.content;
-        }
-    }
-};
-
-window.hideUpdateForm = () => {
-    const container = document.getElementById('update-form-container');
-    if (container) container.style.display = 'none';
-    document.getElementById('update-id').value = '';
-    document.getElementById('update-version').value = '';
-    document.getElementById('update-title').value = '';
-    document.getElementById('update-content').value = '';
-};
-
-window.saveUpdate = async () => {
-    const id = document.getElementById('update-id').value;
-    const version = document.getElementById('update-version').value.trim();
-    const title = document.getElementById('update-title').value.trim();
-    const content = document.getElementById('update-content').value.trim();
-    
-    if (!version || !title || !content) return window.showToast('請填寫所有欄位', 'error');
-    
-    try {
-        const client = window.supabaseManager?.getClient();
-        if (!client) throw new Error('系統維護中');
-        
-        const payload = {
-            version,
-            title,
-            content,
-            is_active: true,
-            author_color: siteSettings.admin_color || '#00ffff',
-            updated_at: new Date().toISOString()
-        };
-        
-        if (id) {
-            await client.from('updates').update(payload).eq('id', id);
-        } else {
-            await client.from('updates').insert([payload]);
-        }
-        
-        window.showToast('✓ 已儲存');
-        window.hideUpdateForm();
-        window.renderAdmin();
-    } catch (err) {
-        window.showToast('✗ 儲存失敗: ' + err.message, 'error');
-    }
-};
-
-window.editUpdate = (id) => window.showUpdateForm(id);
-
-window.deleteUpdate = async (id) => {
-    if (!confirm('確定要刪除此更新？')) return;
-    try {
-        const client = window.supabaseManager?.getClient();
-        await client.from('updates').delete().eq('id', id);
-        window.showToast('✓ 已刪除');
-        window.renderAdmin();
-    } catch (err) {
-        window.showToast('✗ 刪除失敗', 'error');
-    }
-};
-
-// ========== 留言板管理 ==========
-window.renderGuestbookAdmin = async () => {
-    const messages = await window.loadGuestbookMessagesForAdmin();
-    const pending = messages.filter(m => m.status === 'pending');
-    const approved = messages.filter(m => m.status === 'approved');
-    const rejected = messages.filter(m => m.status === 'rejected');
-    
-    return `
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div style="background: rgba(255,200,0,0.1); border: 1px solid rgba(255,200,0,0.3); border-radius: 8px; padding: 15px 20px;">
-                    <div style="color: rgba(255,200,0,0.8); font-size: 24px; font-weight: bold;">${pending.length}</div>
-                    <div style="color: var(--text-secondary); font-size: 12px;">待審核</div>
-                </div>
-                <div style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); border-radius: 8px; padding: 15px 20px;">
-                    <div style="color: var(--neon-cyan); font-size: 24px; font-weight: bold;">${approved.length}</div>
-                    <div style="color: var(--text-secondary); font-size: 12px;">已通過</div>
-                </div>
-                <div style="background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.3); border-radius: 8px; padding: 15px 20px;">
-                    <div style="color: #ff4444; font-size: 24px; font-weight: bold;">${rejected.length}</div>
-                    <div style="color: var(--text-secondary); font-size: 12px;">已拒絕</div>
-                </div>
-            </div>
-            
-            <div style="display: flex; gap: 10px; border-bottom: 2px solid rgba(0,212,255,0.2); padding-bottom: 15px;">
-                <button class="btn-primary ${window.currentGuestbookTab !== 'pending' ? '' : 'active'}" onclick="window.switchGuestbookTab('pending')">待審核 (${pending.length})</button>
-                <button class="btn-primary ${window.currentGuestbookTab !== 'approved' ? '' : 'active'}" onclick="window.switchGuestbookTab('approved')">已通過 (${approved.length})</button>
-                <button class="btn-primary ${window.currentGuestbookTab !== 'rejected' ? '' : 'active'}" onclick="window.switchGuestbookTab('rejected')">已拒絕 (${rejected.length})</button>
-            </div>
-            
-            <div id="guestbook-list" style="display: flex; flex-direction: column; gap: 12px;">
-                ${window.renderGuestbookList(messages)}
-            </div>
-        </div>
-    `;
-};
-
-window.currentGuestbookTab = 'pending';
-
-window.switchGuestbookTab = async (tab) => {
-    window.currentGuestbookTab = tab;
-    const messages = await window.loadGuestbookMessagesForAdmin();
-    const list = document.getElementById('guestbook-list');
-    if (list) list.innerHTML = window.renderGuestbookList(messages);
-};
-
-window.renderGuestbookList = (messages) => {
-    const filtered = messages.filter(m => m.status === window.currentGuestbookTab);
-    return filtered.length === 0 ? '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">暫無留言</div>' : 
-        filtered.map(m => `
-            <div style="background: rgba(0,212,255,0.03); border-radius: 8px; padding: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="color: var(--neon-cyan); font-weight: bold;">${escapeHtml(m.nickname)}</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="color: var(--text-secondary); font-size: 12px;">${m.ip_address || '未知IP'}</span>
-                        <span style="color: var(--text-secondary); font-size: 12px;">${new Date(m.created_at).toLocaleString('zh-TW')}</span>
-                    </div>
-                </div>
-                <div style="color: var(--text-secondary); margin-bottom: 10px; white-space: pre-wrap;">${escapeHtml(m.content)}</div>
-                ${window.currentGuestbookTab === 'pending' ? `
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="window.moderateGuestbook('${m.id}', 'approved')">✅ 通過</button>
-                        <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; border-color: #ff4444; color: #ff4444;" onclick="window.moderateGuestbook('${m.id}', 'rejected')">❌ 拒絕</button>
-                    </div>
-                ` : ''}
-            </div>
-        `).join('');
-};
-
-window.loadGuestbookMessagesForAdmin = async () => {
-    try {
-        const client = window.supabaseManager?.getClient();
-        if (!client) return [];
-        const { data } = await client.from('guestbook_messages').select('*').order('created_at', { ascending: false }).limit(100);
-        return data || [];
-    } catch (err) {
-        return [];
-    }
-};
-
-window.moderateGuestbook = async (id, status) => {
-    try {
-        const client = window.supabaseManager?.getClient();
-        await client.from('guestbook_messages').update({ 
-            status, 
-            approved_by: siteSettings.admin_name || '管理員',
-            updated_at: new Date().toISOString()
-        }).eq('id', id);
-        window.showToast('✓ 已處理');
-        window.renderAdmin();
-    } catch (err) {
-        window.showToast('✗ 處理失敗', 'error');
-    }
 };
 
 window.exportCSV = (cat) => {
@@ -2232,9 +2162,18 @@ window.saveSettings = async () => {
         const adminName = document.getElementById('set-admin-name').value;
         const adminAvatar = document.getElementById('set-admin-avatar').value;
         const adminColor = document.getElementById('set-admin-color').value;
+        const nameColor = document.getElementById('set-name-color').value;
+        const descColor = document.getElementById('set-desc-color').value;
+        const btnColor = document.getElementById('set-btn-color').value;
 
         const client = window.supabaseManager?.getClient();
         if (!client) throw new Error('Supabase 未連接');
+        
+        // 更新 optionsData 中的顏色
+        if (!optionsData.category_colors) optionsData.category_colors = {};
+        optionsData.category_colors.name = nameColor;
+        optionsData.category_colors.desc = descColor;
+        optionsData.category_colors.btn_bg = btnColor;
         
         const { error } = await client.from('site_settings').upsert([
             { id: 'site_title', value: title },
@@ -2245,6 +2184,9 @@ window.saveSettings = async () => {
             { id: 'admin_avatar', value: adminAvatar },
             { id: 'admin_color', value: adminColor }
         ]);
+
+        // 保存選項資料（包含顏色設定）
+        await client.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) });
 
         // 同步更新全域變數
         siteSettings.admin_color = adminColor;
@@ -2269,6 +2211,16 @@ window.saveSettings = async () => {
     } catch (err) {
         console.error('Save settings error:', err);
         window.showToast('✗ 更新失敗', 'error');
+    }
+};
+
+window.updateCategoryColorDirect = async (key, color) => {
+    if (!optionsData.category_colors) optionsData.category_colors = {};
+    optionsData.category_colors[key] = color;
+    
+    const client = window.supabaseManager?.getClient();
+    if (client) {
+        await client.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) });
     }
 };
 
@@ -2359,67 +2311,35 @@ window.bulkDeleteAnime = async () => {
     }
 };
 
-window.renderAdminPagination = (total) => {
-    const pages = Math.ceil(total / adminItemsPerPage);
-    if (pages <= 1) return '';
-    let btns = [];
-    const maxVisible = 5;
-    let start = Math.max(1, adminPage - 2);
-    let end = Math.min(pages, start + maxVisible - 1);
-    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
-    if (start > 1) {
-        btns.push(`<button class="btn-primary" style="width: 40px; padding: 8px 0;" onclick="window.changeAdminPage(1)">1</button>`);
-        if (start > 2) btns.push(`<span style="color: var(--neon-cyan); align-self: center; padding: 0 5px;">...</span>`);
-    }
-    for (let i = start; i <= end; i++) {
-        btns.push(`<button class="btn-primary ${adminPage === i ? 'active' : ''}" style="width: 40px; padding: 8px 0;" onclick="window.changeAdminPage(${i})">${i}</button>`);
-    }
-    if (end < pages) {
-        if (end < pages - 1) btns.push(`<span style="color: var(--neon-cyan); align-self: center; padding: 0 5px;">...</span>`);
-        btns.push(`<button class="btn-primary" style="width: 40px; padding: 8px 0;" onclick="window.changeAdminPage(${pages})">${pages}</button>`);
-    }
-    return btns.join('');
-};
-
 window.changeAdminPage = (p) => { adminPage = p; window.renderAdmin(); };
-
-// 全局滑鼠滾輪橫向捲動
-window.initGlobalScroll = () => {
-    const containers = document.querySelectorAll('.force-scroll, .options-scroll-wrapper');
-    containers.forEach(container => {
-        container.removeEventListener('wheel', window.handleWheelScroll);
-        container.addEventListener('wheel', window.handleWheelScroll, { passive: false });
-    });
-};
-
-window.handleWheelScroll = (e) => {
-    if (e.currentTarget.scrollWidth > e.currentTarget.clientWidth) {
-        if (e.deltaY !== 0) {
-            e.preventDefault();
-            e.currentTarget.scrollLeft += e.deltaY;
-        }
-    }
-};
 
 // --- UI Helpers ---
 window.toggleSystemMenu = (e) => {
     if (e) e.stopPropagation();
     const menu = document.getElementById('systemMenu');
+    const btn = document.querySelector('.header-menu-btn');
     if (menu) {
-        const isHidden = window.getComputedStyle(menu).display === 'none';
+        const isHidden = window.getComputedStyle(menu).display === 'none' || !menu.classList.contains('active');
         if (isHidden) {
             menu.style.setProperty('display', 'block', 'important');
+            menu.classList.add('active');
+            btn.textContent = '✕';
         } else {
             menu.style.setProperty('display', 'none', 'important');
+            menu.classList.remove('active');
+            btn.textContent = '☰';
         }
     }
 };
 
 // 點擊頁面其他地方關閉菜單
-document.addEventListener('click', () => {
+document.addEventListener('click', (e) => {
     const menu = document.getElementById('systemMenu');
-    if (menu && window.getComputedStyle(menu).display !== 'none') {
+    const btn = document.querySelector('.header-menu-btn');
+    if (menu && menu.classList.contains('active') && !menu.contains(e.target) && e.target !== btn) {
         menu.style.setProperty('display', 'none', 'important');
+        menu.classList.remove('active');
+        if (btn) btn.textContent = '☰';
     }
 });
 
@@ -2439,17 +2359,6 @@ window.showToast = (msg, type = 'info') => {
     toast.classList.add('active');
     setTimeout(() => toast.classList.remove('active'), 3000);
 };
-
-window.showFirstVisitPopups = async () => {
-    if (typeof window.showAnnouncementPopups === 'function') {
-        await window.showAnnouncementPopups();
-    }
-};
-
-document.addEventListener('click', () => {
-    const m = document.getElementById('systemMenu'); 
-    if (m) m.classList.remove('active'); 
-});
 
 // Discord integration disabled - webhook URLs must not be exposed in client code
 // Announcements are managed via Supabase database
