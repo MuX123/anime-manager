@@ -1,0 +1,687 @@
+-- 新增缺失的欄位
+ALTER TABLE updates ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE;
+-- 確保其他欄位也存在
+ALTER TABLE announcements ADD COLUMN IF NOT EXISTS is_pinned BOOLEAN DEFAULT false;
+ALTER TABLE announcements ADD COLUMN IF NOT EXISTS author_name TEXT;
+-- 如果還沒有這些表，一起建立
+CREATE TABLE IF NOT EXISTS shown_popups (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    popup_type TEXT NOT NULL,
+    popup_id TEXT NOT NULL,
+    visitor_id TEXT NOT NULL,
+    shown_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS site_visitors (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    visitor_id TEXT UNIQUE NOT NULL,
+    first_visit TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    last_visit TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+---
+
+
+-- 1. 訪客表
+CREATE TABLE IF NOT EXISTS site_visitors (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    visitor_id TEXT UNIQUE NOT NULL,
+    first_visit TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    last_visit TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+-- 2. 彈窗記錄表
+CREATE TABLE IF NOT EXISTS shown_popups (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    popup_type TEXT NOT NULL,
+    popup_id TEXT NOT NULL,
+    visitor_id TEXT NOT NULL,
+    shown_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(popup_type, popup_id, visitor_id)
+);
+-- 3. 更新內容表
+CREATE TABLE IF NOT EXISTS updates (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    version TEXT NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+-- 4. 留言板表
+CREATE TABLE IF NOT EXISTS guestbook_messages (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    nickname TEXT NOT NULL,
+    content TEXT NOT NULL,
+    ip_address TEXT,
+    user_agent TEXT,
+    status TEXT DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+-- 啟用 RLS
+ALTER TABLE site_visitors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE shown_popups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE updates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE guestbook_messages ENABLE ROW LEVEL SECURITY;
+-- 建立允許匿名訪問的策略（根據你的需求調整）
+CREATE POLICY "Allow anonymous insert" ON site_visitors FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow anonymous update" ON site_visitors FOR UPDATE USING (true);
+CREATE POLICY "Allow anonymous insert" ON shown_popups FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow anonymous read" ON shown_popups FOR SELECT USING (true);
+CREATE POLICY "Allow anonymous read" ON updates FOR SELECT USING (true);
+CREATE POLICY "Allow anonymous insert" ON updates FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow anonymous read" ON guestbook_messages FOR SELECT USING (status = 'approved');
+CREATE POLICY "Allow anonymous insert" ON guestbook_messages FOR INSERT WITH CHECK (true);
+-- 修正 announcements 表結構（如果需要）
+ALTER TABLE announcements ADD COLUMN IF NOT EXISTS is_pinned BOOLEAN DEFAULT false;
+ALTER TABLE announcements ADD COLUMN IF NOT EXISTS author_name TEXT;
+
+-- ============================================
+-- guestbook_messages 留言板 - 完整 RLS 修復
+-- ============================================
+-- 步驟 1: 啟用 RLS
+ALTER TABLE guestbook_messages ENABLE ROW LEVEL SECURITY;
+-- 步驟 2: 刪除所有舊 policy
+DROP POLICY IF EXISTS "允許匿名讀取留言" ON guestbook_messages;
+DROP POLICY IF EXISTS "允許匿名插入留言" ON guestbook_messages;
+DROP POLICY IF EXISTS "允許匿名讀取" ON guestbook_messages;
+DROP POLICY IF EXISTS "允許匿名插入" ON guestbook_messages;
+DROP POLICY IF EXISTS "匿名讀取" ON guestbook_messages;
+DROP POLICY IF EXISTS "匿名插入" ON guestbook_messages;
+DROP POLICY IF EXISTS "管理員管理留言" ON guestbook_messages;
+-- 步驟 3: 創建新 policy
+-- Policy 1: 匿名用戶可以查看已審核的留言
+CREATE POLICY "匿名讀取已審核留言" ON guestbook_messages
+FOR SELECT TO anon USING (status = 'approved');
+-- Policy 2: 匿名用戶可以發表新留言（待審核）
+CREATE POLICY "匿名發表留言" ON guestbook_messages
+FOR INSERT TO anon WITH CHECK (status = 'pending');
+-- Policy 3: 管理員可以管理所有留言
+CREATE POLICY "管理員管理留言" ON guestbook_messages
+FOR ALL TO authenticated USING (true);
+-- 步驟 4: 驗證結果
+-- 查看 RLS 狀態
+SELECT 
+    'guestbook_messages' as table_name,
+    CASE WHEN rowsecurity THEN '已啟用' ELSE '未啟用' END as rls_status
+FROM pg_tables 
+WHERE tablename = 'guestbook_messages' AND schemaname = 'public';
+-- 查看所有 policies
+SELECT 
+    policyname as policy_name,
+    cmd as operation,
+    roles as role
+FROM pg_policies 
+WHERE tablename = 'guestbook_messages'
+ORDER BY cmd;
+
+-- ============================================================================
+-- ACG 收藏庫 - 資料庫初始化 v7.0.0
+-- 使用 Supabase Auth 管理員認證
+-- ============================================================================
+
+-- ============================================================================
+-- 資料表結構
+-- ============================================================================
+
+-- 公告表
+CREATE TABLE IF NOT EXISTS announcements (
+    id BIGSERIAL PRIMARY KEY,
+    title TEXT NOT NULL DEFAULT '公告',
+    content TEXT NOT NULL,
+    image_urls JSONB DEFAULT '[]'::jsonb,
+    is_pinned BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    author_name TEXT NOT NULL DEFAULT '管理員',
+    author_avatar TEXT,
+    author_color TEXT DEFAULT '#00ffff',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 更新內容表
+CREATE TABLE IF NOT EXISTS updates (
+    id BIGSERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    version TEXT NOT NULL,
+    image_urls JSONB DEFAULT '[]'::jsonb,
+    is_active BOOLEAN DEFAULT TRUE,
+    author_name TEXT NOT NULL DEFAULT '管理員',
+    author_color TEXT DEFAULT '#00ffff',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 留言板表
+CREATE TABLE IF NOT EXISTS guestbook_messages (
+    id BIGSERIAL PRIMARY KEY,
+    nickname TEXT NOT NULL DEFAULT '匿名',
+    content TEXT NOT NULL,
+    ip_address TEXT NOT NULL,
+    user_agent TEXT,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    admin_note TEXT,
+    approved_by TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 系統彈窗記錄表（追蹤哪些彈窗已顯示）
+CREATE TABLE IF NOT EXISTS shown_popups (
+    id BIGSERIAL PRIMARY KEY,
+    popup_type TEXT NOT NULL CHECK (popup_type IN ('update', 'announcement')),
+    popup_id BIGINT,
+    visitor_id TEXT NOT NULL,
+    shown_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(popup_type, popup_id, visitor_id)
+);
+
+CREATE TABLE IF NOT EXISTS anime_list (
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    genre TEXT[] DEFAULT '{}',
+    year TEXT,
+    season TEXT,
+    month TEXT,
+    episodes TEXT,
+    rating TEXT,
+    recommendation TEXT DEFAULT '★',
+    type TEXT,
+    poster_url TEXT,
+    links JSONB DEFAULT '[]'::jsonb,
+    extra_data JSONB DEFAULT '{}'::jsonb,
+    category TEXT DEFAULT 'anime',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS site_settings (
+    id TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS site_visitors (
+    visitor_id TEXT PRIMARY KEY,
+    first_visit TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    last_visit TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS category_clicks (
+    id BIGSERIAL PRIMARY KEY,
+    visitor_id TEXT NOT NULL,
+    category TEXT NOT NULL,
+    click_timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS page_views (
+    id BIGSERIAL PRIMARY KEY,
+    visitor_id TEXT NOT NULL,
+    page_url TEXT,
+    page_title TEXT,
+    view_timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ============================================================================
+-- 索引
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_announcements_created_at ON announcements(created_at);
+CREATE INDEX IF NOT EXISTS idx_announcements_title ON announcements(title);
+CREATE INDEX IF NOT EXISTS idx_announcements_active ON announcements(is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_updates_created_at ON updates(created_at);
+CREATE INDEX IF NOT EXISTS idx_updates_active ON updates(is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_guestbook_status ON guestbook_messages(status);
+CREATE INDEX IF NOT EXISTS idx_guestbook_ip ON guestbook_messages(ip_address);
+CREATE INDEX IF NOT EXISTS idx_guestbook_created_at ON guestbook_messages(created_at);
+CREATE INDEX IF NOT EXISTS idx_shown_popups_visitor ON shown_popups(visitor_id);
+CREATE INDEX IF NOT EXISTS idx_anime_list_category ON anime_list(category);
+CREATE INDEX IF NOT EXISTS idx_anime_list_rating ON anime_list(rating);
+CREATE INDEX IF NOT EXISTS idx_anime_list_created_at ON anime_list(created_at);
+CREATE INDEX IF NOT EXISTS idx_site_visitors_last_visit ON site_visitors(last_visit);
+CREATE INDEX IF NOT EXISTS idx_category_clicks_visitor_id ON category_clicks(visitor_id);
+CREATE INDEX IF NOT EXISTS idx_category_clicks_timestamp ON category_clicks(click_timestamp);
+CREATE INDEX IF NOT EXISTS idx_page_views_visitor_id ON page_views(visitor_id);
+CREATE INDEX IF NOT EXISTS idx_page_views_timestamp ON page_views(view_timestamp);
+
+-- ============================================================================
+-- 預設設定
+-- ============================================================================
+
+INSERT INTO site_settings (id, value) VALUES
+    ('site_title', 'ACG 收藏庫'),
+    ('announcement', '⚡ 系統連線中 // 歡迎光臨 ⚡'),
+    ('title_color', '#ffffff'),
+    ('announcement_color', '#ffffff'),
+    ('admin_name', '管理員'),
+    ('admin_avatar', 'https://cdn.discordapp.com/embed/avatars/0.png'),
+    ('admin_color', '#00ffff'),
+    ('admin_email', 'admin@acg-manager.com')
+ON CONFLICT (id) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- ============================================================================
+-- 啟用 RLS
+-- ============================================================================
+
+ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE updates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE guestbook_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE shown_popups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE anime_list ENABLE ROW LEVEL SECURITY;
+ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE site_visitors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE category_clicks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE page_views ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================================
+-- 管理員判斷函式
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean LANGUAGE sql STABLE AS $$
+  SELECT
+    auth.role() = 'authenticated'
+    AND EXISTS (
+      SELECT 1 FROM site_settings s
+      WHERE s.id = 'admin_email'
+        AND s.value = (auth.jwt() ->> 'email')
+    );
+$$;
+
+-- ============================================================================
+-- RLS 政策
+-- ============================================================================
+
+-- announcements：公開讀、管理員寫
+DROP POLICY IF EXISTS "Public read announcements" ON announcements;
+DROP POLICY IF EXISTS "Admin full access announcements" ON announcements;
+
+CREATE POLICY "Public read announcements" ON announcements FOR SELECT USING (is_active = true);
+CREATE POLICY "Admin full access announcements" ON announcements FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- updates：公開讀、管理員寫
+DROP POLICY IF EXISTS "Public read updates" ON updates;
+DROP POLICY IF EXISTS "Admin full access updates" ON updates;
+
+CREATE POLICY "Public read updates" ON updates FOR SELECT USING (is_active = true);
+CREATE POLICY "Admin full access updates" ON updates FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- guestbook_messages：公開插入、公開讀審核通過、管理員完全控制
+DROP POLICY IF EXISTS "Public insert guestbook" ON guestbook_messages;
+DROP POLICY IF EXISTS "Public read approved guestbook" ON guestbook_messages;
+DROP POLICY IF EXISTS "Admin full access guestbook" ON guestbook_messages;
+
+CREATE POLICY "Public insert guestbook" ON guestbook_messages FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public read approved guestbook" ON guestbook_messages FOR SELECT USING (status = 'approved');
+CREATE POLICY "Admin full access guestbook" ON guestbook_messages FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- shown_popups：公開寫、公開讀（用於追蹤已顯示的彈窗）
+DROP POLICY IF EXISTS "Public insert shown_popups" ON shown_popups;
+CREATE POLICY "Public insert shown_popups" ON shown_popups FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public read shown_popups" ON shown_popups FOR SELECT USING (true);
+
+-- anime_list：完全公開（展示用）
+DROP POLICY IF EXISTS "Public anime_list" ON anime_list;
+CREATE POLICY "Public anime_list" ON anime_list FOR ALL USING (true) WITH CHECK (true);
+
+-- site_settings：僅管理員讀寫
+DROP POLICY IF EXISTS "Admin site_settings" ON site_settings;
+CREATE POLICY "Admin site_settings" ON site_settings FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- 統計表：公開寫、僅管理員讀
+DROP POLICY IF EXISTS "Public insert visitors" ON site_visitors;
+DROP POLICY IF EXISTS "Admin read visitors" ON site_visitors;
+CREATE POLICY "Public insert visitors" ON site_visitors FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admin read visitors" ON site_visitors FOR SELECT USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Public insert clicks" ON category_clicks;
+DROP POLICY IF EXISTS "Admin read clicks" ON category_clicks;
+CREATE POLICY "Public insert clicks" ON category_clicks FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admin read clicks" ON category_clicks FOR SELECT USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Public insert page_views" ON page_views;
+DROP POLICY IF EXISTS "Admin read page_views" ON page_views;
+CREATE POLICY "Public insert page_views" ON page_views FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admin read page_views" ON page_views FOR SELECT USING (public.is_admin());
+
+-- ============================================================================
+-- 狀態檢查
+-- ============================================================================
+
+DO $$
+BEGIN
+    RAISE NOTICE '========================================';
+    RAISE NOTICE '資料庫初始化完成';
+    RAISE NOTICE '========================================';
+    RAISE NOTICE '管理員設定：請在 site_settings 中設定 admin_email';
+    RAISE NOTICE 'RLS 已啟用所有資料表';
+    RAISE NOTICE '========================================';
+END $$;
+
+
+-- =============================================
+-- Supabase 資料庫安全性修復腳本
+-- 執行前請備份資料庫！
+-- =============================================
+
+-- 開始交易
+BEGIN;
+
+-- =============================================
+-- 1. 修復 Functions 的 search_path 問題
+-- =============================================
+
+-- 修正 update_updated_at_column 函數
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = 'public';
+
+-- 修正 is_admin 函數
+CREATE OR REPLACE FUNCTION public.is_admin(user_email TEXT)
+RETURNS BOOLEAN AS $$
+DECLARE
+    is_admin_result BOOLEAN;
+BEGIN
+    SELECT EXISTS (
+        SELECT 1 FROM auth.users WHERE email = user_email AND raw_user_meta_data->>'is_admin' = 'true'
+    ) INTO is_admin_result;
+    RETURN is_admin_result;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = 'public';
+
+-- =============================================
+-- 2. 修復 anime_list 表格的 RLS 策略
+-- =============================================
+
+-- 先刪除過度寬鬆的策略
+DROP POLICY IF EXISTS "Allow anonymous operations" ON public.anime_list;
+DROP POLICY IF EXISTS "Public anime_list" ON public.anime_list;
+DROP POLICY IF EXISTS "anime_list_full_access" ON public.anime_list;
+DROP POLICY IF EXISTS "Public read access" ON public.anime_list;
+
+-- 啟用 RLS
+ALTER TABLE public.anime_list ENABLE ROW LEVEL SECURITY;
+
+-- 重新建立策略
+-- 公開讀取 (這是必要的，讓前台可以顯示作品)
+CREATE POLICY "Anime public read" ON public.anime_list
+    FOR SELECT USING (true);
+
+-- 管理員完整權限 (需要自行根據 admin 角色調整)
+CREATE POLICY "Anime admin full" ON public.anime_list
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM auth.users
+            WHERE auth.uid() = id
+            AND raw_user_meta_data->>'is_admin' = 'true'
+        )
+    );
+
+-- =============================================
+-- 3. 修復 announcements 表格的 RLS 策略
+-- =============================================
+
+-- 刪除所有現有策略
+DROP POLICY IF EXISTS "Public access" ON public.announcements;
+DROP POLICY IF EXISTS "announcements_full_access" ON public.announcements;
+DROP POLICY IF EXISTS "Public read announcements" ON public.announcements;
+DROP POLICY IF EXISTS "Admin manage announcements" ON public.announcements;
+
+ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Ann public read" ON public.announcements
+    FOR SELECT USING (true);
+
+CREATE POLICY "Ann admin manage" ON public.announcements
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM auth.users
+            WHERE auth.uid() = id
+            AND raw_user_meta_data->>'is_admin' = 'true'
+        )
+    );
+
+-- =============================================
+-- 4. 修復 site_settings 表格的 RLS 策略
+-- =============================================
+
+DROP POLICY IF EXISTS "site_settings_full_access" ON public.site_settings;
+DROP POLICY IF EXISTS "Public read settings" ON public.site_settings;
+DROP POLICY IF EXISTS "Admin manage settings" ON public.site_settings;
+
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+
+-- 公開讀取設定值（網站標題等）
+CREATE POLICY "Settings public read" ON public.site_settings
+    FOR SELECT USING (true);
+
+-- 只有管理員可以修改設定
+CREATE POLICY "Settings admin manage" ON public.site_settings
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM auth.users
+            WHERE auth.uid() = id
+            AND raw_user_meta_data->>'is_admin' = 'true'
+        )
+    );
+
+-- =============================================
+-- 5. 修復 category_clicks 表格的 RLS 策略
+-- =============================================
+
+DROP POLICY IF EXISTS "Public insert" ON public.category_clicks;
+DROP POLICY IF EXISTS "Public insert clicks" ON public.category_clicks;
+DROP POLICY IF EXISTS "Authenticated insert clicks" ON public.category_clicks;
+DROP POLICY IF EXISTS "Admin read clicks" ON public.category_clicks;
+
+ALTER TABLE public.category_clicks ENABLE ROW LEVEL SECURITY;
+
+-- 允許匿名插入（用於統計），但限制頻率
+CREATE POLICY "Clicks auth insert" ON public.category_clicks
+    FOR INSERT WITH CHECK (
+        auth.uid() IS NOT NULL
+        OR current_setting('request.jwt.claims', true)::jsonb->>'role' = 'anon'
+    );
+
+CREATE POLICY "Clicks admin read" ON public.category_clicks
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM auth.users
+            WHERE auth.uid() = id
+            AND raw_user_meta_data->>'is_admin' = 'true'
+        )
+    );
+
+-- =============================================
+-- 6. 修復 guestbook_messages 表格的 RLS 策略
+-- =============================================
+
+DROP POLICY IF EXISTS "Public insert guestbook" ON public.guestbook_messages;
+DROP POLICY IF EXISTS "Anyone can post guestbook" ON public.guestbook_messages;
+DROP POLICY IF EXISTS "Public read approved" ON public.guestbook_messages;
+DROP POLICY IF EXISTS "Admin manage guestbook" ON public.guestbook_messages;
+
+ALTER TABLE public.guestbook_messages ENABLE ROW LEVEL SECURITY;
+
+-- 允許匿名 INSERT（留言需要），但加入基本驗證
+CREATE POLICY "Guestbook anyone post" ON public.guestbook_messages
+    FOR INSERT WITH CHECK (
+        -- 內容不能為空
+        content IS NOT NULL AND length(trim(content)) > 0
+        AND length(trim(content)) <= 500
+        -- 暱稱基本驗證
+        AND (nickname IS NULL OR length(trim(nickname)) <= 20)
+    );
+
+-- 公開讀取已審核的留言
+CREATE POLICY "Guestbook public read" ON public.guestbook_messages
+    FOR SELECT USING (status = 'approved');
+
+-- 只有管理員可以審核和刪除
+CREATE POLICY "Guestbook admin manage" ON public.guestbook_messages
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM auth.users
+            WHERE auth.uid() = id
+            AND raw_user_meta_data->>'is_admin' = 'true'
+        )
+    );
+
+-- =============================================
+-- 7. 修復 page_views 表格的 RLS 策略
+-- =============================================
+
+DROP POLICY IF EXISTS "Public insert" ON public.page_views;
+DROP POLICY IF EXISTS "Public insert page_views" ON public.page_views;
+DROP POLICY IF EXISTS "Authenticated insert page views" ON public.page_views;
+DROP POLICY IF EXISTS "Admin read page views" ON public.page_views;
+
+ALTER TABLE public.page_views ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Pageviews auth insert" ON public.page_views
+    FOR INSERT WITH CHECK (auth.role() IN ('authenticated', 'anon'));
+
+CREATE POLICY "Pageviews admin read" ON public.page_views
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM auth.users
+            WHERE auth.uid() = id
+            AND raw_user_meta_data->>'is_admin' = 'true'
+        )
+    );
+
+-- =============================================
+-- 8. 修復 site_visitors 表格的 RLS 策略
+-- =============================================
+
+DROP POLICY IF EXISTS "Public insert" ON public.site_visitors;
+DROP POLICY IF EXISTS "Public insert visitors" ON public.site_visitors;
+DROP POLICY IF EXISTS "Public update" ON public.site_visitors;
+DROP POLICY IF EXISTS "Authenticated insert visitors" ON public.site_visitors;
+DROP POLICY IF EXISTS "Admin manage visitors" ON public.site_visitors;
+
+ALTER TABLE public.site_visitors ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Visitors auth insert" ON public.site_visitors
+    FOR INSERT WITH CHECK (auth.role() IN ('authenticated', 'anon'));
+
+CREATE POLICY "Visitors admin manage" ON public.site_visitors
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM auth.users
+            WHERE auth.uid() = id
+            AND raw_user_meta_data->>'is_admin' = 'true'
+        )
+    );
+
+-- =============================================
+-- 9. 修復 shown_popups 表格的 RLS 策略
+-- =============================================
+
+DROP POLICY IF EXISTS "Public insert shown_popups" ON public.shown_popups;
+DROP POLICY IF EXISTS "Authenticated insert shown popups" ON public.shown_popups;
+DROP POLICY IF EXISTS "Admin manage popups" ON public.shown_popups;
+
+ALTER TABLE public.shown_popups ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Popups auth insert" ON public.shown_popups
+    FOR INSERT WITH CHECK (auth.role() IN ('authenticated', 'anon'));
+
+CREATE POLICY "Popups admin manage" ON public.shown_popups
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM auth.users
+            WHERE auth.uid() = id
+            AND raw_user_meta_data->>'is_admin' = 'true'
+        )
+    );
+
+-- =============================================
+-- 10. 修復 real_time_stats 表格的 RLS 策略
+-- =============================================
+
+DROP POLICY IF EXISTS "real_time_stats_full_access" ON public.real_time_stats;
+DROP POLICY IF EXISTS "Admin read stats" ON public.real_time_stats;
+DROP POLICY IF EXISTS "Admin manage stats" ON public.real_time_stats;
+
+ALTER TABLE public.real_time_stats ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Stats admin read" ON public.real_time_stats
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM auth.users
+            WHERE auth.uid() = id
+            AND raw_user_meta_data->>'is_admin' = 'true'
+        )
+    );
+
+CREATE POLICY "Stats admin manage" ON public.real_time_stats
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM auth.users
+            WHERE auth.uid() = id
+            AND raw_user_meta_data->>'is_admin' = 'true'
+        )
+    );
+
+-- =============================================
+-- 11. 修復 visitor_sessions 表格的 RLS 策略
+-- =============================================
+
+DROP POLICY IF EXISTS "Public insert" ON public.visitor_sessions;
+DROP POLICY IF EXISTS "visitor_sessions_full_access" ON public.visitor_sessions;
+DROP POLICY IF EXISTS "Authenticated insert sessions" ON public.visitor_sessions;
+DROP POLICY IF EXISTS "Admin manage sessions" ON public.visitor_sessions;
+
+ALTER TABLE public.visitor_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Sessions auth insert" ON public.visitor_sessions
+    FOR INSERT WITH CHECK (auth.role() IN ('authenticated', 'anon'));
+
+CREATE POLICY "Sessions admin manage" ON public.visitor_sessions
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM auth.users
+            WHERE auth.uid() = id
+            AND raw_user_meta_data->>'is_admin' = 'true'
+        )
+    );
+
+-- =============================================
+-- 12. 建立索引優化查詢效能
+-- =============================================
+
+-- anime_list 常見查詢的索引
+CREATE INDEX IF NOT EXISTS idx_anime_list_category_created ON public.anime_list(category, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_anime_list_year_season ON public.anime_list(year, season);
+
+-- 留言板審核狀態索引
+CREATE INDEX IF NOT EXISTS idx_guestbook_status ON public.guestbook_messages(status);
+
+-- 分析統計表格索引
+CREATE INDEX IF NOT EXISTS idx_category_clicks_created ON public.category_clicks(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_page_views_created ON public.page_views(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_site_visitors_created ON public.site_visitors(created_at DESC);
+
+-- =============================================
+-- 提交交易
+-- =============================================
+
+COMMIT;
+
+-- =============================================
+-- 驗證 RLS 策略
+-- =============================================
+
+SELECT
+    schemaname,
+    tablename,
+    policyname,
+    cmd,
+    roles,
+    qual
+FROM pg_policies
+WHERE schemaname = 'public'
+ORDER BY tablename, policyname;

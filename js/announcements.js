@@ -219,21 +219,6 @@ class AnnouncementSystem {
         `;
     }
 
-    renderAnnouncementBoard() {
-        return `
-            <div id="announcement-board" class="admin-panel-v492" style="margin-top:20px;min-height:400px;">
-                <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;border-bottom:2px solid rgba(0,212,255,0.2);padding-bottom:15px;">
-                    <button class="btn-primary ${this.currentTab === 'announcements' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('announcements')">📢 公告</button>
-                    <button class="btn-primary ${this.currentTab === 'guestbook' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('guestbook')">💬 留言板</button>
-                    <button class="btn-primary ${this.currentTab === 'updates' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('updates')">📋 更新內容</button>
-                </div>
-                <div id="announcement-content">
-                    <div style="text-align:center;padding:50px;color:var(--neon-cyan);">載入中...</div>
-                </div>
-            </div>
-        `;
-    }
-
     async switchTab(tab) {
         this.currentTab = tab;
         const content = document.getElementById('announcement-content');
@@ -252,13 +237,13 @@ class AnnouncementSystem {
 
     renderAnnouncementBoard() {
         return `
-            <div id="announcement-board" class="admin-panel-v492" style="margin-top:20px;min-height:400px;">
-                <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;border-bottom:2px solid rgba(0,212,255,0.2);padding-bottom:15px;">
+            <div id="announcement-board" class="admin-panel-v492" style="margin-top:20px;min-height:400px;max-width:800px;margin-left:auto;margin-right:auto;">
+                <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;border-bottom:2px solid rgba(0,212,255,0.2);padding-bottom:15px;justify-content:center;">
                     <button class="btn-primary ${this.currentTab === 'announcements' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('announcements')">📢 公告</button>
                     <button class="btn-primary ${this.currentTab === 'guestbook' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('guestbook')">💬 留言板</button>
                     <button class="btn-primary ${this.currentTab === 'updates' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('updates')">📋 更新內容</button>
                 </div>
-                <div id="announcement-content">
+                <div id="announcement-content" style="width:100%;">
                     <div style="text-align:center;padding:50px;color:var(--neon-cyan);">載入中...</div>
                 </div>
                 ${isAdminLoggedIn ? '<div style="margin-top:20px;text-align:center;"><button class="btn-primary" onclick="window.announcementSystem.showAnnouncementAdminModal()">⚙️ 管理公告與更新</button></div>' : ''}
