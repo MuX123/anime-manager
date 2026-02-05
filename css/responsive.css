@@ -70,10 +70,7 @@
         display: none;
     }
 
-    /* 隱藏後台側邊欄 */
-    .admin-sidebar {
-        display: none !important;
-    }
+/* ========== 後台響應式樣式（已統一至 components.css，此處僅保留 media query 覆蓋） ========== */
 
     /* 網格調整 */
     .anime-grid {
@@ -134,16 +131,15 @@
     /* 統計列 - 手機版置中於頂部 */
     .analytics-bar {
         position: fixed;
-        top: 10px;
+        top: 8px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 10000;
-        background: rgba(5, 6, 9, 0.85);
-        border: 1px solid var(--neon-cyan);
-        border-radius: 8px;
-        padding: 8px 12px;
-        backdrop-filter: blur(10px);
-        margin: 0;
+        background: rgba(5, 6, 9, 0.6);
+        border: 1px solid rgba(0, 212, 255, 0.15);
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 10px;
     }
 
     #analytics-display {
@@ -328,12 +324,6 @@
         min-width: 180px;
         max-width: 250px;
         height: 400px;
-    }
-
-    .admin-table-container th,
-    .admin-table-container td {
-        padding: 8px 10px;
-        font-size: 12px;
     }
 }
 

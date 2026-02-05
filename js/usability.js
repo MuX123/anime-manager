@@ -355,7 +355,7 @@ class UsabilityManager {
                 this.quickFilters = [
                     { name: '⭐ 收藏', icon: '⭐', filters: { favorite: true } },
                     { name: '最近新增', icon: '🆕', filters: { sort: 'newest' } },
-                    { name: '高評分', icon: '🔥', filters: { rating: ['神', '優'] } }
+                    { name: '高評分', icon: '🔥', filters: { rating: ['SS', '優'] } }
                 ];
             }
         } catch (e) {

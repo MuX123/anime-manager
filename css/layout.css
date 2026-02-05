@@ -4,17 +4,10 @@
     ============================================= */
 
 /* 主容器 */
-.app-container,
-.admin-container {
+.app-container {
     max-width: 900px;
     margin: 0 auto;
     padding: 40px 20px;
-}
-
-/* 後台容器不需要限制寬度 */
-.admin-container {
-    max-width: none;
-    padding: 0;
 }
 
 /* 頁首 */
@@ -59,6 +52,11 @@ h1 {
     margin-top: 30px;
 }
 
+.anime-grid .anime-card {
+    height: 100%;
+    min-height: 280px;
+}
+
 .anime-grid.force-mobile-layout {
     display: flex;
     flex-direction: column;
@@ -87,7 +85,7 @@ h1 {
 }
 
 /* 列表佈局 */
-.anime-grid.force-mobile-layout {
+.anime-grid.force-mobile-layout .anime-card {
     display: flex;
     flex-direction: column;
     grid-template-columns: 1fr;
@@ -95,18 +93,6 @@ h1 {
     max-width: 100%;
     margin: 0 auto;
     gap: 15px;
-}
-
-.anime-grid.force-mobile-layout .anime-card {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    min-height: 80px;
-    margin: 0;
-    align-items: center;
-    padding: 10px 25px;
 }
 
 .anime-grid.force-mobile-layout .card-poster-v38 {

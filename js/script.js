@@ -21,7 +21,7 @@ let optionsData = {
     month: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
     season: ['冬', '春', '夏', '秋'],
     episodes: ['12集', '24集', '劇場版', 'OVA'],
-    rating: ['神', '迷', '優', '普', '劣'],
+    rating: ['SS', '神', '優', '普', '劣'],
     recommendation: ['★★★★★', '★★★★', '★★★', '★★', '★'],
     category_colors: {
         genre: '#00ffff',
@@ -959,19 +959,27 @@ window.renderCard = (item) => {
                         <div style="color: ${ratingColor}; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 1px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.rating || '普')}</div>
                     </div>
                     <div class="episodes-badge-v38" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: ${episodesColor}; font-size: 14px; padding: 4px 16px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; z-index: 10; box-shadow: 0 0 15px rgba(0,0,0,0.8);">全 ${escapeHtml(item.episodes || '0')} 集</div>
-                </div>
-                <div class="card-content-v38" style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4); width: 100%;">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                        <h3 style="color: ${nameColor}; font-size: ${gridColumns == 4 ? '13px' : '15px'}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; flex: 1;">${escapeHtml(item.name)}</h3>
-                    </div>
-                    <div class="card-tags-v38" style="display: flex; flex-direction: column; gap: 6px; width: 100%; align-items: center;">
-                        <div style="display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; width: 100%; justify-content: center;">
-                            ${item.year ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.year)}</span>` : ''}
-                            ${item.season ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.season)}</span>` : ''}
-                            ${item.month ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.month)}月</span>` : ''}
+                    <div class="card-content-v38" style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4); width: 100%; display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <div style="display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; width: 100%; justify-content: center;">
+                                ${item.episodes ? `<span style="${getTagStyle(episodesColor)}">全 ${escapeHtml(item.episodes)} 集</span>` : ''}
+                            </div>
+                            <h3 style="color: ${nameColor}; font-size: ${gridColumns == 5 ? '12px' : (gridColumns == 4 ? '13px' : '15px')}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px 12px;">${escapeHtml(item.name)}</h3>
+                            <div style="display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; width: 100%; justify-content: center;">
+                                ${item.year ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.year)}</span>` : ''}
+                                ${item.season && gridColumns != 5 ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.season)}</span>` : ''}
+                                ${item.month ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.month)}月</span>` : ''}
+                            </div>
                         </div>
                     </div>
-                </div>
+                        <div class="card-tags-v38" style="display: flex; flex-direction: column; gap: 6px; width: 100%; align-items: center;">
+                            <div style="display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; width: 100%; justify-content: center;">
+                                ${item.year ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.year)}</span>` : ''}
+                                ${item.season && gridColumns != 5 ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.season)}</span>` : ''}
+                                ${item.month ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.month)}月</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
             </div>
         `;
     }
@@ -1400,7 +1408,7 @@ window.renderAdmin = () => {
                         </div>
                     </div>
                     
-                    <div class="admin-table-wrapper">
+                    <div class="admin-table-container">
                         <table class="admin-table">
                             <thead>
                                 <tr>
@@ -1702,66 +1710,220 @@ window.renderAdminPagination = (total) => {
             return;
         }
 
-        if (!confirm(`確定要將「${oldValue}」改為「${newValue}」嗎？\n所有使用「${oldValue}」的作品都會自動更新！`)) {
-            inputEl.style.display = 'none';
-            textEl.style.display = 'inline';
+        // 創建確認視窗
+        const confirmId = 'confirm-modal-' + Date.now();
+        const confirmHTML = `
+            <div id="${confirmId}" style="
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.7);
+                z-index: 999998;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">
+                <div style="
+                    background: #0a0e1a;
+                    border: 2px solid var(--neon-cyan);
+                    border-radius: 12px;
+                    padding: 24px;
+                    max-width: 400px;
+                    text-align: center;
+                    box-shadow: 0 0 30px rgba(0,212,255,0.3);
+                ">
+                    <div style="color: var(--neon-cyan); font-size: 16px; margin-bottom: 20px;">
+                        確定要將「<span style="color: #ff6b6b;">${oldValue}</span>」改為「<span style="color: #00ff88;">${newValue}</span>」嗎？<br>
+                        <span style="color: rgba(255,255,255,0.6); font-size: 13px;">所有使用「${oldValue}」的作品都會自動更新</span>
+                    </div>
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button id="${confirmId}-cancel" style="
+                            padding: 10px 24px;
+                            background: rgba(255,68,68,0.1);
+                            border: 1px solid #ff4444;
+                            border-radius: 6px;
+                            color: #ff6b6b;
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">取消</button>
+                        <button id="${confirmId}-ok" style="
+                            padding: 10px 24px;
+                            background: rgba(0,212,255,0.2);
+                            border: 1px solid var(--neon-cyan);
+                            border-radius: 6px;
+                            color: var(--neon-cyan);
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">確定</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', confirmHTML);
+
+        // 等待 DOM 更新後再綁定事件
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        const confirmModal = document.getElementById(confirmId);
+        const okBtn = document.getElementById(`${confirmId}-ok`);
+        const cancelBtn = document.getElementById(`${confirmId}-cancel`);
+
+        if (!okBtn || !cancelBtn) {
+            console.error('確認視窗元素未找到');
             return;
         }
 
-        try {
-            // 1. 更新選項列表中的名稱
-            const optionsList = optionsData[key];
-            const optIndex = optionsList.indexOf(oldValue);
-            if (optIndex > -1) {
-                optionsList[optIndex] = newValue;
-            }
+        // 綁定取消按鈕
+        cancelBtn.onclick = () => {
+            confirmModal.remove();
+            inputEl.style.display = 'none';
+            textEl.style.display = 'inline';
+        };
 
-            // 2. 更新資料庫中的 options_data
-            await window.saveOptionsToDB();
+        // 綁定確定按鈕 - 開始更新
+        okBtn.onclick = async () => {
+            confirmModal.remove();
+            inputEl.style.display = 'none';
+            textEl.style.display = 'inline';
 
-            // 3. 更新所有使用該標籤的作品
-            const client = window.supabaseManager?.getClient();
-            if (client) {
-                // 根據 key 類型選擇要查詢和更新的字段
-                const isGenre = key === 'genre';
-                const selectFields = isGenre ? 'id, genre' : `id, ${key}`;
+            // 創建進度動畫
+            const progressId = 'progress-modal-' + Date.now();
+            const progressHTML = `
+                <div id="${progressId}" style="
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(0,0,0,0.8);
+                    z-index: 999999;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 20px;
+                ">
+                    <div style="
+                        width: 50px;
+                        height: 50px;
+                        border: 3px solid rgba(0,212,255,0.2);
+                        border-top-color: var(--neon-cyan);
+                        border-radius: 50%;
+                        animation: spin 1s linear infinite;
+                    "></div>
+                    <div style="color: var(--neon-cyan); font-size: 18px;">更新中請稍後...</div>
+                    <div id="${progressId}-status" style="
+                        color: rgba(0,212,255,0.7);
+                        font-size: 14px;
+                        min-width: 120px;
+                        text-align: center;
+                    ">0 / 0</div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', progressHTML);
 
-                const { data: items } = await client.from('anime_list').select(selectFields);
+            // 添加旋轉動畫
+            const style = document.createElement('style');
+            style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+            document.head.appendChild(style);
 
-                let updatedCount = 0;
-                for (const item of items || []) {
-                    if (isGenre) {
-                        // genre 是數組類型
-                        if (item.genre && Array.isArray(item.genre)) {
-                            const newGenre = item.genre.map(g => g === oldValue ? newValue : g);
-                            if (newGenre.join(',') !== item.genre.join(',')) {
-                                await client.from('anime_list').update({ genre: newGenre }).eq('id', item.id);
-                                updatedCount++;
-                            }
-                        }
-                    } else {
-                        // 其他字段是字符串類型 (year, month, season, episodes, rating, recommendation)
-                        const currentValue = item[key];
-                        if (currentValue === oldValue) {
-                            await client.from('anime_list').update({ [key]: newValue }).eq('id', item.id);
-                            updatedCount++;
-                        }
+            const updateProgress = (current, total) => {
+                const statusEl = document.getElementById(`${progressId}-status`);
+                if (statusEl) {
+                    statusEl.textContent = `${current} / ${total}`;
+                }
+            };
+
+            try {
+                // 1. 更新選項列表中的名稱
+                if (!optionsData[key]) {
+                    optionsData[key] = [];
+                }
+                const optionsList = optionsData[key];
+                const optIndex = optionsList.indexOf(oldValue);
+                if (optIndex > -1) {
+                    optionsList[optIndex] = newValue;
+                }
+
+                // 2. 更新資料庫中的 options_data
+                const client = window.supabaseManager?.getClient();
+                if (client) {
+                    try {
+                        await client.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) });
+                    } catch (dbErr) {
+                        console.warn('儲存 options_data 失敗:', dbErr);
                     }
                 }
 
-                window.showToast(`✓ 已更新「${oldValue}」→「${newValue}」，共 ${updatedCount} 個作品`);
-            } else {
-                window.showToast(`✓ 已更新選項`);
+                // 3. 更新所有使用該標籤的作品
+                if (client) {
+                    try {
+                        const isGenre = key === 'genre';
+                        const selectFields = isGenre ? 'id, genre' : `id, ${key}`;
+
+                        const { data: items, error: selectError } = await client.from('anime_list').select(selectFields);
+                        if (selectError) throw selectError;
+
+                        const totalItems = items?.length || 0;
+                        let updatedCount = 0;
+
+                        updateProgress(0, totalItems);
+
+                        for (let i = 0; i < (items?.length || 0); i++) {
+                            const item = items[i];
+                            if (isGenre) {
+                                if (item.genre && Array.isArray(item.genre)) {
+                                    const newGenre = item.genre.map(g => g === oldValue ? newValue : g);
+                                    if (newGenre.join(',') !== item.genre.join(',')) {
+                                        await client.from('anime_list').update({ genre: newGenre }).eq('id', item.id);
+                                        updatedCount++;
+                                    }
+                                }
+                            } else {
+                                const currentValue = item[key];
+                                if (currentValue === oldValue) {
+                                    await client.from('anime_list').update({ [key]: newValue }).eq('id', item.id);
+                                    updatedCount++;
+                                }
+                            }
+                            updateProgress(i + 1, totalItems);
+                        }
+
+                        // 延遲讓使用者看到完成
+                        await new Promise(r => setTimeout(r, 300));
+
+                        // 移除進度動畫
+                        const progressEl = document.getElementById(progressId);
+                        if (progressEl) progressEl.remove();
+                        style.remove();
+
+                        window.showToast(`✓ 已更新「${oldValue}」→「${newValue}」，共 ${updatedCount} 個作品`);
+                    } catch (updateErr) {
+                        console.warn('更新作品失敗:', updateErr);
+                        const progressEl = document.getElementById(progressId);
+                        if (progressEl) progressEl.remove();
+                        style.remove();
+                        window.showToast('✓ 選項已更新（作品更新失敗）');
+                    }
+                } else {
+                    const progressEl = document.getElementById(progressId);
+                    if (progressEl) progressEl.remove();
+                    style.remove();
+                    window.showToast('✓ 已更新選項（離線模式）');
+                }
+
+                // 重新載入資料並刷新
+                try {
+                    await window.loadData();
+                } catch (loadErr) {
+                    console.warn('loadData 失敗:', loadErr);
+                }
+                window.renderAdmin();
+
+            } catch (err) {
+                console.error('更新選項失敗:', err);
+                const progressEl = document.getElementById(progressId);
+                if (progressEl) progressEl.remove();
+                style.remove();
+                window.showToast('✗ 更新失敗：' + (err.message || err), 'error');
             }
-
-            // 重新載入資料並刷新
-            await window.loadData();
-            window.renderAdmin();
-
-        } catch (err) {
-            console.error('更新選項失敗:', err);
-            window.showToast('✗ 更新失敗：' + err.message, 'error');
-        }
+        };
     };
 
 
@@ -1838,6 +2000,13 @@ window.renderAdminPagination = (total) => {
                         </select>
                     </div>
                     <div>
+                        <label style="font-size: 12px; color: var(--neon-cyan);">月份</label>
+                        <select id="form-month" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
+                            <option value="">請選擇</option>
+                            ${['1','2','3','4','5','6','7','8','9','10','11','12'].map(m => `<option value="${m}" ${item.month === m ? 'selected' : ''}>${m}月</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
                         <label style="font-size: 12px; color: var(--neon-cyan);">集數</label>
                         <input type="text" id="form-episodes" value="${item.episodes || ''}" placeholder="12" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
                     </div>
@@ -1846,6 +2015,13 @@ window.renderAdminPagination = (total) => {
                         <select id="form-rating" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
                             <option value="">請選擇</option>
                             ${['★','★★','★★★','★★★★','★★★★★'].map(r => `<option value="${r}" ${item.rating === r ? 'selected' : ''}>${r}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: var(--neon-cyan);">推薦度</label>
+                        <select id="form-recommendation" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
+                            <option value="">請選擇</option>
+                            ${['★','★★','★★★','★★★★','★★★★★'].map(r => `<option value="${r}" ${item.recommendation === r ? 'selected' : ''}>${r}</option>`).join('')}
                         </select>
                     </div>
                 </div>
@@ -1887,6 +2063,21 @@ window.renderAdminPagination = (total) => {
                     <button onclick="window.addLinkRow()" style="margin-top: 6px; background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px 12px; color: var(--neon-cyan); cursor: pointer; font-size: 12px;">＋ 新增連結</button>
                 </div>
                 
+                <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                    <div>
+                        <label style="font-size: 12px; color: var(--neon-cyan);">星星顏色</label>
+                        <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" style="width: 100%; height: 40px; border-radius: 6px; cursor: pointer;">
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: var(--neon-cyan);">名稱顏色</label>
+                        <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" style="width: 100%; height: 40px; border-radius: 6px; cursor: pointer;">
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: var(--neon-cyan);">簡介顏色</label>
+                        <input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" style="width: 100%; height: 40px; border-radius: 6px; cursor: pointer;">
+                    </div>
+                </div>
+                
                 <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
                     <button onclick="window.saveAnime(${item.id || ''})" style="background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); border-radius: 6px; padding: 10px 30px; color: var(--neon-cyan); cursor: pointer; font-size: 14px;">💾 ${isEdit ? '儲存變更' : '新增作品'}</button>
                     <button onclick="window.renderAdmin()" style="background: rgba(255,255,255,0.1); border: 1px solid #666; border-radius: 6px; padding: 10px 20px; color: #999; cursor: pointer; font-size: 14px;">✕ 取消</button>
@@ -1906,28 +2097,32 @@ window.renderAdminPagination = (total) => {
             if (select.value) extra_data[key] = select.value;
         });
         
-        const btnBg = document.getElementById('form-btn-bg').value;
-        if (btnBg) extra_data.btn_bg = btnBg;
+        const btnBg = document.getElementById('form-btn-bg');
+        if (btnBg && btnBg.value) extra_data.btn_bg = btnBg.value;
+        
+        const starColorEl = document.getElementById('form-star-color');
+        const nameColorEl = document.getElementById('form-name-color');
+        const descColorEl = document.getElementById('form-desc-color');
         
         const payload = {
             name: nameEl.value,
-            poster_url: document.getElementById('form-poster').value,
-            category: document.getElementById('form-category').value,
+            poster_url: document.getElementById('form-poster')?.value || '',
+            category: document.getElementById('form-category')?.value || 'anime',
             links: Array.from(document.querySelectorAll('#links-list > div')).map(row => {
                 const n = row.querySelector('.link-name');
                 const u = row.querySelector('.link-url');
                 return (n && u) ? { name: n.value, url: u.value } : null;
             }).filter(l => l),
-            description: document.getElementById('form-desc').value,
-            year: document.getElementById('form-year').value,
-            month: document.getElementById('form-month').value,
-            season: document.getElementById('form-season').value,
-            rating: document.getElementById('form-rating').value,
-            recommendation: document.getElementById('form-recommendation').value,
-            episodes: document.getElementById('form-episodes').value,
-            star_color: document.getElementById('form-star-color').value,
-            name_color: document.getElementById('form-name-color').value,
-            desc_color: document.getElementById('form-desc-color').value,
+            description: document.getElementById('form-desc')?.value || '',
+            year: document.getElementById('form-year')?.value || '',
+            month: document.getElementById('form-month')?.value || '',
+            season: document.getElementById('form-season')?.value || '',
+            rating: document.getElementById('form-rating')?.value || '',
+            recommendation: document.getElementById('form-recommendation')?.value || '',
+            episodes: document.getElementById('form-episodes')?.value || '',
+            star_color: starColorEl?.value || '#ffcc00',
+            name_color: nameColorEl?.value || '#ffffff',
+            desc_color: descColorEl?.value || '#ffffff',
             extra_data: Object.keys(extra_data).length > 0 ? extra_data : null
         };
         
@@ -1965,8 +2160,37 @@ window.renderAdminPagination = (total) => {
 
 window.editAnime = (id) => { window.switchAdminTab('edit', id); };
 window.addLinkRow = () => { const c = document.getElementById('links-list'); const d = document.createElement('div'); d.style.display = 'flex'; d.style.gap = '8px'; d.style.marginBottom = '10px'; d.innerHTML = `<input type="text" placeholder="名" class="link-name" style="flex: 1;"><input type="text" placeholder="網" class="link-url" style="flex: 2;"><button class="btn-primary" style="padding: 8px 12px; border-color: #ff4444; color: #ff4444;" onclick="this.parentElement.remove()">✕</button>`; c.appendChild(d); };
-window.addOptionItem = async (key) => { const input = document.getElementById(`add-opt-${key}`); if (!input.value) return window.showToast('✗ 請輸入選項名稱', 'error'); optionsData[key].push(input.value); input.value = ''; await window.saveOptionsToDB(); window.renderAdmin(); };
-window.deleteOptionItem = async (key, idx) => { optionsData[key].splice(idx, 1); await window.saveOptionsToDB(); window.renderAdmin(); };
+window.addOptionItem = async (key) => {
+    const input = document.getElementById(`add-opt-${key}`);
+    const value = input?.value?.trim();
+    if (!value) return window.showToast('✗ 請輸入選項名稱', 'error');
+    try {
+        if (!optionsData[key]) optionsData[key] = [];
+        optionsData[key].push(value);
+        input.value = '';
+        await window.saveOptionsToDB();
+        window.renderAdmin();
+        window.showToast('✓ 已新增選項');
+    } catch (err) {
+        console.error('新增選項失敗:', err);
+        window.showToast('✗ 新增失敗：' + (err.message || err), 'error');
+    }
+};
+
+window.deleteOptionItem = async (key, idx) => {
+    if (!confirm('確定要刪除此選項嗎？')) return;
+    try {
+        if (optionsData[key] && optionsData[key][idx] !== undefined) {
+            optionsData[key].splice(idx, 1);
+            await window.saveOptionsToDB();
+            window.renderAdmin();
+            window.showToast('✓ 已刪除選項');
+        }
+    } catch (err) {
+        console.error('刪除選項失敗:', err);
+        window.showToast('✗ 刪除失敗：' + (err.message || err), 'error');
+    }
+};
 
 window.updateCategoryColor = async (key, color) => {
     if (!optionsData.category_colors) optionsData.category_colors = {};
@@ -1987,13 +2211,22 @@ window.triggerColorPicker = (el) => {
     if (input && input.type === 'color') input.click();
 };
 
-window.saveOptionsToDB = async () => { 
+window.saveOptionsToDB = async () => {
     const client = window.supabaseManager?.getClient();
-    if (!client) return;
-    await client.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) }); 
-    window.showToast('✓ 設定已同步'); 
-    // 強制重新渲染應用以同步搜尋過濾器
-    if (typeof window.renderApp === 'function') window.renderApp();
+    if (!client) {
+        console.warn('Supabase 未連接，無法儲存設定');
+        return;
+    }
+    try {
+        await client.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) });
+        window.showToast('✓ 設定已同步');
+    } catch (err) {
+        console.error('儲存 options_data 失敗:', err);
+        window.showToast('✗ 儲存設定失敗', 'error');
+    }
+    if (typeof window.renderApp === 'function') {
+        try { window.renderApp(); } catch (e) { console.warn('renderApp 失敗:', e); }
+    }
 };
 
 window.exportCSV = (cat) => {

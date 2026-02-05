@@ -233,12 +233,12 @@ function updateAnalyticsDisplay() {
     container.style.opacity = '0';
     
     // 使用固定寬度容器避免數字變化導致的佈局跳動
-    const itemStyle = "display: inline-block; min-width: 60px; text-align: left;";
+    const itemStyle = "display: inline-block; min-width: 35px; text-align: left; font-size: 10px;";
     
     container.innerHTML = `
-        <span style="margin-right: 15px; color: var(--neon-cyan);">👤 <span style="${itemStyle}">${visitors === '--' ? '--' : visitors.toLocaleString()}</span></span>
-        <span style="margin-right: 15px; color: var(--neon-cyan);">🖱️ <span style="${itemStyle}">${clicks === '--' ? '--' : clicks.toLocaleString()}</span></span>
-        <span style="color: var(--neon-cyan);">📄 <span style="${itemStyle}">${pageViews === '--' ? '--' : pageViews.toLocaleString()}</span></span>
+        <span style="margin-right: 8px; color: rgba(0, 212, 255, 0.6);">👤 <span style="${itemStyle}">${visitors === '--' ? '--' : visitors.toLocaleString()}</span></span>
+        <span style="margin-right: 8px; color: rgba(0, 212, 255, 0.6);">🖱️ <span style="${itemStyle}">${clicks === '--' ? '--' : clicks.toLocaleString()}</span></span>
+        <span style="color: rgba(0, 212, 255, 0.6);">📄 <span style="${itemStyle}">${pageViews === '--' ? '--' : pageViews.toLocaleString()}</span></span>
     `;
     
     // 觸發淡入效果
