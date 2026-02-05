@@ -84,9 +84,9 @@
 
     <div class="analytics-bar">
         <div id="analytics-display">
-            <span style="margin-right: 15px;">👤 <span style="display: inline-block; min-width: 60px; text-align: left;">--</span></span>
-            <span style="margin-right: 15px;">🖱️ <span style="display: inline-block; min-width: 60px; text-align: left;">--</span></span>
-            <span>📄 <span style="display: inline-block; min-width: 60px; text-align: left;">--</span></span>
+            <span style="margin-right: 15px; color: var(--neon-cyan);">👤 <span style="display: inline-block; min-width: 60px; text-align: left;">--</span></span>
+            <span style="margin-right: 15px; color: var(--neon-cyan);">🖱️ <span style="display: inline-block; min-width: 60px; text-align: left;">--</span></span>
+            <span style="color: var(--neon-cyan);">📄 <span style="display: inline-block; min-width: 60px; text-align: left;">--</span></span>
         </div>
     </div>
 
@@ -102,19 +102,29 @@
     <script src="./js/config.js?v=20260204_v2"></script>
     <script src="./js/logger.js?v=20260202_v1"></script>
     <script src="./js/security.js?v=20260204_v2"></script>
-    <script src="./js/performance.js?v=20260202_v1"></script>
+    <script src="./js/usability.js?v=20260204_v1"></script>
+    <script src="./js/performance.js?v=20260204_v1"></script>
     
     <!-- 應用功能模組 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./js/supabase.js?v=20260202_v3"></script>
+    <script src="./js/supabase.js?v=20260204_v1"></script>
     <script src="./js/analytics.js?v=20260202_v1"></script>
     <script src="./js/announcements.js?v=20260202_v3"></script>
-    <script src="./js/script.js?v=20260204_v13"></script>
+    <script src="./js/script.js?v=20260204_v15"></script>
     
     <!-- 調試工具 (開發模式) -->
     <script src="./js/debug.js?v=20260202_v1"></script>
     
     <!-- 問題修復補丁 -->
     <script src="./js/fix-recommendation.js?v=20260204_v1"></script>
+    
+    <!-- Service Worker 註冊 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                console.log('[Main] 正在註冊 Service Worker...');
+            });
+        }
+    </script>
 </body>
 </html>

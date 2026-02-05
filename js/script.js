@@ -356,12 +356,10 @@ window.checkAndUpdateAdminStatus = async () => {
 };
 
 window.updateAdminMenu = () => {
-    // 管理按鈕現在在右側選單中，這裡只更新 header 中的簡單狀態指示
+    // 管理按鈕現在在右側選單中，這裡只隱藏 header
     const headerContainer = document.getElementById('adminHeaderBar');
     if (headerContainer) {
-        headerContainer.innerHTML = isAdminLoggedIn ? 
-            '<span style="color: var(--neon-cyan); font-size: 12px;">⚙️ 已登入</span>' : 
-            '';
+        headerContainer.innerHTML = '';
     }
 };
 
@@ -374,7 +372,6 @@ window.toggleAdminMode = (enable) => {
 
     const topControlBar = document.getElementById('topControlBar');
     const adminHeaderBar = document.getElementById('adminHeaderBar');
-    const siteVersion = document.getElementById('siteVersion');
     const analyticsBar = document.querySelector('.analytics-bar');
     const app = document.getElementById('app');
     const systemMenu = document.getElementById('systemMenu');
@@ -384,7 +381,6 @@ window.toggleAdminMode = (enable) => {
         currentSection = 'admin';
         if (topControlBar) topControlBar.style.display = 'none';
         if (adminHeaderBar) adminHeaderBar.style.display = 'none';
-        if (siteVersion) siteVersion.style.display = 'none';
         if (analyticsBar) analyticsBar.style.display = 'none';
         if (systemMenu) systemMenu.classList.add('active');
         window.renderAdmin();
@@ -393,7 +389,6 @@ window.toggleAdminMode = (enable) => {
         currentCategory = lastFrontendCategory;
         if (topControlBar) topControlBar.style.display = 'flex';
         if (adminHeaderBar) adminHeaderBar.style.display = 'flex';
-        if (siteVersion) siteVersion.style.display = 'block';
         if (analyticsBar) analyticsBar.style.display = 'block';
         if (systemMenu) systemMenu.classList.remove('active');
         window.renderApp();
@@ -515,11 +510,9 @@ window.getFilteredData = () => {
 window.initApp = async function() {
     try {
         console.log('🚀 系統初始化中...');
-        
-        // 等待所有模組載入完成
-        await new Promise(resolve => setTimeout(resolve, 500));
 
-        const waitForSupabaseReady = async (timeoutMs = 10000, intervalMs = 250) => {
+        // 快速檢查 Supabase，縮短等待時間
+        const waitForSupabaseReady = async (timeoutMs = 2000, intervalMs = 100) => {
             const start = Date.now();
             while (Date.now() - start < timeoutMs) {
                 if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
@@ -530,6 +523,7 @@ window.initApp = async function() {
             return window.supabaseManager ? window.supabaseManager.isConnectionReady() : false;
         };
 
+        // 先嘗試 Supabase，2秒超時
         await waitForSupabaseReady();
         
         // 1. 檢查 Supabase 連接狀態
@@ -627,7 +621,19 @@ window.initApp = async function() {
         
         isFirstLoad = false;
         console.log('✅ 系統初始化完成');
-        
+
+        // 安全超時：10秒後強制隱藏載入畫面
+        setTimeout(() => {
+            const loadingScreen = document.getElementById('loading-screen');
+            const app = document.getElementById('app');
+            if (loadingScreen && loadingScreen.style.display !== 'none') {
+                loadingScreen.style.opacity = '0';
+                loadingScreen.style.display = 'none';
+                app.classList.add('loaded');
+                console.log('⚠️ 安全超時強制隱藏載入畫面');
+            }
+        }, 10000);
+
     } catch (err) { 
         console.error('Init error:', err);
         window.showToast('系統初始化失敗，請重新整理', 'error');
@@ -738,13 +744,16 @@ window.renderApp = function() {
             <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 6px;"></div>
         </div>
     `;
-
+    
 // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
 app.innerHTML = `
         <div class="app-container">
             <header class="app-header">
-                <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue); margin-bottom: 8px;">${siteSettings.site_title}</h1>
-                <div class="app-version">v7.0.0</div>
+                <div style="display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap;">
+                    <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue); margin-bottom: 8px;">
+                        ${siteSettings.site_title} <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px;">v7.0.0</span>
+                    </h1>
+                </div>
             </header>
             <div class="category-buttons-container" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; position: relative; z-index: 100;">
                 <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">◆ 公告</button>
@@ -2391,6 +2400,91 @@ window.showToast = (msg, type = 'info') => {
     setTimeout(() => toast.classList.remove('active'), 3000);
 };
 
+// ========== 主題切換 ==========
+window.toggleTheme = () => {
+    if (window.usabilityManager) {
+        window.usabilityManager.toggleTheme();
+        window.updateThemeUI();
+    }
+};
+
+window.updateThemeUI = () => {
+    const theme = window.usabilityManager?.getTheme() || 'dark';
+    const icon = document.getElementById('theme-icon');
+    const text = document.getElementById('theme-text');
+    
+    if (theme === 'dark') {
+        if (icon) icon.textContent = '🌙';
+        if (text) text.textContent = '深色';
+    } else {
+        if (icon) icon.textContent = '☀️';
+        if (text) text.textContent = '淺色';
+    }
+};
+
+// ========== 收藏功能 ==========
+window.toggleFavorite = (itemId) => {
+    if (window.usabilityManager) {
+        const isFavorite = window.usabilityManager.toggleFavorite(itemId);
+        window.showToast(isFavorite ? '⭐ 已加入收藏' : '💔 已移除收藏');
+        return isFavorite;
+    }
+    return false;
+};
+
+window.isFavorite = (itemId) => {
+    return window.usabilityManager?.isFavorite(itemId) || false;
+};
+
+// ========== 搜尋歷史 ==========
+window.addToSearchHistory = (query, filters = {}) => {
+    if (window.usabilityManager) {
+        window.usabilityManager.addSearch(query, filters);
+    }
+};
+
+window.getSearchHistory = () => {
+    return window.usabilityManager?.getSearchHistory() || [];
+};
+
+// ========== 最近瀏覽 ==========
+window.addToRecentViews = (item) => {
+    if (window.usabilityManager) {
+        window.usabilityManager.addRecentView(item);
+    }
+};
+
+// ========== 資料備份 ==========
+window.exportUserData = () => {
+    if (window.usabilityManager) {
+        window.usabilityManager.exportAllData();
+        window.showToast('📦 資料已匯出');
+    }
+};
+
+window.importUserData = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    if (window.usabilityManager) {
+        window.usabilityManager.importData(file)
+            .then(() => {
+                window.showToast('📥 資料已匯入');
+                window.renderApp();
+            })
+            .catch(err => {
+                window.showToast('✗ 匯入失敗：' + err.message, 'error');
+            });
+    }
+};
+
+// ========== 初始化主題 ==========
+window.initTheme = () => {
+    if (window.usabilityManager) {
+        window.updateThemeUI();
+    }
+};
+
 // Discord integration disabled - webhook URLs must not be exposed in client code
 // Announcements are managed via Supabase database
 
@@ -2417,4 +2511,6 @@ setTimeout(() => {
     } else {
         window.initApp();
     }
+    // 初始化主題
+    window.initTheme();
 }, 0);

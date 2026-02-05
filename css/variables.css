@@ -1,14 +1,15 @@
 /* =============================================
    CSS Variables - 設計變數
-   ACG 收藏庫 v6.0.0
+   ACG 收藏庫 v7.0.0
    ============================================= */
 
 :root {
-    /* 背景色彩 */
+    /* 背景色彩 - 深色主題 (預設) */
     --bg-dark: #0a0e1a;
     --bg-darker: #050609;
     --panel-bg: rgba(10, 15, 25, 0.95);
     --glass-bg: rgba(15, 20, 35, 0.4);
+    --card-bg: #0f1525;
 
     /* 霓虹色彩系統 */
     --neon-blue: #00d4ff;
@@ -17,9 +18,11 @@
     --neon-pink: #ff006e;
     --neon-green: #00ff41;
 
-    /* 文字色彩 */
-    --text-main: #e0e6ed;
+    /* 文字色彩 - 深色主題 */
+    --text-primary: #e0e6ed;
     --text-secondary: #a8b0c0;
+    --text-muted: #6b7280;
+    --text-main: #e0e6ed;
 
     /* 動畫過渡 */
     --transition-smooth: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -28,4 +31,28 @@
     /* 按鈕預設 */
     --btn-bg: var(--neon-blue);
     --btn-bg-alpha: rgba(0, 212, 255, 0.1);
+
+    /* 邊框 */
+    --border-color: rgba(0, 212, 255, 0.15);
+    --border-hover: rgba(0, 212, 255, 0.35);
+}
+
+/* 淺色主題 */
+[data-theme="light"] {
+    --bg-dark: #f5f6fa;
+    --bg-darker: #e8eaed;
+    --panel-bg: rgba(255, 255, 255, 0.95);
+    --glass-bg: rgba(255, 255, 255, 0.5);
+    --card-bg: #ffffff;
+
+    --text-primary: #1a1a2e;
+    --text-secondary: #4a4a6a;
+    --text-muted: #888899;
+    --text-main: #1a1a2e;
+
+    --border-color: rgba(0, 100, 150, 0.15);
+    --border-hover: rgba(0, 150, 200, 0.35);
+
+    --btn-bg: #0066cc;
+    --btn-bg-alpha: rgba(0, 102, 204, 0.1);
 }

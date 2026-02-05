@@ -108,23 +108,46 @@
         letter-spacing: 2px;
     }
 
+    .app-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .app-header > div:first-child {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
     .app-version {
         font-size: 12px;
     }
 
-    /* 統計列居中 */
+    #theme-toggle {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+
+    /* 統計列 - 手機版置中於頂部 */
     .analytics-bar {
-        margin-left: 15px;
-        margin-right: 15px;
-        margin-top: 0;
-        margin-bottom: 15px;
-        display: flex;
-        justify-content: center;
-        width: calc(100% - 30px);
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        background: rgba(5, 6, 9, 0.85);
+        border: 1px solid var(--neon-cyan);
+        border-radius: 8px;
+        padding: 8px 12px;
+        backdrop-filter: blur(10px);
+        margin: 0;
     }
 
     #analytics-display {
-        font-size: 10px;
+        font-size: 11px;
     }
 
     /* 手機版隱藏登入按鈕文字 */

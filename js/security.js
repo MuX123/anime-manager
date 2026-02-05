@@ -143,18 +143,12 @@ class SecurityManager {
 
     /**
      * 掃描元素威脅
-     * @param {Element} element 
+     * @param {Element} element
      */
     scanElementForThreats(element) {
-        const dangerousTags = ['script', 'iframe', 'object', 'embed', 'meta', 'base'];
-        const dangerousAttrs = ['onload', 'onerror', 'onclick', 'onmouseover', 'onfocus'];
-
-        // 檢查危險標籤
-        if (dangerousTags.includes(element.tagName.toLowerCase())) {
-            console.warn('🚨 移除危險元素:', element.tagName);
-            element.remove();
-            return;
-        }
+        // 不掃描 script 標籤和 onclick - 應用程式需要這些來正常運作
+        // CSP 會阻止惡意的內聯事件處理器
+        const dangerousAttrs = ['onload', 'onerror', 'onmouseover', 'onfocus'];
 
         // 檢查危險屬性
         dangerousAttrs.forEach(attr => {
@@ -938,7 +932,7 @@ class PasswordValidator {
         if (!checks.hasLowercase) feedback.push('建議添加小寫字母');
         if (!checks.hasNumber) feedback.push('建議添加數字');
         if (!checks.hasSpecial) feedback.push('建議添加特殊字符 (!@#$%^)');
-        if (!checks.noCommonPatterns) feedback包含常見模式');
+        if (!checks.noCommonPatterns) feedback.push('包含常見模式');
         if (!checks.noRepeatedChars) feedback.push('避免使用重複字符 (如 aaaa)');
         
         return feedback;

@@ -1,20 +1,25 @@
 /**
- * Supabase 資料庫客戶端模組
+ * Supabase 資料庫客戶端模組 v2.0
  * 提供安全的資料庫連接和操作介面
  * @version 2.0.0
  * @author ACG Manager Development Team
+ * @date 2026-02-04
  */
 
 /**
- * Supabase 資料庫管理器
+ * Supabase 資料庫管理器 v2.0
  */
 class SupabaseManager {
     constructor() {
         this.client = null;
         this.isConnected = false;
+        this.isOnline = true;
         this.connectionAttempts = 0;
-        this.maxRetries = 3;
+        this.maxRetries = 5;  // 增加重試次數
         this.retryDelay = 1000;
+        this.lastSuccessfulQuery = null;
+        this.queryQueue = [];
+        this.isProcessingQueue = false;
         
         this.init();
     }
@@ -24,17 +29,17 @@ class SupabaseManager {
      */
     async init() {
         try {
-            // 從配置管理器獲取安全配置
             const config = window.configManager?.getSupabaseConfig();
             
             if (!config || !config.url || !config.anonKey) {
                 console.warn('Supabase 配置缺失，使用離線模式');
+                this.setOfflineMode();
                 return;
             }
 
-            // 檢查 Supabase SDK 是否載入
             if (typeof supabase === 'undefined') {
-                console.warn('Supabase SDK 未載入，請檢查網路連線或 CDN 引用');
+                console.warn('Supabase SDK 未載入，使用離線模式');
+                this.setOfflineMode();
                 return;
             }
 
@@ -52,54 +57,127 @@ class SupabaseManager {
                     headers: {
                         'X-Client-Info': 'acg-manager/2.0.0'
                     }
+                },
+                realtime: {
+                    params: {
+                        eventsPerSecond: 10
+                    }
                 }
             });
 
-            // 測試連接（使用寬容模式）
+            // 監聽離線狀態
+            this.setupOfflineListener();
+
+            // 測試連接
             const connected = await this.testConnection();
             
             this.isConnected = connected;
-            window.logger?.info(connected ? 'Supabase 客戶端初始化成功' : 'Supabase 客戶端初始化完成（離線模式）');
+            this.isOnline = connected;
+            
+            if (connected) {
+                window.logger?.info('Supabase 客戶端初始化成功');
+                this.startHealthCheck();
+            } else {
+                this.setOfflineMode();
+            }
             
         } catch (error) {
             console.warn('Supabase 初始化錯誤，使用離線模式:', error.message);
-            this.isConnected = false;
+            this.setOfflineMode();
+        }
+    }
+
+    /**
+     * 設置離線監聽
+     */
+    setupOfflineListener() {
+        window.addEventListener('online', () => {
+            console.log('[Supabase] 網路已恢復，嘗試重新連線');
+            this.reconnect();
+        });
+
+        window.addEventListener('offline', () => {
+            console.log('[Supabase] 網路已斷線');
+            this.isOnline = false;
+            this.handleOffline();
+        });
+    }
+
+    /**
+     * 設置離線模式
+     */
+    setOfflineMode() {
+        this.isConnected = false;
+        this.isOnline = false;
+    }
+
+    /**
+     * 處理離線狀態
+     */
+    handleOffline() {
+        if (window.showToast) {
+            window.showToast('網路已斷線，資料可能無法同步', 'warning');
         }
     }
 
     /**
      * 測試資料庫連接
-     * @returns {Promise<boolean>} 連接是否成功
      */
     async testConnection() {
         try {
-            // 先嘗試簡單的 auth 請求，確保客戶端可用
+            // 檢查網路連線
+            if (!navigator.onLine) {
+                console.warn('[Supabase] 網路未連線');
+                return false;
+            }
+
             const { error: authError } = await this.client.auth.getSession();
             if (authError && authError.name !== 'AuthSessionMissingError') {
                 throw authError;
             }
             
-            // 嘗試查詢 site_settings（表可能不存在，這不應該算失敗）
+            // 測試查詢
             try {
-                await this.client
+                const { error } = await this.client
                     .from('site_settings')
                     .select('id')
                     .limit(1);
+                
+                if (error && error.code !== '42501') { // 權限不足不算失敗
+                    console.warn('[Supabase] 查詢測試失敗:', error.message);
+                }
             } catch (tableError) {
                 // 表不存在或無權訪問，不算連接失敗
-                console.warn('⚠️ site_settings 表可能不存在:', tableError.message);
             }
             
+            this.lastSuccessfulQuery = Date.now();
             return true;
+            
         } catch (error) {
-            window.logger?.error('Supabase 連接測試失敗', { error: error.message });
+            console.error('[Supabase] 連接測試失敗:', error.message);
             return false;
         }
     }
 
     /**
+     * 開始健康檢查
+     */
+    startHealthCheck() {
+        // 每 30 秒檢查一次連線
+        this.healthCheckInterval = setInterval(async () => {
+            if (!this.isOnline) return;
+            
+            const healthy = await this.testConnection();
+            
+            if (!healthy) {
+                console.warn('[Supabase] 健康檢查失敗');
+                this.handleConnectionError(new Error('Health check failed'));
+            }
+        }, 30000);
+    }
+
+    /**
      * 處理連接錯誤
-     * @param {Error} error 錯誤對象
      */
     handleConnectionError(error) {
         this.isConnected = false;
@@ -111,112 +189,179 @@ class SupabaseManager {
             maxRetries: this.maxRetries
         });
 
-        // 自動重試機制
         if (this.connectionAttempts < this.maxRetries) {
-            window.logger?.info(`嘗試重新連接 (${this.connectionAttempts}/${this.maxRetries})`);
-            setTimeout(() => {
-                this.init();
-            }, this.retryDelay * this.connectionAttempts);
-        } else {
-            window.logger?.error('Supabase 連接重試次數已達上限');
+            const delay = this.retryDelay * Math.pow(2, this.connectionAttempts - 1);
+            console.log(`[Supabase] ${delay/1000} 秒後重試 (${this.connectionAttempts}/${this.maxRetries})`);
             
-            // 顯示用戶友好的錯誤訊息
+            setTimeout(() => {
+                this.reconnect();
+            }, delay);
+        } else {
+            console.error('[Supabase] 重試次數已達上限，進入離線模式');
+            this.setOfflineMode();
+            
             if (window.showToast) {
-                window.showToast('資料庫連接失敗，請稍後再試', 'error');
+                window.showToast('資料庫連接失敗，請檢查網路', 'error');
             }
         }
     }
 
     /**
-     * 安全地執行資料庫查詢
-     * @param {Function} operation 查詢操作函數
-     * @param {Object} options 選項
-     * @returns {Promise<Object>} 查詢結果
+     * 重新連接
      */
-    async safeQuery(operation, options = {}) {
+    async reconnect() {
+        if (this.isProcessingQueue) return;
+        
+        this.connectionAttempts = 0;
+        
+        try {
+            const connected = await this.testConnection();
+            
+            if (connected) {
+                this.isConnected = true;
+                this.isOnline = true;
+                console.log('[Supabase] 重新連線成功');
+                
+                // 處理排隊的請求
+                await this.processQueryQueue();
+                
+                if (window.showToast) {
+                    window.showToast('已重新連線', 'success');
+                }
+            } else {
+                this.handleConnectionError(new Error('Reconnection failed'));
+            }
+        } catch (error) {
+            this.handleConnectionError(error);
+        }
+    }
+
+    /**
+     * 排隊處理請求
+     */
+    queueQuery(operation) {
+        return new Promise((resolve, reject) => {
+            this.queryQueue.push({ operation, resolve, reject });
+            
+            if (!this.isProcessingQueue) {
+                this.processQueryQueue();
+            }
+        });
+    }
+
+    /**
+     * 處理排隊請求
+     */
+    async processQueryQueue() {
+        if (this.isProcessingQueue || this.queryQueue.length === 0) return;
+        
+        this.isProcessingQueue = true;
+        
+        while (this.queryQueue.length > 0) {
+            const { operation, resolve, reject } = this.queryQueue.shift();
+            
+            try {
+                if (!this.isOnline || !this.isConnected) {
+                    throw new Error('離線狀態');
+                }
+                
+                const result = await operation(this.client);
+                resolve(result);
+            } catch (error) {
+                // 離線或連線失敗，將請求保留在隊列中
+                this.queryQueue.unshift({ operation, resolve, reject });
+                break;
+            }
+        }
+        
+        this.isProcessingQueue = false;
+    }
+
+    /**
+     * 安全查詢 v2.0 - 整合離線支援
+     */
+    async query(operation, options = {}) {
         const { 
-            timeout = 10000, 
-            retries = 2, 
-            errorMessage = '資料庫操作失敗' 
+            timeout = 15000, 
+            retries = 3, 
+            errorMessage = '資料庫操作失敗',
+            allowQueue = true
         } = options;
 
+        // 離線模式處理
+        if (!this.isOnline) {
+            console.log('[Supabase] 離線模式，請求已排隊');
+            
+            if (allowQueue) {
+                return this.queueQuery(operation);
+            } else {
+                return { data: null, error: { message: '離線模式' }, offline: true };
+            }
+        }
+
         if (!this.isConnected) {
-            throw new Error('資料庫未連接');
+            if (allowQueue) {
+                return this.queueQuery(operation);
+            } else {
+                return { data: null, error: { message: '未連線' }, offline: true };
+            }
         }
 
         let lastError;
         
-        for (let attempt = 0; attempt <= retries; attempt++) {
+        for (let attempt = 1; attempt <= retries; attempt++) {
             try {
-                const timeoutPromise = new Promise((_, reject) => {
-                    setTimeout(() => reject(new Error('查詢超時')), timeout);
-                });
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('查詢超時')), timeout)
+                );
 
                 const result = await Promise.race([
                     operation(this.client),
                     timeoutPromise
                 ]);
 
-                window.logger?.debug('資料庫查詢成功', {
-                    operation: operation.name,
-                    attempt: attempt + 1
-                });
-
+                this.lastSuccessfulQuery = Date.now();
+                this.connectionAttempts = 0;
+                
                 return result;
                 
             } catch (error) {
                 lastError = error;
                 
-                window.logger?.warn('資料庫查詢失敗，正在重試', {
-                    error: error.message,
-                    attempt: attempt + 1,
-                    maxRetries: retries + 1
-                });
-
-                if (attempt < retries) {
-                    // 指數退避重試
-                    await new Promise(resolve => 
-                        setTimeout(resolve, Math.pow(2, attempt) * 1000)
-                    );
+                // 網路錯誤，嘗試重試
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    console.warn(`[Supabase] 網路錯誤 (${attempt}/${retries})`);
+                    
+                    if (attempt < retries) {
+                        await new Promise(r => setTimeout(r, 1000 * attempt));
+                        continue;
+                    }
                 }
+                
+                console.error('[Supabase] 查詢失敗:', error.message);
             }
         }
 
         // 所有重試都失敗
-        window.logger?.error('資料庫查詢最終失敗', {
-            error: lastError.message,
-            operation: operation.name
-        });
-
-        throw new Error(`${errorMessage}: ${lastError.message}`);
+        return { 
+            data: null, 
+            error: { message: `${errorMessage}: ${lastError.message}` },
+            offline: !this.isOnline
+        };
     }
 
     /**
-     * 安全查詢 - 處理 403 權限錯誤
-     * @param {Function} operation 查詢操作函數
-     * @param {Object} options 選項
-     * @returns {Promise<Object>} 查詢結果
+     * 獲取連接狀態
      */
-    async safeQuery(operation, options = {}) {
-        const {
-            fallbackOn403 = null,
-            logError = true
-        } = options;
-
-        try {
-            return await operation(this.client);
-        } catch (error) {
-            if (error.code === '403' || error.message?.includes('403') || error.code === '42501') {
-                if (logError) {
-                    window.logger?.warn('資料庫權限不足，使用備用值', {
-                        error: error.message,
-                        operation: operation.name
-                    });
-                }
-                return { data: fallbackOn403, error: null };
-            }
-            throw error;
-        }
+    getConnectionStatus() {
+        return {
+            isConnected: this.isConnected,
+            isOnline: this.isOnline,
+            connectionAttempts: this.connectionAttempts,
+            maxRetries: this.maxRetries,
+            lastSuccessfulQuery: this.lastSuccessfulQuery,
+            queuedQueries: this.queryQueue.length
+        };
     }
 
     /**
@@ -335,19 +480,6 @@ class SupabaseManager {
     async reconnect() {
         this.connectionAttempts = 0;
         await this.init();
-    }
-
-    /**
-     * 獲取連接狀態信息
-     * @returns {Object} 連接狀態
-     */
-    getConnectionStatus() {
-        return {
-            isConnected: this.isConnected,
-            connectionAttempts: this.connectionAttempts,
-            maxRetries: this.maxRetries,
-            clientAvailable: this.client !== null
-        };
     }
 }
 

@@ -236,9 +236,9 @@ function updateAnalyticsDisplay() {
     const itemStyle = "display: inline-block; min-width: 60px; text-align: left;";
     
     container.innerHTML = `
-        <span style="margin-right: 15px;">👤 <span style="${itemStyle}">${visitors === '--' ? '--' : visitors.toLocaleString()}</span></span>
-        <span style="margin-right: 15px;">🖱️ <span style="${itemStyle}">${clicks === '--' ? '--' : clicks.toLocaleString()}</span></span>
-        <span>📄 <span style="${itemStyle}">${pageViews === '--' ? '--' : pageViews.toLocaleString()}</span></span>
+        <span style="margin-right: 15px; color: var(--neon-cyan);">👤 <span style="${itemStyle}">${visitors === '--' ? '--' : visitors.toLocaleString()}</span></span>
+        <span style="margin-right: 15px; color: var(--neon-cyan);">🖱️ <span style="${itemStyle}">${clicks === '--' ? '--' : clicks.toLocaleString()}</span></span>
+        <span style="color: var(--neon-cyan);">📄 <span style="${itemStyle}">${pageViews === '--' ? '--' : pageViews.toLocaleString()}</span></span>
     `;
     
     // 觸發淡入效果
