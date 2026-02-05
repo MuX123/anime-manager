@@ -450,6 +450,10 @@ class SupabaseManager {
      * @param {Function} callback 回調函數
      */
     onAuthStateChange(callback) {
+        if (!this.client || !this.client.auth) {
+            console.warn('Supabase client not ready for auth state change');
+            return;
+        }
         this.client.auth.onAuthStateChange((event, session) => {
             callback(event, session);
         });

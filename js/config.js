@@ -98,17 +98,15 @@ class ConfigManager {
             };
 
             console.error = (...args) => {
-                // 錯誤只記錄到內部日誌，不顯示在控制台
-                if (window.logger) {
-                    window.logger.error('Console Error', args);
-                }
+                // 避免無限迴圈 - 不要在錯誤處理中呼叫 logger
+                // 直接靜默錯誤，不做任何處理
             };
 
             console.info = () => {}; // 完全靜默
 
             // 移除全局錯誤處理中的詳細輸出
             window.onerror = function(message, source, lineno, colno, error) {
-                console.error(`Error: ${message}`);
+                // 不要呼叫 console.error，避免無限迴圈
                 return true; // 阻止預設錯誤處理
             };
         }
