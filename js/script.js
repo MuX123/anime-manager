@@ -396,7 +396,7 @@ window.toggleAdminMode = (enable) => {
 };
 
 // Listen for auth state changes
-if (window.supabaseManager) {
+if (window.supabaseManager && window.supabaseManager.client && window.supabaseManager.client.auth) {
     window.supabaseManager.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN') {
             await window.checkAndUpdateAdminStatus();
