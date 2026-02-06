@@ -48,15 +48,27 @@ class Logger {
      * 設置全局錯誤處理
      */
     setupGlobalErrorHandling() {
+        // 防止無限遞迴
+        this._errorHandlingActive = false;
+
         // 捕獲未處理的 JavaScript 錯誤
         window.addEventListener('error', (event) => {
-            this.error('Uncaught JavaScript Error', {
-                message: event.message,
-                filename: event.filename,
-                lineno: event.lineno,
-                colno: event.colno,
-                stack: event.error?.stack
-            });
+            if (this._errorHandlingActive) return;
+            this._errorHandlingActive = true;
+
+            try {
+                this.error('Uncaught JavaScript Error', {
+                    message: event.message,
+                    filename: event.filename,
+                    lineno: event.lineno,
+                    colno: event.colno,
+                    stack: event.error?.stack
+                });
+            } catch (e) {
+                // 避免 logger 本身出錯導致無限迴圈
+            } finally {
+                this._errorHandlingActive = false;
+            }
         });
 
         // 捕獲未處理的 Promise 拒絕
@@ -111,26 +123,30 @@ class Logger {
      * @param {Object} data 附加數據
      */
     log(level, message, data = {}) {
-        const logEntry = this.createLogEntry(level, message, data);
-        
-        // 檢查日誌級別
-        if (this.levels[level] < this.currentLevel) {
-            return;
+        // 防止無限遞迴 - 使用簡單標誌
+        if (this._logging) return;
+        this._logging = true;
+
+        let logEntry = null;
+        try {
+            logEntry = this.createLogEntry(level, message, data);
+            
+            // 檢查日誌級別
+            if (this.levels[level] >= this.currentLevel && this.config.enableConsole) {
+                this.outputToConsole(logEntry);
+            }
+        } catch (e) {
+            // logger 本身出錯時靜默
+        } finally {
+            this._logging = false;
         }
 
-        // 輸出到控制台
-        if (this.config.enableConsole) {
-            this.outputToConsole(logEntry);
+        // 存儲和發送 - 不在 try 內部呼叫 logger
+        if (logEntry && this.config.enableStorage) {
+            try { this.storage.add(logEntry); } catch (e) {}
         }
-
-        // 存儲到本地
-        if (this.config.enableStorage) {
-            this.storage.add(logEntry);
-        }
-
-        // 發送到遠端
-        if (this.config.enableRemote && this.config.remoteEndpoint) {
-            this.sendToRemote(logEntry);
+        if (logEntry && this.config.enableRemote && this.config.remoteEndpoint) {
+            try { this.sendToRemote(logEntry); } catch (e) {}
         }
     }
 
@@ -190,24 +206,33 @@ class Logger {
      * @param {Object} logEntry 日誌條目
      */
     outputToConsole(logEntry) {
-        const { level, message, data, timestamp } = logEntry;
-        const prefix = `[${timestamp}] [${level}]`;
-        
-        switch (logEntry.level) {
-            case 'DEBUG':
-                console.debug(prefix, message, data);
-                break;
-            case 'INFO':
-                console.info(prefix, message, data);
-                break;
-            case 'WARN':
-                console.warn(prefix, message, data);
-                break;
-            case 'ERROR':
-                console.error(prefix, message, data);
-                break;
-            default:
-                console.log(prefix, message, data);
+        if (this._outputting) return;
+        this._outputting = true;
+
+        try {
+            const { level, message, data, timestamp } = logEntry;
+            const prefix = `[${timestamp}] [${level}]`;
+            
+            switch (logEntry.level) {
+                case 'DEBUG':
+                    console.debug(prefix, message, data);
+                    break;
+                case 'INFO':
+                    console.info(prefix, message, data);
+                    break;
+                case 'WARN':
+                    console.warn(prefix, message, data);
+                    break;
+                case 'ERROR':
+                    // 不使用 console.error，避免無限循環
+                    break;
+                default:
+                    console.log(prefix, message, data);
+            }
+        } catch (e) {
+            // 靜默
+        } finally {
+            this._outputting = false;
         }
     }
 
@@ -216,6 +241,8 @@ class Logger {
      * @param {Object} logEntry 日誌條目
      */
     async sendToRemote(logEntry) {
+        if (this._sendingRemote) return;
+        this._sendingRemote = true;
         try {
             await fetch(this.config.remoteEndpoint, {
                 method: 'POST',
@@ -225,7 +252,9 @@ class Logger {
                 body: JSON.stringify(logEntry)
             });
         } catch (error) {
-            console.error('Failed to send log to remote:', error);
+            // 静默，不调用 console.error 避免循环
+        } finally {
+            this._sendingRemote = false;
         }
     }
 

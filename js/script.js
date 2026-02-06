@@ -850,18 +850,28 @@ app.innerHTML = `
 
 const getTagStyle = (color) => `font-size: 11px !important; color: ${color} !important; border: 1.5px solid ${color} !important; padding: 2px 10px !important; border-radius: 50px !important; background: ${color}22 !important; font-weight: bold !important; white-space: nowrap !important; display: inline-block !important; font-family: 'Microsoft JhengHei', sans-serif !important; box-shadow: 0 0 5px ${color}44 !important;`;
 
-window.renderCard = (item) => {
-    // 顏色優先級：1. 作品個別設定 (item) > 2. 選項管理設定 (optionsData) > 3. 預設值
-    const starColor = item.star_color || optionsData.category_colors?.recommendation || '#ffcc00';
-    const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
-    const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
-    const nameColor = item.name_color || optionsData.category_colors?.name || '#ffffff';
-    const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
-    const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
-    const cyanBase = 'rgba(0, 212, 255, 0.1)'; // 水藍色底色
-    
-    const isMobileLayout = gridColumns === 'mobile' || window.innerWidth <= 768;
-    const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
+// ========== 卡片渲染架構 ==========
+
+// 1. 顏色計算 - 統一管理所有卡片相關顏色
+function getCardColors(item) {
+    return {
+        starColor: item.star_color || optionsData.category_colors?.recommendation || '#ffcc00',
+        ratingColor: (optionsData.rating_colors && optionsData.rating_colors[item.rating])
+            ? optionsData.rating_colors[item.rating]
+            : (optionsData.category_colors?.rating || 'var(--neon-purple)'),
+        episodesColor: optionsData.category_colors?.episodes || 'var(--neon-green)',
+        nameColor: item.name_color || optionsData.category_colors?.name || '#ffffff',
+        yearColor: optionsData.category_colors?.year || 'var(--neon-cyan)',
+        genreColor: optionsData.category_colors?.genre || 'var(--neon-cyan)',
+        cyanBase: 'rgba(0, 212, 255, 0.1)'
+    };
+}
+
+// 2. 數據處理 - 統一處理卡片所需數據
+function processCardData(item) {
+    const genres = Array.isArray(item.genre)
+        ? item.genre
+        : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
 
     const extraTags = [];
     if (item.extra_data) {
@@ -869,120 +879,171 @@ window.renderCard = (item) => {
         const colorKeys = Object.keys(categoryColors);
         const standardFields = ['genre', 'year', 'season', 'month', 'episodes', 'rating', 'recommendation', 'type', 'category', 'name', 'poster_url', 'description'];
         const excludedKeys = [...standardFields, ...colorKeys];
-        
+
         Object.entries(item.extra_data).forEach(([key, val]) => {
             const strVal = String(val || '').trim();
             const strKey = String(key || '').trim();
-            
-            if (strVal && 
-                strKey && 
-                !excludedKeys.includes(strKey) && 
-                strVal !== strKey && 
+
+            if (strVal &&
+                strKey &&
+                !excludedKeys.includes(strKey) &&
+                strVal !== strKey &&
                 !strKey.startsWith('btn_') &&
                 !strKey.includes('_color') &&
                 strKey.length > 2) {
-                const customColor = categoryColors[strKey] || '#ffffff';
-                extraTags.push({ val: strVal, key: strKey, color: customColor });
+                extraTags.push({ val: strKey, color: categoryColors[strKey] || '#ffffff' });
             }
         });
     }
 
+    return {
+        genres,
+        extraTags,
+        starCount: (item.recommendation || '').split('★').length - 1,
+        starText: `星X${((item.recommendation || '').split('★').length - 1) || 1}`
+    };
+}
+
+// 3. 通用組件渲染函數
+function renderAdminButton(id, size = 'normal') {
+    if (!isAdminLoggedIn) return '';
+    const sizeStyles = size === 'small'
+        ? 'padding: 2px 6px; font-size: 10px; top: 5px; right: 5px;'
+        : 'padding: 4px 8px; font-size: 12px; top: 8px; right: 8px;';
+    return `<button onclick="event.stopPropagation(); window.editAnime('${id}')" style="position: absolute; ${sizeStyles} background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); border-radius: 4px; cursor: pointer; z-index: 10;">${size === 'small' ? '📝' : '📝 編輯'}</button>`;
+}
+
+function renderRatingBadge(rating, color) {
+    return `<span style="color: ${color}; border: 1px solid ${color}; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-weight: 900; background: ${color}22; flex-shrink: 0;">${escapeHtml(rating || '普')}</span>`;
+}
+
+function renderStarDisplay(starText, color, size = 12) {
+    return `<span style="color: ${color}; font-size: ${size}px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${starText}</span>`;
+}
+
+function renderMetaTags(item, colors, showEpisodes = true) {
+    const { year, season, month, episodes } = item;
+    const tags = [];
+    if (year) tags.push(escapeHtml(year));
+    if (season) tags.push(escapeHtml(season));
+    if (month) tags.push(escapeHtml(`${month}月`));
+    if (showEpisodes && episodes) tags.push(`全 ${escapeHtml(episodes)} 集`);
+
+    return `<div style="display: flex; gap: 8px; font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; align-items: center;">${tags.join('')}</div>`;
+}
+
+function renderGenreTags(genres, extraTags, color) {
+    const cleanGenres = genres.map(g => g.replace(/["'\[\]\(\),，。]/g, '').trim()).filter(g => g);
+    const genreSpans = cleanGenres.map(g => `<span style="${getTagStyle(color)}">${escapeHtml(g)}</span>`).join('');
+    const extraSpans = extraTags.map(t => `<span style="${getTagStyle(t.color)}">${escapeHtml(t.val)}</span>`).join('');
+    return genreSpans + extraSpans;
+}
+
+// ========== 3. 布局渲染函數 ==========
+
+// Grid 布局 - 海報卡片
+function renderGridCard(item, colors, data) {
+    const { id, name, poster_url, episodes, recommendation } = item;
+    const { ratingColor, episodesColor, nameColor, yearColor, cyanBase } = colors;
+    const gridSize = gridColumns == 5 ? 12 : (gridColumns == 4 ? 13 : 15);
+
+    return `
+        <div class="anime-card" onclick="window.showAnimeDetail('${id}')" style="border: 2px solid ${ratingColor}; background: ${cyanBase}; position: relative; overflow: hidden;">
+            ${renderAdminButton(id)}
+            <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
+                <img src="${poster_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22450%22%3E%3Crect fill=%22%231a1a2e%22 width=%22300%22 height=%22450%22/%3E%3Ctext fill=%22%23666%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENO+IMAGE%3C/text%3E%3C/svg%3E'}" style="width: 100%; height: 100%; object-fit: cover;">
+                <div class="card-overlay-v38" style="position: absolute; inset: 0; box-shadow: inset 0 40px 30px -10px rgba(0,0,0,0.8), inset 0 -40px 30px -10px rgba(0,0,0,0.8), inset 40px 0 30px -10px rgba(0,0,0,0.4), inset -40px 0 30px -10px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
+                <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; backdrop-filter: blur(8px); z-index: 10;">
+                    <div style="position: relative; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 50%;">
+                        <span class="star-icon" style="color: ${colors.starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${colors.starColor});">${escapeHtml(recommendation || '★')}</span>
+                    </div>
+                    <div style="color: ${ratingColor}; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 1px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.rating || '普')}</div>
+                </div>
+            </div>
+            ${episodes ? `<div style="position: absolute; top: calc(66.66% - 25px); left: 50%; transform: translateX(-50%); ${getTagStyle(episodesColor)} border-radius: 50px; z-index: 15; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">全 ${escapeHtml(episodes)} 集</div>` : ''}
+            <div style="position: relative; margin-top: -20px; padding-top: 25px; background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0.8) 100%);">
+                <div class="card-content-v38" style="padding: 15px; text-align: center; width: 100%;">
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <h3 style="color: ${nameColor}; font-size: ${gridSize}px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px 12px;">${escapeHtml(name)}</h3>
+                        <div style="display: flex; justify-content: center; gap: 4px;">
+                            ${item.year ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.year)}</span>` : ''}
+                            ${item.season && gridColumns != 5 ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.season)}</span>` : ''}
+                            ${item.month ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.month)}月</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Desktop List 布局 - 桌面資料列表
+function renderListCard(item, colors, data) {
+    const { id, name, year, season, month, episodes, type } = item;
+    const { ratingColor, episodesColor, nameColor, yearColor, cyanBase, starColor, genreColor } = colors;
+    const { genres, extraTags, starText } = data;
+
+    return `
+        <div class="anime-card desktop-list-layout" onclick="window.showAnimeDetail('${id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 12px 20px !important; gap: 0; width: 100%; overflow: hidden; position: relative;">
+            ${renderAdminButton(id)}
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100px; flex-shrink: 0; border-right: 1px solid rgba(0,212,255,0.1); padding-right: 15px;">
+                ${renderStarDisplay(starText, starColor, 15)}
+                ${renderRatingBadge(item.rating, ratingColor)}
+            </div>
+            <div style="flex: 1; min-width: 0; display: flex; align-items: center; padding-left: 20px; gap: 20px; height: 100%;">
+                <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+                    <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${escapeHtml(name)}</h3>
+                    ${renderMetaTags(item, colors)}
+                </div>
+                <div style="flex: 0 0 15%; min-width: 0; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid rgba(0,212,255,0.1); padding-left: 20px; justify-content: center;">
+                    <span style="color: ${genreColor}; font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(type || '')}</span>
+                </div>
+                <div class="desktop-scroll-tags" onwheel="this.scrollLeft += event.deltaY; event.preventDefault();" style="flex: 1; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding: 10px 0; scrollbar-width: thin; cursor: grab; border-left: 1px solid rgba(0,212,255,0.1); padding-left: 20px; align-items: center;">
+                    ${renderGenreTags(genres, extraTags, genreColor)}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Mobile 布局 - 移動端卡片
+function renderMobileCard(item, colors, data) {
+    const { id, name, year, season, month, episodes } = item;
+    const { ratingColor, episodesColor, nameColor, yearColor, cyanBase, starColor } = colors;
+    const { starText } = data;
+
+    return `
+        <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${id}')" style="display: flex !important; flex-direction: column; justify-content: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 10px 15px !important; gap: 6px; width: 100%; height: 75px; overflow: hidden; position: relative;">
+            ${renderAdminButton(id, 'small')}
+            <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
+                ${renderStarDisplay(starText, starColor, 12)}
+                <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; font-weight: bold; scrollbar-width: none; flex: 1;">${escapeHtml(name)}</h3>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
+                ${renderRatingBadge(item.rating, ratingColor)}
+                ${renderMetaTags(item, colors)}
+            </div>
+        </div>
+    `;
+}
+
+// 4. 主入口函數
+window.renderCard = (item) => {
+    const colors = getCardColors(item);
+    const data = processCardData(item);
+
+    // 移動端佈局
     if (window.innerWidth <= 768) {
-        const starCount = (item.recommendation || '').split('★').length - 1;
-        const starText = `星X${starCount || 1}`;
-        return `
-            <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; flex-direction: column; justify-content: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 10px 15px !important; gap: 6px; width: 100%; height: 75px; overflow: hidden; position: relative;">
-                ${isAdminLoggedIn ? `<button onclick="event.stopPropagation(); window.editAnime('${item.id}')" style="position: absolute; top: 5px; right: 5px; background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; z-index: 10;">📝</button>` : ''}
-                <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
-                    <span style="color: ${starColor}; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${starText}</span>
-                    <h3 class="force-scroll" style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; font-weight: bold; scrollbar-width: none; flex: 1;">${escapeHtml(item.name)}</h3>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
-                    <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-weight: 900; background: ${ratingColor}22; flex-shrink: 0;">${escapeHtml(item.rating || '普')}</span>
-                    <div style="display: flex; gap: 8px; font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; align-items: center;">
-                        ${item.year ? `<span>${escapeHtml(item.year)}</span>` : ''}
-                        ${item.season ? `<span>${escapeHtml(item.season)}</span>` : ''}
-                        ${item.month ? `<span>${escapeHtml(item.month)}月</span>` : ''}
-                        ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${escapeHtml(item.episodes)} 集</span>` : ''}
-                    </div>
-                </div>
-            </div>
-        `;
-    } else if (gridColumns === 'mobile') {
-        // Desktop list layout
-        const starCount = (item.recommendation || '').split('★').length - 1;
-        const starText = `星X${starCount || 1}`;
-        return `
-            <div class="anime-card desktop-list-layout" onclick="window.showAnimeDetail('${item.id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 12px 20px !important; gap: 0; width: 100%; overflow: hidden; position: relative;">
-                ${isAdminLoggedIn ? `<button onclick="event.stopPropagation(); window.editAnime('${item.id}')" style="position: absolute; top: 8px; right: 8px; background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); border-radius: 4px; padding: 4px 8px; font-size: 12px; cursor: pointer; z-index: 10;">📝 編輯</button>` : ''}
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100px; flex-shrink: 0; border-right: 1px solid rgba(0,212,255,0.1); padding-right: 15px;">
-                    <span style="color: ${starColor}; font-size: 15px; font-weight: bold; white-space: nowrap;">${starText}</span>
-                    <span style="color: ${ratingColor}; border: 1px solid ${ratingColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 900; background: ${ratingColor}22;">${escapeHtml(item.rating || '普')}</span>
-                </div>
-                <div style="flex: 1; min-width: 0; display: flex; align-items: center; padding-left: 20px; gap: 20px; height: 100%;">
-                    <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
-                        <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${escapeHtml(item.name)}</h3>
-                        <div style="display: flex; gap: 10px; font-size: 12px; color: var(--text-secondary); align-items: center;">
-                            ${item.year ? `<span>${escapeHtml(item.year)}</span>` : ''}
-                            ${item.season ? `<span>${escapeHtml(item.season)}</span>` : ''}
-                            ${item.month ? `<span>${escapeHtml(item.month)}月</span>` : ''}
-                            ${item.episodes ? `<span style="color: ${episodesColor}; font-weight: bold;">全 ${escapeHtml(item.episodes)} 集</span>` : ''}
-                        </div>
-                    </div>
-                    <div style="flex: 0 0 15%; min-width: 0; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid rgba(0,212,255,0.1); padding-left: 20px; justify-content: center;">
-                        <span style="color: ${genreColor}; font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(item.type || '')}</span>
-                    </div>
-                    <div class="desktop-scroll-tags" onwheel="this.scrollLeft += event.deltaY; event.preventDefault();" style="flex: 1; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding: 10px 0; scrollbar-width: thin; cursor: grab; border-left: 1px solid rgba(0,212,255,0.1); padding-left: 20px; align-items: center;">
-                        ${genres.map(g => {
-                            const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-                            return cleanG ? `<span style="${getTagStyle(genreColor)}">${escapeHtml(cleanG)}</span>` : '';
-                        }).join('')}
-                        ${extraTags.map(t => `<span style="${getTagStyle(t.color)}">${escapeHtml(t.val)}</span>`).join('')}
-                    </div>
-                </div>
-            </div>
-        `;
-    } else {
-        // Grid layout
-        return `
-            <div class="anime-card" onclick="window.showAnimeDetail('${item.id}')" style="border: 2px solid ${ratingColor}; background: ${cyanBase}; position: relative;">
-                ${isAdminLoggedIn ? `<button onclick="event.stopPropagation(); window.editAnime('${item.id}')" style="position: absolute; top: 8px; right: 8px; background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; z-index: 20;">📝</button>` : ''}
-                <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
-                    <img src="${item.poster_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22450%22 viewBox=%220 0 300 450%22%3E%3Crect fill=%22%231a1a2e%22 width=%22300%22 height=%22450%22/%3E%3Ctext fill=%22%23666%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENO+IMAGE%3C/text%3E%3C/svg%3E'}" style="width: 100%; height: 100%; object-fit: cover;">
-                    <div class="card-overlay-v38" style="position: absolute; inset: 0; box-shadow: inset 0 40px 30px -10px rgba(0,0,0,0.8), inset 0 -40px 30px -10px rgba(0,0,0,0.8), inset 40px 0 30px -10px rgba(0,0,0,0.4), inset -40px 0 30px -10px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
-                    <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; backdrop-filter: blur(8px); z-index: 10;">
-                        <div style="position: relative; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 50%;">
-                            <span class="star-icon" style="color: ${starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${starColor});">
-                                <span>${escapeHtml(item.recommendation || '★')}</span>
-                            </span>
-                        </div>
-                        <div style="color: ${ratingColor}; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 1px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.rating || '普')}</div>
-                    </div>
-                    <div class="episodes-badge-v38" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: ${episodesColor}; font-size: 14px; padding: 4px 16px; text-align: center; font-weight: bold; border-radius: 50px; border: 1.5px solid ${episodesColor}; white-space: nowrap; z-index: 10; box-shadow: 0 0 15px rgba(0,0,0,0.8);">全 ${escapeHtml(item.episodes || '0')} 集</div>
-                    <div class="card-content-v38" style="padding: 15px; text-align: center; background: rgba(0,0,0,0.4); width: 100%; display: flex; flex-direction: column; gap: 10px;">
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <div style="display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; width: 100%; justify-content: center;">
-                                ${item.episodes ? `<span style="${getTagStyle(episodesColor)}">全 ${escapeHtml(item.episodes)} 集</span>` : ''}
-                            </div>
-                            <h3 style="color: ${nameColor}; font-size: ${gridColumns == 5 ? '12px' : (gridColumns == 4 ? '13px' : '15px')}; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; line-height: 1.2; border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px 12px;">${escapeHtml(item.name)}</h3>
-                            <div style="display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; width: 100%; justify-content: center;">
-                                ${item.year ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.year)}</span>` : ''}
-                                ${item.season && gridColumns != 5 ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.season)}</span>` : ''}
-                                ${item.month ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.month)}月</span>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                        <div class="card-tags-v38" style="display: flex; flex-direction: column; gap: 6px; width: 100%; align-items: center;">
-                            <div style="display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; width: 100%; justify-content: center;">
-                                ${item.year ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.year)}</span>` : ''}
-                                ${item.season && gridColumns != 5 ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.season)}</span>` : ''}
-                                ${item.month ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.month)}月</span>` : ''}
-                            </div>
-                        </div>
-                    </div>
-            </div>
-        `;
+        return renderMobileCard(item, colors, data);
     }
+
+    // 桌面資料列表佈局
+    if (gridColumns === 'mobile') {
+        return renderListCard(item, colors, data);
+    }
+
+    // 網格佈局（默認）
+    return renderGridCard(item, colors, data);
 };
 
 window.showAnimeDetail = (id) => {

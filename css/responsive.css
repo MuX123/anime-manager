@@ -374,4 +374,23 @@
     .mobile-layout-card h3::-webkit-scrollbar {
         display: none;
     }
+
+    /* 桌面資料列表佈局 - 全局樣式已在 layout.css 中定義 */
+    .desktop-list-layout {
+        display: flex !important;
+        flex-direction: row !important;
+        height: auto !important;
+        min-height: 100px !important;
+    }
+
+    .desktop-list-layout .card-poster-v38 {
+        display: none !important;
+    }
+
+    .desktop-list-layout .card-content-v38 {
+        display: flex !important;
+        flex-direction: row !important;
+        width: 100% !important;
+        padding: 10px !important;
+    }
 }
