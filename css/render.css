@@ -1,0 +1,397 @@
+/* render.css - 渲染系統專用樣式 (取代 Inline Styles) */
+
+/* ========== 標籤系統 (Tags) ========== */
+.tag-base {
+    font-size: 11px !important;
+    padding: 2px 10px !important;
+    border-radius: 50px !important;
+    font-weight: bold !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
+    font-family: 'Microsoft JhengHei', sans-serif !important;
+    border: 1.5px solid currentColor !important;
+    background-color: color-mix(in srgb, currentColor 15%, transparent) !important;
+    box-shadow: 0 0 5px color-mix(in srgb, currentColor 25%, transparent) !important;
+}
+
+/* ========== 卡片通用 (Card) ========== */
+.anime-card {
+    /* 變數由 JS 注入: --rating-color, --star-color 等 */
+    position: relative;
+    overflow: visible;
+    border-radius: 16px;
+    background: linear-gradient(145deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+    border: 1px solid color-mix(in srgb, var(--rating-color) 30%, transparent);
+    box-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.4),
+        0 0 1px color-mix(in srgb, var(--rating-color) 40%, transparent) inset,
+        0 0 20px color-mix(in srgb, var(--rating-color) 10%, transparent);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.anime-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+/* 懸停光效 */
+.card-border-glow {
+    position: absolute;
+    inset: -1px;
+    border-radius: 17px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--rating-color) 60%, transparent), transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.anime-card:hover .card-border-glow {
+    opacity: 1;
+}
+
+/* ========== Grid 視圖卡片 ========== */
+.grid-poster-container {
+    aspect-ratio: 2/3;
+    overflow: hidden;
+    position: relative;
+    border-radius: 16px 16px 0 0;
+}
+
+.grid-poster-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.anime-card:hover .grid-poster-img {
+    transform: scale(1.05);
+}
+
+.grid-poster-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 0%, transparent 50%, rgba(13, 17, 23, 0.1) 80%, rgba(13, 17, 23, 0.4) 100%);
+    pointer-events: none;
+}
+
+.grid-poster-episodes {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    padding: 4px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--episodes-color);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 5;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.date-group-tag {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--year-color);
+    border-radius: 20px;
+    overflow: hidden;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 4px;
+    background: color-mix(in srgb, var(--year-color) 10%, transparent);
+}
+
+.date-group-item {
+    padding: 3px 8px;
+    color: var(--year-color);
+    position: relative;
+}
+
+.date-group-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 20%;
+    height: 60%;
+    width: 1px;
+    background: color-mix(in srgb, var(--year-color) 40%, transparent);
+}
+
+/* Separator line style */
+.card-separator {
+    height: 3px;
+    width: 100%;
+    background: var(--rating-color);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--rating-color) 60%, transparent);
+    position: relative;
+    z-index: 5;
+}
+
+.grid-info-container {
+    padding: 16px 18px 20px 18px;
+    background: linear-gradient(to bottom, #0d1117, #161b22);
+    border-radius: 0 0 16px 16px;
+    margin-top: -4px;
+    position: relative;
+    /* Ensure z-index works if needed */
+}
+
+.grid-title {
+    color: #fff;
+    font-size: 16px;
+    /* Default, overridden by JS */
+    margin: 0 0 12px 0;
+    padding: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.grid-tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 0;
+    justify-content: center;
+    /* JS conditional override */
+}
+
+.grid-tag-item {
+    font-size: 11px;
+    padding: 3px 10px;
+    background: color-mix(in srgb, currentColor 15%, transparent);
+    border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.grid-episodes-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 8px;
+    /* Changed from padding-top */
+    margin-bottom: 2px;
+    /* Changed from margin-top */
+    /* Removed border-top */
+}
+
+/* ========== 評分與標記 ========== */
+.rating-badge-container {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.rating-badge {
+    background: rgba(13, 17, 23, 0.85);
+    backdrop-filter: blur(8px);
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--rating-color) 50%, transparent);
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 13px;
+    color: var(--rating-color);
+    letter-spacing: 1px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.star-badge {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(13, 17, 23, 0.85);
+    backdrop-filter: blur(8px);
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--star-color) 50%, transparent);
+}
+
+.admin-edit-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--neon-cyan);
+    color: var(--neon-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+    font-size: 14px;
+    opacity: 0;
+    transform: scale(0.8);
+}
+
+.anime-card:hover .admin-edit-btn {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* ========== 詳情彈窗 ========== */
+.detail-modal-wrapper {
+    position: relative;
+    background: #050609;
+    border-radius: 16px;
+    overflow: hidden;
+    box-sizing: border-box;
+    border: 2px solid var(--rating-color);
+    box-shadow: 0 0 30px color-mix(in srgb, var(--rating-color) 25%, transparent);
+    display: flex;
+    flex-direction: row;
+}
+
+.detail-poster-column {
+    flex: 0 0 380px;
+    border-right: 2px solid var(--rating-color);
+    box-sizing: border-box;
+    background: #000;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-content-column {
+    flex: 1;
+    padding: 25px !important;
+    gap: 12px !important;
+    background: #0a0e1a !important;
+    border-left: 2px solid var(--rating-color) !important;
+    overflow-y: auto;
+    max-height: 85vh;
+}
+
+/* ========== 公告與留言板 (Premium Cyberpunk) ========== */
+.premium-board {
+    background: rgba(10, 14, 26, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 24px;
+    box-shadow:
+        0 0 40px rgba(0, 0, 0, 0.5),
+        inset 0 0 60px rgba(0, 212, 255, 0.05);
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.premium-board::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+    opacity: 0.5;
+}
+
+.premium-tab-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+    position: relative;
+}
+
+.premium-tab {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    padding: 15px 20px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+}
+
+.premium-tab:hover {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+}
+
+.premium-tab.active {
+    color: #fff;
+    text-shadow: 0 0 12px var(--neon-cyan);
+}
+
+.premium-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--neon-cyan);
+    box-shadow: 0 -2px 10px var(--neon-cyan);
+    border-radius: 3px 3px 0 0;
+}
+
+.premium-card {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.03), rgba(0, 0, 0, 0.2));
+    border: 1px solid rgba(0, 212, 255, 0.15);
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.premium-card:hover {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(0, 0, 0, 0.3));
+    border-color: rgba(0, 212, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.premium-card.is-pinned {
+    border-color: var(--neon-cyan);
+    box-shadow:
+        0 0 15px rgba(0, 212, 255, 0.15),
+        inset 0 0 20px rgba(0, 212, 255, 0.05);
+}
+
+.premium-card.is-update {
+    border-color: rgba(176, 38, 255, 0.3);
+    background: linear-gradient(135deg, rgba(176, 38, 255, 0.03), rgba(0, 0, 0, 0.2));
+}
+
+.premium-card.is-update:hover {
+    border-color: var(--neon-purple);
+    background: linear-gradient(135deg, rgba(176, 38, 255, 0.08), rgba(0, 0, 0, 0.3));
+}
+
+.rich-content {
+    line-height: 1.8;
+    color: #e0e6ed;
+    white-space: pre-wrap;
+    font-size: 15px;
+}

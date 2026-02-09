@@ -23,6 +23,46 @@
     flex-direction: column;
 }
 
+/* Game Card Effect */
+.anime-card.game-card-effect {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+}
+
+.anime-card.game-card-effect:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 40px color-mix(in srgb, var(--rating-color) 40%, transparent);
+    border-color: var(--rating-color);
+    z-index: 100;
+}
+
+.anime-card.game-card-effect:hover img {
+    transform: scale(1.1);
+}
+
+.anime-card.game-card-effect:hover .card-shine {
+    opacity: 1 !important;
+    transform: translateX(100%) !important;
+    transition: transform 0.8s ease, opacity 0.3s ease;
+}
+
+.anime-card.game-card-effect .cyber-header-v40 {
+    /* 乾淨無漸變設計 */
+    background: transparent;
+}
+
+/* Grid Edit Button Hover Effect */
+.anime-card.game-card-effect:hover .admin-edit-btn {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+}
+
+.admin-edit-btn:hover {
+    background: var(--neon-cyan) !important;
+    color: #000 !important;
+    box-shadow: 0 0 10px var(--neon-cyan);
+}
+
 /* ========== 表單元素 ========== */
 input[type="text"],
 input[type="email"],
@@ -58,6 +98,12 @@ select {
     background-repeat: no-repeat;
     background-position: right 10px center;
     padding-right: 30px;
+}
+
+select option {
+    background: #050609;
+    color: #fff;
+    padding: 10px;
 }
 
 /* ========== 按鈕組件 ========== */

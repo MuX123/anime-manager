@@ -1,9 +1,9 @@
 // TECH v6.0.0 - ACG Manager Logic (Security & Performance Optimized)
 
 // 生產環境配置 - 減少控制台輸出
-const IS_PRODUCTION = window.location.hostname !== 'localhost' && 
-                      !window.location.hostname.includes('127.0.0.1') &&
-                      !window.location.hostname.includes('github.io');
+const IS_PRODUCTION = window.location.hostname !== 'localhost' &&
+    !window.location.hostname.includes('127.0.0.1') &&
+    !window.location.hostname.includes('github.io');
 
 // 生產環境覆蓋 console 減少噪音
 if (IS_PRODUCTION) {
@@ -37,13 +37,13 @@ let optionsData = {
 };
 
 window.getOptionLabel = (key) => {
-    const labels = { 
-        genre: '類型', 
-        year: '年份', 
-        month: '月份', 
-        season: '季度', 
-        episodes: '集數', 
-        rating: '評分', 
+    const labels = {
+        genre: '類型',
+        year: '年份',
+        month: '月份',
+        season: '季度',
+        episodes: '集數',
+        rating: '評分',
         recommendation: '推薦'
     };
     return labels[key] || key;
@@ -74,15 +74,15 @@ window.showFirstVisitPopups = async () => {
 };
 
 let siteSettings = {
-    site_title: 'ACG 收藏庫', 
-    announcement: '⚡ 離線演示模式 // 資料來源：演示數據', 
-    title_color: '#ffffff', 
-    announcement_color: '#ffffff', 
+    site_title: 'ACG 收藏庫',
+    announcement: '⚡ 離線演示模式 // 資料來源：演示數據',
+    title_color: '#ffffff',
+    announcement_color: '#ffffff',
     admin_name: '管理員',
     admin_avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
     admin_color: '#00ffff',
     admin_email: '',
-    custom_labels: {} 
+    custom_labels: {}
 };
 
 // 演示數據（離線模式使用）
@@ -231,7 +231,7 @@ const demoAnimeData = [
 let currentCategory = 'notice';
 let currentAdminTab = 'manage';
 let currentPage = 1;
-const itemsPerPage = 20; 
+const itemsPerPage = 20;
 const adminItemsPerPage = 10;
 let adminPage = 1;
 let filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' };
@@ -458,56 +458,56 @@ window.getFilteredData = () => {
 
 // --- Core Functions ---
 
-    /**
-     * 安全地轉義 HTML 特殊字符（防止 XSS）
-     * @param {string} str 未處理的字串
-     * @returns {string} 轉義後的安全字串
-     */
-    const escapeHtml = (str) => {
-        if (str === null || str === undefined) return '';
-        try {
-            const div = document.createElement('div');
-            div.textContent = String(str);
-            return div.innerHTML;
-        } catch (e) {
-            console.warn('HTML escape failed:', e);
-            return String(str).replace(/[&<>"']/g, char => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
-            })[char]);
-        }
-    };
+/**
+ * 安全地轉義 HTML 特殊字符（防止 XSS）
+ * @param {string} str 未處理的字串
+ * @returns {string} 轉義後的安全字串
+ */
+const escapeHtml = (str) => {
+    if (str === null || str === undefined) return '';
+    try {
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+    } catch (e) {
+        console.warn('HTML escape failed:', e);
+        return String(str).replace(/[&<>"']/g, char => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[char]);
+    }
+};
 
-    // Mouse drag scroll for desktop tags
-    document.addEventListener('mousedown', (e) => {
-        const tags = e.target.closest('.desktop-scroll-tags');
-        if (!tags) return;
-        tags.isDown = true;
-        tags.startX = e.pageX - tags.offsetLeft;
-        tags.scrollLeftStart = tags.scrollLeft;
-    });
-    document.addEventListener('mouseleave', () => {
-        const tags = document.querySelector('.desktop-scroll-tags[isDown="true"]');
-        if (tags) tags.isDown = false;
-    });
-    document.addEventListener('mouseup', () => {
-        const tags = document.querySelector('.desktop-scroll-tags');
-        // We need to find the one that was active
-        document.querySelectorAll('.desktop-scroll-tags').forEach(t => t.isDown = false);
-    });
-    document.addEventListener('mousemove', (e) => {
-        const tags = e.target.closest('.desktop-scroll-tags');
-        if (!tags || !tags.isDown) return;
-        e.preventDefault();
-        const x = e.pageX - tags.offsetLeft;
-        const walk = (x - tags.startX) * 2;
-        tags.scrollLeft = tags.scrollLeftStart - walk;
-    });
-	
-window.initApp = async function() {
+// Mouse drag scroll for desktop tags
+document.addEventListener('mousedown', (e) => {
+    const tags = e.target.closest('.desktop-scroll-tags');
+    if (!tags) return;
+    tags.isDown = true;
+    tags.startX = e.pageX - tags.offsetLeft;
+    tags.scrollLeftStart = tags.scrollLeft;
+});
+document.addEventListener('mouseleave', () => {
+    const tags = document.querySelector('.desktop-scroll-tags[isDown="true"]');
+    if (tags) tags.isDown = false;
+});
+document.addEventListener('mouseup', () => {
+    const tags = document.querySelector('.desktop-scroll-tags');
+    // We need to find the one that was active
+    document.querySelectorAll('.desktop-scroll-tags').forEach(t => t.isDown = false);
+});
+document.addEventListener('mousemove', (e) => {
+    const tags = e.target.closest('.desktop-scroll-tags');
+    if (!tags || !tags.isDown) return;
+    e.preventDefault();
+    const x = e.pageX - tags.offsetLeft;
+    const walk = (x - tags.startX) * 2;
+    tags.scrollLeft = tags.scrollLeftStart - walk;
+});
+
+window.initApp = async function () {
     try {
         console.log('🚀 系統初始化中...');
 
@@ -525,7 +525,7 @@ window.initApp = async function() {
 
         // 先嘗試 Supabase，2秒超時
         await waitForSupabaseReady();
-        
+
         // 1. 檢查 Supabase 連接狀態
         let client = null;
         let isOfflineMode = false;
@@ -537,7 +537,7 @@ window.initApp = async function() {
             isOfflineMode = true;
             window.showToast('資料庫未連接，使用演示數據', 'info');
         }
-        
+
         // 2. 獲取網站設定與選項資料 (優先載入)
         if (client) {
             try {
@@ -553,19 +553,19 @@ window.initApp = async function() {
                         if (s.id === 'admin_color') siteSettings.admin_color = s.value;
                         if (s.id === 'admin_email') siteSettings.admin_email = s.value;
                         if (s.id === 'custom_labels') {
-                            try { 
-                                siteSettings.custom_labels = JSON.parse(s.value); 
-                            } catch(e) { 
-                                console.warn('custom_labels 解析失敗:', e); 
+                            try {
+                                siteSettings.custom_labels = JSON.parse(s.value);
+                            } catch (e) {
+                                console.warn('custom_labels 解析失敗:', e);
                             }
                         }
-                        if (s.id === 'options_data') { 
-                            try { 
+                        if (s.id === 'options_data') {
+                            try {
                                 const parsed = JSON.parse(s.value);
                                 if (parsed && parsed.genre) {
                                     optionsData = parsed;
                                 }
-                            } catch(e) {
+                            } catch (e) {
                                 console.warn('options_data 解析失敗，使用預設選項:', e);
                             }
                         }
@@ -577,35 +577,43 @@ window.initApp = async function() {
             } catch (err) {
                 console.error('載入網站設定發生錯誤:', err);
             }
-            
+
             // 5. 載入作品資料
             await window.loadData();
         }
-        
+
         // 6. 設置全域變數
         window.animeData = animeData;
         window.optionsData = optionsData;
         window.siteSettings = siteSettings;
-        
+
         // 8. 檢查管理員登入狀態
         await window.checkAndUpdateAdminStatus();
-        
+
         // 9. 渲染初始介面
         window.renderApp();
-        
-        // 10. 檢查現有會話的管理員狀態
+
+        // 10. 檢查現有會話的管理員狀態（添加超時保護）
         if (window.supabaseManager?.isConnectionReady()) {
-            const { data: { session } } = await window.supabaseManager.getClient().auth.getSession();
-            if (session) {
-                await window.checkAndUpdateAdminStatus();
+            try {
+                const sessionPromise = window.supabaseManager.getClient().auth.getSession();
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Session check timeout')), 2000)
+                );
+                const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
+                if (session) {
+                    await window.checkAndUpdateAdminStatus();
+                }
+            } catch (e) {
+                console.warn('Session check skipped:', e.message);
             }
         }
-        
+
         // 11. 顯示首次訪問彈窗
         if (isFirstLoad) {
             setTimeout(() => window.showFirstVisitPopups(), 1000);
         }
-        
+
         // 11. 隱藏載入畫面並顯示內容
         const loadingScreen = document.getElementById('loading-screen');
         const app = document.getElementById('app');
@@ -618,7 +626,7 @@ window.initApp = async function() {
         } else {
             app.classList.add('loaded');
         }
-        
+
         isFirstLoad = false;
         console.log('✅ 系統初始化完成');
 
@@ -634,13 +642,13 @@ window.initApp = async function() {
             }
         }, 10000);
 
-    } catch (err) { 
+    } catch (err) {
         console.error('Init error:', err);
         window.showToast('系統初始化失敗，請重新整理', 'error');
         // 即使失敗也嘗試渲染基本結構
         isFirstLoad = false;
         window.renderApp();
-        
+
         // 確保隱藏載入畫面
         const loadingScreen = document.getElementById('loading-screen');
         const app = document.getElementById('app');
@@ -656,7 +664,7 @@ window.initApp = async function() {
     }
 };
 
-window.loadData = async function() {
+window.loadData = async function () {
     try {
         console.log('📡 正在從 Supabase 抓取資料...');
         const client = window.supabaseManager?.getClient();
@@ -667,16 +675,48 @@ window.loadData = async function() {
             console.log('✅ 使用演示數據，共', animeData.length, '筆');
             return animeData;
         }
-        const { data, error } = await client.from('anime_list').select('*').order('created_at', { ascending: false });
-        if (!error) {
-            animeData = data || [];
-            console.log('✅ 資料抓取成功，共', animeData.length, '筆');
-            return animeData;
-        } else {
-            console.warn('資料庫查詢失敗，切換至演示數據');
+
+        // 檢查是否真的可以連線
+        if (!window.supabaseManager?.isConnectionReady()) {
+            console.warn('Supabase 未就緒，使用演示數據');
             animeData = [...demoAnimeData];
             return animeData;
         }
+
+        // 使用超時機制，避免請求卡住
+        const fetchWithTimeout = async (promise, timeoutMs = 3000) => {
+            let timeoutId;
+            const racePromise = new Promise((_, reject) => {
+                timeoutId = setTimeout(() => reject(new Error('請求超時')), timeoutMs);
+            });
+            try {
+                const result = await Promise.race([promise, racePromise]);
+                clearTimeout(timeoutId);
+                return result;
+            } catch (e) {
+                clearTimeout(timeoutId);
+                throw e;
+            }
+        };
+
+        try {
+            const { data, error } = await fetchWithTimeout(
+                client.from('anime_list').select('*').order('created_at', { ascending: false }),
+                3000
+            );
+            if (!error) {
+                animeData = data || [];
+                console.log('✅ 資料抓取成功，共', animeData.length, '筆');
+                return animeData;
+            }
+        } catch (e) {
+            console.warn('Supabase 查詢超時或失敗，切換至演示數據:', e.message);
+        }
+
+        // 切換到演示數據
+        console.warn('使用演示數據');
+        animeData = [...demoAnimeData];
+        return animeData;
     } catch (e) {
         console.warn('數據載入失敗，使用演示數據:', e.message);
         animeData = [...demoAnimeData];
@@ -689,7 +729,7 @@ window.loadData = async function() {
  * 驗證用戶是否為管理員
  * @param {string} userEmail 用戶電子郵件
  */
-window.renderApp = function() {
+window.renderApp = function () {
     const app = document.getElementById('app');
     if (!app) return;
 
@@ -700,7 +740,7 @@ window.renderApp = function() {
 
     const isAdminMode = document.querySelector('.admin-container') !== null;
     const isNotice = currentCategory === 'notice';
-    
+
     // 處理公告板塊的特殊顯示
     let noticeHTML = '';
     if (isNotice) {
@@ -708,14 +748,14 @@ window.renderApp = function() {
     }
 
     const filtered = window.getFilteredData();
-    const paged = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
+    const paged = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     // 確保 CSS 變數同步
     if (gridColumns !== 'mobile') {
         document.documentElement.style.setProperty('--grid-columns', gridColumns);
     }
 
-// 更新系統菜單（在 body 層級）
+    // 更新系統菜單（在 body 層級）
     let topControlBar = document.getElementById('topControlBar');
     if (!topControlBar) {
         topControlBar = document.createElement('div');
@@ -726,7 +766,7 @@ window.renderApp = function() {
     topControlBar.innerHTML = `
         <div style="display: flex; flex-direction: column; background: rgba(5, 15, 25, 0.5); padding: 12px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.2); backdrop-filter: blur(15px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); min-width: 160px; gap: 8px;">
             <select onchange="window.changeGridLayout(this.value)" style="width: 100%; background: rgba(0,212,255,0.05) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease; text-align: center; text-align-last: center;">
-                ${[3,4,5].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
+                ${[3, 4, 5].map(n => `<option value="${n}" ${gridColumns == n ? 'selected' : ''} style="background: var(--bg-dark);">${n} 欄</option>`).join('')}
                 <option value="mobile" ${gridColumns === 'mobile' ? 'selected' : ''} style="background: var(--bg-dark);">📱 資料列表</option>
             </select>
             <select onchange="window.changeSortOrder(this.value)" style="width: 100%; background: rgba(0,212,255,0.05) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease; text-align: center; text-align-last: center;">
@@ -744,9 +784,9 @@ window.renderApp = function() {
             <div id="adminMenuOptions" style="display: flex; flex-direction: column; gap: 6px;"></div>
         </div>
     `;
-    
-// 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
-app.innerHTML = `
+
+    // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
+    app.innerHTML = `
         <div class="app-container">
             <header class="app-header">
                 <div style="display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap;">
@@ -783,11 +823,11 @@ app.innerHTML = `
 	            </div>
 	        </div>
 	    `;
-    
+
     // 重新初始化滾輪捲動監聽
     window.initGlobalScroll();
     window.updateAdminMenu();
-    
+
     // 更新統計顯示 - 移交給 analytics.js 統一處理，避免覆蓋導致的閃爍和數據丟失
     // const analyticsContainer = document.getElementById('analytics-display');
     // if (analyticsContainer && window.analyticsData) {
@@ -798,9 +838,9 @@ app.innerHTML = `
     //     `;
     // }
 
-	    // 確保詳情彈窗 HTML 存在
-	    if (!document.getElementById('detailModal')) {
-	        const modalHTML = `
+    // 確保詳情彈窗 HTML 存在
+    if (!document.getElementById('detailModal')) {
+        const modalHTML = `
 	            <div id="detailModal" class="modal" onclick="if(event.target===this) window.closeAnimeDetail()">
 	                <div class="modal-content">
 	                    <button class="btn-primary" style="position: absolute; top: 20px; right: 20px; z-index: 1000; width: 40px; height: 40px; padding: 0;" onclick="window.closeAnimeDetail()">×</button>
@@ -808,23 +848,23 @@ app.innerHTML = `
 	                </div>
 	            </div>
 	        `;
-	        document.body.insertAdjacentHTML('beforeend', modalHTML);
-	    } else {
-            // 確保內容容器存在
-            const modal = document.getElementById('detailModal');
-            if (!modal.querySelector('#detailContent')) {
-                modal.querySelector('.modal-content').innerHTML = `
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    } else {
+        // 確保內容容器存在
+        const modal = document.getElementById('detailModal');
+        if (!modal.querySelector('#detailContent')) {
+            modal.querySelector('.modal-content').innerHTML = `
                     <button class="btn-primary" style="position: absolute; top: 20px; right: 20px; z-index: 1000; width: 40px; height: 40px; padding: 0;" onclick="window.closeAnimeDetail()">×</button>
                     <div id="detailContent"></div>
                 `;
-            }
         }
+    }
 
     // 徹底解決閃爍：內容渲染完成後，顯示 app 並移除遮罩
     app.style.display = 'block';
     app.style.visibility = 'visible';
     app.style.opacity = '1';
-    
+
     const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen) {
         loadingScreen.style.opacity = '0';
@@ -848,311 +888,8 @@ app.innerHTML = `
     }
 };
 
-const getTagStyle = (color) => `font-size: 11px !important; color: ${color} !important; border: 1.5px solid ${color} !important; padding: 2px 10px !important; border-radius: 50px !important; background: ${color}22 !important; font-weight: bold !important; white-space: nowrap !important; display: inline-block !important; font-family: 'Microsoft JhengHei', sans-serif !important; box-shadow: 0 0 5px ${color}44 !important;`;
+// 渲染邏輯已遷移至 js/render.js
 
-// ========== 卡片渲染架構 ==========
-
-// 1. 顏色計算 - 統一管理所有卡片相關顏色
-function getCardColors(item) {
-    return {
-        starColor: item.star_color || optionsData.category_colors?.recommendation || '#ffcc00',
-        ratingColor: (optionsData.rating_colors && optionsData.rating_colors[item.rating])
-            ? optionsData.rating_colors[item.rating]
-            : (optionsData.category_colors?.rating || 'var(--neon-purple)'),
-        episodesColor: optionsData.category_colors?.episodes || 'var(--neon-green)',
-        nameColor: item.name_color || optionsData.category_colors?.name || '#ffffff',
-        yearColor: optionsData.category_colors?.year || 'var(--neon-cyan)',
-        genreColor: optionsData.category_colors?.genre || 'var(--neon-cyan)',
-        cyanBase: 'rgba(0, 212, 255, 0.1)'
-    };
-}
-
-// 2. 數據處理 - 統一處理卡片所需數據
-function processCardData(item) {
-    const genres = Array.isArray(item.genre)
-        ? item.genre
-        : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
-
-    const extraTags = [];
-    if (item.extra_data) {
-        const categoryColors = optionsData.category_colors || {};
-        const colorKeys = Object.keys(categoryColors);
-        const standardFields = ['genre', 'year', 'season', 'month', 'episodes', 'rating', 'recommendation', 'type', 'category', 'name', 'poster_url', 'description'];
-        const excludedKeys = [...standardFields, ...colorKeys];
-
-        Object.entries(item.extra_data).forEach(([key, val]) => {
-            const strVal = String(val || '').trim();
-            const strKey = String(key || '').trim();
-
-            if (strVal &&
-                strKey &&
-                !excludedKeys.includes(strKey) &&
-                strVal !== strKey &&
-                !strKey.startsWith('btn_') &&
-                !strKey.includes('_color') &&
-                strKey.length > 2) {
-                extraTags.push({ val: strKey, color: categoryColors[strKey] || '#ffffff' });
-            }
-        });
-    }
-
-    return {
-        genres,
-        extraTags,
-        starCount: (item.recommendation || '').split('★').length - 1,
-        starText: `星X${((item.recommendation || '').split('★').length - 1) || 1}`
-    };
-}
-
-// 3. 通用組件渲染函數
-function renderAdminButton(id, size = 'normal') {
-    if (!isAdminLoggedIn) return '';
-    const sizeStyles = size === 'small'
-        ? 'padding: 2px 6px; font-size: 10px; top: 5px; right: 5px;'
-        : 'padding: 4px 8px; font-size: 12px; top: 8px; right: 8px;';
-    return `<button onclick="event.stopPropagation(); window.editAnime('${id}')" style="position: absolute; ${sizeStyles} background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); border-radius: 4px; cursor: pointer; z-index: 10;">${size === 'small' ? '📝' : '📝 編輯'}</button>`;
-}
-
-function renderRatingBadge(rating, color) {
-    return `<span style="color: ${color}; border: 1px solid ${color}; padding: 1px 4px; border-radius: 4px; font-size: 10px; font-weight: 900; background: ${color}22; flex-shrink: 0;">${escapeHtml(rating || '普')}</span>`;
-}
-
-function renderStarDisplay(starText, color, size = 12) {
-    return `<span style="color: ${color}; font-size: ${size}px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${starText}</span>`;
-}
-
-function renderMetaTags(item, colors, showEpisodes = true) {
-    const { year, season, month, episodes } = item;
-    const tags = [];
-    if (year) tags.push(escapeHtml(year));
-    if (season) tags.push(escapeHtml(season));
-    if (month) tags.push(escapeHtml(`${month}月`));
-    if (showEpisodes && episodes) tags.push(`全 ${escapeHtml(episodes)} 集`);
-
-    return `<div style="display: flex; gap: 8px; font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; align-items: center;">${tags.join('')}</div>`;
-}
-
-function renderGenreTags(genres, extraTags, color) {
-    const cleanGenres = genres.map(g => g.replace(/["'\[\]\(\),，。]/g, '').trim()).filter(g => g);
-    const genreSpans = cleanGenres.map(g => `<span style="${getTagStyle(color)}">${escapeHtml(g)}</span>`).join('');
-    const extraSpans = extraTags.map(t => `<span style="${getTagStyle(t.color)}">${escapeHtml(t.val)}</span>`).join('');
-    return genreSpans + extraSpans;
-}
-
-// ========== 3. 布局渲染函數 ==========
-
-// Grid 布局 - 海報卡片
-function renderGridCard(item, colors, data) {
-    const { id, name, poster_url, episodes, recommendation } = item;
-    const { ratingColor, episodesColor, nameColor, yearColor, cyanBase } = colors;
-    const gridSize = gridColumns == 5 ? 12 : (gridColumns == 4 ? 13 : 15);
-
-    return `
-        <div class="anime-card" onclick="window.showAnimeDetail('${id}')" style="border: 2px solid ${ratingColor}; background: ${cyanBase}; position: relative; overflow: hidden;">
-            ${renderAdminButton(id)}
-            <div class="card-poster-v38" style="aspect-ratio: 2/3; overflow: hidden; position: relative;">
-                <img src="${poster_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22450%22%3E%3Crect fill=%22%231a1a2e%22 width=%22300%22 height=%22450%22/%3E%3Ctext fill=%22%23666%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENO+IMAGE%3C/text%3E%3C/svg%3E'}" style="width: 100%; height: 100%; object-fit: cover;">
-                <div class="card-overlay-v38" style="position: absolute; inset: 0; box-shadow: inset 0 40px 30px -10px rgba(0,0,0,0.8), inset 0 -40px 30px -10px rgba(0,0,0,0.8), inset 40px 0 30px -10px rgba(0,0,0,0.4), inset -40px 0 30px -10px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
-                <div class="cyber-core-v39" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.75); border-bottom-right-radius: 10px; backdrop-filter: blur(8px); z-index: 10;">
-                    <div style="position: relative; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 50%;">
-                        <span class="star-icon" style="color: ${colors.starColor}; font-size: 16px; filter: drop-shadow(0 0 5px ${colors.starColor});">${escapeHtml(recommendation || '★')}</span>
-                    </div>
-                    <div style="color: ${ratingColor}; font-weight: 900; font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: 1px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.rating || '普')}</div>
-                </div>
-            </div>
-            ${episodes ? `<div style="position: absolute; top: calc(66.66% - 25px); left: 50%; transform: translateX(-50%); ${getTagStyle(episodesColor)} border-radius: 50px; z-index: 15; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">全 ${escapeHtml(episodes)} 集</div>` : ''}
-            <div style="position: relative; margin-top: -20px; padding-top: 25px; background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0.8) 100%);">
-                <div class="card-content-v38" style="padding: 15px; text-align: center; width: 100%;">
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <h3 style="color: ${nameColor}; font-size: ${gridSize}px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px 12px;">${escapeHtml(name)}</h3>
-                        <div style="display: flex; justify-content: center; gap: 4px;">
-                            ${item.year ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.year)}</span>` : ''}
-                            ${item.season && gridColumns != 5 ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.season)}</span>` : ''}
-                            ${item.month ? `<span style="${getTagStyle(yearColor)}">${escapeHtml(item.month)}月</span>` : ''}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// Desktop List 布局 - 桌面資料列表
-function renderListCard(item, colors, data) {
-    const { id, name, year, season, month, episodes, type } = item;
-    const { ratingColor, episodesColor, nameColor, yearColor, cyanBase, starColor, genreColor } = colors;
-    const { genres, extraTags, starText } = data;
-
-    return `
-        <div class="anime-card desktop-list-layout" onclick="window.showAnimeDetail('${id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 12px 20px !important; gap: 0; width: 100%; overflow: hidden; position: relative;">
-            ${renderAdminButton(id)}
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100px; flex-shrink: 0; border-right: 1px solid rgba(0,212,255,0.1); padding-right: 15px;">
-                ${renderStarDisplay(starText, starColor, 15)}
-                ${renderRatingBadge(item.rating, ratingColor)}
-            </div>
-            <div style="flex: 1; min-width: 0; display: flex; align-items: center; padding-left: 20px; gap: 20px; height: 100%;">
-                <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
-                    <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${escapeHtml(name)}</h3>
-                    ${renderMetaTags(item, colors)}
-                </div>
-                <div style="flex: 0 0 15%; min-width: 0; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid rgba(0,212,255,0.1); padding-left: 20px; justify-content: center;">
-                    <span style="color: ${genreColor}; font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(type || '')}</span>
-                </div>
-                <div class="desktop-scroll-tags" onwheel="this.scrollLeft += event.deltaY; event.preventDefault();" style="flex: 1; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding: 10px 0; scrollbar-width: thin; cursor: grab; border-left: 1px solid rgba(0,212,255,0.1); padding-left: 20px; align-items: center;">
-                    ${renderGenreTags(genres, extraTags, genreColor)}
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// Mobile 布局 - 移動端卡片
-function renderMobileCard(item, colors, data) {
-    const { id, name, year, season, month, episodes } = item;
-    const { ratingColor, episodesColor, nameColor, yearColor, cyanBase, starColor } = colors;
-    const { starText } = data;
-
-    return `
-        <div class="anime-card mobile-layout-card" onclick="window.showAnimeDetail('${id}')" style="display: flex !important; flex-direction: column; justify-content: center; margin: 0 0 10px 0 !important; background: ${cyanBase} !important; border: 1.5px solid ${ratingColor} !important; border-radius: 10px !important; padding: 10px 15px !important; gap: 6px; width: 100%; height: 75px; overflow: hidden; position: relative;">
-            ${renderAdminButton(id, 'small')}
-            <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
-                ${renderStarDisplay(starText, starColor, 12)}
-                <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; font-weight: bold; scrollbar-width: none; flex: 1;">${escapeHtml(name)}</h3>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden;">
-                ${renderRatingBadge(item.rating, ratingColor)}
-                ${renderMetaTags(item, colors)}
-            </div>
-        </div>
-    `;
-}
-
-// 4. 主入口函數
-window.renderCard = (item) => {
-    const colors = getCardColors(item);
-    const data = processCardData(item);
-
-    // 移動端佈局
-    if (window.innerWidth <= 768) {
-        return renderMobileCard(item, colors, data);
-    }
-
-    // 桌面資料列表佈局
-    if (gridColumns === 'mobile') {
-        return renderListCard(item, colors, data);
-    }
-
-    // 網格佈局（默認）
-    return renderGridCard(item, colors, data);
-};
-
-window.showAnimeDetail = (id) => {
-    const item = animeData.find(a => a.id === id);
-    if (!item) return;
-	    const modal = document.getElementById('detailModal');
-	    const content = document.getElementById('detailContent');
-	    
-	    // 移除外層原有水藍色框線，改由內部 detail-container-v35 統一控制
-	    const modalContent = modal.querySelector('.modal-content');
-	    if (modalContent) {
-	        modalContent.style.border = 'none';
-	        modalContent.style.boxShadow = 'none';
-	        modalContent.style.background = 'transparent';
-	    }
-
-	    const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
-    const links = Array.isArray(item.links) ? item.links : [];
-	    const starColor = item.star_color || optionsData.category_colors?.recommendation || '#ffcc00';
-		    const btnColor = item.extra_data?.btn_bg || optionsData.category_colors?.btn_bg || '#00d4ff';
-	    const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
-    const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
-    const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
-    const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
-    const cyanBase = 'rgba(0, 212, 255, 0.1)';
-
-	    const extraTags = [];
-	    if (item.extra_data) {
-		        Object.entries(item.extra_data).forEach(([key, val]) => {
-		            if (val) {
-		                // 修正：從 optionsData 獲取對應 key 的顏色設定
-		                const customColor = (optionsData.category_colors && optionsData.category_colors[key]) ? optionsData.category_colors[key] : '#ffffff';
-		                extraTags.push({ val: val, key: key, color: customColor });
-		            }
-		        });
-	    }
-
-		content.innerHTML = `
-					        <div class="detail-container-v35" style="--rating-color: ${ratingColor}; position: relative; background: #050609; border-radius: 16px; overflow: hidden; box-sizing: border-box; border: 2px solid ${ratingColor}; box-shadow: 0 0 30px ${ratingColor}44; display: flex; flex-direction: row;">
-					            <!-- 左側滿版海報 -->
-					            <div class="detail-poster-aside" style="flex: 0 0 380px; border-right: 2px solid ${ratingColor}; box-sizing: border-box; background: #000; position: relative; z-index: 1;">
-		                <img src="${item.poster_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22450%22 viewBox=%220 0 300 450%22%3E%3Crect fill=%22%231a1a2e%22 width=%22300%22 height=%22450%22/%3E%3Ctext fill=%22%23666%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENO+IMAGE%3C/text%3E%3C/svg%3E'}" style="width: 100%; height: 100%; object-fit: cover;">
-		                <div style="position: absolute; inset: 0; box-shadow: inset 0 60px 40px -20px rgba(0,0,0,0.8), inset 0 -60px 40px -20px rgba(0,0,0,0.8), inset 60px 0 40px -20px rgba(0,0,0,0.4), inset -60px 0 40px -20px rgba(0,0,0,0.4); pointer-events: none; z-index: 2;"></div>
-		                <div class="cyber-core-v39-large" style="position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: rgba(0,0,0,0.8); border-bottom-right-radius: 15px; border-right: 2px solid ${ratingColor}; border-bottom: 2px solid ${ratingColor}; backdrop-filter: blur(12px); z-index: 10;">
-		                    <span class="star-icon" style="color: ${starColor}; font-size: 24px; filter: drop-shadow(0 0 8px ${starColor});">${escapeHtml(item.recommendation || '★')}</span>
-		                    <span style="color: ${ratingColor}; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; filter: drop-shadow(0 0 5px ${ratingColor});">${escapeHtml(item.rating || '普')}</span>
-		                </div>
-		            </div>
-		
-		            <!-- 右側資訊流 -->
-	<div class="detail-content-main force-scroll" style="flex: 1; padding: 25px !important; gap: 12px !important; background: #0a0e1a !important; border-left: 2px solid ${ratingColor} !important; overflow-y: auto; max-height: 85vh;">
-			                <!-- 標題與核心數據區塊 -->
-			                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative;">
-			                    <div style="padding: 12px 20px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.15), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
-		                        <div style="display: flex; align-items: center; justify-content: space-between;">
-		                            <h2 class="detail-title-v35 force-scroll" style="color: ${item.name_color || '#ffffff'}; margin: 0; font-size: 24px;">${escapeHtml(item.name)}</h2>
-		                            ${isAdminLoggedIn ? `<button onclick="window.closeAnimeDetail(); window.editAnime('${item.id}')" style="background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer;">📝 編輯作品</button>` : ''}
-		                        </div>
-		                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; margin-top: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-		                            ${item.year ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${escapeHtml(item.year)}</div>` : ''}
-		                            ${item.season ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${escapeHtml(item.season)}</div>` : ''}
-		                            ${item.month ? `<div class="core-data-item" style="${getTagStyle(yearColor)}">${escapeHtml(item.month)}月</div>` : ''}
-		                            ${item.episodes ? `<div class="core-data-item" style="${getTagStyle(episodesColor)}">全 ${escapeHtml(item.episodes)} 集</div>` : ''}
-		                        </div>
-		                    </div>
-		                </div>
-	
-<!-- 標籤整合區塊 (類型 + 自訂選項) -->
-				                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative;">
-				                    <div style="padding: 10px 20px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.15), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box;">
-			                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-			                            ${genres.map(g => {
-			                                const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
-			                                return cleanG ? `<span style="${getTagStyle(genreColor)}">${escapeHtml(cleanG)}</span>` : '';
-			                            }).join('')}
-			                            ${extraTags.map(t => {
-			                                const color = t.color || '#ffffff';
-			                                return `<span style="${getTagStyle(color)}">${escapeHtml(t.val)}</span>`;
-			                            }).join('')}
-			                        </div>
-			                    </div>
-			                </div>
-		
-<!-- 劇情介紹區塊 (壓縮並增加滾動條) -->
-				                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative; flex: 1; min-height: 0;">
-				                    <div style="padding: 15px 20px; background: linear-gradient(90deg, rgba(0, 212, 255, 0.15), transparent); border-left: 6px solid ${ratingColor}; margin-left: -2px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column;">
-			                        <div class="force-scroll" style="overflow-y: auto; max-height: 140px; padding-right: 10px;">
-			                            <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 1.8; font-size: 15px; white-space: pre-wrap; margin: 0;">${escapeHtml(item.description || '暫無簡介')}</p>
-			                        </div>
-			                    </div>
-			                </div>
-	
-<!-- 連結區塊 -->
-				                <div class="detail-section-v35" style="margin-top: 10px; position: relative;">
-				                    <div style="padding: 10px 20px; box-sizing: border-box;">
-			                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-				                           ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 6px 12px; font-size: 11px; white-space: nowrap; border-color: ${btnColor} !important; color: ${btnColor} !important; background: ${btnColor}22 !important; border-radius: 50px; height: 28px;">${escapeHtml(l.name)}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic; font-size: 11px;">暫無連結</span>'}
-			                        </div>
-			                    </div>
-			                </div>
-            </div>
-        </div>
-    `;
-    modal.classList.add('active');
-    window.initGlobalScroll();
-};
-
-
-window.closeAnimeDetail = () => { document.getElementById('detailModal').classList.remove('active'); };
 
 window.renderPagination = (total) => {
     const pages = Math.ceil(total / itemsPerPage);
@@ -1210,10 +947,10 @@ window.renderSearchSelectsHTML = () => {
     allKeys.forEach(key => {
         const options = optionsData[key] || [];
         if (options.length === 0) return;
-        
+
         const label = window.getOptionLabel(key);
         const activeVal = filters[key] || '';
-        
+
         html += `
             <select class="auto-width-select" onchange="window.handleFilter('${key}', this.value)" style="border-color: rgba(0, 212, 255, 0.3);">
                 <option value="">${label}</option>
@@ -1236,13 +973,13 @@ window.getFilteredData = () => {
     const filtered = animeData.filter(item => {
         if (item.category !== currentCategory) return false;
         if (filters.search && !item.name.toLowerCase().includes(filters.search.toLowerCase())) return false;
-        
+
         for (const key in filters) {
             if (key === 'search' || !filters[key]) continue;
-            
+
             if (key === 'genre') {
                 if (!item.genre || !item.genre.includes(filters.genre)) return false;
-            } 
+            }
             else if (key.startsWith('custom_')) {
                 if (!item.extra_data || item.extra_data[key] !== filters[key]) return false;
             }
@@ -1252,17 +989,17 @@ window.getFilteredData = () => {
         }
         return true;
     });
-    
+
     return filtered.sort((a, b) => {
         if (sortOrder === 'name') {
             return a.name.localeCompare(b.name, 'zh-TW');
         }
-        
+
         const yearA = parseInt(a.year) || 0;
         const yearB = parseInt(b.year) || 0;
         if (yearB !== yearA) return sortOrder === 'desc' ? yearB - yearA : yearA - yearB;
-        
-        const monthMap = {'1月':1,'2月':2,'3月':3,'4月':4,'5月':5,'6月':6,'7月':7,'8月':8,'9月':9,'10月':10,'11月':11,'12月':12};
+
+        const monthMap = { '1月': 1, '2月': 2, '3月': 3, '4月': 4, '5月': 5, '6月': 6, '7月': 7, '8月': 8, '9月': 9, '10月': 10, '11月': 11, '12月': 12 };
         const monthA = monthMap[a.month] || 0;
         const monthB = monthMap[b.month] || 0;
         return sortOrder === 'desc' ? monthB - monthA : monthA - monthB;
@@ -1271,17 +1008,17 @@ window.getFilteredData = () => {
 
 window.switchCategory = async (cat) => {
     console.log('🔄 切換分類至:', cat);
-    
+
     // 追蹤板塊切換
     if (typeof window.trackCategorySwitch === 'function') {
         window.trackCategorySwitch(cat);
     }
-    
+
     currentCategory = cat;
-    currentPage = 1; 
+    currentPage = 1;
     adminPage = 1;
-    filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' }; 
-    
+    filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' };
+
     // 判斷目前是否在後台模式
     const isAdminMode = document.querySelector('.admin-container') !== null;
 
@@ -1298,10 +1035,10 @@ window.switchCategory = async (cat) => {
         window.renderAdmin();
         return;
     }
-    
+
     // 前台模式
-    currentSection = cat; 
-    
+    currentSection = cat;
+
     // 只有在前台模式才顯示載入中提示
     const grid = document.getElementById('anime-grid-container');
     const mainContent = document.getElementById('main-grid-content');
@@ -1310,7 +1047,7 @@ window.switchCategory = async (cat) => {
         mainContent.style.transition = 'opacity 0.3s ease';
     }
     if (grid) grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--neon-cyan); animation: pulse 1.5s ease-in-out infinite;">⚡ 正在同步資料...</div>';
-    
+
     // 確保資料載入完成後淡入
     setTimeout(() => {
         const mainContent = document.getElementById('main-grid-content');
@@ -1318,9 +1055,9 @@ window.switchCategory = async (cat) => {
             mainContent.style.opacity = '1';
         }
     }, 100);
-    
+
     await window.loadData();
-    window.renderApp(); 
+    window.renderApp();
 };
 
 // ========== 留言板管理 ==========
@@ -1329,7 +1066,7 @@ window.renderGuestbookAdmin = async () => {
     const pending = messages.filter(m => m.status === 'pending');
     const approved = messages.filter(m => m.status === 'approved');
     const rejected = messages.filter(m => m.status === 'rejected');
-    
+
     return `
         <div id="guestbook-admin-container" style="display: flex; flex-direction: column; min-height: 100%; overflow-y: auto;">
             <div style="display: flex; gap: 15px; flex-wrap: wrap; flex-shrink: 0;">
@@ -1371,7 +1108,7 @@ window.switchGuestbookTab = async (tab) => {
 
 window.renderGuestbookList = (messages) => {
     const filtered = messages.filter(m => m.status === window.currentGuestbookTab);
-    return filtered.length === 0 ? '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">暫無留言</div>' : 
+    return filtered.length === 0 ? '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">暫無留言</div>' :
         filtered.map(m => `
             <div style="background: rgba(0,212,255,0.03); border-radius: 8px; padding: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -1406,8 +1143,8 @@ window.loadGuestbookMessagesForAdmin = async () => {
 window.moderateGuestbook = async (id, status) => {
     try {
         const client = window.supabaseManager?.getClient();
-        await client.from('guestbook_messages').update({ 
-            status, 
+        await client.from('guestbook_messages').update({
+            status,
             approved_by: siteSettings.admin_name || '管理員',
             updated_at: new Date().toISOString()
         }).eq('id', id);
@@ -1421,8 +1158,8 @@ window.moderateGuestbook = async (id, status) => {
 window.renderAdmin = () => {
     const app = document.getElementById('app');
     const filtered = animeData.filter(item => item.category === currentCategory);
-    const paged = filtered.slice((adminPage-1)*adminItemsPerPage, adminPage*adminItemsPerPage);
-    
+    const paged = filtered.slice((adminPage - 1) * adminItemsPerPage, adminPage * adminItemsPerPage);
+
     // 記錄選項管理的滾動位置
     const optionsWrapper = document.getElementById('optionsWrapper');
     const scrollLeft = optionsWrapper ? optionsWrapper.scrollLeft : 0;
@@ -1431,7 +1168,28 @@ window.renderAdmin = () => {
     if (adminHeaderBar) {
         adminHeaderBar.style.display = 'none';
     }
-    
+
+    // 如果只需要更新內容區域，且已經有 admin 框架
+    const existingAdminContainer = document.querySelector('.admin-container');
+    if (existingAdminContainer) {
+        // 只更新內容區域，避免重繪導致的閃爍或狀態丟失
+        const contentBody = document.querySelector('.admin-content-body');
+        if (contentBody) {
+            // 根據當前 Tab 重新渲染內容
+            contentBody.innerHTML = window.renderAdminContent(paged, filtered.length);
+
+            // 如果是選項管理，恢復滾動位置
+            const newOptionsWrapper = document.getElementById('optionsWrapper');
+            if (newOptionsWrapper && scrollLeft > 0) {
+                newOptionsWrapper.scrollLeft = scrollLeft;
+            }
+
+            // 重新綁定事件
+            window.initAdminEventListeners();
+            return; // 結束函數，不執行完整的 DOM 重繪
+        }
+    }
+
     const adminTabs = [
         { id: 'manage', icon: '📋', label: '作品管理' },
         { id: 'add', icon: '➕', label: '新增作品' },
@@ -1631,7 +1389,7 @@ window.renderAdmin = () => {
             </main>
         </div>
     `;
-    
+
     // 處理需要異步載入的標籤（留言板）
     if (currentAdminTab === 'guestbook') {
         const loadingDiv = document.getElementById('guestbook-loading');
@@ -1641,7 +1399,7 @@ window.renderAdmin = () => {
             });
         }
     }
-    
+
     // 恢復滾動位置
     if (currentAdminTab === 'options') {
         const newOptionsWrapper = document.getElementById('optionsWrapper');
@@ -1684,96 +1442,136 @@ window.renderAdminPagination = (total) => {
     return btns.join('');
 };
 
-    window.renderOptionsManager = () => {
-        const defaultKeys = ['genre', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation'];
-        const customKeys = optionsData.custom_lists || [];
-        const allKeys = [...defaultKeys, ...customKeys];
+window.renderOptionsManager = () => {
+    const defaultKeys = ['genre', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation'];
+    const customKeys = optionsData.custom_lists || [];
+    const allKeys = [...defaultKeys, ...customKeys];
+    const categoryColors = optionsData.category_colors || {};
+    const ratingColors = optionsData.rating_colors || {};
 
-        return `
+    return `
             <div style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center;">
                 <input type="text" id="new-list-name" placeholder="輸入新列表名稱 (如: 載體)" style="width: 250px; padding: 8px; border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; background: rgba(0,0,0,0.3); color: #fff;">
                 <button class="btn-primary" onclick="window.addNewCustomList()">＋ 新增列表</button>
             </div>
-            <div class="options-list force-scroll" style="display: flex; flex-direction: column; gap: 15px;">
-                ${allKeys.map(key => `
-                    <div class="form-custom-list" style="background: rgba(0,212,255,0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(0,212,255,0.15);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <strong style="color: var(--neon-cyan); font-size: 15px;">${key === 'recommendation' ? '評分' : key === 'episodes' ? '集數' : key === 'season' ? '季度' : key.charAt(0).toUpperCase() + key.slice(1)}</strong>
-                            <div style="display: flex; gap: 8px;">
-                                ${customKeys.includes(key) ? `<button class="btn-primary" onclick="window.deleteCustomList('${key}')" style="font-size: 11px; padding: 4px 8px; border-color: #ff4444; color: #ff4444;">✕ 刪除列表</button>` : ''}
+            
+            <div class="options-scroll-wrapper">
+                <div style="min-width: 400px; flex: 1; display: flex; flex-direction: column; gap: 15px;">
+                    <h3 style="color: var(--neon-cyan); margin: 0 0 10px 0;">📋 選項內容管理</h3>
+                    
+                    ${allKeys.map(key => `
+                        <div class="form-custom-list" style="background: rgba(0,212,255,0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(0,212,255,0.15);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <strong style="color: var(--neon-cyan); font-size: 15px;">${key === 'recommendation' ? '評分' : key === 'episodes' ? '集數' : key === 'season' ? '季度' : key.charAt(0).toUpperCase() + key.slice(1)}</strong>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 12px; color: var(--text-secondary);">標籤色:</span>
+                                    <div class="color-input-wrapper">
+                                        <input type="color" value="${categoryColors[key] || '#00d4ff'}" onchange="window.updateCategoryColor('${key}', this.value)">
+                                        <div class="color-swatch" style="background-color: ${categoryColors[key] || '#00d4ff'}; width: 18px; height: 18px;" onclick="this.previousElementSibling.click()"></div>
+                                    </div>
+                                    ${customKeys.includes(key) ? `<button class="btn-primary" onclick="window.deleteCustomList('${key}')" style="font-size: 11px; padding: 4px 8px; border-color: #ff4444; color: #ff4444; margin-left: 10px;">✕</button>` : ''}
+                                </div>
+                            </div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                ${(optionsData[key] || []).map((opt, idx) => `
+                                    <div id="opt-${key}-${idx}" style="display: flex; align-items: center; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2);">
+                                        <span id="opt-text-${key}-${idx}" style="font-size: 13px; margin-right: 4px;">${opt}</span>
+                                        <input type="text" id="opt-input-${key}-${idx}" value="${opt}" style="display: none; width: 80px; padding: 2px 6px; font-size: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-cyan); border-radius: 4px; color: #fff;" onkeydown="window.handleOptionKeydown(event, '${key}', ${idx}, '${opt}')" onblur="window.handleOptionBlur('${key}', ${idx}, '${opt}')">
+                                        
+                                        ${key === 'rating' ? `
+                                            <div class="color-input-wrapper" style="margin-left: 4px; margin-right: 4px;">
+                                                <input type="color" value="${ratingColors[opt] || '#b026ff'}" onchange="window.updateRatingColor('${opt}', this.value)">
+                                                <div class="color-swatch" style="background-color: ${ratingColors[opt] || '#b026ff'}; width: 12px; height: 12px; border-radius: 50%; border: none;" onclick="this.previousElementSibling.click()"></div>
+                                            </div>
+                                        ` : ''}
+
+                                        <button class="btn-icon edit" onclick="window.editOption('${key}', ${idx}, '${opt}')" style="width: 24px; height: 24px; font-size: 12px; margin-left: ${key === 'rating' ? '2px' : '4px'};" title="編輯">✎</button>
+                                        <button class="btn-icon delete" onclick="window.deleteOptionItem('${key}', ${idx})" style="width: 24px; height: 24px; font-size: 12px; margin-left: 2px;" title="刪除">✕</button>
+                                    </div>
+                                `).join('')}
+                                <div style="display: flex; gap: 6px;">
+                                    <input type="text" id="add-opt-${key}" placeholder="新增" style="font-size: 12px; padding: 4px 8px; width: 80px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; color: #fff;">
+                                    <button class="btn-primary" onclick="window.addOptionItem('${key}')" style="font-size: 11px; padding: 4px 8px;">＋</button>
+                                </div>
                             </div>
                         </div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                            ${(optionsData[key] || []).map((opt, idx) => `
-                                <div id="opt-${key}-${idx}" style="display: flex; align-items: center; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2);">
-                                    <span id="opt-text-${key}-${idx}" style="font-size: 13px; margin-right: 4px;">${opt}</span>
-                                    <input type="text" id="opt-input-${key}-${idx}" value="${opt}" style="display: none; width: 80px; padding: 2px 6px; font-size: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-cyan); border-radius: 4px; color: #fff;" onkeydown="window.handleOptionKeydown(event, '${key}', ${idx}, '${opt}')" onblur="window.handleOptionBlur('${key}', ${idx}, '${opt}')">
-                                    <button onclick="window.editOption('${key}', ${idx}, '${opt}')" style="background: none; border: none; color: var(--neon-cyan); cursor: pointer; font-size: 11px; margin-left: 4px;" title="編輯">✎</button>
-                                    <button onclick="window.deleteOptionItem('${key}', ${idx})" style="background: none; border: none; color: #ff4444; cursor: pointer; font-size: 11px; margin-left: 2px;" title="刪除">✕</button>
+                    `).join('')}
+
+                    <div class="form-custom-list" style="background: rgba(0,212,255,0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(0,212,255,0.15);">
+                        <div style="margin-bottom: 10px;"><strong style="color: var(--neon-cyan);">🎨 其他全域顏色設定</strong></div>
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                 <span style="font-size: 13px;">作品名稱預設色</span>
+                                 <div class="color-input-wrapper">
+                                    <input type="color" value="${categoryColors['name'] || '#ffffff'}" onchange="window.updateCategoryColor('name', this.value)">
+                                    <div class="color-swatch" style="background-color: ${categoryColors['name'] || '#ffffff'}; width: 20px; height: 20px;" onclick="this.previousElementSibling.click()"></div>
                                 </div>
-                            `).join('')}
-                            <div style="display: flex; gap: 6px;">
-                                <input type="text" id="add-opt-${key}" placeholder="新增" style="font-size: 12px; padding: 4px 8px; width: 80px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; color: #fff;">
-                                <button class="btn-primary" onclick="window.addOptionItem('${key}')" style="font-size: 11px; padding: 4px 8px;">＋</button>
+                            </div>
+                             <div style="display: flex; align-items: center; gap: 8px;">
+                                 <span style="font-size: 13px;">按鈕背景預設色</span>
+                                 <div class="color-input-wrapper">
+                                    <input type="color" value="${categoryColors['btn_bg'] || '#00d4ff'}" onchange="window.updateCategoryColor('btn_bg', this.value)">
+                                    <div class="color-swatch" style="background-color: ${categoryColors['btn_bg'] || '#00d4ff'}; width: 20px; height: 20px;" onclick="this.previousElementSibling.click()"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                `).join('')}
+                </div>
             </div>
         `;
-    };
+};
 
-    // 編輯選項名稱
-    window.editOption = (key, idx, oldValue) => {
+// 編輯選項名稱
+window.editOption = (key, idx, oldValue) => {
+    const textEl = document.getElementById(`opt-text-${key}-${idx}`);
+    const inputEl = document.getElementById(`opt-input-${key}-${idx}`);
+
+    if (inputEl.style.display === 'none') {
+        inputEl.style.display = 'inline-block';
+        inputEl.focus();
+        inputEl.select();
+        textEl.style.display = 'none';
+    } else {
+        inputEl.style.display = 'none';
+        textEl.style.display = 'inline';
+    }
+};
+
+// 處理編輯框鍵盤事件
+window.handleOptionKeydown = (event, key, idx, oldValue) => {
+    if (event.key === 'Enter') {
+        window.saveOptionEdit(key, idx, oldValue);
+    } else if (event.key === 'Escape') {
+        const inputEl = document.getElementById(`opt-input-${key}-${idx}`);
         const textEl = document.getElementById(`opt-text-${key}-${idx}`);
-        const inputEl = document.getElementById(`opt-input-${key}-${idx}`);
-        
-        if (inputEl.style.display === 'none') {
-            inputEl.style.display = 'inline-block';
-            inputEl.focus();
-            inputEl.select();
-            textEl.style.display = 'none';
-        } else {
-            inputEl.style.display = 'none';
-            textEl.style.display = 'inline';
-        }
-    };
+        inputEl.style.display = 'none';
+        textEl.style.display = 'inline';
+    }
+};
 
-    // 處理編輯框鍵盤事件
-    window.handleOptionKeydown = (event, key, idx, oldValue) => {
-        if (event.key === 'Enter') {
-            window.saveOptionEdit(key, idx, oldValue);
-        } else if (event.key === 'Escape') {
-            const inputEl = document.getElementById(`opt-input-${key}-${idx}`);
-            const textEl = document.getElementById(`opt-text-${key}-${idx}`);
-            inputEl.style.display = 'none';
-            textEl.style.display = 'inline';
-        }
-    };
+// 處理編輯框失去焦點
+window.handleOptionBlur = (key, idx, oldValue) => {
+    const inputEl = document.getElementById(`opt-input-${key}-${idx}`);
+    if (inputEl.style.display !== 'none') {
+        window.saveOptionEdit(key, idx, oldValue);
+    }
+};
 
-    // 處理編輯框失去焦點
-    window.handleOptionBlur = (key, idx, oldValue) => {
-        const inputEl = document.getElementById(`opt-input-${key}-${idx}`);
-        if (inputEl.style.display !== 'none') {
-            window.saveOptionEdit(key, idx, oldValue);
-        }
-    };
+// 完成編輯選項
+window.saveOptionEdit = async (key, idx, oldValue) => {
+    const inputEl = document.getElementById(`opt-input-${key}-${idx}`);
+    const newValue = inputEl.value.trim();
+    const textEl = document.getElementById(`opt-text-${key}-${idx}`);
 
-    // 完成編輯選項
-    window.saveOptionEdit = async (key, idx, oldValue) => {
-        const inputEl = document.getElementById(`opt-input-${key}-${idx}`);
-        const newValue = inputEl.value.trim();
-        const textEl = document.getElementById(`opt-text-${key}-${idx}`);
+    if (!newValue || newValue === oldValue) {
+        inputEl.style.display = 'none';
+        textEl.style.display = 'inline';
+        return;
+    }
 
-        if (!newValue || newValue === oldValue) {
-            inputEl.style.display = 'none';
-            textEl.style.display = 'inline';
-            return;
-        }
-
-        // 創建確認視窗
-        const confirmId = 'confirm-modal-' + Date.now();
-        const confirmHTML = `
+    // 創建確認視窗
+    const confirmId = 'confirm-modal-' + Date.now();
+    const confirmHTML = `
             <div id="${confirmId}" style="
                 position: fixed;
                 inset: 0;
@@ -1797,58 +1595,42 @@ window.renderAdminPagination = (total) => {
                         <span style="color: rgba(255,255,255,0.6); font-size: 13px;">所有使用「${oldValue}」的作品都會自動更新</span>
                     </div>
                     <div style="display: flex; gap: 12px; justify-content: center;">
-                        <button id="${confirmId}-cancel" style="
-                            padding: 10px 24px;
-                            background: rgba(255,68,68,0.1);
-                            border: 1px solid #ff4444;
-                            border-radius: 6px;
-                            color: #ff6b6b;
-                            cursor: pointer;
-                            font-size: 14px;
-                        ">取消</button>
-                        <button id="${confirmId}-ok" style="
-                            padding: 10px 24px;
-                            background: rgba(0,212,255,0.2);
-                            border: 1px solid var(--neon-cyan);
-                            border-radius: 6px;
-                            color: var(--neon-cyan);
-                            cursor: pointer;
-                            font-size: 14px;
-                        ">確定</button>
+                        <button id="${confirmId}-cancel" class="btn-danger-outline">取消</button>
+                        <button id="${confirmId}-ok" class="btn-primary">確定</button>
                     </div>
                 </div>
             </div>
         `;
-        document.body.insertAdjacentHTML('beforeend', confirmHTML);
+    document.body.insertAdjacentHTML('beforeend', confirmHTML);
 
-        // 等待 DOM 更新後再綁定事件
-        await new Promise(resolve => setTimeout(resolve, 10));
+    // 等待 DOM 更新後再綁定事件
+    await new Promise(resolve => setTimeout(resolve, 10));
 
-        const confirmModal = document.getElementById(confirmId);
-        const okBtn = document.getElementById(`${confirmId}-ok`);
-        const cancelBtn = document.getElementById(`${confirmId}-cancel`);
+    const confirmModal = document.getElementById(confirmId);
+    const okBtn = document.getElementById(`${confirmId}-ok`);
+    const cancelBtn = document.getElementById(`${confirmId}-cancel`);
 
-        if (!okBtn || !cancelBtn) {
-            console.error('確認視窗元素未找到');
-            return;
-        }
+    if (!okBtn || !cancelBtn) {
+        console.error('確認視窗元素未找到');
+        return;
+    }
 
-        // 綁定取消按鈕
-        cancelBtn.onclick = () => {
-            confirmModal.remove();
-            inputEl.style.display = 'none';
-            textEl.style.display = 'inline';
-        };
+    // 綁定取消按鈕
+    cancelBtn.onclick = () => {
+        confirmModal.remove();
+        inputEl.style.display = 'none';
+        textEl.style.display = 'inline';
+    };
 
-        // 綁定確定按鈕 - 開始更新
-        okBtn.onclick = async () => {
-            confirmModal.remove();
-            inputEl.style.display = 'none';
-            textEl.style.display = 'inline';
+    // 綁定確定按鈕 - 開始更新
+    okBtn.onclick = async () => {
+        confirmModal.remove();
+        inputEl.style.display = 'none';
+        textEl.style.display = 'inline';
 
-            // 創建進度動畫
-            const progressId = 'progress-modal-' + Date.now();
-            const progressHTML = `
+        // 創建進度動畫
+        const progressId = 'progress-modal-' + Date.now();
+        const progressHTML = `
                 <div id="${progressId}" style="
                     position: fixed;
                     inset: 0;
@@ -1877,296 +1659,357 @@ window.renderAdminPagination = (total) => {
                     ">0 / 0</div>
                 </div>
             `;
-            document.body.insertAdjacentHTML('beforeend', progressHTML);
+        document.body.insertAdjacentHTML('beforeend', progressHTML);
 
-            // 添加旋轉動畫
-            const style = document.createElement('style');
-            style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
-            document.head.appendChild(style);
+        // 添加旋轉動畫
+        const style = document.createElement('style');
+        style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+        document.head.appendChild(style);
 
-            const updateProgress = (current, total) => {
-                const statusEl = document.getElementById(`${progressId}-status`);
-                if (statusEl) {
-                    statusEl.textContent = `${current} / ${total}`;
+        const updateProgress = (current, total) => {
+            const statusEl = document.getElementById(`${progressId}-status`);
+            if (statusEl) {
+                statusEl.textContent = `${current} / ${total}`;
+            }
+        };
+
+        try {
+            // 1. 更新選項列表中的名稱
+            if (!optionsData[key]) {
+                optionsData[key] = [];
+            }
+            const optionsList = optionsData[key];
+            const optIndex = optionsList.indexOf(oldValue);
+            if (optIndex > -1) {
+                optionsList[optIndex] = newValue;
+            }
+
+            // 2. 更新資料庫中的 options_data
+            const client = window.supabaseManager?.getClient();
+            if (client) {
+                try {
+                    await client.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) });
+                } catch (dbErr) {
+                    console.warn('儲存 options_data 失敗:', dbErr);
                 }
-            };
+            }
 
-            try {
-                // 1. 更新選項列表中的名稱
-                if (!optionsData[key]) {
-                    optionsData[key] = [];
-                }
-                const optionsList = optionsData[key];
-                const optIndex = optionsList.indexOf(oldValue);
-                if (optIndex > -1) {
-                    optionsList[optIndex] = newValue;
-                }
+            // 3. 更新所有使用該標籤的作品
+            if (client) {
+                try {
+                    const isGenre = key === 'genre';
+                    const selectFields = isGenre ? 'id, genre' : `id, ${key}`;
 
-                // 2. 更新資料庫中的 options_data
-                const client = window.supabaseManager?.getClient();
-                if (client) {
-                    try {
-                        await client.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) });
-                    } catch (dbErr) {
-                        console.warn('儲存 options_data 失敗:', dbErr);
-                    }
-                }
+                    const { data: items, error: selectError } = await client.from('anime_list').select(selectFields);
+                    if (selectError) throw selectError;
 
-                // 3. 更新所有使用該標籤的作品
-                if (client) {
-                    try {
-                        const isGenre = key === 'genre';
-                        const selectFields = isGenre ? 'id, genre' : `id, ${key}`;
+                    const totalItems = items?.length || 0;
+                    let updatedCount = 0;
 
-                        const { data: items, error: selectError } = await client.from('anime_list').select(selectFields);
-                        if (selectError) throw selectError;
+                    updateProgress(0, totalItems);
 
-                        const totalItems = items?.length || 0;
-                        let updatedCount = 0;
-
-                        updateProgress(0, totalItems);
-
-                        for (let i = 0; i < (items?.length || 0); i++) {
-                            const item = items[i];
-                            if (isGenre) {
-                                if (item.genre && Array.isArray(item.genre)) {
-                                    const newGenre = item.genre.map(g => g === oldValue ? newValue : g);
-                                    if (newGenre.join(',') !== item.genre.join(',')) {
-                                        await client.from('anime_list').update({ genre: newGenre }).eq('id', item.id);
-                                        updatedCount++;
-                                    }
-                                }
-                            } else {
-                                const currentValue = item[key];
-                                if (currentValue === oldValue) {
-                                    await client.from('anime_list').update({ [key]: newValue }).eq('id', item.id);
+                    for (let i = 0; i < (items?.length || 0); i++) {
+                        const item = items[i];
+                        if (isGenre) {
+                            if (item.genre && Array.isArray(item.genre)) {
+                                const newGenre = item.genre.map(g => g === oldValue ? newValue : g);
+                                if (newGenre.join(',') !== item.genre.join(',')) {
+                                    await client.from('anime_list').update({ genre: newGenre }).eq('id', item.id);
                                     updatedCount++;
                                 }
                             }
-                            updateProgress(i + 1, totalItems);
+                        } else {
+                            const currentValue = item[key];
+                            if (currentValue === oldValue) {
+                                await client.from('anime_list').update({ [key]: newValue }).eq('id', item.id);
+                                updatedCount++;
+                            }
                         }
-
-                        // 延遲讓使用者看到完成
-                        await new Promise(r => setTimeout(r, 300));
-
-                        // 移除進度動畫
-                        const progressEl = document.getElementById(progressId);
-                        if (progressEl) progressEl.remove();
-                        style.remove();
-
-                        window.showToast(`✓ 已更新「${oldValue}」→「${newValue}」，共 ${updatedCount} 個作品`);
-                    } catch (updateErr) {
-                        console.warn('更新作品失敗:', updateErr);
-                        const progressEl = document.getElementById(progressId);
-                        if (progressEl) progressEl.remove();
-                        style.remove();
-                        window.showToast('✓ 選項已更新（作品更新失敗）');
+                        updateProgress(i + 1, totalItems);
                     }
-                } else {
+
+                    // 延遲讓使用者看到完成
+                    await new Promise(r => setTimeout(r, 300));
+
+                    // 移除進度動畫
                     const progressEl = document.getElementById(progressId);
                     if (progressEl) progressEl.remove();
                     style.remove();
-                    window.showToast('✓ 已更新選項（離線模式）');
-                }
 
-                // 重新載入資料並刷新
-                try {
-                    await window.loadData();
-                } catch (loadErr) {
-                    console.warn('loadData 失敗:', loadErr);
+                    window.showToast(`✓ 已更新「${oldValue}」→「${newValue}」，共 ${updatedCount} 個作品`);
+                } catch (updateErr) {
+                    console.warn('更新作品失敗:', updateErr);
+                    const progressEl = document.getElementById(progressId);
+                    if (progressEl) progressEl.remove();
+                    style.remove();
+                    window.showToast('✓ 選項已更新（作品更新失敗）');
                 }
-                window.renderAdmin();
-
-            } catch (err) {
-                console.error('更新選項失敗:', err);
+            } else {
                 const progressEl = document.getElementById(progressId);
                 if (progressEl) progressEl.remove();
                 style.remove();
-                window.showToast('✗ 更新失敗：' + (err.message || err), 'error');
+                window.showToast('✓ 已更新選項（離線模式）');
             }
-        };
-    };
 
+            // 重新載入資料並刷新
+            try {
+                await window.loadData();
+            } catch (loadErr) {
+                console.warn('loadData 失敗:', loadErr);
+            }
+            window.renderAdmin();
 
-
-    window.addNewCustomList = async () => {
-        const input = document.getElementById('new-list-name');
-        const name = input.value.trim();
-        if (!name) return window.showToast('✗ 請輸入列表名稱', 'error');
-        
-        const key = 'custom_' + Date.now();
-        if (!optionsData.custom_lists) optionsData.custom_lists = [];
-        optionsData.custom_lists.push(key);
-        optionsData[key] = [];
-        
-        if (!siteSettings.custom_labels) siteSettings.custom_labels = {};
-        siteSettings.custom_labels[key] = name;
-        
-        input.value = '';
-        await window.saveOptionsToDB();
-        
-        const client = window.supabaseManager?.getClient();
-        if (client) {
-            await client.from('site_settings').upsert({ id: 'custom_labels', value: JSON.stringify(siteSettings.custom_labels) });
+        } catch (err) {
+            console.error('更新選項失敗:', err);
+            const progressEl = document.getElementById(progressId);
+            if (progressEl) progressEl.remove();
+            style.remove();
+            window.showToast('✗ 更新失敗：' + (err.message || err), 'error');
         }
-        
-        window.renderAdmin();
     };
-    
-    window.deleteCustomList = async (key) => {
-        if (!confirm('確定要刪除此列表嗎？相關設定將會消失。')) return;
-        optionsData.custom_lists = optionsData.custom_lists.filter(k => k !== key);
-        delete optionsData[key];
-        await window.saveOptionsToDB();
-        window.renderAdmin();
-    };
+};
 
-    // 作品表單渲染函數 - 緊湊版
-    window.renderAnimeForm = (item = {}) => {
-        const isEdit = !!item.id;
-        const genres = Array.isArray(item.genre) ? item.genre : [];
-        
-        return `
+
+
+window.addNewCustomList = async () => {
+    const input = document.getElementById('new-list-name');
+    const name = input.value.trim();
+    if (!name) return window.showToast('✗ 請輸入列表名稱', 'error');
+
+    const key = 'custom_' + Date.now();
+    if (!optionsData.custom_lists) optionsData.custom_lists = [];
+    optionsData.custom_lists.push(key);
+    optionsData[key] = [];
+
+    if (!siteSettings.custom_labels) siteSettings.custom_labels = {};
+    siteSettings.custom_labels[key] = name;
+
+    input.value = '';
+    await window.saveOptionsToDB();
+
+    const client = window.supabaseManager?.getClient();
+    if (client) {
+        await client.from('site_settings').upsert({ id: 'custom_labels', value: JSON.stringify(siteSettings.custom_labels) });
+    }
+
+    window.renderAdmin();
+};
+
+window.deleteCustomList = async (key) => {
+    if (!confirm('確定要刪除此列表嗎？相關設定將會消失。')) return;
+    optionsData.custom_lists = optionsData.custom_lists.filter(k => k !== key);
+    delete optionsData[key];
+    await window.saveOptionsToDB();
+    window.renderAdmin();
+};
+
+window.updateCategoryColor = async (key, color) => {
+    if (!optionsData.category_colors) optionsData.category_colors = {};
+    optionsData.category_colors[key] = color;
+    // 立即更新顯示
+    const input = document.activeElement;
+    if (input && input.nextElementSibling && input.nextElementSibling.classList.contains('color-swatch')) {
+        input.nextElementSibling.style.backgroundColor = color;
+    }
+    await window.saveOptionsToDB(true); // Skip render
+};
+
+window.updateRatingColor = async (rating, color) => {
+    if (!optionsData.rating_colors) optionsData.rating_colors = {};
+    optionsData.rating_colors[rating] = color;
+    // 立即更新顯示
+    const input = document.activeElement;
+    if (input && input.nextElementSibling && input.nextElementSibling.classList.contains('color-swatch')) {
+        input.nextElementSibling.style.backgroundColor = color;
+    }
+    await window.saveOptionsToDB(true); // Skip render
+};
+
+
+// 作品表單渲染函數 - 側欄佈局版
+window.renderAnimeForm = (item = {}) => {
+    const isEdit = !!item.id;
+    const genres = Array.isArray(item.genre) ? item.genre : [];
+    const extraData = item.extra_data || {};
+
+    return `
             <div class="admin-section">
                 <div class="admin-section-header" style="margin-bottom: 15px;">
                     <h3 style="color: var(--neon-cyan); margin: 0;">${isEdit ? '📝 編輯作品' : '➕ 新增作品'}</h3>
-                    <button class="btn-primary" onclick="window.renderAdmin()">✕ 返回</button>
+                    <button class="btn-primary" onclick="window.switchAdminTab('manage')">✕ 返回</button>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
-                    <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan);">作品名稱</label>
-                        <input type="text" id="form-name" value="${item.name || ''}" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan);">分類</label>
-                        <select id="form-category" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
-                            <option value="anime" ${item.category === 'anime' ? 'selected' : ''}>動畫</option>
-                            <option value="manga" ${item.category === 'manga' ? 'selected' : ''}>漫畫</option>
-                            <option value="movie" ${item.category === 'movie' ? 'selected' : ''}>電影</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan);">年份</label>
-                        <select id="form-year" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
-                            <option value="">請選擇</option>
-                            ${['2026','2025','2024','2023','2022','2021','2020','2019','2018','2017','2016'].map(y => `<option value="${y}" ${item.year === y ? 'selected' : ''}>${y}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan);">季度</label>
-                        <select id="form-season" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
-                            <option value="">請選擇</option>
-                            ${['春','夏','秋','冬'].map(s => `<option value="${s}" ${item.season === s ? 'selected' : ''}>${s}季</option>`).join('')}
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan);">月份</label>
-                        <select id="form-month" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
-                            <option value="">請選擇</option>
-                            ${['1','2','3','4','5','6','7','8','9','10','11','12'].map(m => `<option value="${m}" ${item.month === m ? 'selected' : ''}>${m}月</option>`).join('')}
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan);">集數</label>
-                        <input type="text" id="form-episodes" value="${item.episodes || ''}" placeholder="12" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan);">評分</label>
-                        <select id="form-rating" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
-                            <option value="">請選擇</option>
-                            ${['★','★★','★★★','★★★★','★★★★★'].map(r => `<option value="${r}" ${item.rating === r ? 'selected' : ''}>${r}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan);">推薦度</label>
-                        <select id="form-recommendation" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
-                            <option value="">請選擇</option>
-                            ${['★','★★','★★★','★★★★','★★★★★'].map(r => `<option value="${r}" ${item.recommendation === r ? 'selected' : ''}>${r}</option>`).join('')}
-                        </select>
-                    </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; color: var(--neon-cyan);">作品名稱</label>
+                    <input type="text" id="form-name" value="${item.name || ''}" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px 12px; color: #fff; font-size: 14px; font-weight: bold;">
                 </div>
-                
-                <div style="margin-top: 12px;">
-                    <label style="font-size: 12px; color: var(--neon-cyan);">類型（可多選）</label>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; border: 1px solid rgba(0,212,255,0.2);">
-                        ${optionsData.genre.map(g => {
-                            const isChecked = genres.includes(g);
-                            return `<label style="display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 8px; background: ${isChecked ? 'rgba(0,212,255,0.2)' : 'rgba(255,255,255,0.05)'}; border-radius: 4px; border: 1px solid ${isChecked ? 'var(--neon-cyan)' : 'rgba(0,212,255,0.2)'};">
-                                <input type="checkbox" name="form-genre" value="${g}" ${isChecked ? 'checked' : ''} style="width: 14px; height: 14px;">
-                                <span style="font-size: 12px; color: #fff;">${g}</span>
-                            </label>`;
-                        }).join('')}
-                    </div>
-                </div>
-                
-                <div style="margin-top: 12px;">
-                    <label style="font-size: 12px; color: var(--neon-cyan);">海報網址</label>
-                    <input type="text" id="form-poster" value="${item.poster_url || ''}" placeholder="https://..." style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
-                </div>
-                
-                <div style="margin-top: 12px;">
-                    <label style="font-size: 12px; color: var(--neon-cyan);">簡介</label>
-                    <textarea id="form-desc" rows="3" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px; resize: vertical;">${item.description || ''}</textarea>
-                </div>
-                
-                <div style="margin-top: 12px;">
-                    <label style="font-size: 12px; color: var(--neon-cyan);">相關連結</label>
-                    <div id="links-list" style="margin-top: 6px; display: flex; flex-direction: column; gap: 6px;">
-                        ${(item.links || []).map(link => `
-                            <div style="display: flex; gap: 6px;">
-                                <input type="text" placeholder="名稱" class="link-name" value="${link.name || ''}" style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px; color: #fff; font-size: 12px;">
-                                <input type="text" placeholder="網址" class="link-url" value="${link.url || ''}" style="flex: 2; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px; color: #fff; font-size: 12px;">
-                                <button onclick="this.parentElement.remove()" style="background: rgba(255,68,68,0.2); border: 1px solid #ff4444; border-radius: 6px; padding: 6px 10px; color: #ff4444; cursor: pointer;">✕</button>
+
+                <div style="display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start;">
+                    
+                    <!-- 左欄：屬性設定 -->
+                    <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.1);">
+                        <div style="color: var(--neon-cyan); font-size: 12px; border-bottom: 1px solid rgba(0,212,255,0.2); padding-bottom: 5px; margin-bottom: 5px;">基本屬性</div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <label style="font-size: 11px; color: var(--text-secondary);">分類</label>
+                                <select id="form-category" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px; color: #fff; font-size: 13px;">
+                                    <option value="anime" ${item.category === 'anime' ? 'selected' : ''}>動畫</option>
+                                    <option value="manga" ${item.category === 'manga' ? 'selected' : ''}>漫畫</option>
+                                    <option value="movie" ${item.category === 'movie' ? 'selected' : ''}>電影</option>
+                                </select>
                             </div>
-                        `).join('')}
+                            <div>
+                                <label style="font-size: 11px; color: var(--text-secondary);">年份</label>
+                                <select id="form-year" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px; color: #fff; font-size: 13px;">
+                                    <option value="">-</option>
+                                    ${(optionsData.year || []).map(y => `<option value="${y}" ${item.year === y ? 'selected' : ''}>${y}</option>`).join('')}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <label style="font-size: 11px; color: var(--text-secondary);">季度</label>
+                                <select id="form-season" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px; color: #fff; font-size: 13px;">
+                                    <option value="">-</option>
+                                    ${(optionsData.season || []).map(s => `<option value="${s}" ${item.season === s ? 'selected' : ''}>${s}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 11px; color: var(--text-secondary);">月份</label>
+                                <select id="form-month" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px; color: #fff; font-size: 13px;">
+                                    <option value="">-</option>
+                                    ${(optionsData.month || []).map(m => `<option value="${m}" ${item.month === m ? 'selected' : ''}>${m}</option>`).join('')}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <label style="font-size: 11px; color: var(--text-secondary);">集數</label>
+                                <input type="text" id="form-episodes" value="${item.episodes || ''}" placeholder="12" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px; color: #fff; font-size: 13px;">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <label style="font-size: 11px; color: var(--neon-purple);">評分</label>
+                                <select id="form-rating" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--neon-purple); border-radius: 6px; padding: 6px; color: #fff; font-size: 13px;">
+                                    <option value="">-</option>
+                                    ${(optionsData.rating || []).map(r => `<option value="${r}" ${item.rating === r ? 'selected' : ''}>${r}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 11px; color: var(--neon-cyan);">推薦度</label>
+                                <select id="form-recommendation" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px; color: #fff; font-size: 13px;">
+                                    <option value="">-</option>
+                                    ${(optionsData.recommendation || []).map(r => `<option value="${r}" ${item.recommendation === r ? 'selected' : ''}>${r}</option>`).join('')}
+                                </select>
+                            </div>
+                        </div>
+
+                        ${(optionsData.custom_lists || []).length > 0 ? `
+                            <div style="color: var(--neon-cyan); font-size: 12px; border-bottom: 1px solid rgba(0,212,255,0.2); padding-bottom: 5px; margin-top: 5px; margin-bottom: 5px;">自訂選項</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 5px; margin-bottom: 10px;">
+                                ${(optionsData.custom_lists || []).map(key => `
+                                    <div>
+                                        <label style="font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">${siteSettings.custom_labels?.[key] || key}</label>
+                                        <select class="form-custom-list" data-key="${key}" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px; color: #fff; font-size: 13px;">
+                                            <option value="">-</option>
+                                            ${(optionsData[key] || []).map(opt => `<option value="${opt}" ${extraData[key] === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        <div style="color: var(--neon-cyan); font-size: 12px; border-bottom: 1px solid rgba(0,212,255,0.2); padding-bottom: 5px; margin-top: 5px; margin-bottom: 5px;">顏色設定</div>
+                        <div style="display: flex; gap: 15px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" style="width: 24px; height: 24px; border: none; padding: 0; background: none; cursor: pointer;">
+                                <span style="font-size: 11px; color: #aaa;">名稱</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" style="width: 24px; height: 24px; border: none; padding: 0; background: none; cursor: pointer;">
+                                <span style="font-size: 11px; color: #aaa;">星星</span>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="window.addLinkRow()" style="margin-top: 6px; background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px 12px; color: var(--neon-cyan); cursor: pointer; font-size: 12px;">＋ 新增連結</button>
+
+                    <!-- 右欄：內容編輯 -->
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div>
+                            <label style="font-size: 11px; color: var(--neon-cyan);">海報網址</label>
+                            <input type="text" id="form-poster" value="${item.poster_url || ''}" placeholder="https://..." style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
+                        </div>
+
+                        <div>
+                            <label style="font-size: 11px; color: var(--neon-cyan);">類型標籤</label>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; border: 1px solid rgba(0,212,255,0.2); max-height: 120px; overflow-y: auto;">
+                                ${(optionsData.genre || []).map(g => {
+        const isChecked = genres.includes(g);
+        return `<label style="display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 8px; background: ${isChecked ? 'rgba(0,212,255,0.2)' : 'rgba(255,255,255,0.05)'}; border-radius: 4px; border: 1px solid ${isChecked ? 'var(--neon-cyan)' : 'rgba(0,212,255,0.2)'}; transition: all 0.2s;">
+                                        <input type="checkbox" name="form-genre" value="${g}" ${isChecked ? 'checked' : ''} style="width: 12px; height: 12px;">
+                                        <span style="font-size: 11px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${g}</span>
+                                    </label>`;
+    }).join('')}
+                            </div>
+                        <div>
+                            <label style="font-size: 11px; color: var(--neon-cyan);">作品簡介</label>
+                            <textarea id="form-desc" rows="12" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 10px; color: #fff; font-size: 13px; line-height: 1.5; resize: vertical;">${item.description || ''}</textarea>
+                        </div>
+
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <label style="font-size: 11px; color: var(--neon-cyan);">相關連結</label>
+                                <button class="btn-primary" onclick="window.addLinkRow()" style="font-size: 10px; padding: 2px 8px; height: 24px;">＋ 新增連結</button>
+                            </div>
+                            <div id="links-list" style="display: flex; flex-direction: column; gap: 8px;">
+                                ${(item.links || []).map(link => `
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="text" placeholder="名稱" class="link-name" value="${link.name || ''}" style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px; color: #fff; font-size: 12px;">
+                                        <input type="text" placeholder="網址" class="link-url" value="${link.url || ''}" style="flex: 3; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px; color: #fff; font-size: 12px;">
+                                        <button class="btn-icon delete" style="width: 30px; height: 30px;" onclick="this.parentElement.remove()">✕</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-                    <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan);">星星顏色</label>
-                        <input type="color" id="form-star-color" value="${item.star_color || '#ffcc00'}" style="width: 100%; height: 40px; border-radius: 6px; cursor: pointer;">
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan);">名稱顏色</label>
-                        <input type="color" id="form-name-color" value="${item.name_color || '#ffffff'}" style="width: 100%; height: 40px; border-radius: 6px; cursor: pointer;">
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: var(--neon-cyan);">簡介顏色</label>
-                        <input type="color" id="form-desc-color" value="${item.desc_color || '#ffffff'}" style="width: 100%; height: 40px; border-radius: 6px; cursor: pointer;">
-                    </div>
-                </div>
-                
-                <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
-                    <button onclick="window.saveAnime(${item.id || ''})" style="background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); border-radius: 6px; padding: 10px 30px; color: var(--neon-cyan); cursor: pointer; font-size: 14px;">💾 ${isEdit ? '儲存變更' : '新增作品'}</button>
-                    <button onclick="window.renderAdmin()" style="background: rgba(255,255,255,0.1); border: 1px solid #666; border-radius: 6px; padding: 10px 20px; color: #999; cursor: pointer; font-size: 14px;">✕ 取消</button>
+
+                <div style="margin-top: 30px; text-align: center; border-top: 1px solid rgba(0,212,255,0.1); padding-top: 20px;">
+                    <button onclick="window.saveAnime()" style="background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); border-radius: 6px; padding: 10px 50px; color: var(--neon-cyan); cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 0 15px rgba(0,212,255,0.2);">
+                        💾 ${isEdit ? '儲存變更' : '新增作品'}
+                    </button>
                 </div>
             </div>
         `;
-    };
+};
 
-    window.saveAnime = async () => {
+window.saveAnime = async () => {
     try {
         const nameEl = document.getElementById('form-name');
         if (!nameEl || !nameEl.value) return window.showToast('✗ 請輸入名稱', 'error');
-        
+
         const extra_data = {};
         document.querySelectorAll('.form-custom-list').forEach(select => {
             const key = select.getAttribute('data-key');
             if (select.value) extra_data[key] = select.value;
         });
-        
+
         const btnBg = document.getElementById('form-btn-bg');
         if (btnBg && btnBg.value) extra_data.btn_bg = btnBg.value;
-        
+
         const starColorEl = document.getElementById('form-star-color');
         const nameColorEl = document.getElementById('form-name-color');
         const descColorEl = document.getElementById('form-desc-color');
-        
+
+        const selectedGenres = Array.from(document.querySelectorAll('input[name="form-genre"]:checked')).map(cb => cb.value);
+
         const payload = {
             name: nameEl.value,
+            genre: selectedGenres,
             poster_url: document.getElementById('form-poster')?.value || '',
             category: document.getElementById('form-category')?.value || 'anime',
             links: Array.from(document.querySelectorAll('#links-list > div')).map(row => {
@@ -2186,21 +2029,21 @@ window.renderAdminPagination = (total) => {
             desc_color: descColorEl?.value || '#ffffff',
             extra_data: Object.keys(extra_data).length > 0 ? extra_data : null
         };
-        
+
         const client = window.supabaseManager?.getClient();
         if (!client) throw new Error('Supabase 未連接');
-        
-        let { error } = editId ? 
-            await client.from('anime_list').update(payload).eq('id', editId) : 
+
+        let { error } = editId ?
+            await client.from('anime_list').update(payload).eq('id', editId) :
             await client.from('anime_list').insert([payload]);
-        
+
         if (error) {
             // 如果是欄位缺失錯誤，嘗試不帶 extra_data 再次儲存
             if (error.message.includes('extra_data')) {
                 window.showToast('⚠️ 偵測到資料庫欄位缺失，正在嘗試相容模式儲存...', 'info');
                 delete payload.extra_data;
-                const retry = editId ? 
-                    await client.from('anime_list').update(payload).eq('id', editId) : 
+                const retry = editId ?
+                    await client.from('anime_list').update(payload).eq('id', editId) :
                     await client.from('anime_list').insert([payload]);
                 if (!retry.error) {
                     window.showToast('✓ 已儲存 (自定義標籤需補齊資料庫欄位後生效)');
@@ -2212,7 +2055,7 @@ window.renderAdminPagination = (total) => {
             }
             throw error;
         }
-        
+
         window.showToast('✓ 儲存成功');
         await window.loadData();
         window.switchAdminTab('manage');
@@ -2272,7 +2115,7 @@ window.triggerColorPicker = (el) => {
     if (input && input.type === 'color') input.click();
 };
 
-window.saveOptionsToDB = async () => {
+window.saveOptionsToDB = async (skipRender = false) => {
     const client = window.supabaseManager?.getClient();
     if (!client) {
         console.warn('Supabase 未連接，無法儲存設定');
@@ -2285,15 +2128,24 @@ window.saveOptionsToDB = async () => {
         console.error('儲存 options_data 失敗:', err);
         window.showToast('✗ 儲存設定失敗', 'error');
     }
+
+    if (skipRender) return;
+
     if (typeof window.renderApp === 'function') {
-        try { window.renderApp(); } catch (e) { console.warn('renderApp 失敗:', e); }
+        // 如果正在管理後台，不要重繪整個 APP，只重新渲染後台
+        if (isAdminLoggedIn && document.querySelector('.admin-container')) {
+            // 這裡不執行任何動作，因為 admin-panel 已經是獨立的渲染邏輯
+            // 顏色更新只需更新變數，不用重繪整個 app
+        } else {
+            try { window.renderApp(); } catch (e) { console.warn('renderApp 失敗:', e); }
+        }
     }
 };
 
 window.exportCSV = (cat) => {
     const filtered = animeData.filter(item => item.category === cat);
     if (filtered.length === 0) return window.showToast('✗ 無資料可匯出', 'error');
-    
+
     const baseFields = [
         { key: 'name', label: '作品名稱' },
         { key: 'poster_url', label: '海報網址' },
@@ -2304,7 +2156,7 @@ window.exportCSV = (cat) => {
         { key: 'links', label: '相關連結' },
         { key: 'extra_data', label: '額外資料' }
     ];
-    
+
     const optionFields = [
         { key: 'year', label: '年份' },
         { key: 'month', label: '月份' },
@@ -2320,10 +2172,10 @@ window.exportCSV = (cat) => {
             if (!optionFields.find(f => f.key === key)) optionFields.push({ key, label });
         });
     }
-    
+
     const allFields = [...baseFields, ...optionFields];
     const csvRows = [allFields.map(f => f.label).join(',')];
-    
+
     for (const item of filtered) {
         const row = allFields.map(f => {
             let val = item[f.key] || '';
@@ -2334,7 +2186,7 @@ window.exportCSV = (cat) => {
         });
         csvRows.push(row.join(','));
     }
-    
+
     const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -2344,10 +2196,10 @@ window.exportCSV = (cat) => {
     window.showToast('✓ 匯出成功 (中文標題)');
 };
 
-window.triggerImport = (cat) => { 
+window.triggerImport = (cat) => {
     console.log('🎯 設定匯入目標板塊:', cat);
-    importTarget = cat; 
-    document.getElementById('importFile').click(); 
+    importTarget = cat;
+    document.getElementById('importFile').click();
 };
 window.importData = (event) => {
     const file = event.target.files[0];
@@ -2356,18 +2208,18 @@ window.importData = (event) => {
     reader.onload = async (e) => {
         try {
             const csv = e.target.result;
-            
+
             // 專業的 CSV 解析器，支援多行欄位和引號
             const parseCSV = (text) => {
                 const rows = [];
                 let currentRow = [];
                 let currentField = '';
                 let inQuotes = false;
-                
+
                 for (let i = 0; i < text.length; i++) {
                     const char = text[i];
                     const nextChar = text[i + 1];
-                    
+
                     // 引號處理
                     if (char === '"') {
                         if (inQuotes && nextChar === '"') {
@@ -2402,19 +2254,19 @@ window.importData = (event) => {
                         currentField += char;
                     }
                 }
-                
+
                 // 處理最後一行
                 if (currentField.trim() || currentRow.length > 0) {
                     currentRow.push(currentField);
                     rows.push(currentRow);
                 }
-                
+
                 return rows;
             };
-            
+
             const allRows = parseCSV(csv);
             if (allRows.length < 2) return window.showToast('✗ CSV 檔案無內容', 'error');
-            
+
             const labelMap = {
                 '作品名稱': 'name', '海報網址': 'poster_url', '簡介內容': 'description',
                 '星星顏色': 'star_color', '名稱顏色': 'name_color', '簡介顏色': 'desc_color',
@@ -2425,33 +2277,33 @@ window.importData = (event) => {
             if (siteSettings.custom_labels) {
                 Object.entries(siteSettings.custom_labels).forEach(([key, label]) => { labelMap[label] = key; });
             }
-            
+
             // 解析標題行
             const rawHeaders = allRows[0].map(h => h.trim().replace(/^"|"$/g, ''));
             const headers = rawHeaders.map(h => labelMap[h] || h);
-            
+
             // 定義資料庫中實際存在的標準欄位
             const dbStandardFields = ['name', 'poster_url', 'description', 'star_color', 'name_color', 'desc_color', 'links', 'extra_data', 'year', 'month', 'season', 'episodes', 'rating', 'recommendation', 'category'];
-            
+
             const items = [];
             for (let i = 1; i < allRows.length; i++) {
                 const values = allRows[i];
-                
+
                 // 跳過空行
                 if (values.length === 1 && values[0].trim() === '') continue;
-                
+
                 const item = { extra_data: {} };
                 headers.forEach((h, idx) => {
                     let val = (values[idx] || '').trim().replace(/^"|"$/g, '').replace(/""/g, '"');
-                    
+
                     if (dbStandardFields.includes(h)) {
                         // 處理標準欄位
                         if (h === 'links' || h === 'extra_data') {
-                            try { 
+                            try {
                                 const parsed = JSON.parse(val);
                                 if (h === 'extra_data') Object.assign(item.extra_data, parsed);
                                 else item[h] = parsed;
-                            } catch(e) { if (h === 'links') item[h] = []; }
+                            } catch (e) { if (h === 'links') item[h] = []; }
                         } else {
                             item[h] = val;
                         }
@@ -2460,21 +2312,21 @@ window.importData = (event) => {
                         item.extra_data[h] = val;
                     }
                 });
-                
+
                 item.category = importTarget;
                 delete item.id;
-                
+
                 // 跳過無效的資料（沒有作品名稱）
                 if (!item.name || !item.name.trim()) continue;
-                
+
                 items.push(item);
             }
-            
+
             const client = window.supabaseManager?.getClient();
             if (!client) throw new Error('Supabase 未連接');
             const { error } = await client.from('anime_list').insert(items);
             if (error) throw error;
-            
+
             window.showToast(`✓ 成功匯入 ${items.length} 筆資料`);
             await window.loadData();
             window.renderAdmin();
@@ -2502,13 +2354,13 @@ window.saveSettings = async () => {
 
         const client = window.supabaseManager?.getClient();
         if (!client) throw new Error('Supabase 未連接');
-        
+
         // 更新 optionsData 中的顏色
         if (!optionsData.category_colors) optionsData.category_colors = {};
         optionsData.category_colors.name = nameColor;
         optionsData.category_colors.desc = descColor;
         optionsData.category_colors.btn_bg = btnColor;
-        
+
         const { error } = await client.from('site_settings').upsert([
             { id: 'site_title', value: title },
             { id: 'announcement', value: announcement },
@@ -2551,7 +2403,7 @@ window.saveSettings = async () => {
 window.updateCategoryColorDirect = async (key, color) => {
     if (!optionsData.category_colors) optionsData.category_colors = {};
     optionsData.category_colors[key] = color;
-    
+
     const client = window.supabaseManager?.getClient();
     if (client) {
         await client.from('site_settings').upsert({ id: 'options_data', value: JSON.stringify(optionsData) });
@@ -2578,20 +2430,20 @@ window.deleteAllInCategory = async () => {
         window.showToast('✗ 該板塊沒有作品', 'warning');
         return;
     }
-    
+
     if (!confirm(`⚠️ 確定要刪除全部 ${count} 個 ${currentCategory} 作品嗎？\n此操作無法復原！`)) return;
-    
+
     // 二次確認
     if (!confirm(`再次確認：確定要刪除全部 ${count} 個 ${currentCategory} 作品？`)) return;
-    
+
     try {
         window.showToast('🗑 正在刪除...', 'info');
-        
+
         const client = window.supabaseManager?.getClient();
         if (!client) throw new Error('Supabase 未連接');
         const { error } = await client.from('anime_list').delete().eq('category', currentCategory);
         if (error) throw error;
-        
+
         window.showToast(`✓ 已刪除全部 ${count} 個 ${currentCategory} 作品`);
         await window.loadData();
         window.renderAdmin();
@@ -2612,12 +2464,12 @@ window.updateBulkDeleteButton = () => {
     const btn = document.getElementById('bulk-delete-btn');
     const countSpan = document.getElementById('selected-count');
     const selectAll = document.getElementById('select-all');
-    
+
     if (btn && countSpan) {
         btn.style.display = count > 0 ? 'block' : 'none';
         countSpan.textContent = count;
     }
-    
+
     if (selectAll) {
         const totalCheckboxes = document.querySelectorAll('.item-checkbox').length;
         selectAll.checked = count === totalCheckboxes && count > 0;
@@ -2627,11 +2479,11 @@ window.updateBulkDeleteButton = () => {
 window.bulkDeleteAnime = async () => {
     const checkboxes = document.querySelectorAll('.item-checkbox:checked');
     const ids = Array.from(checkboxes).map(cb => cb.dataset.id);
-    
+
     if (ids.length === 0) return;
-    
+
     if (!confirm(`確定要刪除選中的 ${ids.length} 個作品嗎？`)) return;
-    
+
     try {
         const client = window.supabaseManager?.getClient();
         if (!client) throw new Error('Supabase 未連接');
@@ -2706,7 +2558,7 @@ window.updateThemeUI = () => {
     const theme = window.usabilityManager?.getTheme() || 'dark';
     const icon = document.getElementById('theme-icon');
     const text = document.getElementById('theme-text');
-    
+
     if (theme === 'dark') {
         if (icon) icon.textContent = '🌙';
         if (text) text.textContent = '深色';
@@ -2759,7 +2611,7 @@ window.exportUserData = () => {
 window.importUserData = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
+
     if (window.usabilityManager) {
         window.usabilityManager.importData(file)
             .then(() => {

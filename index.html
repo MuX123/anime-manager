@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <!-- 安全性強化 Head -->
     <meta charset="UTF-8">
@@ -16,16 +17,19 @@
     <title>ACG 收藏庫</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap"
+        rel="stylesheet">
+
     <!-- CSS 模組化結構 -->
     <link rel="stylesheet" href="./css/variables.css?v=20260205_v1">
     <link rel="stylesheet" href="./css/base.css?v=20260205_v1">
     <link rel="stylesheet" href="./css/layout.css">
     <link rel="stylesheet" href="./css/components.css">
+    <link rel="stylesheet" href="./css/render.css?v=20260209_v1">
     <link rel="stylesheet" href="./css/animations.css">
     <link rel="stylesheet" href="./css/responsive.css?v=20260205_v2">
-    
+
     <!-- 內聯樣式（保留載入動畫） -->
     <style>
         #loading-screen {
@@ -42,6 +46,7 @@
             will-change: opacity;
             transition: opacity 0.5s ease;
         }
+
         .loader {
             width: 40px;
             height: 40px;
@@ -50,8 +55,22 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #app { display: block; min-height: 100vh; }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #app {
+            display: block;
+            min-height: 100vh;
+        }
+
         .toast {
             position: fixed;
             bottom: 30px;
@@ -68,12 +87,15 @@
             transition: opacity 0.3s ease;
             pointer-events: none;
         }
+
         .toast.active {
             opacity: 1;
         }
     </style>
 </head>
-<body style="background-color: #0a0e1a; background-image: radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(176, 38, 255, 0.05) 0%, transparent 50%), linear-gradient(rgba(0, 212, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.02) 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px; background-attachment: fixed; margin: 0;">
+
+<body
+    style="background-color: #0a0e1a; background-image: radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(176, 38, 255, 0.05) 0%, transparent 50%), linear-gradient(rgba(0, 212, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.02) 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px; background-attachment: fixed; margin: 0;">
     <div id="loading-screen">
         <div class="loader"></div>
     </div>
@@ -84,8 +106,10 @@
 
     <div class="analytics-bar">
         <div id="analytics-display" style="font-size: 10px; color: rgba(0, 212, 255, 0.6);">
-            <span style="margin-right: 8px;">👤 <span style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
-            <span style="margin-right: 8px;">🖱️ <span style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
+            <span style="margin-right: 8px;">👤 <span
+                    style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
+            <span style="margin-right: 8px;">🖱️ <span
+                    style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
             <span>📄 <span style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
         </div>
     </div>
@@ -97,27 +121,28 @@
 
     <!-- GitHub Pages 配置 (最先載入) -->
     <script src="./js/github-pages-config.js?v=20260204_v1"></script>
-    
+
     <!-- 核心基礎模組 (載入順序重要) -->
     <script src="./js/config.js?v=20260205_v1"></script>
     <script src="./js/logger.js?v=20260205_v4"></script>
     <script src="./js/security.js?v=20260204_v2"></script>
     <script src="./js/usability.js?v=20260204_v1"></script>
     <script src="./js/performance.js?v=20260204_v1"></script>
-    
+
     <!-- 應用功能模組 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./js/supabase.js?v=20260205_v4"></script>
     <script src="./js/analytics.js?v=20260202_v1"></script>
-    <script src="./js/announcements.js?v=20260202_v3"></script>
-    <script src="./js/script.js?v=20260205_v10"></script>
-    
+    <script src="./js/announcements.js?v=20260209_v5"></script>
+    <script src="./js/render.js?v=20260209_v4"></script>
+    <script src="./js/script.js?v=20260209_v2"></script>
+
     <!-- 調試工具 (開發模式) -->
     <script src="./js/debug.js?v=20260202_v1"></script>
-    
+
     <!-- 問題修復補丁 -->
     <script src="./js/fix-recommendation.js?v=20260204_v1"></script>
-    
+
     <!-- Service Worker 註冊 -->
     <script>
         if ('serviceWorker' in navigator) {
@@ -127,4 +152,5 @@
         }
     </script>
 </body>
+
 </html>

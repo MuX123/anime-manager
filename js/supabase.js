@@ -31,7 +31,7 @@ class SupabaseManager {
         try {
             const config = window.configManager?.getSupabaseConfig();
             
-            if (!config || !config.url || !config.anonKey) {
+            if (!config || !config.url || !config.anonKey || config.url === '' || config.anonKey === '') {
                 console.warn('Supabase 配置缺失，使用離線模式');
                 this.setOfflineMode();
                 return;

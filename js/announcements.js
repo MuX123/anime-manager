@@ -53,6 +53,16 @@ class AnnouncementSystem {
         return { valid: true };
     }
 
+    // Helper: Check for any permission/network access errors (403, 42501, etc.)
+    isPermissionError(err) {
+        if (!err) return false;
+        return err.code === '42501' ||
+            err.code === 'PGRST301' ||
+            err.status === 403 ||
+            err.message?.includes('permission denied') ||
+            err.message?.includes('403');
+    }
+
     async init() {
         // 等待 Supabase 連接就緒
         let attempts = 0;
@@ -60,7 +70,7 @@ class AnnouncementSystem {
             await new Promise(resolve => setTimeout(resolve, 100));
             attempts++;
         }
-        
+
         try {
             const [announcements, updates, shownPopups] = await Promise.all([
                 this.loadAnnouncements(),
@@ -70,15 +80,20 @@ class AnnouncementSystem {
             ]);
 
             window.announcementData = { announcements, updates, shownPopups };
-            
+
             if (window.logger) {
-                window.logger.info('公告系統初始化完成', { 
-                    announcements: announcements.length, 
-                    updates: updates.length 
+                window.logger.info('公告系統初始化完成', {
+                    announcements: announcements.length,
+                    updates: updates.length
                 });
             }
         } catch (err) {
             console.warn('公告系統載入失敗:', err);
+        }
+
+        // 當資料載入完成，若畫面上已有公告區塊，立即刷新內容
+        if (document.getElementById('announcement-content')) {
+            this.switchTab(this.currentTab);
         }
     }
 
@@ -148,7 +163,7 @@ class AnnouncementSystem {
 
     async showPopups() {
         const { announcements = [], updates = [], shownPopups = [] } = window.announcementData || {};
-        
+
         const shownUpdateIds = shownPopups.filter(p => p.popup_type === 'update').map(p => p.popup_id);
         const shownAnnounceIds = shownPopups.filter(p => p.popup_type === 'announcement').map(p => p.popup_id);
 
@@ -173,7 +188,7 @@ class AnnouncementSystem {
             overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999998;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
             overlay.innerHTML = html;
             document.body.appendChild(overlay);
-            
+
             overlay.querySelectorAll('.popup-close-btn').forEach(btn => {
                 btn.addEventListener('click', () => overlay.remove());
             });
@@ -221,10 +236,30 @@ class AnnouncementSystem {
 
     async switchTab(tab) {
         this.currentTab = tab;
+
+        // Update active class for tabs
+        const tabs = document.querySelectorAll('.premium-tab');
+        tabs.forEach(t => {
+            if (t.getAttribute('onclick')?.includes(`'${tab}'`)) {
+                t.classList.add('active');
+            } else {
+                t.classList.remove('active');
+            }
+        });
+
         const content = document.getElementById('announcement-content');
         if (content) {
-            content.innerHTML = '<div style="text-align:center;padding:50px;color:var(--neon-cyan);">載入中...</div>';
-            content.innerHTML = await this.renderTabContent();
+            content.innerHTML = '<div style="text-align:center;padding:50px;color:var(--neon-cyan);font-family:\'Orbitron\';letter-spacing:2px;">loading...</div>';
+            try {
+                const html = await this.renderTabContent();
+                // Double check if tab is still the same (prevent race condition)
+                if (this.currentTab === tab) {
+                    content.innerHTML = html;
+                }
+            } catch (err) {
+                console.warn('Tab load failed:', err);
+                content.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-secondary);">載入失敗，請稍後再試</div>';
+            }
         }
     }
 
@@ -235,18 +270,50 @@ class AnnouncementSystem {
         }
     }
 
+    // --- Rich Text Helpers ---
+    parseContent(content) {
+        if (content && content.startsWith('JSON:::')) {
+            try {
+                return JSON.parse(content.substring(7));
+            } catch (e) {
+                return { text: content.substring(7), style: {} };
+            }
+        }
+        return { text: content || '', style: {} };
+    }
+
+    createContentPayload(text, style) {
+        return 'JSON:::' + JSON.stringify({ text, style });
+    }
+
+    renderStyledContent(contentObj) {
+        const { text, style } = contentObj;
+        const align = style.align || 'left';
+        // Map size to pixels or em
+        const sizeMap = { 'small': '13px', 'normal': '15px', 'large': '18px', 'huge': '24px' };
+        const fontSize = sizeMap[style.size] || '15px';
+        const color = style.color || '#e0e6ed';
+
+        return `<div style="text-align: ${align}; font-size: ${fontSize}; color: ${color}; line-height: 1.8; white-space: pre-wrap;">${escapeHtml(text)}</div>`;
+    }
+
     renderAnnouncementBoard() {
+        // 渲染骨架後，自動觸發內容載入
+        setTimeout(() => this.switchTab(this.currentTab), 0);
+
         return `
-            <div id="announcement-board" class="admin-panel-v492" style="margin-top:20px;min-height:400px;max-width:800px;margin-left:auto;margin-right:auto;">
-                <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;border-bottom:2px solid rgba(0,212,255,0.2);padding-bottom:15px;justify-content:center;">
-                    <button class="btn-primary ${this.currentTab === 'announcements' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('announcements')">📢 公告</button>
-                    <button class="btn-primary ${this.currentTab === 'guestbook' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('guestbook')">💬 留言板</button>
-                    <button class="btn-primary ${this.currentTab === 'updates' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('updates')">📋 更新內容</button>
+            <div id="announcement-board" class="premium-board" style="width: 95%; max-width: 1400px; margin: 20px auto;">
+                <div class="premium-tab-container">
+                    <button class="premium-tab ${this.currentTab === 'announcements' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('announcements')">📢 公告消息</button>
+                    <button class="premium-tab ${this.currentTab === 'guestbook' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('guestbook')">💬 留言板</button>
+                    <button class="premium-tab ${this.currentTab === 'updates' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('updates')">📋 版本更新</button>
                 </div>
-                <div id="announcement-content" style="width:100%;">
-                    <div style="text-align:center;padding:50px;color:var(--neon-cyan);">載入中...</div>
+                
+                <div id="announcement-content" style="width: 100%; min-height: 300px;">
+                    <div style="text-align: center; padding: 50px; color: var(--neon-cyan); font-family: 'Orbitron'; letter-spacing: 2px;">loading data...</div>
                 </div>
-                ${isAdminLoggedIn ? '<div style="margin-top:20px;text-align:center;"><button class="btn-primary" onclick="window.announcementSystem.showAnnouncementAdminModal()">⚙️ 管理公告與更新</button></div>' : ''}
+                
+                ${isAdminLoggedIn ? '<div style="margin-top: 30px; text-align: center;"><button class="btn-primary" onclick="window.announcementSystem.showAnnouncementAdminModal()" style="padding: 10px 25px; font-size: 14px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);">⚙️ 管理後台</button></div>' : ''}
             </div>
         `;
     }
@@ -267,7 +334,7 @@ class AnnouncementSystem {
                 </div>
                 <div id="announcement-admin-content">載入中...</div>
                 <div style="text-align: center; margin-top: 20px;">
-                    <button class="btn-primary" style="border-color: #ff4444; color: #ff4444;" onclick="document.getElementById('announcement-admin-modal').remove()">關閉</button>
+                    <button class="btn-secondary" onclick="document.getElementById('announcement-admin-modal').remove()">關閉</button>
                 </div>
             </div>
         `;
@@ -312,7 +379,9 @@ class AnnouncementSystem {
                 <div style="text-align:right;margin-bottom:10px;">
                     <button class="btn-primary" onclick="window.announcementSystem.showAnnouncementForm()" style="background:rgba(0,212,255,0.2);border-color:var(--neon-cyan);color:var(--neon-cyan);">+ 新增公告</button>
                 </div>
-                ${announcements.map(a => `
+                ${announcements.map(a => {
+            const parsed = this.parseContent(a.content);
+            return `
                     <div style="background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);border-radius:12px;padding:20px;${a.is_pinned ? 'border-color:var(--neon-cyan);' : ''}">
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
                             <div style="display:flex;align-items:center;gap:10px;flex:1;">
@@ -320,16 +389,16 @@ class AnnouncementSystem {
                                 <h4 style="margin:0;color:var(--neon-cyan);font-size:16px;flex:1;">${escapeHtml(a.title)}</h4>
                             </div>
                             <div style="display:flex;gap:8px;">
-                                <button class="btn-primary" onclick="window.announcementSystem.showAnnouncementForm(${a.id})" style="padding:6px 12px;font-size:12px;">編輯</button>
-                                <button class="btn-primary" onclick="window.announcementSystem.deleteAnnouncement(${a.id})" style="padding:6px 12px;font-size:12px;border-color:#ff4444;color:#ff4444;background:rgba(255,68,68,0.1);">刪除</button>
+                                <button class="btn-primary" onclick="window.announcementSystem.showAnnouncementForm('${a.id}')" style="padding:6px 12px;font-size:12px;">編輯</button>
+                                <button class="btn-danger-outline" onclick="window.announcementSystem.deleteAnnouncement('${a.id}')" style="padding:6px 12px;font-size:12px;">刪除</button>
                             </div>
                         </div>
-                        <div style="color:var(--text-secondary);font-size:13px;line-height:1.6;white-space:pre-wrap;max-height:100px;overflow:hidden;">${escapeHtml(a.content)}</div>
+                        <div style="color:var(--text-secondary);font-size:13px;line-height:1.6;white-space:pre-wrap;max-height:100px;overflow:hidden;">${escapeHtml(parsed.text)}</div>
                         <div style="margin-top:10px;font-size:11px;color:var(--text-secondary);">
                             ${a.author_name ? '作者：' + escapeHtml(a.author_name) + ' | ' : ''}建立時間：${new Date(a.created_at).toLocaleString('zh-TW')}
                         </div>
                     </div>
-                `).join('')}
+                `}).join('')}
             </div>
         `;
     }
@@ -351,7 +420,9 @@ class AnnouncementSystem {
                 <div style="text-align:right;margin-bottom:10px;">
                     <button class="btn-primary" onclick="window.announcementSystem.showUpdateForm()" style="background:rgba(176,38,255,0.2);border-color:var(--neon-purple);color:var(--neon-purple);">+ 新增更新</button>
                 </div>
-                ${updates.map(u => `
+                ${updates.map(u => {
+            const parsed = this.parseContent(u.content);
+            return `
                     <div style="background:rgba(176,38,255,0.05);border:1px solid rgba(176,38,255,0.2);border-radius:12px;padding:20px;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                             <div style="display:flex;align-items:center;gap:10px;flex:1;">
@@ -359,39 +430,71 @@ class AnnouncementSystem {
                                 <h4 style="margin:0;color:var(--neon-purple);font-size:16px;flex:1;">${escapeHtml(u.title)}</h4>
                             </div>
                             <div style="display:flex;gap:8px;">
-                                <button class="btn-primary" onclick="window.announcementSystem.showUpdateForm(${u.id})" style="padding:6px 12px;font-size:12px;">編輯</button>
-                                <button class="btn-primary" onclick="window.announcementSystem.deleteUpdate(${u.id})" style="padding:6px 12px;font-size:12px;border-color:#ff4444;color:#ff4444;background:rgba(255,68,68,0.1);">刪除</button>
+                                <button class="btn-primary" onclick="window.announcementSystem.showUpdateForm('${u.id}')" style="padding:6px 12px;font-size:12px;">編輯</button>
+                                <button class="btn-danger-outline" onclick="window.announcementSystem.deleteUpdate('${u.id}')" style="padding:6px 12px;font-size:12px;">刪除</button>
                             </div>
                         </div>
-                        <div style="color:var(--text-secondary);font-size:13px;line-height:1.6;white-space:pre-wrap;max-height:100px;overflow:hidden;">${escapeHtml(u.content)}</div>
+                        <div style="color:var(--text-secondary);font-size:13px;line-height:1.6;white-space:pre-wrap;max-height:100px;overflow:hidden;">${escapeHtml(parsed.text)}</div>
                         <div style="margin-top:10px;font-size:11px;color:var(--text-secondary);">
                             建立時間：${new Date(u.created_at).toLocaleString('zh-TW')}
                         </div>
                     </div>
-                `).join('')}
+                `}).join('')}
             </div>
         `;
     }
 
     async showAnnouncementForm(id = null) {
         const announcements = window.announcementData?.announcements || await this.loadAnnouncements();
-        const announcement = id ? announcements.find(a => a.id === id) : null;
+        // Use loose equality to handle string/number ID differences
+        const announcement = id ? announcements.find(a => a.id == id) : null;
+
+        const parsed = announcement ? this.parseContent(announcement.content) : { text: '', style: {} };
+        const { text, style } = parsed;
 
         const title = announcement ? '編輯公告' : '新增公告';
         const isPinned = announcement?.is_pinned ? 'checked' : '';
         const submitText = announcement ? '儲存變更' : '發布公告';
 
+        // Style defaults
+        const align = style.align || 'left';
+        const size = style.size || 'normal';
+        const color = style.color || '#e0e6ed';
+
         const formHtml = `
-            <div style="background:#0a0e1a;border:2px solid var(--neon-cyan);border-radius:16px;padding:25px;max-width:600px;margin:0 auto;">
-                <h3 style="margin:0 0 20px;color:var(--neon-cyan);text-align:center;">${title}</h3>
+            <div style="background:#0a0e1a;border:2px solid var(--neon-cyan);border-radius:16px;padding:25px;max-width:600px;margin:0 auto;box-shadow:0 0 40px rgba(0,212,255,0.1);">
+                <h3 style="margin:0 0 20px;color:var(--neon-cyan);text-align:center;font-family:'Orbitron';">${title}</h3>
                 <div style="display:flex;flex-direction:column;gap:15px;">
                     <div>
                         <label style="display:block;margin-bottom:8px;color:var(--neon-cyan);">標題</label>
                         <input type="text" id="ann-form-title" value="${announcement ? escapeHtml(announcement.title) : ''}" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:8px;padding:12px;color:#fff;" placeholder="輸入公告標題">
                     </div>
+                    
+                    <!-- Style Controls -->
+                    <div style="background:rgba(0,212,255,0.05);padding:15px;border-radius:8px;border:1px solid rgba(0,212,255,0.1);">
+                        <label style="display:block;margin-bottom:10px;color:var(--neon-cyan);font-size:13px;">樣式設定 (Rich Text)</label>
+                        <div style="display:flex;gap:15px;flex-wrap:wrap;align-items:center;">
+                            <select id="ann-style-align" style="background:#000;color:#fff;border:1px solid #333;padding:5px;border-radius:4px;">
+                                <option value="left" ${align === 'left' ? 'selected' : ''}>靠左對齊</option>
+                                <option value="center" ${align === 'center' ? 'selected' : ''}>置中對齊</option>
+                                <option value="right" ${align === 'right' ? 'selected' : ''}>靠右對齊</option>
+                            </select>
+                            <select id="ann-style-size" style="background:#000;color:#fff;border:1px solid #333;padding:5px;border-radius:4px;">
+                                <option value="small" ${size === 'small' ? 'selected' : ''}>小字號</option>
+                                <option value="normal" ${size === 'normal' ? 'selected' : ''}>標準</option>
+                                <option value="large" ${size === 'large' ? 'selected' : ''}>大標題</option>
+                                <option value="huge" ${size === 'huge' ? 'selected' : ''}>特大</option>
+                            </select>
+                            <div style="display:flex;align-items:center;gap:5px;">
+                                <span style="color:#aaa;font-size:12px;">顏色:</span>
+                                <input type="color" id="ann-style-color" value="${color}" style="background:none;border:none;height:30px;width:50px;cursor:pointer;">
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label style="display:block;margin-bottom:8px;color:var(--neon-cyan);">內容</label>
-                        <textarea id="ann-form-content" rows="6" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:8px;padding:12px;color:#fff;resize:vertical;" placeholder="輸入公告內容">${announcement ? escapeHtml(announcement.content) : ''}</textarea>
+                        <textarea id="ann-form-content" rows="6" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:8px;padding:12px;color:#fff;resize:vertical;" placeholder="輸入公告內容">${escapeHtml(text)}</textarea>
                     </div>
                     <div>
                         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
@@ -400,8 +503,9 @@ class AnnouncementSystem {
                         </label>
                     </div>
                     <div style="display:flex;gap:10px;justify-content:center;margin-top:10px;">
-                        <button class="btn-primary" onclick="window.announcementSystem.saveAnnouncement(${id})" style="background:rgba(0,212,255,0.2);border-color:var(--neon-cyan);color:var(--neon-cyan);">${submitText}</button>
-                        <button class="btn-primary" onclick="document.getElementById('ann-form-modal')?.remove()" style="border-color:#666;color:#999;">取消</button>
+                    <div style="display:flex;gap:10px;justify-content:center;margin-top:10px;">
+                        <button class="btn-primary" onclick="window.announcementSystem.saveAnnouncement(${id ? `'${id}'` : 'null'})" style="background:rgba(0,212,255,0.2);border-color:var(--neon-cyan);color:var(--neon-cyan);">${submitText}</button>
+                        <button class="btn-secondary" onclick="document.getElementById('ann-form-modal')?.remove()">取消</button>
                     </div>
                 </div>
             </div>
@@ -419,14 +523,23 @@ class AnnouncementSystem {
 
     async showUpdateForm(id = null) {
         const updates = window.announcementData?.updates || await this.loadUpdates();
-        const update = id ? updates.find(u => u.id === id) : null;
+        // Use loose equality to handle string/number ID differences
+        const update = id ? updates.find(u => u.id == id) : null;
+
+        const parsed = update ? this.parseContent(update.content) : { text: '', style: {} };
+        const { text, style } = parsed;
 
         const title = update ? '編輯更新' : '新增更新';
         const submitText = update ? '儲存變更' : '發布更新';
 
+        // Style defaults
+        const align = style.align || 'left';
+        const size = style.size || 'normal';
+        const color = style.color || '#e0e6ed';
+
         const formHtml = `
-            <div style="background:#0a0e1a;border:2px solid var(--neon-purple);border-radius:16px;padding:25px;max-width:600px;margin:0 auto;">
-                <h3 style="margin:0 0 20px;color:var(--neon-purple);text-align:center;">${title}</h3>
+            <div style="background:#0a0e1a;border:2px solid var(--neon-purple);border-radius:16px;padding:25px;max-width:600px;margin:0 auto;box-shadow:0 0 40px rgba(176,38,255,0.1);">
+                <h3 style="margin:0 0 20px;color:var(--neon-purple);text-align:center;font-family:'Orbitron';">${title}</h3>
                 <div style="display:flex;flex-direction:column;gap:15px;">
                     <div>
                         <label style="display:block;margin-bottom:8px;color:var(--neon-purple);">版本號</label>
@@ -436,13 +549,35 @@ class AnnouncementSystem {
                         <label style="display:block;margin-bottom:8px;color:var(--neon-purple);">標題</label>
                         <input type="text" id="upd-form-title" value="${update ? escapeHtml(update.title) : ''}" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(176,38,255,0.3);border-radius:8px;padding:12px;color:#fff;" placeholder="輸入更新標題">
                     </div>
+                    
+                    <!-- Style Controls -->
+                    <div style="background:rgba(176,38,255,0.05);padding:15px;border-radius:8px;border:1px solid rgba(176,38,255,0.1);">
+                        <label style="display:block;margin-bottom:10px;color:var(--neon-purple);font-size:13px;">樣式設定</label>
+                        <div style="display:flex;gap:15px;flex-wrap:wrap;align-items:center;">
+                            <select id="upd-style-align" style="background:#000;color:#fff;border:1px solid #333;padding:5px;border-radius:4px;">
+                                <option value="left" ${align === 'left' ? 'selected' : ''}>靠左對齊</option>
+                                <option value="center" ${align === 'center' ? 'selected' : ''}>置中對齊</option>
+                            </select>
+                            <select id="upd-style-size" style="background:#000;color:#fff;border:1px solid #333;padding:5px;border-radius:4px;">
+                                <option value="small" ${size === 'small' ? 'selected' : ''}>小字號</option>
+                                <option value="normal" ${size === 'normal' ? 'selected' : ''}>標準</option>
+                                <option value="large" ${size === 'large' ? 'selected' : ''}>大標題</option>
+                            </select>
+                            <div style="display:flex;align-items:center;gap:5px;">
+                                <span style="color:#aaa;font-size:12px;">顏色:</span>
+                                <input type="color" id="upd-style-color" value="${color}" style="background:none;border:none;height:30px;width:50px;cursor:pointer;">
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label style="display:block;margin-bottom:8px;color:var(--neon-purple);">內容</label>
-                        <textarea id="upd-form-content" rows="6" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(176,38,255,0.3);border-radius:8px;padding:12px;color:#fff;resize:vertical;" placeholder="輸入更新內容">${update ? escapeHtml(update.content) : ''}</textarea>
+                        <textarea id="upd-form-content" rows="6" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(176,38,255,0.3);border-radius:8px;padding:12px;color:#fff;resize:vertical;" placeholder="輸入更新內容">${escapeHtml(text)}</textarea>
                     </div>
                     <div style="display:flex;gap:10px;justify-content:center;margin-top:10px;">
-                        <button class="btn-primary" onclick="window.announcementSystem.saveUpdate(${id})" style="background:rgba(176,38,255,0.2);border-color:var(--neon-purple);color:var(--neon-purple);">${submitText}</button>
-                        <button class="btn-primary" onclick="document.getElementById('upd-form-modal')?.remove()" style="border-color:#666;color:#999;">取消</button>
+                    <div style="display:flex;gap:10px;justify-content:center;margin-top:10px;">
+                        <button class="btn-primary" onclick="window.announcementSystem.saveUpdate(${id ? `'${id}'` : 'null'})" style="background:rgba(176,38,255,0.2);border-color:var(--neon-purple);color:var(--neon-purple);">${submitText}</button>
+                        <button class="btn-secondary" onclick="document.getElementById('upd-form-modal')?.remove()">取消</button>
                     </div>
                 </div>
             </div>
@@ -460,10 +595,19 @@ class AnnouncementSystem {
 
     async saveAnnouncement(id = null) {
         const title = document.getElementById('ann-form-title')?.value.trim();
-        const content = document.getElementById('ann-form-content')?.value.trim();
+        const rawContent = document.getElementById('ann-form-content')?.value.trim();
         const isPinned = document.getElementById('ann-form-pinned')?.checked;
 
-        if (!title || !content) {
+        // Get style values
+        const style = {
+            align: document.getElementById('ann-style-align')?.value || 'left',
+            size: document.getElementById('ann-style-size')?.value || 'normal',
+            color: document.getElementById('ann-style-color')?.value || '#e0e6ed'
+        };
+
+        const content = this.createContentPayload(rawContent, style);
+
+        if (!title || !rawContent) {
             window.showToast('請填寫標題和內容', 'error');
             return;
         }
@@ -478,7 +622,7 @@ class AnnouncementSystem {
             const authorName = '管理員';
             const now = new Date().toISOString();
 
-            if (id) {
+            if (id && id !== 'null' && id !== 'undefined') {
                 // 更新
                 const { error } = await client
                     .from('announcements')
@@ -501,11 +645,12 @@ class AnnouncementSystem {
             await this.refreshAnnouncementData();
             await this.renderAdminTabContent('ann');
         } catch (err) {
-            console.error('儲存公告失敗:', err);
-            if (err.code === '42501' || err.message?.includes('permission denied')) {
+            if (this.isPermissionError(err)) {
+                console.warn('權限不足 (預期行為):', err.message);
                 window.showToast('演示模式：公告已儲存（未同步到資料庫）', 'success');
                 document.getElementById('ann-form-modal')?.remove();
             } else {
+                console.error('儲存公告失敗:', err);
                 window.showToast('儲存失敗：' + (err.message || '未知錯誤'), 'error');
             }
         }
@@ -514,9 +659,18 @@ class AnnouncementSystem {
     async saveUpdate(id = null) {
         const version = document.getElementById('upd-form-version')?.value.trim();
         const title = document.getElementById('upd-form-title')?.value.trim();
-        const content = document.getElementById('upd-form-content')?.value.trim();
+        const rawContent = document.getElementById('upd-form-content')?.value.trim();
 
-        if (!version || !title || !content) {
+        // Get style values
+        const style = {
+            align: document.getElementById('upd-style-align')?.value || 'left',
+            size: document.getElementById('upd-style-size')?.value || 'normal',
+            color: document.getElementById('upd-style-color')?.value || '#e0e6ed'
+        };
+
+        const content = this.createContentPayload(rawContent, style);
+
+        if (!version || !title || !rawContent) {
             window.showToast('請填寫所有欄位', 'error');
             return;
         }
@@ -530,7 +684,7 @@ class AnnouncementSystem {
 
             const now = new Date().toISOString();
 
-            if (id) {
+            if (id && id !== 'null' && id !== 'undefined') {
                 // 更新
                 const { error } = await client
                     .from('updates')
@@ -553,11 +707,12 @@ class AnnouncementSystem {
             await this.refreshAnnouncementData();
             await this.renderAdminTabContent('upd');
         } catch (err) {
-            console.error('儲存更新失敗:', err);
-            if (err.code === '42501' || err.message?.includes('permission denied')) {
+            if (this.isPermissionError(err)) {
+                console.warn('權限不足 (預期行為):', err.message);
                 window.showToast('演示模式：更新已儲存（未同步到資料庫）', 'success');
                 document.getElementById('upd-form-modal')?.remove();
             } else {
+                console.error('儲存更新失敗:', err);
                 window.showToast('儲存失敗：' + (err.message || '未知錯誤'), 'error');
             }
         }
@@ -580,12 +735,13 @@ class AnnouncementSystem {
             await this.refreshAnnouncementData();
             await this.renderAdminTabContent('ann');
         } catch (err) {
-            console.error('刪除公告失敗:', err);
-            if (err.code === '42501' || err.message?.includes('permission denied')) {
+            if (this.isPermissionError(err)) {
+                console.warn('權限不足 (預期行為):', err.message);
                 window.showToast('演示模式：公告已刪除（未同步到資料庫）', 'success');
                 await this.refreshAnnouncementData();
                 await this.renderAdminTabContent('ann');
             } else {
+                console.error('刪除公告失敗:', err);
                 window.showToast('刪除失敗：' + (err.message || '未知錯誤'), 'error');
             }
         }
@@ -608,12 +764,13 @@ class AnnouncementSystem {
             await this.refreshAnnouncementData();
             await this.renderAdminTabContent('upd');
         } catch (err) {
-            console.error('刪除更新失敗:', err);
-            if (err.code === '42501' || err.message?.includes('permission denied')) {
+            if (this.isPermissionError(err)) {
+                console.warn('權限不足 (預期行為):', err.message);
                 window.showToast('演示模式：更新已刪除（未同步到資料庫）', 'success');
                 await this.refreshAnnouncementData();
                 await this.renderAdminTabContent('upd');
             } else {
+                console.error('刪除更新失敗:', err);
                 window.showToast('刪除失敗：' + (err.message || '未知錯誤'), 'error');
             }
         }
@@ -649,19 +806,21 @@ class AnnouncementSystem {
         return `
             <div style="display:flex;flex-direction:column;gap:15px;">
                 ${announcements.length === 0 ? '<div style="text-align:center;padding:40px;color:var(--text-secondary);">暫無公告</div>' : ''}
-                ${announcements.map(a => `
-                    <div style="background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);border-radius:12px;padding:20px;${a.is_pinned ? 'border-color:var(--neon-cyan);box-shadow:0 0 15px rgba(0,212,255,0.2);' : ''}">
-                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+                ${announcements.map(a => {
+            const parsed = this.parseContent(a.content);
+            return `
+                    <div class="premium-card ${a.is_pinned ? 'is-pinned' : ''}">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:15px;border-bottom:1px solid rgba(0,212,255,0.1);padding-bottom:10px;">
                             <div style="display:flex;align-items:center;gap:10px;">
-                                ${a.is_pinned ? '<span style="background:var(--neon-cyan);color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;">置頂</span>' : ''}
-                                <h4 style="margin:0;color:var(--neon-cyan);font-family:'Orbitron',sans-serif;font-size:16px;">${escapeHtml(a.title)}</h4>
+                                ${a.is_pinned ? '<span style="background:var(--neon-cyan);color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;box-shadow:0 0 10px var(--neon-cyan);">置頂</span>' : ''}
+                                <h4 style="margin:0;color:var(--neon-cyan);font-family:'Orbitron',sans-serif;font-size:18px;text-shadow:0 0 5px rgba(0,212,255,0.3);">${escapeHtml(a.title)}</h4>
                             </div>
-                            <span style="color:var(--text-secondary);font-size:12px;">${new Date(a.created_at).toLocaleDateString('zh-TW')}</span>
+                            <span style="color:var(--text-secondary);font-size:12px;font-family:'Orbitron';">${new Date(a.created_at).toLocaleDateString('zh-TW')}</span>
                         </div>
-                        <div style="color:var(--text-secondary);line-height:1.8;white-space:pre-wrap;">${escapeHtml(a.content)}</div>
-                        ${a.author_name ? `<div style="margin-top:10px;font-size:12px;color:var(--neon-blue);">— ${escapeHtml(a.author_name)}</div>` : ''}
+                        <div class="rich-content">${this.renderStyledContent(parsed)}</div>
+                        ${a.author_name ? `<div style="margin-top:15px;font-size:12px;color:var(--neon-blue);text-align:right;font-family:'Orbitron';">USER: ${escapeHtml(a.author_name)}</div>` : ''}
                     </div>
-                `).join('')}
+                `}).join('')}
             </div>
         `;
     }
@@ -671,18 +830,20 @@ class AnnouncementSystem {
         return `
             <div style="display:flex;flex-direction:column;gap:15px;">
                 ${updates.length === 0 ? '<div style="text-align:center;padding:40px;color:var(--text-secondary);">暫無更新內容</div>' : ''}
-                ${updates.map(u => `
-                    <div style="background:rgba(176,38,255,0.05);border:1px solid rgba(176,38,255,0.2);border-radius:12px;padding:20px;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                ${updates.map(u => {
+            const parsed = this.parseContent(u.content);
+            return `
+                    <div class="premium-card is-update">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:1px solid rgba(176,38,255,0.2);padding-bottom:10px;">
                             <div style="display:flex;align-items:center;gap:10px;">
-                                <span style="background:var(--neon-purple);color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;">v${escapeHtml(u.version)}</span>
-                                <h4 style="margin:0;color:var(--neon-purple);font-family:'Orbitron',sans-serif;font-size:16px;">${escapeHtml(u.title)}</h4>
+                                <span style="background:var(--neon-purple);color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;box-shadow:0 0 10px var(--neon-purple);">v${escapeHtml(u.version)}</span>
+                                <h4 style="margin:0;color:var(--neon-purple);font-family:'Orbitron',sans-serif;font-size:18px;">${escapeHtml(u.title)}</h4>
                             </div>
-                            <span style="color:var(--text-secondary);font-size:12px;">${new Date(u.created_at).toLocaleDateString('zh-TW')}</span>
+                            <span style="color:var(--text-secondary);font-size:12px;font-family:'Orbitron';">${new Date(u.created_at).toLocaleDateString('zh-TW')}</span>
                         </div>
-                        <div style="color:var(--text-secondary);line-height:1.8;white-space:pre-wrap;">${escapeHtml(u.content)}</div>
+                        <div class="rich-content">${this.renderStyledContent(parsed)}</div>
                     </div>
-                `).join('')}
+                `}).join('')}
             </div>
         `;
     }
@@ -690,23 +851,25 @@ class AnnouncementSystem {
     async renderGuestbookTab() {
         const messages = await this.loadApprovedMessages();
         const canPost = await this.canPostMessage();
-        
+
         return `
             <div style="display:flex;flex-direction:column;gap:20px;">
                 ${canPost.canPost ? this.renderGuestbookForm(canPost.ip) : `
-                    <div style="background:rgba(255,200,0,0.1);border:1px solid rgba(255,200,0,0.3);border-radius:8px;padding:15px;color:rgba(255,200,0,0.8);font-size:13px;">
-                        ⚠️ ${canPost.message}
+                    <div class="premium-card" style="border-color: rgba(255,200,0,0.3); background: rgba(255,200,0,0.05);">
+                        <div style="color: #ffd700; font-size: 14px; text-align: center;">
+                            ⚠️ ${canPost.message}
+                        </div>
                     </div>
                 `}
-                <div style="display:flex;flex-direction:column;gap:12px;">
-                    ${messages.length === 0 ? '<div style="text-align:center;padding:30px;color:var(--text-secondary);">還沒有留言</div>' : ''}
+                <div style="display:flex;flex-direction:column;gap:15px;">
+                    ${messages.length === 0 ? '<div style="text-align:center;padding:40px;color:var(--text-secondary);">還沒有留言，成為第一個留言的人吧！</div>' : ''}
                     ${messages.map(m => `
-                        <div style="background:rgba(0,212,255,0.03);border-radius:8px;padding:15px;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                                <span style="color:var(--neon-cyan);font-weight:bold;">${escapeHtml(m.nickname)}</span>
-                                <span style="color:var(--text-secondary);font-size:12px;">${new Date(m.created_at).toLocaleDateString('zh-TW')}</span>
+                        <div class="premium-card" style="padding: 20px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid rgba(0,212,255,0.1);padding-bottom:8px;">
+                                <span style="color:var(--neon-cyan);font-weight:bold;font-size: 15px;">${escapeHtml(m.nickname)}</span>
+                                <span style="color:var(--text-secondary);font-size:12px;font-family:'Orbitron';">${new Date(m.created_at).toLocaleDateString('zh-TW')}</span>
                             </div>
-                            <div style="color:var(--text-secondary);line-height:1.6;">${escapeHtml(m.content)}</div>
+                            <div style="color:#e0e6ed;line-height:1.6;font-size:14px;">${escapeHtml(m.content)}</div>
                         </div>
                     `).join('')}
                 </div>
@@ -716,15 +879,28 @@ class AnnouncementSystem {
 
     renderGuestbookForm(ip) {
         return `
-            <div style="background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);border-radius:12px;padding:20px;">
-                <h4 style="margin:0 0 15px;color:var(--neon-cyan);">發表留言</h4>
-                <div style="display:flex;flex-direction:column;gap:12px;">
-                    <input type="text" id="guestbook-nickname" placeholder="暱稱" maxlength=20 style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:8px;padding:12px;color:#fff;">
-                    <textarea id="guestbook-content" placeholder="輸入留言內容...（將進入審核）" maxlength=500 rows=4 style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:8px;padding:12px;color:#fff;resize:vertical;"></textarea>
-                    <button onclick="window.announcementSystem.submitMessage()" class="btn-primary" style="background:rgba(0,212,255,0.2);border-color:var(--neon-cyan);color:var(--neon-cyan);">提交審核</button>
+            <div class="premium-card">
+                <h4 style="margin:0 0 20px;color:var(--neon-cyan);font-family:'Orbitron';border-left: 3px solid var(--neon-cyan); padding-left: 10px;">發表留言</h4>
+                <div style="display:flex;flex-direction:column;gap:15px;">
+                    <div style="position:relative;">
+                        <input type="text" id="guestbook-nickname" placeholder="您的暱稱" maxlength=20 
+                            style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(0,212,255,0.3); border-radius:8px; padding:12px; color:#fff; transition:all 0.3s;"
+                            onfocus="this.style.borderColor='var(--neon-cyan)';this.style.boxShadow='0 0 10px rgba(0,212,255,0.2)'"
+                            onblur="this.style.borderColor='rgba(0,212,255,0.3)';this.style.boxShadow='none'">
+                    </div>
+                    <div style="position:relative;">
+                        <textarea id="guestbook-content" placeholder="輸入留言內容...（將進入審核）" maxlength=500 rows=4 
+                            style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(0,212,255,0.3); border-radius:8px; padding:12px; color:#fff; resize:vertical; transition:all 0.3s;"
+                            onfocus="this.style.borderColor='var(--neon-cyan)';this.style.boxShadow='0 0 10px rgba(0,212,255,0.2)'"
+                            onblur="this.style.borderColor='rgba(0,212,255,0.3)';this.style.boxShadow='none'"></textarea>
+                    </div>
+                    <button onclick="window.announcementSystem.submitMessage()" class="btn-primary" 
+                        style="background:linear-gradient(90deg, rgba(0,212,255,0.2), transparent); border-color:var(--neon-cyan); color:var(--neon-cyan); width: 100%; padding: 12px; font-weight: bold; letter-spacing: 1px;">
+                        ✉️ 提交審核
+                    </button>
                 </div>
-                <div style="margin-top:10px;font-size:11px;color:var(--text-secondary);">
-                    提示：留言需要管理員審核後才會顯示
+                <div style="margin-top:15px;font-size:12px;color:var(--text-secondary);text-align:center;">
+                    提醒：留言內容將由管理員審核後顯示，請友善發言
                 </div>
             </div>
         `;
@@ -734,22 +910,22 @@ class AnnouncementSystem {
         try {
             const client = window.supabaseManager?.getClient();
             if (!client) return { canPost: true, ip: 'unknown' };
-            
+
             let ip;
             try {
                 ip = await this.getClientIP();
             } catch (e) {
                 ip = localStorage.getItem('guestbook_ip') || 'unknown';
             }
-            
+
             if (ip === 'unknown') {
                 return { canPost: false, message: '無法驗證您的身份，請稍後再試' };
             }
-            
+
             localStorage.setItem('guestbook_ip', ip);
-            
+
             const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-            
+
             try {
                 const { data, error } = await client
                     .from('guestbook_messages')
@@ -759,34 +935,34 @@ class AnnouncementSystem {
                     .in('status', ['pending', 'approved'])
                     .order('created_at', { ascending: false })
                     .limit(1);
-                
+
                 if (error) {
-                    if (error.code === '403' || error.code === '42501' || error.message.includes('403') || error.message.includes('permission denied')) {
+                    if (this.isPermissionError(error)) {
                         return { canPost: true, ip };
                     }
                     throw error;
                 }
-                
+
                 if (data && data.length > 0) {
                     const lastMessageTime = new Date(data[0].created_at).getTime();
                     const elapsed = Date.now() - lastMessageTime;
                     const remainingMs = 24 * 60 * 60 * 1000 - elapsed;
                     const remainingHours = Math.ceil(remainingMs / (60 * 60 * 1000));
                     const remainingMinutes = Math.ceil(remainingMs / (60 * 1000));
-                    
+
                     if (remainingHours <= 0) {
                         return { canPost: true, ip };
                     }
-                    
-                    const timeMsg = remainingHours >= 1 
+
+                    const timeMsg = remainingHours >= 1
                         ? `請等待 ${remainingHours} 小時後再發言`
                         : `請等待 ${remainingMinutes} 分鐘後再發言`;
                     return { canPost: false, message: timeMsg };
                 }
-                
+
                 return { canPost: true, ip };
             } catch (queryError) {
-                if (queryError.code === '403' || queryError.code === '42501' || queryError.message?.includes('403') || queryError.message?.includes('permission denied')) {
+                if (this.isPermissionError(queryError)) {
                     return { canPost: true, ip };
                 }
                 throw queryError;
@@ -801,12 +977,12 @@ class AnnouncementSystem {
         try {
             const client = window.supabaseManager?.getClient();
             if (!client) return;
-            
+
             const result = await window.supabaseManager?.safeQuery(
                 () => client.from('site_settings').select('value').eq('id', 'banned_words'),
                 { fallbackOn403: null }
             );
-            
+
             const data = result?.data;
             if (data && data.length > 0 && data[0].value) {
                 const words = JSON.parse(data[0].value);
@@ -822,42 +998,42 @@ class AnnouncementSystem {
     async submitMessage() {
         const nickname = document.getElementById('guestbook-nickname')?.value.trim() || '匿名';
         const content = document.getElementById('guestbook-content')?.value.trim();
-        
+
         if (!content) {
             window.showToast('請輸入留言內容', 'error');
             return;
         }
-        
+
         // 伺服器端檢查 24 小時限制
         const canPostCheck = await this.canPostMessage();
         if (!canPostCheck.canPost) {
             window.showToast(canPostCheck.message, 'error');
             return;
         }
-        
+
         // 檢查內容是否包含不當詞彙
         const contentCheck = this.checkContent(content);
         if (!contentCheck.valid) {
             window.showToast(contentCheck.message, 'error');
             return;
         }
-        
+
         // 檢查暱稱是否包含不當詞彙
         const nicknameCheck = this.checkContent(nickname);
         if (!nicknameCheck.valid) {
             window.showToast('暱稱包含不當詞彙，請修改後再提交。', 'error');
             return;
         }
-        
+
         try {
             const client = window.supabaseManager?.getClient();
             if (!client) {
                 window.showToast('系統維護中，請稍後再試', 'error');
                 return;
             }
-            
+
             const ip = await this.getClientIP();
-            
+
             const { error } = await client.from('guestbook_messages').insert({
                 nickname,
                 content,
@@ -865,24 +1041,25 @@ class AnnouncementSystem {
                 user_agent: navigator.userAgent,
                 status: 'pending'
             });
-            
+
             if (error) {
-                if (error.code === '42501' || error.message?.includes('permission denied')) {
+                if (this.isPermissionError(error)) {
                     window.showToast('✓ 留言已提交（演示模式）', 'success');
                     await this.switchTab('guestbook');
                     return;
                 }
                 throw error;
             }
-            
+
             window.showToast('✓ 留言已提交，等待審核');
             await this.switchTab('guestbook');
         } catch (err) {
-            console.error('提交留言失敗:', err);
-            if (err.code === '42501' || err.message?.includes('permission denied')) {
+            if (this.isPermissionError(err)) {
+                console.warn('權限不足 (預期行為):', err.message);
                 window.showToast('✓ 留言已提交（演示模式）', 'success');
                 await this.switchTab('guestbook');
             } else {
+                console.error('提交留言失敗:', err);
                 window.showToast('提交失敗，請稍後再試', 'error');
             }
         }
@@ -898,9 +1075,9 @@ class AnnouncementSystem {
                 .eq('status', 'approved')
                 .order('created_at', { ascending: false })
                 .limit(50);
-            
+
             if (error) {
-                if (error.code === '42501' || error.message?.includes('permission denied')) {
+                if (this.isPermissionError(error)) {
                     return [];
                 }
                 throw error;
