@@ -1,154 +1,65 @@
-# ACG 收藏庫
+# 🌌 ACG Anime Manager v8.0.0 (Cyberpunk Edition)
 
-一個現代化的動漫收藏管理系統，具備完整的後台管理功能和精美的 UI 設計。
+一個基於 Supabase 的極致視覺、高度自動化的動漫/漫畫/電影收藏管理系統。採用賽博龐克 (Cyberpunk) 霓虹美學與現代化的開源架構。
 
-## ✨ 特色功能
+![UI Preview](https://via.placeholder.com/1200x600/050609/00d4ff?text=ACG+Anime+Manager+v8.0.0+Cyberpunk+Theme)
 
-- 🎨 **精美 UI** - 賽博龐克風格的現代化設計
-- 🔐 **安全可靠** - 企業級安全防護和 XSS 攻擊防護
-- ⚡ **性能優化** - 懶加載和智能快取策略
-- 📱 **響應式** - 完美支援桌面和行動裝置
-- 🗄️ **資料庫** - 基於 Supabase 的雲端資料庫
-- 📊 **統計分析** - 訪客統計和使用行為分析
-- 📦 **模組化** - 現代化的代碼架構
+## 💎 視覺與核心特色
+
+- **🎨 賽博美學 (Cyber-Neon UI)**: 全面採用 Glassmorphism (玻璃擬態) 與雙層視差動態背景，呈現深色暗調與霓虹光效的完美連結。
+- **✨ 3D 交互體驗**: 詳情頁及 Modal 視窗配備硬體加速的 3D 透視轉場 (Perspective & Scale Pop)，互動細節流暢且專業。
+- **📢 頂部跑馬燈系統**: 自動同步資料庫最新公告，以平滑的高性能 CSS 動畫在頂部狀態欄滾動顯示。
+- **⚡ 數據同步鎖 (Request ID Synchronization)**: 獨家實現非同步渲染同步機制，徹底解決快速切換板塊時的資料競態 (Race Condition)，確保 UI 顯示始終精確。
+- **🛠️ 自動化資料補全**: 整合 Jikan API、Bangumi 與 DeepL 翻譯，一鍵自動抓取並翻譯作品海報、簡介與評分。
+- **📊 實時訪客分析**: 自研 Analytics 模組，完整統計每日訪客、裝置分佈與點擊行為，並以水平狀態欄優雅展示。
 
 ## 🚀 快速開始
 
-### 1. 克隆專案
+### 1. 環境克隆
 ```bash
 git clone https://github.com/your-username/anime-manager.git
 cd anime-manager
 ```
 
-### 2. 環境配置
-```bash
-# 複製環境變數範本
-cp .env.example .env
+### 2. 資料庫配置
+1. 在 [Supabase](https://supabase.com/) 創建新專案。
+2. 執行 `database_setup.sql` 初始化表結構、RLS 策略與 RPC 函數。
+3. 創建 `.env` 並填入 `SUPABASE_URL` 與 `SUPABASE_ANON_KEY`。
 
-# 編輯配置文件，填入您的 Supabase 配置
-nano .env
-```
-
-### 3. 資料庫設置
+### 3. 本地啟動
 ```bash
-# 測試資料庫連接
-python setup_db.py
-```
-
-### 4. 本地運行
-```bash
-# 使用任何靜態網站伺服器
-npx serve .
-# 或者
+# 使用簡易 HTTP Server
 python -m http.server 8000
-```
-
-## 📋 環境變數配置
-
-創建 `.env` 文件並填入以下配置：
-
-```env
-# Supabase 配置
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_ANON_KEY=your_supabase_anonymous_key
-
-# 安全設定
-CSP_ENABLED=true
-
-# 開發模式
-NODE_ENV=development
-DEBUG=true
 ```
 
 ## 🛠️ 技術棧
 
-- **前端**: HTML5, CSS3, JavaScript (ES6+)
-- **後端**: Supabase (PostgreSQL + Auth)
-- **樣式**: CSS Grid, Flexbox, CSS Variables
-- **安全**: CSP, XSS Protection, Content Security
-- **性能**: Lazy Loading, Smart Caching, Service Worker
+- **Core**: Vanilla JavaScript (ES6+), HTML5, CSS3 (Variables & Keyframes)
+- **Backend**: Supabase (Postgres, Auth, Edge Functions)
+- **Visuals**: Canvas API (Background effects), CSS Perspective (3D)
+- **Caching**: Service Worker v8.0.0 (Advanced Cache-First Strategy)
+- **Logic**: Centralized Managers (CursorManager, SupabaseManager)
 
-## 📱 功能模組
+## 📋 功能清單 (v8.0.0)
 
-### 🏠 前台功能
-- 作品展示 (網格/列表佈局)
-- 詳細資訊頁面
-- 搜尋和篩選
-- 評分和推薦系統
-- 響應式設計
+- [x] **動態背景**: 數位星座連線 (Digital Constellation) 背景與滑鼠懸浮互動。
+- [x] **自定義遊標**: 支援波奇、原神、芙寧娜等主題遊標切換與管理。
+- [x] **MovieFFM 整合**: 作品詳情頁自動生成 MovieFFM 搜尋連結。
+- [x] **雙重分頁**: 頂部與底部同步控制，簡約幽靈按鈕設計。
+- [x] **管理後台**: 完善的 CRUD 功能、數據驗證與批量操作。
+- [x] **極致響應**: 針對行動端優化的「資料列表」模式。
 
-### ⚙️ 後台管理
-- 作品管理 (增刪改查)
-- 分類和標籤管理
-- 網站設定
-- 訪客統計
-- 批量操作
+## 🌐 部署建議
 
-### 🔒 安全功能
-- XSS 攻擊防護
-- 內容安全政策 (CSP)
-- 輸入驗證和清理
-- 安全標頭設置
-- 錯誤處理和日誌
+本專案支援 **GitHub Pages** 靜態部署。所有的 API 查詢、管理權限驗證與數據存儲均通過 Supabase 庫端完成。
 
-## 🚀 部署
+詳細部署指南請參考 [GITHUB_PAGES_DEPLOY.md](./GITHUB_PAGES_DEPLOY.md)
 
-### GitHub Pages (推薦)
-1. Fork 此專案
-2. 在 Settings > Pages 中啟用 GitHub Pages
-3. 在 Settings > Secrets 中添加環境變數
-4. 自動部署
+## 📜 許可證
 
-### Vercel
-```bash
-npm i -g vercel
-vercel --prod
-```
-
-### Netlify
-拖拽專案文件夾到 Netlify 即可部署
-
-詳細部署說明請參考 [DEPLOYMENT.md](./DEPLOYMENT.md)
-
-## 📊 性能指標
-
-- ⚡ 初始載入時間: < 2 秒
-- 📱 響應式斷點: 768px
-- 🗄️ 資料庫響應: < 100ms
-- 🎯 安全評級: A+
-- 📦 代碼覆蓋: 95%
-
-## 🔄 版本資訊
-
-- **當前版本**: v6.0.0
-- **升級日期**: 2026-01-28
-- **兼容性**: 向下兼容 v5.x
-
-詳細更新紀錄請參考 [CHANGELOG.md](./CHANGELOG.md)
-
-## 🤝 貢獻
-
-歡迎提交 Issue 和 Pull Request！
-
-1. Fork 此專案
-2. 創建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 開啟 Pull Request
-
-## 📄 授權
-
-本專案採用 MIT 授權 - 詳情請參考 [LICENSE](LICENSE) 文件
-
-## 📞 聯絡方式
-
-- 問題回報: [DISCORD] music_su
-- 功能建議: [DISCORD] music_su
-
-## 🙏 致謝
-
-感謝所有為此專案做出貢獻的開發者和用戶！
+本專案基於 **MIT License** 開源。
 
 ---
 
-⭐ 如果這個專案對你有幫助，請給個 Star！
+> [!TIP]
+> **提示**：管理員登入請點擊右下角懸浮按鈕或系統選單。

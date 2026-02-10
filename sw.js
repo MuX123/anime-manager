@@ -5,10 +5,10 @@
  * @date 2026-02-04
  */
 
-const CACHE_NAME = 'acg-manager-v7.0.0';
-const STATIC_CACHE = 'static-v7.0.0';
-const DYNAMIC_CACHE = 'dynamic-v7.0.0';
-const API_CACHE = 'api-v7.0.0';
+const CACHE_NAME = 'acg-manager-v8.0.0';
+const STATIC_CACHE = 'static-v8.0.0';
+const DYNAMIC_CACHE = 'dynamic-v8.0.0';
+const API_CACHE = 'api-v8.0.0';
 
 // 快取策略
 const CACHE_STRATEGIES = {
@@ -57,7 +57,7 @@ const CACHE_STRATEGIES = {
 // 安裝 Service Worker
 self.addEventListener('install', (event) => {
     console.log('[SW] Installing Service Worker...');
-    
+
     event.waitUntil(
         caches.open(STATIC_CACHE)
             .then((cache) => {
@@ -86,18 +86,18 @@ self.addEventListener('install', (event) => {
 // 激活 Service Worker
 self.addEventListener('activate', (event) => {
     console.log('[SW] Activating Service Worker...');
-    
+
     event.waitUntil(
         caches.keys()
             .then((cacheNames) => {
                 return Promise.all(
                     cacheNames
                         .filter((name) => {
-                            return name.startsWith('acg-') && 
-                                   name !== CACHE_NAME &&
-                                   name !== STATIC_CACHE &&
-                                   name !== DYNAMIC_CACHE &&
-                                   name !== API_CACHE;
+                            return name.startsWith('acg-') &&
+                                name !== CACHE_NAME &&
+                                name !== STATIC_CACHE &&
+                                name !== DYNAMIC_CACHE &&
+                                name !== API_CACHE;
                         })
                         .map((name) => {
                             console.log('[SW] Deleting old cache:', name);
@@ -157,20 +157,20 @@ function isPageRequest(url) {
  */
 async function handleStaticRequest(request) {
     const cached = await caches.match(request);
-    
+
     if (cached) {
         console.log('[SW] Cache hit:', request.url);
         return cached;
     }
-    
+
     try {
         const response = await fetch(request);
-        
+
         if (response.ok) {
             const cache = await caches.open(STATIC_CACHE);
             cache.put(request, response.clone());
         }
-        
+
         return response;
     } catch (error) {
         console.error('[SW] Static fetch failed:', error);
@@ -198,15 +198,15 @@ async function handleApiRequest(request) {
         return response;
     } catch (error) {
         console.log('[SW] Network failed, trying cache:', request.url);
-        
+
         const cached = await caches.match(request);
         if (cached) {
             return cached;
         }
-        
+
         return new Response(
             JSON.stringify({ error: 'Offline', cached: false }),
-            { 
+            {
                 status: 503,
                 headers: { 'Content-Type': 'application/json' }
             }
@@ -220,7 +220,7 @@ async function handleApiRequest(request) {
 async function handlePageRequest(request) {
     const cache = await caches.open(DYNAMIC_CACHE);
     const cached = await cache.match(request);
-    
+
     // 同時發起網路請求
     const fetchPromise = fetch(request)
         .then((response) => {
@@ -230,7 +230,7 @@ async function handlePageRequest(request) {
             return response;
         })
         .catch(() => cached);
-    
+
     return cached || fetchPromise;
 }
 
@@ -240,19 +240,19 @@ async function handlePageRequest(request) {
 async function handleDefaultRequest(request) {
     try {
         const response = await fetch(request);
-        
+
         if (response.ok && request.method === 'GET') {
             const cache = await caches.open(DYNAMIC_CACHE);
             cache.put(request, response.clone());
         }
-        
+
         return response;
     } catch (error) {
         const cached = await caches.match(request);
         if (cached) {
             return cached;
         }
-        
+
         return new Response('Offline', { status: 503 });
     }
 }
@@ -260,7 +260,7 @@ async function handleDefaultRequest(request) {
 // 背景同步
 self.addEventListener('sync', (event) => {
     console.log('[SW] Background sync:', event.tag);
-    
+
     if (event.tag === 'sync-data') {
         event.waitUntil(syncData());
     }
@@ -273,7 +273,7 @@ async function syncData() {
     // 獲取待同步的數據
     const cache = await caches.open('pending-sync');
     const requests = await cache.keys();
-    
+
     for (const request of requests) {
         try {
             const response = await fetch(request);
@@ -289,9 +289,9 @@ async function syncData() {
 // 推送通知
 self.addEventListener('push', (event) => {
     console.log('[SW] Push received:', event);
-    
+
     let data = { title: 'ACG 收藏庫', body: '有新通知' };
-    
+
     if (event.data) {
         try {
             data = event.data.json();
@@ -299,7 +299,7 @@ self.addEventListener('push', (event) => {
             data.body = event.data.text();
         }
     }
-    
+
     event.waitUntil(
         self.registration.showNotification(data.title, {
             body: data.body,
@@ -314,9 +314,9 @@ self.addEventListener('push', (event) => {
 // 通知點擊
 self.addEventListener('notificationclick', (event) => {
     console.log('[SW] Notification click:', event);
-    
+
     event.notification.close();
-    
+
     event.waitUntil(
         clients.matchAll({ type: 'window' })
             .then((clientList) => {
@@ -325,7 +325,7 @@ self.addEventListener('notificationclick', (event) => {
                         return client.focus();
                     }
                 }
-                
+
                 if (clients.openWindow) {
                     return clients.openWindow('/');
                 }
@@ -336,11 +336,11 @@ self.addEventListener('notificationclick', (event) => {
 // 訊息處理
 self.addEventListener('message', (event) => {
     console.log('[SW] Message received:', event.data);
-    
+
     if (event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
     }
-    
+
     if (event.data.type === 'CACHE_URLS') {
         event.waitUntil(
             caches.open(DYNAMIC_CACHE)
@@ -349,7 +349,7 @@ self.addEventListener('message', (event) => {
                 })
         );
     }
-    
+
     if (event.data.type === 'CLEAR_CACHE') {
         event.waitUntil(
             caches.keys()

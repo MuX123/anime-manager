@@ -372,7 +372,8 @@ window.updateAdminMenu = () => {
     }
 };
 
-let lastFrontendCategory = 'notice';
+let lastFrontendCategory = 'anime'; // 紀錄上次的前台分類
+let lastSwitchRequestId = 0; // 追蹤最後一次切換請求 ID
 window.toggleAdminMode = (enable) => {
     if (enable && !isAdminLoggedIn) {
         window.showAdminLoginModal();
@@ -770,7 +771,12 @@ window.loadData = async function () {
  * 驗證用戶是否為管理員
  * @param {string} userEmail 用戶電子郵件
  */
-window.renderApp = function () {
+window.renderApp = (requestId = null) => {
+    // 如果傳入了 requestId，驗證其是否為最新
+    if (requestId !== null && requestId !== lastSwitchRequestId) {
+        console.warn('⚠️ renderApp 請求過期，跳過渲染');
+        return;
+    }
     const app = document.getElementById('app');
     if (!app) return;
 
@@ -912,7 +918,7 @@ window.renderApp = function () {
             <header class="app-header">
                 <div style="display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap;">
                     <h1 style="color: ${siteSettings.title_color || '#ffffff'}; text-shadow: 0 0 10px var(--neon-blue); margin-bottom: 8px;">
-                        ${siteSettings.site_title} <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px;">v7.0.0</span>
+                        ${siteSettings.site_title} <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px;">v8.0.0</span>
                     </h1>
                 </div>
             </header>
@@ -985,7 +991,11 @@ window.renderApp = function () {
 
     // 公告板塊异步渲染
     if (isNotice && typeof window.renderAnnouncements === 'function') {
+        const currentReqId = requestId || lastSwitchRequestId;
         setTimeout(async () => {
+            // 再次檢查請求是否有效
+            if (currentReqId !== lastSwitchRequestId) return;
+
             const container = document.getElementById('discord-section');
             if (container) {
                 container.innerHTML = window.renderAnnouncements();
@@ -1003,8 +1013,8 @@ window.renderApp = function () {
 
 
 
-window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(); };
+window.changePage = (p) => { currentPage = p; window.renderApp(lastSwitchRequestId); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(lastSwitchRequestId); };
 
 window.changeGridLayout = (n) => {
     if (n === 'mobile') {
@@ -1097,7 +1107,8 @@ window.getFilteredData = () => {
 };
 
 window.switchCategory = async (cat) => {
-    console.log('🔄 切換分類至:', cat);
+    const requestId = ++lastSwitchRequestId;
+    console.log('🔄 切換分類至:', cat, '(ID:', requestId, ')');
 
     // 追蹤板塊切換
     if (typeof window.trackCategorySwitch === 'function') {
@@ -1115,13 +1126,15 @@ window.switchCategory = async (cat) => {
     // 如果是公告，直接渲染前台（公告只有前台模式）
     if (cat === 'notice') {
         currentSection = 'notice';
-        window.renderApp();
+        window.renderApp(requestId);
         return;
     }
 
     // 如果在後台模式，保持後台狀態，不要切換到前台
     if (isAdminMode) {
         await window.loadData();
+        // 檢查請求是否仍然有效
+        if (requestId !== lastSwitchRequestId) return;
         window.renderAdmin();
         return;
     }
@@ -1138,16 +1151,15 @@ window.switchCategory = async (cat) => {
     }
     if (grid) grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--neon-cyan); animation: pulse 1.5s ease-in-out infinite;">⚡ 正在同步資料...</div>';
 
-    // 確保資料載入完成後淡入
-    setTimeout(() => {
-        const mainContent = document.getElementById('main-grid-content');
-        if (mainContent) {
-            mainContent.style.opacity = '1';
-        }
-    }, 100);
-
     await window.loadData();
-    window.renderApp();
+
+    // 檢查請求是否仍然有效
+    if (requestId !== lastSwitchRequestId) {
+        console.warn('⚠️ 請求已過期，放棄渲染:', requestId);
+        return;
+    }
+
+    window.renderApp(requestId);
 };
 
 // ========== 留言板管理 ==========
