@@ -202,6 +202,7 @@ function renderGridCard(item, colors, data) {
                     class="grid-poster-img"
                 >
                 <div class="grid-poster-overlay"></div>
+                <div class="poster-shine"></div>
                 
                 ${episodes ? `
                 <div class="grid-poster-episodes" style="--episodes-color: ${episodesColor};">
@@ -333,6 +334,9 @@ window.showAnimeDetail = (id) => {
         return;
     }
     const modal = document.getElementById('detailModal');
+    if (modal) {
+        modal.onclick = (e) => { if (e.target === modal) window.closeAnimeDetail(); };
+    }
     const content = document.getElementById('detailContent');
 
     if (!modal || !content) {
@@ -343,6 +347,7 @@ window.showAnimeDetail = (id) => {
             const newModal = document.createElement('div');
             newModal.id = 'detailModal';
             newModal.className = 'modal';
+            newModal.onclick = (e) => { if (e.target === newModal) window.closeAnimeDetail(); };
             newModal.innerHTML = '<div class="modal-content"><span class="close-btn" onclick="window.closeAnimeDetail()">&times;</span><div id="detailContent"></div></div>';
             document.body.appendChild(newModal);
             window.showAnimeDetail(id); // 重新呼叫
@@ -388,6 +393,7 @@ window.showAnimeDetail = (id) => {
                 <div class="holographic-poster-container" style="flex: 1; position: relative; overflow: hidden; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 0 20px rgba(0,0,0,0.5);">
                     <img src="${item.poster_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22450%22 viewBox=%220 0 300 450%22%3E%3Crect fill=%22%231a1a2e%22 width=%22300%22 height=%22450%22/%3E%3Ctext fill=%22%23666%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENO+IMAGE%3C/text%3E%3C/svg%3E'}" style="width: 100%; height: 100%; object-fit: cover;">
                     <div class="poster-glow-overlay"></div>
+                    <div class="poster-shine"></div>
                     
                     <!-- Elite-Cyber Badge (Moved to Poster Top-Left) -->
                     <div class="badge-elite-cyber" style="--rating-color: ${ratingColor}; --star-color: ${starColor}; position: absolute; top: 0; left: 0; z-index: 10; border-radius: 12px 0 12px 0;">
