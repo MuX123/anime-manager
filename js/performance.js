@@ -1,9 +1,9 @@
 /**
- * 性能優化模組 v2.0
+ * 性能優化模組 v8.0.0
  * 提供懶加載、快取策略、資源優化、離線支援
- * @version 2.0.0
+ * @version 8.0.0
  * @author ACG Manager Development Team
- * @date 2026-02-04
+ * @date 2026-02-10
  */
 
 // ========== LazyLoader ==========
@@ -214,7 +214,7 @@ class PerformanceOptimizer {
         this.offlineManager.init();
         this.healthMonitor.start();
 
-        window.logger?.info('Performance Optimizer v2.0 初始化完成');
+        window.logger?.info('Performance Optimizer v8.0.0 初始化完成');
     }
 
     setupIntersectionObserver() {
@@ -274,7 +274,7 @@ class PerformanceOptimizer {
                     });
                 });
                 observer.observe({ type: 'paint', buffered: true });
-            } catch (e) {}
+            } catch (e) { }
         }
     }
 

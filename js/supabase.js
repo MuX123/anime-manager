@@ -1,13 +1,13 @@
 /**
- * Supabase 資料庫客戶端模組 v2.0
+ * Supabase 資料庫客戶端模組 v8.0.0
  * 提供安全的資料庫連接和操作介面
- * @version 2.0.0
+ * @version 8.0.0
  * @author ACG Manager Development Team
- * @date 2026-02-04
+ * @date 2026-02-10
  */
 
 /**
- * Supabase 資料庫管理器 v2.0
+ * Supabase 資料庫管理器 v8.0.0
  */
 class SupabaseManager {
     constructor() {
@@ -55,7 +55,7 @@ class SupabaseManager {
                 },
                 global: {
                     headers: {
-                        'X-Client-Info': 'acg-manager/2.0.0'
+                        'X-Client-Info': 'acg-manager/8.0.0'
                     }
                 },
                 realtime: {

@@ -1,7 +1,7 @@
-// TECH v6.2.0 - Rendering Logic Module
+// TECH v8.0.0 - Rendering Logic Module
 // Extracted from script.js and optimized with CSS classes
 
-console.log('🎨 載入渲染模組 (v6.2 - UI Refined)...');
+console.log('🎨 載入渲染模組 (v8.0 - UI Refined)...');
 
 // YouTube URL 轉換函式
 function getYouTubeEmbedUrl(url) {

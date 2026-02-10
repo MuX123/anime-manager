@@ -1,8 +1,8 @@
 /**
- * 安全模組 - 內容安全政策 (CSP) 和 XSS 防護 v2.0
- * @version 2.0.0
+ * 安全模組 - 內容安全政策 (CSP) 和 XSS 防護 v8.0.0
+ * @version 8.0.0
  * @author ACG Manager Security Team
- * @date 2026-02-04
+ * @date 2026-02-10
  */
 
 class SecurityManager {
@@ -24,7 +24,7 @@ class SecurityManager {
         this.setupSecurityHeaders();
         this.setupSessionCleanup();
         this.handleCSPViolation();
-        console.log('🔒 Security Manager v2.0 初始化完成');
+        console.log('🔒 Security Manager v8.0.0 初始化完成');
     }
 
     /**
@@ -112,7 +112,7 @@ class SecurityManager {
     setupFallbackProtection() {
         // 啟用額外的 XSS 過濾
         this.xssProtectionEnabled = true;
-        
+
         // 監聽 DOM 變動，移除危險元素
         this.setupDOMMutationObserver();
     }
@@ -173,11 +173,11 @@ class SecurityManager {
      */
     buildCSPHeader() {
         const directives = [];
-        
+
         for (const [directive, sources] of Object.entries(this.cspConfig || this.getDefaultCSPConfig())) {
             directives.push(`${directive} ${sources.join(' ')}`);
         }
-        
+
         return directives.join('; ');
     }
 
@@ -194,7 +194,7 @@ class SecurityManager {
         const meta = document.createElement('meta');
         meta.httpEquiv = 'Content-Security-Policy';
         meta.content = cspHeader;
-        
+
         const head = document.head;
         if (head.firstChild) {
             head.insertBefore(meta, head.firstChild);
@@ -217,7 +217,7 @@ class SecurityManager {
             };
 
             console.error('🚨 CSP 違規檢測:', violation);
-            
+
             // 記錄到日誌系統
             this.logSecurityEvent('csp_violation', violation);
 
@@ -234,13 +234,13 @@ class SecurityManager {
     setupXSSProtection() {
         // XSS 保護 meta 標籤
         this.setMetaTag('X-XSS-Protection', '1; mode=block');
-        
+
         // 防止 MIME 類型混淆
         this.setMetaTag('X-Content-Type-Options', 'nosniff');
-        
+
         // Referrer 策略
         this.setMetaTag('Referrer-Policy', 'strict-origin-when-cross-origin');
-        
+
         // Permissions Policy
         this.setPermissionsPolicy();
     }
@@ -275,7 +275,7 @@ class SecurityManager {
             'accelerometer=()',
             'gyroscope=()'
         ].join(', ');
-        
+
         this.setMetaTag('Permissions-Policy', permissions);
     }
 
@@ -291,7 +291,7 @@ class SecurityManager {
             'Referrer-Policy': 'strict-origin-when-cross-origin',
             'Permissions-Policy': 'geolocation=(), microphone=(), camera=()'
         };
-        
+
         if (window.configManager?.getAppConfig()?.debug) {
             console.log('📋 建議伺服器端安全標頭:', securityHeaders);
         }
@@ -371,12 +371,12 @@ class SecurityManager {
     isSecureURL(url) {
         try {
             const parsed = new URL(url, window.location.origin);
-            
+
             // 只允許 http 和 https
             if (!['http:', 'https:'].includes(parsed.protocol)) {
                 return false;
             }
-            
+
             // 檢查域名
             const allowedDomains = [
                 window.location.hostname,
@@ -385,7 +385,7 @@ class SecurityManager {
                 'fonts.googleapis.com',
                 'fonts.gstatic.com'
             ];
-            
+
             return allowedDomains.includes(parsed.hostname);
         } catch {
             return false;
@@ -402,7 +402,7 @@ class SecurityManager {
             element.textContent = String(html);
             return;
         }
-        
+
         const sanitized = this.sanitizeHTML(html);
         element.innerHTML = sanitized;
     }
@@ -481,18 +481,18 @@ class DOMSanitizer {
         return new Set([
             // 基本結構 - 安全
             'div', 'span', 'p', 'br', 'hr',
-            
+
             // 文本格式 - 安全
             'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
             'strong', 'em', 'u', 'i', 'b', 's', 'del', 'ins',
             'small', 'sub', 'sup',
-            
+
             // 列表 - 安全
             'ul', 'ol', 'li', 'dl', 'dt', 'dd',
-            
+
             // 表格 - 安全
             'table', 'thead', 'tbody', 'tr', 'th', 'td', 'caption', 'colgroup', 'col',
-            
+
             // 其他 - 安全
             'a', 'img', 'code', 'pre', 'blockquote', 'figure', 'figcaption',
             'time', 'mark', 'abbr', 'address', 'cite'
@@ -507,16 +507,16 @@ class DOMSanitizer {
         return new Set([
             // 通用屬性
             'id', 'class', 'style', 'title', 'lang', 'dir',
-            
+
             // 鏈接屬性 (限制 href)
             'href', 'target', 'rel',
-            
+
             // 圖片屬性 (限制 src)
             'src', 'alt', 'width', 'height', 'loading',
-            
+
             // 時間屬性
             'datetime',
-            
+
             // 數據屬性
             'data-*'
         ]);
@@ -585,11 +585,11 @@ class DOMSanitizer {
      */
     blockDangerousPatterns(html) {
         let sanitized = html;
-        
+
         for (const pattern of this.blockedPatterns) {
             sanitized = sanitized.replace(pattern, '');
         }
-        
+
         return sanitized;
     }
 
@@ -600,7 +600,7 @@ class DOMSanitizer {
     sanitizeNode(node) {
         if (node.nodeType === Node.ELEMENT_NODE) {
             const tagName = node.tagName.toLowerCase();
-            
+
             // 檢查標籤是否允許
             if (!this.allowedTags.has(tagName)) {
                 this.removeNodeSafely(node);
@@ -634,11 +634,11 @@ class DOMSanitizer {
      */
     sanitizeAttributes(element) {
         const attributes = Array.from(element.attributes);
-        
+
         attributes.forEach(attr => {
             const attrName = attr.name.toLowerCase();
             const attrValue = attr.value;
-            
+
             // 檢查屬性是否允許
             if (!this.isAttributeAllowed(attrName)) {
                 element.removeAttribute(attr.name);
@@ -700,7 +700,7 @@ class DOMSanitizer {
 
         // 移除危險協議
         const lowerUrl = url.toLowerCase().trim();
-        if (lowerUrl.startsWith('javascript:') || 
+        if (lowerUrl.startsWith('javascript:') ||
             lowerUrl.startsWith('vbscript:') ||
             lowerUrl.startsWith('data:text/html')) {
             console.warn('🚨 阻止危險 URL:', url);
@@ -796,9 +796,9 @@ class RateLimiter {
         // 檢查限制
         if (timestamps.length >= this.maxRequests) {
             this.blockEndpoint(endpoint, identifier);
-            return { 
-                allowed: false, 
-                reason: 'rate_limit_exceeded', 
+            return {
+                allowed: false,
+                reason: 'rate_limit_exceeded',
                 retryAfter: Math.ceil(this.windowMs / 1000),
                 remaining: 0
             };
@@ -823,9 +823,9 @@ class RateLimiter {
     blockEndpoint(endpoint, identifier) {
         const key = `${endpoint}:${identifier}`;
         this.blockedEndpoints.add(key);
-        
+
         console.warn(`🚨 速率限制觸發: ${endpoint}`);
-        
+
         // 60 秒後解除封鎖
         setTimeout(() => {
             this.blockedEndpoints.delete(key);
@@ -926,7 +926,7 @@ class PasswordValidator {
      */
     getFeedback(checks) {
         const feedback = [];
-        
+
         if (!checks.minLength) feedback.push('密碼至少需要 8 個字符');
         if (!checks.hasUppercase) feedback.push('建議添加大寫字母');
         if (!checks.hasLowercase) feedback.push('建議添加小寫字母');
@@ -934,7 +934,7 @@ class PasswordValidator {
         if (!checks.hasSpecial) feedback.push('建議添加特殊字符 (!@#$%^)');
         if (!checks.noCommonPatterns) feedback.push('包含常見模式');
         if (!checks.noRepeatedChars) feedback.push('避免使用重複字符 (如 aaaa)');
-        
+
         return feedback;
     }
 }
@@ -946,10 +946,10 @@ window.passwordValidator = new PasswordValidator();
 
 // 導出模組
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { 
-        SecurityManager, 
-        DOMSanitizer, 
+    module.exports = {
+        SecurityManager,
+        DOMSanitizer,
         RateLimiter,
-        PasswordValidator 
+        PasswordValidator
     };
 }

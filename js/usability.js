@@ -1,8 +1,8 @@
 /**
- * Usability Manager - 實用性增強模組 v1.0
+ * Usability Manager - 實用性增強模組 v8.0.0
  * 提供收藏、搜尋歷史、主題切換、最近瀏覽等功能
- * @version 1.0.0
- * @date 2026-02-04
+ * @version 8.0.0
+ * @date 2026-02-10
  */
 
 class UsabilityManager {
@@ -15,7 +15,7 @@ class UsabilityManager {
         this.recentViews = [];
         this.theme = 'dark';
         this.quickFilters = [];
-        
+
         this.init();
     }
 
@@ -30,7 +30,7 @@ class UsabilityManager {
         this.loadQuickFilters();
         this.setupAutoSave();
         this.applyTheme();
-        
+
         console.log('[Usability] 實用性管理模組已啟動');
     }
 
@@ -58,7 +58,7 @@ class UsabilityManager {
     saveFavorites() {
         try {
             localStorage.setItem(
-                this.storagePrefix + 'favorites', 
+                this.storagePrefix + 'favorites',
                 JSON.stringify([...this.favorites])
             );
         } catch (e) {
@@ -136,13 +136,13 @@ class UsabilityManager {
      */
     addSearch(query, filters = {}) {
         if (!query || query.trim() === '') return;
-        
+
         const entry = {
             query: query.trim(),
             filters: filters,
             timestamp: Date.now()
         };
-        
+
         // 移除相同查詢
         const existing = this.searchHistory.findIndex(
             s => s.query.toLowerCase() === entry.query.toLowerCase()
@@ -150,13 +150,13 @@ class UsabilityManager {
         if (existing !== -1) {
             this.searchHistory.splice(existing, 1);
         }
-        
+
         // 新增到最前面
         this.searchHistory.unshift(entry);
-        
+
         // 限制數量
         this.searchHistory = this.searchHistory.slice(0, this.maxHistoryItems);
-        
+
         this.saveSearchHistory();
         this.notifyListeners('searchHistoryChanged');
     }
@@ -223,7 +223,7 @@ class UsabilityManager {
      */
     addRecentView(item) {
         if (!item || !item.id) return;
-        
+
         const entry = {
             id: String(item.id),
             name: item.name || item.title || 'Unknown',
@@ -231,19 +231,19 @@ class UsabilityManager {
             category: item.category || 'anime',
             timestamp: Date.now()
         };
-        
+
         // 移除相同項目
         const existing = this.recentViews.findIndex(r => r.id === entry.id);
         if (existing !== -1) {
             this.recentViews.splice(existing, 1);
         }
-        
+
         // 新增到最前面
         this.recentViews.unshift(entry);
-        
+
         // 限制數量
         this.recentViews = this.recentViews.slice(0, this.maxRecentItems);
-        
+
         this.saveRecentViews();
         this.notifyListeners('recentViewsChanged');
     }
@@ -325,7 +325,7 @@ class UsabilityManager {
      */
     applyTheme() {
         document.documentElement.setAttribute('data-theme', this.theme);
-        
+
         // 更新 CSS 變數
         if (this.theme === 'light') {
             document.documentElement.style.setProperty('--bg-dark', '#f5f5f5');
@@ -419,11 +419,11 @@ class UsabilityManager {
             quickFilters: this.quickFilters,
             theme: this.theme
         };
-        
-        const blob = new Blob([JSON.stringify(data, null, 2)], { 
-            type: 'application/json' 
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], {
+            type: 'application/json'
         });
-        
+
         this.downloadBlob(blob, `acg-backup-${Date.now()}.json`);
     }
 
@@ -433,45 +433,45 @@ class UsabilityManager {
     async importData(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            
+
             reader.onload = (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    
+
                     if (data.favorites) {
                         this.favorites = new Set(data.favorites);
                         this.saveFavorites();
                     }
-                    
+
                     if (data.searchHistory) {
                         this.searchHistory = data.searchHistory.slice(0, this.maxHistoryItems);
                         this.saveSearchHistory();
                     }
-                    
+
                     if (data.recentViews) {
                         this.recentViews = data.recentViews.slice(0, this.maxRecentItems);
                         this.saveRecentViews();
                     }
-                    
+
                     if (data.quickFilters && Array.isArray(data.quickFilters)) {
                         this.quickFilters = data.quickFilters;
                         this.saveQuickFilters();
                     }
-                    
+
                     if (data.theme && ['dark', 'light'].includes(data.theme)) {
                         this.theme = data.theme;
                         this.saveTheme();
                         this.applyTheme();
                     }
-                    
+
                     this.notifyListeners('dataImported');
                     resolve({ success: true });
-                    
+
                 } catch (err) {
                     reject(new Error('無效的備份檔案'));
                 }
             };
-            
+
             reader.onerror = () => reject(new Error('讀取檔案失敗'));
             reader.readAsText(file);
         });
@@ -501,7 +501,7 @@ class UsabilityManager {
             this.listeners.set(event, new Set());
         }
         this.listeners.get(event).add(callback);
-        
+
         return () => this.off(event, callback);
     }
 
@@ -557,11 +557,11 @@ class UsabilityManager {
         this.favorites = new Set();
         this.searchHistory = [];
         this.recentViews = [];
-        
+
         this.saveFavorites();
         this.saveSearchHistory();
         this.saveRecentViews();
-        
+
         this.notifyListeners('allDataCleared');
     }
 }

@@ -1,9 +1,9 @@
 /**
- * 安全配置管理模組 v2.0
+ * 安全配置管理模組 v8.0.0
  * 處理環境變數和敏感配置
- * @version 2.0.0
+ * @version 8.0.0
  * @author ACG Manager Security Team
- * @date 2026-02-04
+ * @date 2026-02-10
  */
 
 class ConfigManager {
@@ -30,7 +30,7 @@ class ConfigManager {
     detectEnvironment() {
         // 檢查 HOSTNAME
         const hostname = window.location.hostname;
-        if (hostname === 'localhost' || 
+        if (hostname === 'localhost' ||
             hostname === '127.0.0.1' ||
             hostname.includes('localhost') ||
             hostname.includes('127.0.0.1')) {
@@ -66,7 +66,7 @@ class ConfigManager {
                 sessionSecret: this.generateSecret()
             },
             app: {
-                version: '7.0.0',
+                version: '8.0.0',
                 environment: this.isProduction ? 'production' : 'development',
                 debug: this.getEnvVar('DEBUG', this.isProduction ? 'false' : 'true') === 'true'
             }
@@ -102,10 +102,10 @@ class ConfigManager {
                 // 直接靜默錯誤，不做任何處理
             };
 
-            console.info = () => {}; // 完全靜默
+            console.info = () => { }; // 完全靜默
 
             // 移除全局錯誤處理中的詳細輸出
-            window.onerror = function(message, source, lineno, colno, error) {
+            window.onerror = function (message, source, lineno, colno, error) {
                 // 不要呼叫 console.error，避免無限迴圈
                 return true; // 阻止預設錯誤處理
             };
@@ -122,11 +122,11 @@ class ConfigManager {
         if (typeof window !== 'undefined') {
             return this.getBrowserConfig(key, defaultValue);
         }
-        
+
         if (typeof process !== 'undefined' && process.env) {
             return process.env[key] || defaultValue;
         }
-        
+
         return defaultValue;
     }
 
@@ -139,18 +139,14 @@ class ConfigManager {
     getBrowserConfig(key, defaultValue) {
         // 從安全的全局配置中獲取
         if (window.__ACG_CONFIG__ && window.__ACG_CONFIG__[key]) {
-            // 生產環境遮蔽敏感資訊
-            if (this.isProduction && (key === 'SUPABASE_ANON_KEY' || key === 'SUPABASE_URL')) {
-                return '***REDACTED***';
-            }
             return window.__ACG_CONFIG__[key];
         }
-        
+
         // 從 localStorage 獲取（非敏感配置）
         if (this.isNonSensitiveConfig(key)) {
             return localStorage.getItem(`acg_config_${key}`) || defaultValue;
         }
-        
+
         return defaultValue;
     }
 
@@ -161,8 +157,8 @@ class ConfigManager {
      */
     isNonSensitiveConfig(key) {
         const nonSensitiveKeys = [
-            'NODE_ENV', 
-            'DEBUG', 
+            'NODE_ENV',
+            'DEBUG',
             'CSP_ENABLED',
             'app_version'
         ];
@@ -180,7 +176,7 @@ class ConfigManager {
             crypto.getRandomValues(array);
             return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
         }
-        
+
         // 回退方案
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let result = '';
@@ -233,22 +229,14 @@ class ConfigManager {
     }
 
     /**
-     * 獲取 Supabase 配置（遮蔽敏感資訊）
+     * 獲取 Supabase 配置
      * @returns {Object}
      */
     getSupabaseConfig() {
-        if (this.isProduction) {
-            return {
-                url: '***REDACTED***',
-                anonKey: '***REDACTED***',
-                isSecure: true
-            };
-        }
-
         return {
             url: this.config.supabase.url,
             anonKey: this.config.supabase.anonKey,
-            isSecure: false
+            isSecure: this.isProduction
         };
     }
 

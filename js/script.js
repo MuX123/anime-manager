@@ -1,4 +1,4 @@
-// TECH v6.0.0 - ACG Manager Logic (Security & Performance Optimized)
+// TECH v8.0.0 - ACG Manager Logic (Security & Performance Optimized)
 
 // 生產環境配置 - 減少控制台輸出
 const IS_PRODUCTION = window.location.hostname !== 'localhost' &&
@@ -768,8 +768,9 @@ window.loadData = async function () {
 };
 
 /**
- * 驗證用戶是否為管理員
- * @param {string} userEmail 用戶電子郵件
+ * ACG 收藏庫主程式 v8.0.0
+ * 包含：資料載入、板塊切換、搜尋過濾、管理後台邏輯
+ * @version 8.0.0
  */
 window.renderApp = (requestId = null) => {
     // 如果傳入了 requestId，驗證其是否為最新

@@ -1,8 +1,9 @@
 /**
- * 日誌管理系統
+ * 日誌管理系統 v8.0.0
  * 提供統一的日誌記錄、錯誤追蹤和性能監控功能
- * @version 1.0.0
+ * @version 8.0.0
  * @author ACG Manager Development Team
+ * @date 2026-02-10
  */
 
 class Logger {
@@ -16,18 +17,17 @@ class Logger {
             remoteEndpoint: config.remoteEndpoint || null,
             ...config
         };
-        
         this.levels = {
             debug: 0,
             info: 1,
             warn: 2,
             error: 3
         };
-        
+
         this.currentLevel = this.levels[this.config.level] || 1;
         this.storage = new LogStorage(this.config.maxStorageSize);
         this.performance = new PerformanceMonitor();
-        
+
         this.init();
     }
 
@@ -37,10 +37,10 @@ class Logger {
     init() {
         // 設置全局錯誤處理
         this.setupGlobalErrorHandling();
-        
+
         // 設置性能監控
         this.performance.init();
-        
+
         console.log('📝 日誌系統初始化完成');
     }
 
@@ -130,7 +130,7 @@ class Logger {
         let logEntry = null;
         try {
             logEntry = this.createLogEntry(level, message, data);
-            
+
             // 檢查日誌級別
             if (this.levels[level] >= this.currentLevel && this.config.enableConsole) {
                 this.outputToConsole(logEntry);
@@ -143,10 +143,10 @@ class Logger {
 
         // 存儲和發送 - 不在 try 內部呼叫 logger
         if (logEntry && this.config.enableStorage) {
-            try { this.storage.add(logEntry); } catch (e) {}
+            try { this.storage.add(logEntry); } catch (e) { }
         }
         if (logEntry && this.config.enableRemote && this.config.remoteEndpoint) {
-            try { this.sendToRemote(logEntry); } catch (e) {}
+            try { this.sendToRemote(logEntry); } catch (e) { }
         }
     }
 
@@ -212,7 +212,7 @@ class Logger {
         try {
             const { level, message, data, timestamp } = logEntry;
             const prefix = `[${timestamp}] [${level}]`;
-            
+
             switch (logEntry.level) {
                 case 'DEBUG':
                     console.debug(prefix, message, data);
@@ -282,7 +282,7 @@ class Logger {
      */
     exportLogs(format = 'json') {
         const logs = this.storage.get();
-        
+
         switch (format.toLowerCase()) {
             case 'csv':
                 return this.exportToCSV(logs);
@@ -307,7 +307,7 @@ class Logger {
             log.url,
             log.userAgent
         ]);
-        
+
         return [headers, ...rows]
             .map(row => row.map(cell => `"${cell}"`).join(','))
             .join('\n');
@@ -342,11 +342,11 @@ class Logger {
         logs.forEach(log => {
             // 按級別統計
             stats.byLevel[log.level] = (stats.byLevel[log.level] || 0) + 1;
-            
+
             // 按小時統計
             const hour = new Date(log.timestamp).getHours();
             stats.byHour[hour] = (stats.byHour[hour] || 0) + 1;
-            
+
             // 最舊和最新的日誌
             if (!stats.oldestLog || new Date(log.timestamp) < new Date(stats.oldestLog.timestamp)) {
                 stats.oldestLog = log;
@@ -376,12 +376,12 @@ class LogStorage {
     add(logEntry) {
         const logs = this.get();
         logs.unshift(logEntry);
-        
+
         // 限制存儲大小
         if (logs.length > this.maxSize) {
             logs.splice(this.maxSize);
         }
-        
+
         this.save(logs);
     }
 
@@ -396,7 +396,7 @@ class LogStorage {
 
         // 按級別過濾
         if (options.level) {
-            filteredLogs = filteredLogs.filter(log => 
+            filteredLogs = filteredLogs.filter(log =>
                 log.level.toLowerCase() === options.level.toLowerCase()
             );
         }
@@ -404,14 +404,14 @@ class LogStorage {
         // 按時間範圍過濾
         if (options.since) {
             const since = new Date(options.since);
-            filteredLogs = filteredLogs.filter(log => 
+            filteredLogs = filteredLogs.filter(log =>
                 new Date(log.timestamp) >= since
             );
         }
 
         if (options.until) {
             const until = new Date(options.until);
-            filteredLogs = filteredLogs.filter(log => 
+            filteredLogs = filteredLogs.filter(log =>
                 new Date(log.timestamp) <= until
             );
         }
@@ -479,10 +479,10 @@ class PerformanceMonitor {
     init() {
         // 監控頁面載入性能
         this.observePageLoad();
-        
+
         // 監控資源載入性能
         this.observeResourceLoad();
-        
+
         // 監控長任務
         this.observeLongTasks();
     }
@@ -528,7 +528,7 @@ class PerformanceMonitor {
                     }
                 });
             });
-            
+
             observer.observe({ entryTypes: ['resource'] });
             this.observers.push(observer);
         }
@@ -549,7 +549,7 @@ class PerformanceMonitor {
                     }
                 });
             });
-            
+
             observer.observe({ entryTypes: ['longtask'] });
             this.observers.push(observer);
         }
@@ -585,7 +585,7 @@ class PerformanceMonitor {
             ...data,
             timestamp: new Date().toISOString()
         });
-        
+
         // 發送到日誌系統
         if (window.logger) {
             window.logger.debug(`Performance: ${name}`, data);
