@@ -145,9 +145,19 @@ window.initAtmosphere = () => {
 
         function initParticles() {
             particles = [];
-            let count = (width * height) / 15000; // 根據螢幕面積動態調整數量
+            let particleDensity = 15000;
+            const isMobile = window.innerWidth < 768;
+
+            // 移動端大幅精簡粒子數量以節省效能
+            if (isMobile) {
+                particleDensity = 40000; // 降低密度
+                properties.maxLinks = 2; // 移動端限制連線數
+                console.log('[Atmosphere] 偵測到移動端，啟用極低功耗模式');
+            }
+
+            let count = (width * height) / particleDensity;
             if (count > 120) count = 120; // 上限
-            if (count < 40) count = 40;   // 下限
+            if (count < (isMobile ? 15 : 40)) count = isMobile ? 15 : 40;   // 下限
 
             for (let i = 0; i < count; i++) {
                 particles.push(new Particle());

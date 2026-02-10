@@ -22,10 +22,12 @@
     display: flex;
     flex-direction: column;
 
-    /* 極致性能優化：GPU 加速與佈局隔離 */
-    will-change: transform;
-    transform: translate3d(0, 0, 0);
+    /* 極致性能優化：佈局隔離與渲染優化 */
+    /* 移除 will-change 防止 VRAM 耗盡，僅在需要時由瀏覽器決定 */
     contain: layout style;
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 300px;
+    /* 預估卡片高度，減少滾動跳動 */
 }
 
 /* Game Card Effect */
@@ -1405,6 +1407,25 @@ select option {
 .lite-mode .anime-card:hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* 針對移動端 (768px 以下) 的強制效能降級 */
+@media (max-width: 768px) {
+
+    .anime-card,
+    .modal,
+    .analytics-bar,
+    .premium-board,
+    #systemMenu {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(13, 17, 23, 0.98) !important;
+    }
+
+    .anime-card {
+        will-change: auto !important;
+        transform: none !important;
+    }
 }
 
 .lite-mode .card-shine,

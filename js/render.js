@@ -484,5 +484,9 @@ window.showAnimeDetail = (id) => {
 window.closeAnimeDetail = () => {
     document.getElementById('detailModal').classList.remove('active');
     // 性能優化：關閉詳情時恢復背景動畫
-    if (window.AtmosphereAPI) window.AtmosphereAPI.resume();
+    if (window.AtmosphereAPI) {
+        const bgCanvas = document.getElementById('atmosphere-canvas');
+        if (bgCanvas) bgCanvas.style.display = 'block';
+        window.AtmosphereAPI.resume();
+    }
 };
