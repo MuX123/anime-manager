@@ -2198,8 +2198,6 @@ window.showJikanSearchModal = (defaultQuery) => {
                 <div style="display: flex; gap: 8px;">
                     <input type="text" id="jikan-search-input" value="${defaultQuery}" placeholder="輸入日文或英文名稱搜尋效果最佳" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(139,92,246,0.3);border-radius:6px;padding:10px;color:#fff;font-size:14px;" onkeydown="if(event.key==='Enter')window.executeJikanSearch()">
                     <button onclick="window.executeJikanSearch()" class="btn-primary" style="padding:10px 20px;border-color:rgba(139,92,246,0.6);color:#c4b5fd;">🔍 搜尋</button>
-                    <button onclick="window.open('https://www.movieffm.net/?s=' + encodeURIComponent('${defaultQuery}'), '_blank')" class="search-btn" style="border-color: #ff9900; color: #ff9900;">MovieFFM</button>
-                    <button onclick="window.open('https://search.bilibili.com/all?keyword=' + encodeURIComponent('${defaultQuery}'), '_blank')" class="search-btn" style="border-color: #00a1d6; color: #00a1d6;">Bilibili</button>
                 </div>
                 <div style="font-size: 11px; color: #888; margin-top: 6px;">💡 提示：使用日文或英文名稱搜尋準確度更高，例如「Jujutsu Kaisen」而非「咒術迴戰」</div>
             </div>
@@ -2523,7 +2521,8 @@ window.applyJikanData = async (index) => {
             { id: 'anime1', name: 'anime1.me', url: `https://anime1.me/?s=${encodeURIComponent(animeName)}` },
             { id: 'age', name: 'AGE動漫', url: `https://www.agedm.org/search?query=${encodeURIComponent(animeName)}` },
             { id: 'sn-video', name: '星夜動漫', url: `https://sn-video.com/search?q=${encodeURIComponent(animeName)}` },
-            { id: '99itv', name: '99動漫', url: `https://99itv.net/vodsearch/${encodeURIComponent(animeName)}----------1---.html` },
+            { id: '99itv', name: '99動漫', url: `https://99itv.net/search/-------------.html?wd=${encodeURIComponent(animeName)}&submit=` },
+            { id: 'ofiii', name: 'Ofiii', url: `https://www.ofiii.com/search/${encodeURIComponent(animeName)}` },
             { id: 'dmmiku', name: '動漫MIKU', url: `https://www.dmmiku.com/index.php/vod/search.html?wd=${encodeURIComponent(animeName)}` },
             { id: 'yinhuadm', name: '櫻花動漫', url: `https://www.yinhuadm.cc/search/${encodeURIComponent(animeName)}/` },
             { id: 'anione', name: 'AniOne YT', url: `https://www.youtube.com/@AniOneAnime/search?query=${encodeURIComponent(animeName)}` },
@@ -2532,6 +2531,8 @@ window.applyJikanData = async (index) => {
 
         // 嘗試透過 Edge Function 驗證各網站
         const addVerifiedLinks = async () => {
+            // 暫時停用 Edge Function，直接使用 Fallback 邏輯，避免 CORS/404 錯誤
+            /*
             try {
                 const config = window.configManager?.getSupabaseConfig();
                 if (!config?.url) throw new Error('無 Supabase 配置');
@@ -2573,21 +2574,22 @@ window.applyJikanData = async (index) => {
                 }
             } catch (err) {
                 console.warn('Edge Function 驗證失敗，改為全部加入:', err.message);
-                // Fallback：Edge Function 不可用時，全部加入
-                allPlatformLinks.forEach(link => {
-                    if (existingNames.some(n => n.includes(link.name.toLowerCase().split(' ')[0]))) return;
-                    const row = document.createElement('div');
-                    row.style.cssText = 'display:flex;gap:8px;';
-                    row.innerHTML = `
+            */
+            // Fallback：Edge Function 不可用時，全部加入
+            allPlatformLinks.forEach(link => {
+                if (existingNames.some(n => n.includes(link.name.toLowerCase().split(' ')[0]))) return;
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex;gap:8px;';
+                row.innerHTML = `
                         <input type="text" placeholder="名稱" class="link-name" value="${link.name}" style="flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:6px;padding:6px;color:#fff;font-size:12px;">
                         <input type="text" placeholder="網址" class="link-url" value="${link.url}" style="flex:3;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:6px;padding:6px;color:#fff;font-size:12px;">
                         <button class="btn-icon delete" style="width:30px;height:30px;" onclick="this.parentElement.remove()">✕</button>
                     `;
-                    linksList.appendChild(row);
-                    filledCount++;
-                });
-                window.showToast('🔗 已加入所有平台連結（驗證服務未啟用）', 'info');
-            }
+                linksList.appendChild(row);
+                filledCount++;
+            });
+            window.showToast('🔗 已加入所有平台連結', 'info');
+            /* } */
         };
 
         // 非同步執行驗證，不阻塞其他補全操作

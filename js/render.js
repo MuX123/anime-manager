@@ -313,12 +313,14 @@ window.renderCard = (item) => {
 };
 
 window.showAnimeDetail = (id) => {
-    // 性能優化：開啟詳情時停止並徹底隱藏背景動畫
+    // 性能優化：開啟詳情時停止並徹底隱藏背景動畫 -> 恢復動畫顯示
+    /*
     if (window.AtmosphereAPI) {
         window.AtmosphereAPI.pause();
         const bgCanvas = document.getElementById('atmosphere-canvas');
         if (bgCanvas) bgCanvas.style.display = 'none';
     }
+    */
 
     const escape = (str) => {
         if (typeof escapeHtml === 'function') return escapeHtml(str);
@@ -484,8 +486,8 @@ window.showAnimeDetail = (id) => {
                         <h3 style="color: var(--neon-cyan); margin: 0 0 10px 0; font-size: 16px;">🌐 觀看網站</h3>
                         <div style="position: relative; -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 5%, #000 95%, transparent 100%); mask-image: linear-gradient(to right, transparent 0%, #000 5%, #000 95%, transparent 100%);">
                             <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; padding: 5px 0;">
-                                ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 6px 15px; font-size: 11px; white-space: nowrap; border-color: ${btnColor} !important; color: ${btnColor} !important; background: ${btnColor}22 !important; border-radius: 50px; height: 30px; display: flex; align-items: center; font-weight: 600;">${escape(l.name)}</a>`).join('') : ''}
-                                <a href="https://movieffm.net/?s=${encodeURIComponent(item.name)}" target="_blank" class="btn-primary" style="padding: 6px 15px; font-size: 11px; white-space: nowrap; border-color: #ff3e3e !important; color: #ff3e3e !important; background: rgba(255,62,62,0.1) !important; border-radius: 50px; height: 30px; display: flex; align-items: center; font-weight: 600;">🎬 MovieFFM 搜尋</a>
+                                ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 6px 15px; font-size: 11px; white-space: nowrap; border-color: ${btnColor} !important; color: ${btnColor} !important; background: ${btnColor}22 !important; border-radius: 50px; min-height: 30px; height: auto; display: flex; align-items: center; font-weight: 600;">${escape(l.name)}</a>`).join('') : ''}
+                                <a href="https://www.movieffm.net/xssearch?q=${encodeURIComponent(item.name)}" target="_blank" class="btn-primary" style="padding: 6px 15px; font-size: 11px; white-space: nowrap; border-color: #ff3e3e !important; color: #ff3e3e !important; background: rgba(255,62,62,0.1) !important; border-radius: 50px; min-height: 30px; height: auto; display: flex; align-items: center; font-weight: 600;">🎬 MovieFFM 搜尋</a>
                             </div>
                         </div>
                     </div>

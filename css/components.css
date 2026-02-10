@@ -148,7 +148,8 @@ select option {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 36px;
+    height: auto;
+    min-height: 36px;
     min-width: 80px;
     white-space: nowrap;
 }
