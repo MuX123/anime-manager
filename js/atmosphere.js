@@ -97,14 +97,16 @@ window.initAtmosphere = () => {
         let width, height;
         let particles = [];
 
-        // 設定參數
+        // 偵測裝置效能
+        const isMobile = window.innerWidth < 768;
         const properties = {
-            particleCount: 80,
+            particleCount: isMobile ? 30 : 80,
             particleColor: 'rgba(0, 212, 255, 0.8)',
             lineColor: 'rgba(0, 212, 255, 0.15)',
-            particleRadius: 1.5,
-            particleSpeed: 0.3,
-            linkDistance: 120
+            particleRadius: isMobile ? 1.0 : 1.5,
+            particleSpeed: isMobile ? 0.2 : 0.3,
+            linkDistance: isMobile ? 80 : 120,
+            maxLinks: isMobile ? 2 : 4 // 限制每個粒子的最大連線數，減少 $O(N^2)$ 負擔
         };
 
         // 調整大小
@@ -159,24 +161,32 @@ window.initAtmosphere = () => {
             for (let i = 0; i < particles.length; i++) {
                 particles[i].update();
                 particles[i].draw();
+            }
 
-                // 繪製連線
+            // 批量繪製連線以減少繪圖指令開銷
+            ctx.beginPath();
+            ctx.lineWidth = 0.8;
+            for (let i = 0; i < particles.length; i++) {
+                let currentLinks = 0;
                 for (let j = i + 1; j < particles.length; j++) {
+                    if (currentLinks >= properties.maxLinks) break;
+
                     const dx = particles[i].x - particles[j].x;
                     const dy = particles[i].y - particles[j].y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
 
                     if (distance < properties.linkDistance) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = `rgba(0, 212, 255, ${1 - distance / properties.linkDistance})`; // 距離越近越不透明
-                        ctx.lineWidth = 0.8;
+                        const alpha = (1 - distance / properties.linkDistance) * 0.4;
+                        ctx.strokeStyle = `rgba(0, 212, 255, ${alpha})`;
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                        ctx.closePath();
+                        currentLinks++;
                     }
                 }
             }
+            ctx.stroke();
+            ctx.closePath();
+
             requestAnimationFrame(animate);
         }
 

@@ -43,8 +43,8 @@ class ConfigManager {
             return true;
         }
 
-        // GitHub Pages 視為生產環境
-        if (hostname.includes('github.io')) {
+        // GitHub Pages 或其他 .io 域名視為生產環境
+        if (hostname.includes('github.io') || hostname.includes('.io')) {
             return true;
         }
 

@@ -247,8 +247,15 @@
     }
 
     .anime-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
         gap: 12px;
+    }
+
+    /* 置中並縮小統計列 */
+    .analytics-bar {
+        width: 90%;
+        max-width: 320px;
+        font-size: 9px;
     }
 
     .app-container,

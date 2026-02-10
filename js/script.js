@@ -3,14 +3,18 @@
 // 生產環境配置 - 減少控制台輸出
 const IS_PRODUCTION = window.location.hostname !== 'localhost' &&
     !window.location.hostname.includes('127.0.0.1') &&
-    !window.location.hostname.includes('github.io');
+    (window.location.hostname.includes('github.io') || window.location.hostname.includes('.io'));
 
 // 生產環境覆蓋 console 減少噪音
 if (IS_PRODUCTION) {
     const originalConsole = { ...console };
-    console.log = (...args) => originalConsole.log.call(originalConsole, '[INFO]', ...args);
+    console.log = (...args) => {
+        if (typeof args[0] === 'string' && (args[0].includes('✅') || args[0].includes('💳'))) {
+            originalConsole.log.call(originalConsole, '[INFO]', ...args);
+        }
+    };
     console.warn = (...args) => originalConsole.warn.call(originalConsole, '[WARN]', ...args);
-    console.info = (...args) => { /* 生產環境隱藏 info */ };
+    console.info = () => { };
 }
 
 let currentSection = 'notice';
@@ -749,7 +753,7 @@ window.loadData = async function (forceRefresh = false) {
         try {
             const { data, error } = await fetchWithTimeout(
                 client.from('anime_list').select('*').order('created_at', { ascending: false }),
-                3000
+                5000
             );
             if (!error) {
                 animeData = data || [];
@@ -957,6 +961,7 @@ window.renderApp = (requestId = null) => {
 
     // 重新初始化滾輪捲動監聽
     window.initGlobalScroll();
+    window.setupHorizontalScroll('.horizontal-scroll-container, .scroll-row-v35, .force-scroll');
     window.updateAdminMenu();
     if (typeof window.updateTopMarquee === 'function') window.updateTopMarquee();
 
@@ -3338,20 +3343,28 @@ window.initTheme = () => {
 // Discord integration disabled - webhook URLs must not be exposed in client code
 // Announcements are managed via Supabase database
 
-/* 滾輪支持所有滾動軸（排除輸入框） */
-document.addEventListener('DOMContentLoaded', () => {
-    document.addEventListener('wheel', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
-            return;
-        }
-        const target = e.target.closest('[class*="scroll"], [class*="horizontal"], .horizontal-scroll-container, .scroll-row-v35');
-        if (target && (target.scrollWidth > target.clientWidth || target.scrollHeight > target.clientHeight)) {
+/* 滾輪支持橫向捲動 (優化版：僅針對特定容器) */
+window.setupHorizontalScroll = (selector) => {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(target => {
+        if (target._hasWheelListener) return;
+        target.addEventListener('wheel', (e) => {
             if (target.scrollWidth > target.clientWidth) {
-                e.preventDefault();
-                target.scrollLeft += e.deltaY > 0 ? 50 : -50;
+                if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                    e.preventDefault();
+                    target.scrollLeft += e.deltaY;
+                }
             }
-        }
-    }, { passive: false });
+        }, { passive: false });
+        target._hasWheelListener = true;
+    });
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 延遲初始化，確保渲染完成
+    setTimeout(() => {
+        window.setupHorizontalScroll('.horizontal-scroll-container, .scroll-row-v35, .force-scroll');
+    }, 1500);
 });
 
 // 啟動應用程式
