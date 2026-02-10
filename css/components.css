@@ -22,23 +22,41 @@
     display: flex;
     flex-direction: column;
 
-    /* 極致性能優化：佈局隔離與渲染優化 */
+    /* 極致性能優化：佈局隔離 */
     /* 移除 will-change 防止 VRAM 耗盡，僅在需要時由瀏覽器決定 */
     contain: layout style;
-    content-visibility: auto;
-    contain-intrinsic-size: 1px 300px;
-    /* 預估卡片高度，減少滾動跳動 */
+    /* 移除 content-visibility 以避免滾動跳動 */
 }
 
 /* Game Card Effect */
 .anime-card.game-card-effect {
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* 限定轉場屬性以提升效能，避免使用 all */
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0.2, 1),
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
     transform-style: preserve-3d;
 }
 
+/* 加強上半部高光效果 */
+.anime-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom,
+            rgba(255, 255, 255, 0.15) 0%,
+            rgba(255, 255, 255, 0.05) 50%,
+            transparent 100%);
+    pointer-events: none;
+    z-index: 5;
+}
+
 .anime-card.game-card-effect:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 15px 40px color-mix(in srgb, var(--rating-color) 40%, transparent);
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4),
+        0 0 20px color-mix(in srgb, var(--rating-color) 30%, transparent);
     border-color: var(--rating-color);
     z-index: 100;
 }
@@ -1409,7 +1427,7 @@ select option {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* 針對移動端 (768px 以下) 的強制效能降級 */
+/* 針對移動端 (768px 以下) 的強制效能降級 - 精細調整 */
 @media (max-width: 768px) {
 
     .anime-card,
@@ -1422,13 +1440,21 @@ select option {
         background: rgba(13, 17, 23, 0.98) !important;
     }
 
+    /* 大幅簡化陰影而非完全移除，保持質感 */
     .anime-card {
         will-change: auto !important;
         transform: none !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5) !important;
     }
 }
 
 .lite-mode .card-shine,
+.lite-mode .card-border-glow,
+.lite-mode .elite-deco-dot,
+.lite-mode .badge-elite-cyber::before {
+    display: none !important;
+}
+
 .lite-mode .card-border-glow,
 .lite-mode .elite-deco-dot,
 .lite-mode .badge-elite-cyber::before {

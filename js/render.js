@@ -6,23 +6,30 @@ console.log('🎨 載入渲染模組 (v8.0 - UI Refined)...');
 // YouTube URL 轉換函式
 function getYouTubeEmbedUrl(url) {
     if (!url) return null;
-
     let videoId = null;
-
-    // youtube.com/watch?v=VIDEO_ID
     const watchMatch = url.match(/[?&]v=([^&]+)/);
     if (watchMatch) videoId = watchMatch[1];
-
-    // youtu.be/VIDEO_ID
     const shortMatch = url.match(/youtu\.be\/([^?]+)/);
     if (shortMatch) videoId = shortMatch[1];
-
-    // youtube.com/embed/VIDEO_ID
     const embedMatch = url.match(/youtube\.com\/embed\/([^?]+)/);
     if (embedMatch) videoId = embedMatch[1];
-
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+    return videoId;
 }
+
+// YouTube 影片加載器 (性能優化：點擊才加載)
+window.loadYouTubeVideo = (containerId, videoId) => {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = `
+        <iframe 
+            src="https://www.youtube.com/embed/${videoId}?autoplay=1" 
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowfullscreen>
+        </iframe>
+    `;
+};
 
 // Helper for tag styles
 // CSS class 'tag-base' handles layout and border/bg opacity via currentColor
@@ -306,6 +313,13 @@ window.renderCard = (item) => {
 };
 
 window.showAnimeDetail = (id) => {
+    // 性能優化：開啟詳情時停止並徹底隱藏背景動畫
+    if (window.AtmosphereAPI) {
+        window.AtmosphereAPI.pause();
+        const bgCanvas = document.getElementById('atmosphere-canvas');
+        if (bgCanvas) bgCanvas.style.display = 'none';
+    }
+
     const escape = (str) => {
         if (typeof escapeHtml === 'function') return escapeHtml(str);
         return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[s]);
@@ -442,23 +456,27 @@ window.showAnimeDetail = (id) => {
                     </div>
                 ` : ''}
 
-                <!-- YouTube PV 影片區塊 (帶分隔線) -->
-                ${item.youtube_url ? `
+                <!-- YouTube PV 影片區塊 (性能優化：延遲加載) -->
+                ${item.youtube_url ? (() => {
+            const videoId = getYouTubeEmbedUrl(item.youtube_url);
+            if (!videoId) return '';
+            const containerId = `yt-container-${item.id}`;
+            return `
                     <div class="detail-section-v35" style="margin-bottom: 0; padding: 15px 20px; border-left: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.1);">
                         <div class="detail-header-block">
                             <h3 style="color: var(--neon-cyan); margin: 0 0 10px 0; font-size: 16px;">📺 宣傳影片</h3>
-                            <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; border: 2px solid var(--neon-cyan); background: #000;">
-                                <iframe 
-                                    src="${getYouTubeEmbedUrl(item.youtube_url)}" 
-                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-                                    frameborder="0" 
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                                    allowfullscreen>
-                                </iframe>
+                            <div id="${containerId}" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; border: 2px solid var(--neon-cyan); background: #000; cursor: pointer;" onclick="window.loadYouTubeVideo('${containerId}', '${videoId}')">
+                                <!-- Facade UI -->
+                                <img src="https://img.youtube.com/vi/${videoId}/maxresdefault.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6;">
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 68px; height: 48px; background: rgba(255,0,0,0.8); border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onmouseover="this.style.background='red'" onmouseout="this.style.background='rgba(255,0,0,0.8)'">
+                                    <div style="width: 0; height: 0; border-style: solid; border-width: 10px 0 10px 20px; border-color: transparent transparent transparent #fff; margin-left: 4px;"></div>
+                                </div>
+                                <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 12px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">點擊播放預告</div>
                             </div>
                         </div>
                     </div>
-                ` : ''}
+                `;
+        })() : ''}
 
                 <!-- 連結區塊 (帶分隔線 + 標題) -->
                 <div class="detail-section-v35" style="margin-top: 0; padding: 15px 20px; border: 1px solid rgba(255,255,255,0.05); background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,212,255,0.05)); border-radius: 0 0 12px 12px; border-top: 1px solid rgba(255,255,255,0.1);">
