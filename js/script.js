@@ -2578,13 +2578,16 @@ window.applyJikanData = async (index) => {
             // Fallback：Edge Function 不可用時，全部加入
             allPlatformLinks.forEach(link => {
                 if (existingNames.some(n => n.includes(link.name.toLowerCase().split(' ')[0]))) return;
+
+                // 使用與 addLinkRow 相同的內部結構，確保 saveAnime 能選取到支援 div 中的 inputs
                 const row = document.createElement('div');
-                row.style.cssText = 'display:flex;gap:8px;';
+                row.className = 'link-row-item'; // 加入類名方便選取
+                row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;';
                 row.innerHTML = `
-                        <input type="text" placeholder="名稱" class="link-name" value="${link.name}" style="flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:6px;padding:6px;color:#fff;font-size:12px;">
-                        <input type="text" placeholder="網址" class="link-url" value="${link.url}" style="flex:3;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:6px;padding:6px;color:#fff;font-size:12px;">
-                        <button class="btn-icon delete" style="width:30px;height:30px;" onclick="this.parentElement.remove()">✕</button>
-                    `;
+                    <input type="text" placeholder="名稱" class="link-name" value="${link.name}" style="flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:6px;padding:6px;color:#fff;font-size:12px;">
+                    <input type="text" placeholder="網址" class="link-url" value="${link.url}" style="flex:3;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:6px;padding:6px;color:#fff;font-size:12px;">
+                    <button class="btn-icon delete" style="width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;border-color:#ff4444;color:#ff4444;" onclick="this.parentElement.remove()">✕</button>
+                `;
                 linksList.appendChild(row);
                 filledCount++;
             });
@@ -2614,8 +2617,8 @@ window.saveAnime = async () => {
             if (select.value) extra_data[key] = select.value;
         });
 
-        const btnBg = document.getElementById('form-btn-bg');
-        if (btnBg && btnBg.value) extra_data.btn_bg = btnBg.value;
+        const btnColor = document.getElementById('set-btn-color');
+        if (btnColor && btnColor.value) extra_data.btn_bg = btnColor.value;
 
         const starColorEl = document.getElementById('form-star-color');
         const nameColorEl = document.getElementById('form-name-color');
@@ -2629,10 +2632,12 @@ window.saveAnime = async () => {
             poster_url: document.getElementById('form-poster')?.value || '',
             youtube_url: document.getElementById('form-youtube')?.value || '',
             category: document.getElementById('form-category')?.value || 'anime',
-            links: Array.from(document.querySelectorAll('#links-list > div')).map(row => {
-                const n = row.querySelector('.link-name');
-                const u = row.querySelector('.link-url');
-                return (n && u) ? { name: n.value, url: u.value } : null;
+            links: Array.from(document.querySelectorAll('#links-list .link-name')).map(nameInput => {
+                const row = nameInput.parentElement;
+                const urlInput = row.querySelector('.link-url');
+                const name = nameInput.value.trim();
+                const url = urlInput ? urlInput.value.trim() : '';
+                return (name && url) ? { name, url } : null;
             }).filter(l => l),
             description: document.getElementById('form-desc')?.value || '',
             year: document.getElementById('form-year')?.value || '',
@@ -2690,7 +2695,20 @@ window.saveAnime = async () => {
 window.editAnime = (id) => {
     window.switchAdminTab('edit', id);
 };
-window.addLinkRow = () => { const c = document.getElementById('links-list'); const d = document.createElement('div'); d.style.display = 'flex'; d.style.gap = '8px'; d.style.marginBottom = '10px'; d.innerHTML = `<input type="text" placeholder="名" class="link-name" style="flex: 1;"><input type="text" placeholder="網" class="link-url" style="flex: 2;"><button class="btn-primary" style="padding: 8px 12px; border-color: #ff4444; color: #ff4444;" onclick="this.parentElement.remove()">✕</button>`; c.appendChild(d); };
+window.addLinkRow = () => {
+    const c = document.getElementById('links-list');
+    const d = document.createElement('div');
+    d.className = 'link-row-item';
+    d.style.display = 'flex';
+    d.style.gap = '8px';
+    d.style.marginBottom = '10px';
+    d.innerHTML = `
+        <input type="text" placeholder="名稱" class="link-name" style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px; color: #fff; font-size: 12px;">
+        <input type="text" placeholder="網址" class="link-url" style="flex: 3; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 6px; color: #fff; font-size: 12px;">
+        <button class="btn-icon delete" style="width: 30px; height: 30px; border-color: #ff4444; color: #ff4444; padding:0; display:flex; align-items:center; justify-content:center;" onclick="this.parentElement.remove()">✕</button>
+    `;
+    c.appendChild(d);
+};
 window.addOptionItem = async (key) => {
     const input = document.getElementById(`add-opt-${key}`);
     const value = input?.value?.trim();

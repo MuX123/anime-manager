@@ -64,34 +64,64 @@
     transform: scale(1.08);
 }
 
-/* Glass Shine Effect Base */
+/* Glass Shine Effect V2 */
 .poster-shine {
     position: absolute;
     top: 0;
     left: -150%;
-    width: 50%;
+    width: 60%;
     height: 100%;
-    background: linear-gradient(to right,
+    background: linear-gradient(105deg,
             transparent 0%,
-            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0.05) 40%,
+            rgba(255, 255, 255, 0.6) 50%,
+            rgba(255, 255, 255, 0.05) 60%,
             transparent 100%);
-    transform: skewX(-25deg);
+    transform: skewX(-20deg);
     transition: none;
     pointer-events: none;
     z-index: 6;
+    filter: blur(1px);
+}
+
+/* Top-Left Corner Glow */
+.poster-shine::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.anime-card:hover .poster-shine::before {
+    opacity: 1;
 }
 
 .anime-card:hover .poster-shine {
-    animation: poster-shine-sweep 0.8s ease-in-out forwards;
+    animation: poster-shine-sweep 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes poster-shine-sweep {
     0% {
         left: -150%;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
     }
 
     100% {
         left: 150%;
+        opacity: 0;
     }
 }
 
