@@ -706,8 +706,13 @@ window.initApp = async function () {
     }
 };
 
-window.loadData = async function () {
+window.loadData = async function (forceRefresh = false) {
     try {
+        // 如果已經有數據且非強制刷新，直接返回
+        if (animeData.length > 0 && !forceRefresh) {
+            return animeData;
+        }
+
         console.log('📡 正在從 Supabase 抓取資料...');
         const client = window.supabaseManager?.getClient();
         if (!client) {
@@ -844,10 +849,10 @@ window.renderApp = (requestId = null) => {
     const existingApp = document.querySelector('.app-container');
     if (existingApp && currentSection !== 'admin') {
         // 更新分類按鈕狀態
+        const categoryMap = { 'anime': '動畫', 'manga': '漫畫', 'movie': '電影', 'notice': '公告' };
         document.querySelectorAll('.category-buttons-container .btn-primary').forEach(btn => {
-            btn.classList.toggle('active', btn.textContent.includes(
-                { 'anime': '動畫', 'manga': '漫畫', 'movie': '電影', 'notice': '公告' }[currentCategory]
-            ));
+            const btnText = btn.textContent.replace(/◆\s*/, '').trim();
+            btn.classList.toggle('active', btnText === categoryMap[currentCategory]);
         });
 
         // 切換公告/網格顯示
@@ -1143,9 +1148,26 @@ window.switchCategory = async (cat) => {
     // 前台模式
     currentSection = cat;
 
-    // 只有在前台模式才顯示載入中提示
+    // 即時更新按鈕狀態與顯示架構 (不等待數據載入)
     const grid = document.getElementById('anime-grid-container');
     const mainContent = document.getElementById('main-grid-content');
+
+    // 立即執行一次渲染以提供即時回饋
+    window.renderApp(requestId);
+
+    // 如果已經有數據，則不再等待 loadData 阻塞 UI
+    if (animeData.length > 0) {
+        // 背景異步更新，不阻塞目前的渲染
+        window.loadData(true).then(newData => {
+            // 如果請求還是最新的，則靜默更新數據並重新渲染（如果數據有變）
+            if (requestId === lastSwitchRequestId) {
+                window.renderApp(requestId);
+            }
+        });
+        return;
+    }
+
+    // 只有在完全沒數據時才顯示載入中並等待
     if (mainContent) {
         mainContent.style.opacity = '0';
         mainContent.style.transition = 'opacity 0.3s ease';
