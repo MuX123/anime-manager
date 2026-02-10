@@ -838,6 +838,10 @@ window.renderApp = (requestId = null) => {
                 <option value="witch" ${localStorage.getItem('cursorTheme') === 'witch' ? 'selected' : ''} style="background: var(--bg-dark);">掃 沉默魔女</option>
                 <option value="standard" ${localStorage.getItem('cursorTheme') === 'standard' || !localStorage.getItem('cursorTheme') ? 'selected' : ''} style="background: var(--bg-dark);">🖱️ 標準簡約</option>
             </select>
+            <select onchange="if(window.performanceOptimizer) window.performanceOptimizer.toggleLiteMode(this.value === 'true');" style="width: 100%; background: rgba(0,255,150,0.1) !important; border: 1px solid rgba(0,255,150,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease; text-align: center; text-align-last: center;">
+                <option value="false" ${!document.body.classList.contains('lite-mode') ? 'selected' : ''} style="background: var(--bg-dark);">✨ 高品質渲染</option>
+                <option value="true" ${document.body.classList.contains('lite-mode') ? 'selected' : ''} style="background: var(--bg-dark);">🚀 輕量效能模式</option>
+            </select>
             <div style="height: 1px; background: rgba(0,212,255,0.2); margin: 4px 0;"></div>
             ${window.isAdminLoggedIn ? `
                 <button onclick="window.toggleAdminMode(true)" style="width: 100%; background: rgba(0,212,255,0.1) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: var(--neon-cyan) !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">⚙️ 後台管理</button>

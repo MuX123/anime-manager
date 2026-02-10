@@ -211,6 +211,7 @@ class PerformanceOptimizer {
         this.setupServiceWorker();
         this.optimizeImages();
         this.setupPerformanceMetrics();
+        this.initLiteMode();
         this.offlineManager.init();
         this.healthMonitor.start();
 
@@ -264,6 +265,28 @@ class PerformanceOptimizer {
     setupPerformanceMetrics() {
         if (!('performance' in window)) return;
 
+        // FPS 監測
+        let frameCount = 0;
+        let lastTime = performance.now();
+        let fps = 60;
+
+        const checkFPS = () => {
+            const now = performance.now();
+            frameCount++;
+            if (now >= lastTime + 1000) {
+                fps = Math.round((frameCount * 1000) / (now - lastTime));
+                frameCount = 0;
+                lastTime = now;
+
+                // 如果 FPS 持續過低，觸發警告或自動優化
+                if (fps < 35 && !this.liteModeAlerted) {
+                    this.handleLowPerformance();
+                }
+            }
+            requestAnimationFrame(checkFPS);
+        };
+        requestAnimationFrame(checkFPS);
+
         if ('PerformanceObserver' in window) {
             try {
                 const observer = new PerformanceObserver((list) => {
@@ -275,6 +298,38 @@ class PerformanceOptimizer {
                 });
                 observer.observe({ type: 'paint', buffered: true });
             } catch (e) { }
+        }
+    }
+
+    handleLowPerformance() {
+        this.lowFPSCount = (this.lowFPSCount || 0) + 1;
+        if (this.lowFPSCount > 5) { // 持續 5 秒低幀率
+            this.liteModeAlerted = true;
+            if (window.showToast) {
+                window.showToast('🚀 偵測到效能較低，建議開啟「輕量模式」以獲得流暢體驗', 8000);
+            }
+        }
+    }
+
+    toggleLiteMode(force = null) {
+        const isLite = force !== null ? force : !document.body.classList.contains('lite-mode');
+        document.body.classList.toggle('lite-mode', isLite);
+        localStorage.setItem('liteMode', isLite);
+
+        if (isLite) {
+            if (window.AtmosphereAPI) window.AtmosphereAPI.pause();
+            window.logger?.info('已啟用輕量模式');
+        } else {
+            if (window.AtmosphereAPI) window.AtmosphereAPI.resume();
+            window.logger?.info('已停用輕量模式');
+        }
+        return isLite;
+    }
+
+    initLiteMode() {
+        const saved = localStorage.getItem('liteMode') === 'true';
+        if (saved) {
+            this.toggleLiteMode(true);
         }
     }
 

@@ -154,7 +154,12 @@ window.initAtmosphere = () => {
             }
         }
 
+        let isRunning = true;
+        let animationId = null;
+
         function animate() {
+            if (!isRunning) return;
+
             ctx.clearRect(0, 0, width, height);
 
             // 更新與繪製粒子
@@ -165,7 +170,8 @@ window.initAtmosphere = () => {
 
             // 批量繪製連線以減少繪圖指令開銷
             ctx.beginPath();
-            ctx.lineWidth = 0.8;
+            ctx.lineWidth = 0.5;
+            ctx.strokeStyle = `rgba(0, 212, 255, 0.15)`; // 統一低透明度，提升極致渲染效能
             for (let i = 0; i < particles.length; i++) {
                 let currentLinks = 0;
                 for (let j = i + 1; j < particles.length; j++) {
@@ -173,11 +179,9 @@ window.initAtmosphere = () => {
 
                     const dx = particles[i].x - particles[j].x;
                     const dy = particles[i].y - particles[j].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const distance = dx * dx + dy * dy; // 使用距離平方避免 Math.sqrt
 
-                    if (distance < properties.linkDistance) {
-                        const alpha = (1 - distance / properties.linkDistance) * 0.4;
-                        ctx.strokeStyle = `rgba(0, 212, 255, ${alpha})`;
+                    if (distance < properties.linkDistance * properties.linkDistance) {
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
                         currentLinks++;
@@ -187,8 +191,44 @@ window.initAtmosphere = () => {
             ctx.stroke();
             ctx.closePath();
 
-            requestAnimationFrame(animate);
+            animationId = requestAnimationFrame(animate);
         }
+
+        // 導出 API
+        window.AtmosphereAPI = {
+            pause: () => {
+                console.log('[Atmosphere] 渲染暫停...');
+                isRunning = false;
+                if (animationId) cancelAnimationFrame(animationId);
+            },
+            resume: () => {
+                if (isRunning) return;
+                if (document.body.classList.contains('lite-mode')) return; // Lite mode 保持關閉
+                console.log('[Atmosphere] 渲染恢復...');
+                isRunning = true;
+                animate();
+            },
+            setQuality: (quality) => {
+                switch (quality) {
+                    case 'low':
+                        properties.particleCount = isMobile ? 15 : 25;
+                        properties.maxLinks = 1;
+                        properties.linkDistance = 60;
+                        break;
+                    case 'medium':
+                        properties.particleCount = isMobile ? 30 : 60;
+                        properties.maxLinks = 2;
+                        properties.linkDistance = 100;
+                        break;
+                    case 'high':
+                        properties.particleCount = isMobile ? 50 : 100;
+                        properties.maxLinks = 4;
+                        properties.linkDistance = 130;
+                        break;
+                }
+                initParticles();
+            }
+        };
 
         // 啟動
         window.addEventListener('resize', resize);

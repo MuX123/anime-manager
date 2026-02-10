@@ -21,6 +21,11 @@
     backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
+
+    /* 極致性能優化：GPU 加速與佈局隔離 */
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+    contain: layout style;
 }
 
 /* Game Card Effect */
@@ -1368,4 +1373,47 @@ select option {
     align-self: center;
     padding: 0 5px;
     font-size: 12px;
+}
+
+/* ========== 輕量模式 (Lite Mode) 深度優化 ========== */
+.lite-mode {
+    --transition-smooth: 0s !important;
+    --transition-bounce: 0s !important;
+}
+
+.lite-mode *,
+.lite-mode *::before,
+.lite-mode *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+}
+
+.lite-mode .anime-card,
+.lite-mode .modal,
+.lite-mode .analytics-bar,
+.lite-mode .premium-board,
+.lite-mode #systemMenu {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(13, 17, 23, 0.95) !important;
+    box-shadow: none !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.lite-mode .anime-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.lite-mode .card-shine,
+.lite-mode .card-border-glow,
+.lite-mode .elite-deco-dot,
+.lite-mode .badge-elite-cyber::before {
+    display: none !important;
+}
+
+.lite-mode .site-header {
+    background: #000 !important;
 }
