@@ -313,7 +313,7 @@ class AnnouncementSystem {
                     <div style="text-align: center; padding: 50px; color: var(--neon-cyan); font-family: 'Orbitron'; letter-spacing: 2px;">loading data...</div>
                 </div>
                 
-                ${isAdminLoggedIn ? '<div style="margin-top: 30px; text-align: center;"><button class="btn-primary" onclick="window.announcementSystem.showAnnouncementAdminModal()" style="padding: 10px 25px; font-size: 14px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);">⚙️ 管理後台</button></div>' : ''}
+                ${window.isAdminLoggedIn ? '<div style="margin-top: 30px; text-align: center;"><button class="btn-primary" onclick="window.announcementSystem.showAnnouncementAdminModal()" style="padding: 10px 25px; font-size: 14px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);">⚙️ 管理後台</button></div>' : ''}
             </div>
         `;
     }

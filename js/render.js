@@ -3,6 +3,27 @@
 
 console.log('🎨 載入渲染模組 (v6.2 - UI Refined)...');
 
+// YouTube URL 轉換函式
+function getYouTubeEmbedUrl(url) {
+    if (!url) return null;
+
+    let videoId = null;
+
+    // youtube.com/watch?v=VIDEO_ID
+    const watchMatch = url.match(/[?&]v=([^&]+)/);
+    if (watchMatch) videoId = watchMatch[1];
+
+    // youtu.be/VIDEO_ID
+    const shortMatch = url.match(/youtu\.be\/([^?]+)/);
+    if (shortMatch) videoId = shortMatch[1];
+
+    // youtube.com/embed/VIDEO_ID
+    const embedMatch = url.match(/youtube\.com\/embed\/([^?]+)/);
+    if (embedMatch) videoId = embedMatch[1];
+
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+}
+
 // Helper for tag styles
 // CSS class 'tag-base' handles layout and border/bg opacity via currentColor
 const getTagStyle = (color) => `class="tag-base" style="color: ${color};"`;
@@ -48,7 +69,8 @@ function processCardData(item) {
                 !strKey.startsWith('btn_') &&
                 !strKey.includes('_color') &&
                 strKey.length > 2) {
-                extraTags.push({ val: strKey, color: categoryColors[strKey] || '#ffffff' });
+                // 顯示使用者選擇的值 (strVal),而不是欄位名稱
+                extraTags.push({ val: strVal, color: categoryColors[strKey] || '#ffffff' });
             }
         });
     }
@@ -64,8 +86,8 @@ function processCardData(item) {
 
 // 3. 通用組件渲染函數
 function renderAdminButton(id, size = 'normal') {
-    if (typeof isAdminLoggedIn === 'undefined' || !isAdminLoggedIn) return '';
-    // Grid 視圖按鈕樣式 (位於右上角，圓形按鈕)
+    if (typeof window.isAdminLoggedIn === 'undefined' || !window.isAdminLoggedIn) return '';
+    // Grid 視圖按鈕樣式 (位於右上角,圓形按鈕)
     if (size === 'grid-hover') {
         return `<button onclick="event.stopPropagation(); window.editAnime('${id}')" class="admin-edit-btn">📝</button>`;
     }
@@ -77,14 +99,18 @@ function renderAdminButton(id, size = 'normal') {
     return `<button onclick="event.stopPropagation(); window.editAnime('${id}')" style="position: absolute; ${sizeStyles} background: rgba(0,212,255,0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); border-radius: 4px; cursor: pointer; z-index: 10;">${size === 'small' ? '📝' : '📝 編輯'}</button>`;
 }
 
-function renderRatingBadge(rating, color) {
-    // Helper to escape html
+function renderRatingBadge(rating, color, stars = '★', starColor = '#ffdd00') {
     const escape = (str) => {
         if (typeof escapeHtml === 'function') return escapeHtml(str);
         if (str === null || str === undefined) return '';
         return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[s]);
     };
-    return `<span class="rating-badge" style="--rating-color: ${color};">${escape(rating || '普')}</span>`;
+    return `
+        <div class="badge-cyber-mini" style="--rating-color: ${color}; --star-color: ${starColor}; vertical-align: middle;">
+            <div class="badge-rating">${escape(rating || '普')}</div>
+            <div class="badge-stars">${escape(stars || '★')}</div>
+        </div>
+    `;
 }
 
 function renderStarDisplay(starText, color, size = 12) {
@@ -102,7 +128,10 @@ function renderMetaTags(item, colors, showEpisodes = true) {
     const tags = [];
     if (year) tags.push(escape(year));
     if (season) tags.push(escape(season));
-    if (month) tags.push(escape(`${month}月`));
+    if (month) {
+        const monthStr = String(month);
+        tags.push(escape(monthStr.includes('月') ? monthStr : `${monthStr}月`));
+    }
     if (showEpisodes && episodes) tags.push(`全 ${escape(episodes)} 集`);
 
     return `<div style="display: flex; gap: 8px; font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; align-items: center;">${tags.join('')}</div>`;
@@ -139,7 +168,10 @@ function renderGridCard(item, colors, data) {
     const dateItems = [];
     if (item.year) dateItems.push(item.year);
     if (item.season && (typeof gridColumns === 'undefined' || gridColumns != 5)) dateItems.push(item.season);
-    if (item.month) dateItems.push(item.month + '月');
+    if (item.month) {
+        const monthStr = String(item.month);
+        dateItems.push(monthStr.includes('月') ? monthStr : monthStr + '月');
+    }
 
     if (dateItems.length > 0) {
         const itemsHTML = dateItems.map(d => `<span class="date-group-item">${escape(d)}</span>`).join('');
@@ -150,13 +182,11 @@ function renderGridCard(item, colors, data) {
         <div class="anime-card game-card-effect" onclick="window.showAnimeDetail('${id}')" style="--rating-color: ${ratingColor};">
             ${renderAdminButton(id, 'grid-hover')}
             
-            <div class="rating-badge-container">
-                <div class="rating-badge" style="--rating-color: ${ratingColor};">
-                    ${escape(item.rating || '普')}
-                </div>
-                
-                <div class="star-badge" style="--star-color: ${starColor};">
-                    <span style="color: ${starColor}; font-size: ${gridSize === 14 ? '13px' : '12px'}; font-weight: 800; font-family: 'Orbitron', sans-serif; white-space: nowrap;">${escape(recommendation || '')}</span>
+            <!-- Cyber-Mini Badge (Card View) -->
+            <div style="position: absolute; top: 12px; left: 12px; z-index: 10; pointer-events: none; transform: scale(${(typeof gridColumns !== 'undefined' && gridColumns <= 4) ? 1.3 : 1}); transform-origin: top left;">
+                <div class="badge-cyber-mini" style="--rating-color: ${ratingColor}; --star-color: ${starColor}; vertical-align: middle;">
+                    <div class="badge-rating">${escape(item.rating || '普')}</div>
+                    <div class="badge-stars">${escape(recommendation || '★')}</div>
                 </div>
             </div>
 
@@ -213,9 +243,8 @@ function renderListCard(item, colors, data) {
     return `
         <div class="anime-card desktop-list-layout game-card-effect" onclick="window.showAnimeDetail('${id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: #000 !important; border: 1px solid ${ratingColor} !important; border-radius: 10px !important; padding: 12px 20px !important; gap: 0; width: 100%; overflow: hidden; position: relative; --rating-color: ${ratingColor};">
             ${renderAdminButton(id)}
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100px; flex-shrink: 0; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px;">
-                ${renderStarDisplay(starText, starColor, 15)}
-                ${renderRatingBadge(item.rating, ratingColor)}
+            <div style="display: flex; align-items: center; justify-content: center; width: 120px; flex-shrink: 0; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px;">
+                ${renderRatingBadge(item.rating, ratingColor, item.recommendation, starColor)}
             </div>
             <div style="flex: 1; min-width: 0; display: flex; align-items: center; padding-left: 20px; gap: 20px; height: 100%;">
                 <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
@@ -225,7 +254,8 @@ function renderListCard(item, colors, data) {
                 <div style="flex: 0 0 15%; min-width: 0; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 20px; justify-content: center;">
                     <span style="color: ${genreColor}; font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escape(type || '')}</span>
                 </div>
-                <div class="desktop-scroll-tags" onwheel="this.scrollLeft += event.deltaY; event.preventDefault();" style="flex: 1; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding: 10px 0; scrollbar-width: thin; cursor: grab; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 20px; align-items: center;">
+                <div class="desktop-scroll-tags" onwheel="this.scrollLeft += event.deltaY; event.preventDefault();" style="flex: 1; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding: 10px 0; scrollbar-width: none; cursor: grab; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 20px; align-items: center;">
+                    <style>.desktop-scroll-tags::-webkit-scrollbar { display: none; }</style>
                     ${renderGenreTags(genres, extraTags, genreColor)}
                 </div>
             </div>
@@ -249,11 +279,7 @@ function renderMobileCard(item, colors, data) {
             <div style="position: absolute; inset: 0; background: linear-gradient(135deg, ${ratingColor}15 0%, transparent 60%); z-index: 0;"></div>
             ${renderAdminButton(id, 'small')}
             <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden; position: relative; z-index: 1;">
-                ${renderStarDisplay(starText, starColor, 12)}
-                <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow-x: auto; font-weight: bold; scrollbar-width: none; flex: 1;">${escape(name)}</h3>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden; position: relative; z-index: 1;">
-                ${renderRatingBadge(item.rating, ratingColor)}
+                ${renderRatingBadge(item.rating, ratingColor, item.recommendation, starColor)}
                 ${renderMetaTags(item, colors)}
             </div>
         </div>
@@ -285,10 +311,31 @@ window.showAnimeDetail = (id) => {
         return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[s]);
     };
 
-    const item = animeData.find(a => a.id === id);
-    if (!item) return;
+    const item = animeData.find(a => a.id == id);
+    if (!item) {
+        console.error('[Render] 找不到作品資料:', id);
+        return;
+    }
     const modal = document.getElementById('detailModal');
     const content = document.getElementById('detailContent');
+
+    if (!modal || !content) {
+        console.error('[Render] 找不到詳情彈窗容器 (detailModal/detailContent)');
+        // 嘗試自動修正：如果不存在則動態建立
+        if (!modal) {
+            console.warn('[Render] 正在動態建立 detailModal...');
+            const newModal = document.createElement('div');
+            newModal.id = 'detailModal';
+            newModal.className = 'modal';
+            newModal.innerHTML = '<div class="modal-content"><span class="close-btn" onclick="window.closeAnimeDetail()">&times;</span><div id="detailContent"></div></div>';
+            document.body.appendChild(newModal);
+            window.showAnimeDetail(id); // 重新呼叫
+            return;
+        }
+    }
+
+    // 確保彈窗容器正確顯示為 Flex 居中
+    modal.classList.add('active');
 
     // 移除外層原有水藍色框線，改由內部 detail-container-v35 統一控制
     const modalContent = modal.querySelector('.modal-content');
@@ -306,6 +353,7 @@ window.showAnimeDetail = (id) => {
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
     const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
     const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
+    const descColor = item.desc_color || 'var(--text-secondary)';
 
     const extraTags = [];
     if (item.extra_data) {
@@ -321,84 +369,106 @@ window.showAnimeDetail = (id) => {
         <div class="detail-modal-wrapper" style="--rating-color: ${ratingColor};">
             <!-- 左側滿版海報 -->
             <div class="detail-poster-column">
-                <div style="flex: 1; position: relative; overflow: hidden; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+                <div class="holographic-poster-container" style="flex: 1; position: relative; overflow: hidden; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 0 20px rgba(0,0,0,0.5);">
                     <img src="${item.poster_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22450%22 viewBox=%220 0 300 450%22%3E%3Crect fill=%22%231a1a2e%22 width=%22300%22 height=%22450%22/%3E%3Ctext fill=%22%23666%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENO+IMAGE%3C/text%3E%3C/svg%3E'}" style="width: 100%; height: 100%; object-fit: cover;">
-                    <div style="position: absolute; inset: 0; pointer-events: none; z-index: 2; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 40%);"></div>
+                    <div class="poster-glow-overlay"></div>
+                    
+                    <!-- Elite-Cyber Badge (Moved to Poster Top-Left) -->
+                    <div class="badge-elite-cyber" style="--rating-color: ${ratingColor}; --star-color: ${starColor}; position: absolute; top: 0; left: 0; z-index: 10; border-radius: 12px 0 12px 0;">
+                        <div class="badge-elite-inner">
+                            <div class="elite-rating text-glow-pulse" style="text-shadow: none;">${escape(item.rating || '普')}</div>
+                            <div class="elite-stars">${escape(item.recommendation || '★')}</div>
+                        </div>
+                        <div class="elite-deco-dot dot-tl"></div>
+                        <div class="elite-deco-dot dot-tr"></div>
+                        <div class="elite-deco-dot dot-bl"></div>
+                        <div class="elite-deco-dot dot-br"></div>
+                    </div>
                 </div>
             </div>
             
             <div class="detail-content-column">
                 <!-- 標題與核心數據區塊 -->
-                <!-- 🌟 浮誇標題與評分 Hero Section 🌟 -->
-                <div class="detail-section-v35" style="margin-bottom: 20px; position: relative; background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                <div class="detail-section-v35" style="margin-bottom: 0; position: relative; background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%); border-radius: 12px 12px 0 0; padding: 20px 20px 10px 20px; border: 1px solid rgba(255,255,255,0.05); border-bottom: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                     
-                    <!-- 評分與星星 (視覺焦點) -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                             <!-- 評級: 巨大字體 + 霓虹光暈 -->
-                            <div style="position: relative;">
-                                <div style="position: absolute; inset: -10px; background: ${ratingColor}; opacity: 0.2; filter: blur(20px); border-radius: 50%;"></div>
-                                <div style="font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 48px; line-height: 1; font-style: italic; color: #fff; text-shadow: 0 0 10px ${ratingColor}, 0 0 30px ${ratingColor}, 0 0 60px ${ratingColor}; position: relative; z-index: 2;">
-                                    ${escape(item.rating || '普')}
-                                </div>
+                    <div class="detail-header-block">
+                        <div style="position: relative; margin-bottom: 15px; text-align: center; padding-right: 40px; padding-left: 40px;">
+                            <!-- 作品名稱 (單行滾動 + 置中) -->
+                            <div style="overflow: hidden; position: relative;">
+                                <h2 class="detail-title-v35 force-scroll" style="color: #fff; margin: 0 auto; font-size: 24px; line-height: 1.2; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.5); white-space: nowrap; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; display: inline-block; max-width: 100%;">
+                                    ${escape(item.name)}
+                                    <style>.detail-title-v35::-webkit-scrollbar { display: none; }</style>
+                                </h2>
                             </div>
+                            
+                            <!-- 編輯按鈕 (絕對定位到右上角) -->
+                            ${(typeof window.isAdminLoggedIn !== 'undefined' && window.isAdminLoggedIn) ? `<button onclick="window.closeAnimeDetail(); window.editAnime('${item.id}')" class="btn-primary" style="padding: 4px 10px; font-size: 11px; height: auto; position: absolute; right: -10px; top: 0;">📝 編輯</button>` : ''}
                         </div>
-                        
-                        <!-- 星星: 獨立區塊 + 閃爍效果 -->
-                        <div style="text-align: right;">
-                             <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase;">RECOMMENDATION</div>
-                             <div style="position: relative;">
-                                 <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120%; height: 100%; background: radial-gradient(ellipse at center, ${starColor}30 0%, transparent 70%); pointer-events: none;"></div>
-                                 <span style="color: ${starColor}; font-size: 28px; font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px ${starColor}, 0 0 20px ${starColor}; position: relative; z-index: 2; font-family: 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;">
-                                     ${escape(item.recommendation || '★')}
-                                 </span>
-                             </div>
-                        </div>
-                    </div>
 
-                    <div class="detail-header-block">
-                        <div style="display: flex; align-items: start; justify-content: space-between; gap: 10px;">
-                            <h2 class="detail-title-v35 force-scroll" style="color: #fff; margin: 0; font-size: 28px; line-height: 1.3; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${escape(item.name)}</h2>
-                            ${(typeof isAdminLoggedIn !== 'undefined' && isAdminLoggedIn) ? `<button onclick="window.closeAnimeDetail(); window.editAnime('${item.id}')" class="btn-primary" style="padding: 6px 12px; font-size: 12px; height: auto;">📝 編輯</button>` : ''}
-                        </div>
-                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 8px; margin-top: 15px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-                            ${item.year ? `<div class="core-data-item" ${getTagStyle(yearColor)} style="background: ${yearColor}15; border: 1px solid ${yearColor}40; padding: 4px 10px; border-radius: 4px; font-size: 13px;">${escape(item.year)}</div>` : ''}
-                            ${item.season ? `<div class="core-data-item" ${getTagStyle(yearColor)} style="background: ${yearColor}15; border: 1px solid ${yearColor}40; padding: 4px 10px; border-radius: 4px; font-size: 13px;">${escape(item.season)}</div>` : ''}
-                            ${item.month ? `<div class="core-data-item" ${getTagStyle(yearColor)} style="background: ${yearColor}15; border: 1px solid ${yearColor}40; padding: 4px 10px; border-radius: 4px; font-size: 13px;">${escape(item.month)}月</div>` : ''}
-                            ${item.episodes ? `<div class="core-data-item" ${getTagStyle(episodesColor)} style="background: ${episodesColor}15; border: 1px solid ${episodesColor}40; padding: 4px 10px; border-radius: 4px; font-size: 13px;">全 ${escape(item.episodes)} 集</div>` : ''}
-                        </div>
-                    </div>
-                </div>
+                        <!-- 核心數據 (置中) -->
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; overflow: hidden; position: relative; -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 10%, #000 90%, transparent 100%); mask-image: linear-gradient(to right, transparent 0%, #000 10%, #000 90%, transparent 100%);">
+                            <div class="scroll-row-v35 force-scroll" style="display: inline-flex; align-items: center; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; padding-bottom: 5px;">
+                                <!-- 年季月 粗體組合 -->
+                                <div style="display: flex; align-items: center; background: ${yearColor}15; border: 1px solid ${yearColor}40; padding: 4px 10px; border-radius: 4px; font-size: 13px; font-weight: 800; color: ${yearColor};">
+                                    ${item.year ? `<span>${escape(item.year)}</span>` : ''}
+                                    ${item.season ? `<span style="margin: 0 4px; opacity: 0.5;">|</span><span>${escape(item.season)}</span>` : ''}
+                                    ${item.month ? `<span style="margin: 0 4px; opacity: 0.5;">|</span><span>${escape(item.month)}${String(item.month).includes('月') ? '' : '月'}</span>` : ''}
+                                </div>
 
-                <!-- 標籤整合區塊 -->
-                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative;">
-                    <div class="detail-header-block">
-                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-                            ${genres.map(g => {
+                                <!-- 集數 -->
+                                ${item.episodes ? `<div ${getTagStyle(episodesColor)} style="background: ${episodesColor}15; border: 1px solid ${episodesColor}40; padding: 4px 10px; border-radius: 4px; font-size: 13px;">全 ${escape(item.episodes)} 集</div>` : ''}
+
+                                <!-- 作品類別標籤 -->
+                                ${genres.map(g => {
         const cleanG = g.replace(/["'\[\]\(\),，。]/g, '').trim();
         return cleanG ? `<span ${getTagStyle(genreColor)}>${escape(cleanG)}</span>` : '';
     }).join('')}
-                            ${extraTags.map(t => {
-        return `<span ${getTagStyle(t.color)}>${escape(t.val)}</span>`;
-    }).join('')}
+                                
+                                <!-- 自定義標籤 -->
+                                ${extraTags.map(t => `<span ${getTagStyle(t.color)}>${escape(t.val)}</span>`).join('')}
+                                <style>.scroll-row-v35::-webkit-scrollbar { display: none; }</style>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 劇情介紹區塊 -->
-                <div class="detail-section-v35" style="margin-bottom: 8px; position: relative; flex: 1; min-height: 0;">
-                    <div class="detail-header-block" style="height: 100%; display: flex; flex-direction: column; padding-top: 15px; padding-bottom: 15px;">
-                        <div class="force-scroll" style="overflow-y: auto; max-height: 140px; padding-right: 10px;">
-                            <p style="color: ${item.desc_color || 'var(--text-secondary)'}; line-height: 1.8; font-size: 15px; white-space: pre-wrap; margin: 0;">${escape(item.description || '暫無簡介')}</p>
+                <!-- 劇情介紹區塊 (帶分隔線) -->
+                ${item.description ? `
+                    <div class="detail-section-v35" style="margin-bottom: 0; padding: 15px 20px; border-left: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div class="detail-header-block">
+                            <h3 style="color: var(--neon-cyan); margin: 0 0 10px 0; font-size: 16px;">📖 劇情介紹</h3>
+                            <p style="color: ${descColor}; line-height: 1.8; margin: 0; white-space: pre-wrap; font-size: 14px;">${escape(item.description)}</p>
                         </div>
                     </div>
-                </div>
+                ` : ''}
 
-                <!-- 連結區塊 -->
-                <div class="detail-section-v35" style="margin-top: 10px; position: relative;">
-                    <div style="padding: 10px 20px; box-sizing: border-box;">
-                        <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-                            ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 6px 12px; font-size: 11px; white-space: nowrap; border-color: ${btnColor} !important; color: ${btnColor} !important; background: ${btnColor}22 !important; border-radius: 50px; height: 28px;">${escape(l.name)}</a>`).join('') : '<span style="color: var(--text-secondary); font-style: italic; font-size: 11px;">暫無連結</span>'}
+                <!-- YouTube PV 影片區塊 (帶分隔線) -->
+                ${item.youtube_url ? `
+                    <div class="detail-section-v35" style="margin-bottom: 0; padding: 15px 20px; border-left: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div class="detail-header-block">
+                            <h3 style="color: var(--neon-cyan); margin: 0 0 10px 0; font-size: 16px;">📺 宣傳影片</h3>
+                            <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; border: 2px solid var(--neon-cyan); background: #000;">
+                                <iframe 
+                                    src="${getYouTubeEmbedUrl(item.youtube_url)}" 
+                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- 連結區塊 (帶分隔線 + 標題) -->
+                <div class="detail-section-v35" style="margin-top: 0; padding: 15px 20px; border: 1px solid rgba(255,255,255,0.05); background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,212,255,0.05)); border-radius: 0 0 12px 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div style="margin-bottom: 15px;">
+                        <h3 style="color: var(--neon-cyan); margin: 0 0 10px 0; font-size: 16px;">🌐 觀看網站</h3>
+                        <div style="position: relative; -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 5%, #000 95%, transparent 100%); mask-image: linear-gradient(to right, transparent 0%, #000 5%, #000 95%, transparent 100%);">
+                            <div class="scroll-row-v35 force-scroll" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; padding: 5px 0;">
+                                ${links.length > 0 ? links.map(l => `<a href="${l.url}" target="_blank" class="btn-primary" style="padding: 6px 15px; font-size: 11px; white-space: nowrap; border-color: ${btnColor} !important; color: ${btnColor} !important; background: ${btnColor}22 !important; border-radius: 50px; height: 30px; display: flex; align-items: center; font-weight: 600;">${escape(l.name)}</a>`).join('') : ''}
+                                <a href="https://movieffm.net/?s=${encodeURIComponent(item.name)}" target="_blank" class="btn-primary" style="padding: 6px 15px; font-size: 11px; white-space: nowrap; border-color: #ff3e3e !important; color: #ff3e3e !important; background: rgba(255,62,62,0.1) !important; border-radius: 50px; height: 30px; display: flex; align-items: center; font-weight: 600;">🎬 MovieFFM 搜尋</a>
+                            </div>
                         </div>
                     </div>
                 </div>

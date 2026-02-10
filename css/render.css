@@ -186,43 +186,198 @@
     /* Removed border-top */
 }
 
-/* ========== 評分與標記 ========== */
-.rating-badge-container {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    right: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 10;
-    pointer-events: none;
+/* ========== 評分與標記 (Badge Redesign) ========== */
+
+/* 1. 款式 A: Cyber-Mini (用於卡片) - 霓虹嵌影小膠囊 */
+.badge-cyber-mini {
+    display: inline-flex;
+    align-items: stretch;
+    background: #0d1117;
+    /* 極深色底 */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    height: 22px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+    position: relative;
+    --neon-shadow: 0 0 10px var(--rating-color);
 }
 
-.rating-badge {
-    background: rgba(13, 17, 23, 0.85);
-    backdrop-filter: blur(8px);
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid color-mix(in srgb, var(--rating-color) 50%, transparent);
+.badge-cyber-mini .badge-rating {
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--rating-color);
+    /* 霓虹色文字 */
+    padding: 0 10px;
     font-family: 'Orbitron', sans-serif;
     font-weight: 900;
-    font-size: 13px;
-    color: var(--rating-color);
-    letter-spacing: 1px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
-}
-
-.star-badge {
+    font-size: 14px;
     display: flex;
     align-items: center;
-    gap: 3px;
-    background: rgba(13, 17, 23, 0.85);
-    backdrop-filter: blur(8px);
-    padding: 5px 10px;
-    border-radius: 8px;
-    border: 1px solid color-mix(in srgb, var(--star-color) 50%, transparent);
+    text-shadow: var(--neon-shadow);
+    /* 文字發光 */
+    position: relative;
 }
+
+/* 小裝飾：評分塊兩側的微型括號感 */
+.badge-cyber-mini .badge-rating::before,
+.badge-cyber-mini .badge-rating::after {
+    content: '';
+    position: absolute;
+    top: 20%;
+    height: 60%;
+    width: 2px;
+    background: var(--rating-color);
+    box-shadow: var(--neon-shadow);
+    opacity: 0.6;
+}
+
+.badge-cyber-mini .badge-rating::before {
+    left: 2px;
+}
+
+.badge-cyber-mini .badge-rating::after {
+    right: 2px;
+}
+
+.badge-cyber-mini .badge-stars {
+    padding: 0 8px;
+    color: var(--star-color);
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    text-shadow: 0 0 5px var(--star-color);
+}
+
+/* 2. 款式 B: Elite-Cyber (用於詳情頁) - 浮誇系深核監測儀 */
+.badge-elite-cyber {
+    display: flex;
+    align-items: stretch;
+    background: #05070a;
+    /* 黑曜石底 */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+        0 0 30px rgba(0, 0, 0, 0.9),
+        0 0 15px color-mix(in srgb, var(--rating-color) 20%, transparent);
+    padding: 4px;
+}
+
+/* 外框裝飾：霓虹切角與發光 */
+.badge-elite-cyber::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--rating-color);
+    clip-path: polygon(0 0, 20% 0, 20% 2px, 80% 2px, 80% 0, 100% 0,
+            100% 20%, 100% 20%, calc(100% - 2px) 20%, calc(100% - 2px) 80%, 100% 80%, 100% 100%,
+            80% 100%, 80% calc(100% - 2px), 20% calc(100% - 2px), 20% 100%, 0 100%,
+            0 80%, 2px 80%, 2px 20%, 0 20%);
+    z-index: 5;
+    animation: elite-border-pulse 1.5s infinite alternate;
+}
+
+@keyframes elite-border-pulse {
+    from {
+        opacity: 0.4;
+        filter: brightness(1);
+    }
+
+    to {
+        opacity: 1;
+        filter: brightness(1.5) drop-shadow(0 0 8px var(--rating-color));
+    }
+}
+
+.badge-elite-inner {
+    display: flex;
+    align-items: stretch;
+    background: linear-gradient(180deg, rgba(20, 20, 30, 0.9), rgba(10, 10, 15, 1));
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 裝飾文字 */
+.badge-elite-inner::before {
+    content: 'STATUS: ACTIVE';
+    position: absolute;
+    top: 2px;
+    left: 6px;
+    font-size: 6px;
+    color: var(--rating-color);
+    opacity: 0.6;
+    font-family: 'Orbitron';
+    letter-spacing: 0.5px;
+    z-index: 4;
+}
+
+.badge-elite-cyber .elite-rating {
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--rating-color);
+    /* 霓虹文字文字 */
+    padding: 10px 25px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 36px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow:
+        0 0 20px var(--rating-color),
+        0 0 5px #fff;
+    position: relative;
+    z-index: 3;
+}
+
+.badge-elite-cyber .elite-stars {
+    padding: 10px 20px;
+    color: var(--star-color);
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    text-shadow: 0 0 15px var(--star-color);
+    position: relative;
+    z-index: 3;
+}
+
+.elite-deco-dot {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: var(--rating-color);
+    box-shadow: 0 0 8px var(--rating-color);
+    z-index: 10;
+}
+
+.dot-tl {
+    top: -2px;
+    left: -2px;
+}
+
+.dot-tr {
+    top: -2px;
+    right: -2px;
+}
+
+.dot-bl {
+    bottom: -2px;
+    left: -2px;
+}
+
+.dot-br {
+    bottom: -2px;
+    right: -2px;
+}
+
+/* 視需要可在下方加入其他樣式 */
 
 .admin-edit-btn {
     position: absolute;
@@ -265,7 +420,7 @@
 }
 
 .detail-poster-column {
-    flex: 0 0 380px;
+    flex: 0 0 323px;
     border-right: 2px solid var(--rating-color);
     box-sizing: border-box;
     background: #000;

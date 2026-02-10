@@ -5,7 +5,7 @@
 
 /* 主容器 */
 .app-container {
-    max-width: 900px;
+    max-width: 765px;
     margin: 0 auto;
     padding: 40px 20px;
 }
@@ -65,23 +65,33 @@ h1 {
 
 /* 網格列數響應式 */
 @media (max-width: 1400px) {
-    .anime-grid { grid-template-columns: repeat(4, 1fr); }
+    .anime-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 @media (max-width: 1200px) {
-    .anime-grid { grid-template-columns: repeat(4, 1fr); }
+    .anime-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 @media (max-width: 1024px) {
-    .anime-grid { grid-template-columns: repeat(3, 1fr); }
+    .anime-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 @media (max-width: 768px) {
-    .anime-grid { grid-template-columns: repeat(2, 1fr); }
+    .anime-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 480px) {
-    .anime-grid { grid-template-columns: 1fr; }
+    .anime-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* 列表佈局 */
@@ -135,6 +145,7 @@ h1 {
         flex-direction: column;
         padding: 20px;
     }
+
     .anime-grid.force-mobile-layout .card-content-v38 {
         flex-direction: column;
         text-align: center;

@@ -234,7 +234,7 @@ let currentPage = 1;
 const itemsPerPage = 20;
 const adminItemsPerPage = 10;
 let adminPage = 1;
-let filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' };
+let filters = { search: '', genre: '', year: '', rating: '', season: '', month: '', episodes: '' };
 let gridColumns = (() => {
     const stored = localStorage.getItem('gridColumns');
     if (stored === 'mobile') return 'mobile';
@@ -253,14 +253,14 @@ window.showToast = (msg, type = 'info') => {
     const toast = document.getElementById('toast');
     if (!toast) return;
     toast.textContent = msg;
-    toast.style.borderColor = type === 'error' ? '#ff4444' : 'var(--neon-blue)';
-    toast.style.color = type === 'error' ? '#ff4444' : 'var(--neon-cyan)';
+    // 使用 CSS 變數控制邊框顏色，不再硬寫 style 防止覆蓋浮動屬性
+    toast.style.setProperty('--toast-border', type === 'error' ? '#ff4444' : 'var(--neon-cyan)');
     toast.classList.add('active');
-    setTimeout(() => toast.classList.remove('active'), 3000);
+    setTimeout(() => toast.classList.remove('active'), 2000);
 };
 
 // Admin Authentication Functions
-let isAdminLoggedIn = false;
+window.isAdminLoggedIn = false;
 
 window.showAdminLoginModal = () => {
     const existingModal = document.getElementById('admin-login-modal');
@@ -314,11 +314,18 @@ window.performAdminLogin = async () => {
             window.showToast('✓ 登入成功');
             document.getElementById('admin-login-modal').remove();
             await window.checkAndUpdateAdminStatus();
+            console.log('[Auth] 登入後狀態:', window.isAdminLoggedIn);
+            // 重新渲染應用程式以更新登入按鈕
+            if (typeof window.renderApp === 'function') {
+                window.renderApp();
+            }
         } else {
+            console.warn('[Auth] 登入失敗:', result.error);
             errorDiv.textContent = result.error || '登入失敗';
             errorDiv.style.display = 'block';
         }
     } catch (err) {
+        console.error('[Auth] 登入錯誤:', err);
         errorDiv.textContent = '登入過程發生錯誤';
         errorDiv.style.display = 'block';
     }
@@ -327,7 +334,7 @@ window.performAdminLogin = async () => {
 window.adminLogout = async () => {
     const result = await window.supabaseManager.signOut();
     if (result.success) {
-        isAdminLoggedIn = false;
+        window.isAdminLoggedIn = false;
         window.showToast('✓ 已登出');
         window.updateAdminMenu();
         if (document.querySelector('.admin-container')) {
@@ -340,23 +347,25 @@ window.adminLogout = async () => {
 
 window.checkAndUpdateAdminStatus = async () => {
     if (!window.supabaseManager || !window.supabaseManager.isConnectionReady()) {
-        isAdminLoggedIn = false;
+        window.isAdminLoggedIn = false;
         return false;
     }
 
     try {
         const isAdminUser = await window.supabaseManager.checkIsAdmin();
-        isAdminLoggedIn = isAdminUser;
+        console.log('[Auth] 檢查管理員狀態結果:', isAdminUser);
+        window.isAdminLoggedIn = isAdminUser;
         window.updateAdminMenu();
         return isAdminUser;
     } catch (err) {
-        isAdminLoggedIn = false;
+        console.error('[Auth] 檢查管理員狀態出錯:', err);
+        window.isAdminLoggedIn = false;
         return false;
     }
 };
 
 window.updateAdminMenu = () => {
-    // 管理按鈕現在在右側選單中，這裡只隱藏 header
+    // 管理按鈕現在在右側選單中,這裡只隱藏 header
     const headerContainer = document.getElementById('adminHeaderBar');
     if (headerContainer) {
         headerContainer.innerHTML = '';
@@ -410,19 +419,37 @@ if (window.supabaseManager && window.supabaseManager.client && window.supabaseMa
 // --- Render Functions (必須在 initApp 之前定義) ---
 
 window.renderPagination = (total) => {
-    const totalPages = Math.ceil(total / itemsPerPage);
-    if (totalPages <= 1) return '';
-    let html = '';
+    const pages = Math.ceil(total / itemsPerPage);
+    if (pages <= 1) return '';
+    let btns = [];
     const maxVisible = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-    let end = Math.min(totalPages, start + maxVisible - 1);
-    if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
-    if (currentPage > 1) html += `<button class="btn-primary" onclick="window.goToPage(${currentPage - 1})">◀</button>`;
-    for (let i = start; i <= end; i++) {
-        html += i === currentPage ? `<button class="btn-primary active">${i}</button>` : `<button class="btn-primary" onclick="window.goToPage(${i})">${i}</button>`;
+    let start = Math.max(1, currentPage - 2);
+    let end = Math.min(pages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+
+    // 上一頁
+    if (currentPage > 1) {
+        btns.push(`<button class="btn-minimal" onclick="window.changePage(${currentPage - 1})">◀</button>`);
     }
-    if (currentPage < totalPages) html += `<button class="btn-primary" onclick="window.goToPage(${currentPage + 1})">▶</button>`;
-    return html;
+
+    if (start > 1) {
+        btns.push(`<button class="btn-minimal" onclick="window.changePage(1)">1</button>`);
+        if (start > 2) btns.push(`<span class="pagination-dots">...</span>`);
+    }
+    for (let i = start; i <= end; i++) {
+        btns.push(`<button class="btn-minimal ${currentPage === i ? 'active' : ''}" onclick="window.changePage(${i})">${i}</button>`);
+    }
+    if (end < pages) {
+        if (end < pages - 1) btns.push(`<span class="pagination-dots">...</span>`);
+        btns.push(`<button class="btn-minimal" onclick="window.changePage(${pages})">${pages}</button>`);
+    }
+
+    // 下一頁
+    if (currentPage < pages) {
+        btns.push(`<button class="btn-minimal" onclick="window.changePage(${currentPage + 1})">▶</button>`);
+    }
+
+    return btns.join('');
 };
 
 window.renderSearchSelectsHTML = () => {
@@ -614,15 +641,18 @@ window.initApp = async function () {
             setTimeout(() => window.showFirstVisitPopups(), 1000);
         }
 
-        // 11. 隱藏載入畫面並顯示內容
+        // 11. 隱藏載入畫面並顯示內容 (延遲確保渲染穩定)
         const loadingScreen = document.getElementById('loading-screen');
         const app = document.getElementById('app');
         if (loadingScreen) {
-            loadingScreen.style.opacity = '0';
+            console.log('✨ 準備揭曉介面...');
             setTimeout(() => {
-                loadingScreen.style.display = 'none';
-                app.classList.add('loaded');
-            }, 500);
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    app.classList.add('loaded');
+                }, 1000); // 增加淡出動畫時間
+            }, 800); // 延長等待時間確保內容 (公告等) 已完成初始渲染
         } else {
             app.classList.add('loaded');
         }
@@ -660,6 +690,17 @@ window.initApp = async function () {
             }, 500);
         } else {
             app.classList.add('loaded');
+        }
+
+        // 初始化動態背景 (Night City Rain)
+        if (typeof window.initAtmosphere === 'function') {
+            window.initAtmosphere();
+        }
+
+        // 恢復上次選擇的遊標主題
+        const savedTheme = localStorage.getItem('cursorTheme') || 'standard';
+        if (typeof window.applyCursorTheme === 'function') {
+            window.applyCursorTheme(savedTheme);
         }
     }
 };
@@ -774,8 +815,15 @@ window.renderApp = function () {
                 <option value="asc" ${sortOrder === 'asc' ? 'selected' : ''} style="background: var(--bg-dark);">時間：從舊到新</option>
                 <option value="name" ${sortOrder === 'name' ? 'selected' : ''} style="background: var(--bg-dark);">名稱：A-Z</option>
             </select>
+            <select onchange="window.changeCursorTheme(this.value)" style="width: 100%; background: rgba(176,38,255,0.1) !important; border: 1px solid rgba(176,38,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease; text-align: center; text-align-last: center;">
+                <option value="bocchi" ${localStorage.getItem('cursorTheme') === 'bocchi' ? 'selected' : ''} style="background: var(--bg-dark);">🎯 波奇 (BTR)</option>
+                <option value="genshin" ${localStorage.getItem('cursorTheme') === 'genshin' ? 'selected' : ''} style="background: var(--bg-dark);">⚔️ 原神</option>
+                <option value="furina" ${localStorage.getItem('cursorTheme') === 'furina' ? 'selected' : ''} style="background: var(--bg-dark);">💧 芙寧娜</option>
+                <option value="witch" ${localStorage.getItem('cursorTheme') === 'witch' ? 'selected' : ''} style="background: var(--bg-dark);">掃 沉默魔女</option>
+                <option value="standard" ${localStorage.getItem('cursorTheme') === 'standard' || !localStorage.getItem('cursorTheme') ? 'selected' : ''} style="background: var(--bg-dark);">🖱️ 標準簡約</option>
+            </select>
             <div style="height: 1px; background: rgba(0,212,255,0.2); margin: 4px 0;"></div>
-            ${isAdminLoggedIn ? `
+            ${window.isAdminLoggedIn ? `
                 <button onclick="window.toggleAdminMode(true)" style="width: 100%; background: rgba(0,212,255,0.1) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: var(--neon-cyan) !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">⚙️ 後台管理</button>
                 <button onclick="window.adminLogout()" style="width: 100%; background: rgba(255,68,68,0.1) !important; border: 1px solid rgba(255,68,68,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #ff6b6b !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">🚪 登出</button>
             ` : `
@@ -785,7 +833,80 @@ window.renderApp = function () {
         </div>
     `;
 
-    // 強制更新整個 app 內容，確保切換板塊時 DOM 結構完全正確
+    // 檢查是否已存在 App 結構，避免全量重繪導致 Input 失去焦點
+    const existingApp = document.querySelector('.app-container');
+    if (existingApp && currentSection !== 'admin') {
+        // 更新分類按鈕狀態
+        document.querySelectorAll('.category-buttons-container .btn-primary').forEach(btn => {
+            btn.classList.toggle('active', btn.textContent.includes(
+                { 'anime': '動畫', 'manga': '漫畫', 'movie': '電影', 'notice': '公告' }[currentCategory]
+            ));
+        });
+
+        // 切換公告/網格顯示
+        const noticeContainer = document.getElementById('notice-container');
+        const mainGridContent = document.getElementById('main-grid-content');
+        // 修正：searchInputContainer 是 notice-container 的前一個兄弟元素
+        const searchInputContainer = noticeContainer ? noticeContainer.previousElementSibling : null;
+
+        if (isNotice) {
+            if (noticeContainer) noticeContainer.style.display = 'block';
+            if (mainGridContent) mainGridContent.style.display = 'none';
+            if (searchInputContainer) searchInputContainer.style.display = 'none';
+        } else {
+            if (noticeContainer) noticeContainer.style.display = 'none';
+            if (mainGridContent) mainGridContent.style.display = 'block';
+            if (searchInputContainer) searchInputContainer.style.display = 'block';
+
+            // 更新頂部狀態欄 (跑馬燈公告)
+            window.updateTopMarquee = () => {
+                const marqueeContent = document.getElementById('top-marquee-content');
+                if (marqueeContent) {
+                    // 自動偵測最新公告
+                    const announcements = window.announcementData?.announcements || [];
+                    const latestAnn = announcements[0];
+                    let annText = latestAnn ? `${latestAnn.title}：${window.announcementSystem.parseContent(latestAnn.content).text}` : siteSettings.announcement;
+                    annText = (annText || '').replace(/\n/g, ' '); // 跑馬燈不需要換行
+
+                    marqueeContent.style.animationDuration = `${Math.max(15, annText.length * 0.4)}s`;
+                    marqueeContent.innerHTML = `📢 ${annText} &nbsp;&nbsp;&nbsp;&nbsp; ⚡ ${annText} &nbsp;&nbsp;&nbsp;&nbsp;`;
+                }
+            };
+            window.updateTopMarquee();
+            // 更新網格內容
+            const gridContainer = document.getElementById('anime-grid-container');
+            if (gridContainer) {
+                gridContainer.className = `anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}`;
+                gridContainer.style.cssText = gridColumns === 'mobile'
+                    ? 'display: flex; flex-direction: column; gap: 10px;'
+                    : `display: grid; grid-template-columns: repeat(${gridColumns}, 1fr); gap: 20px;`;
+
+                gridContainer.innerHTML = paged.length > 0
+                    ? paged.map(item => window.renderCard(item)).join('')
+                    : `<div style="text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`;
+            }
+
+            // 更新分頁 (頂部與底部)
+            const paginationContainers = document.querySelectorAll('#pagination-container, #pagination-top-container');
+            const paginationHTML = window.renderPagination(filtered.length);
+            paginationContainers.forEach(container => {
+                if (container) container.innerHTML = paginationHTML;
+            });
+        }
+
+        // 更新 Admin Menu
+        window.updateAdminMenu();
+
+        // 確保 loading 關閉
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen && loadingScreen.style.display !== 'none') {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => loadingScreen.style.display = 'none', 500);
+        }
+        return; // 結束，不進行全量重繪
+    }
+
+    // --- 首次渲染或從 Admin 切回時的完整渲染 ---
     app.innerHTML = `
         <div class="app-container">
             <header class="app-header">
@@ -801,11 +922,8 @@ window.renderApp = function () {
                 <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
                 <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
             </div>
-            <div style="border: 2px solid ${siteSettings.announcement_color || 'var(--neon-blue)'}; padding: 18px; margin-bottom: 30px; font-size: 14px; color: ${siteSettings.announcement_color || '#ffffff'}; text-align: center; border-radius: 10px; background: rgba(0,212,255,0.05); font-weight: bold;">
-                <span>📢 ${siteSettings.announcement}</span>
-            </div>
 	            <div style="margin-bottom: 30px; display: ${isNotice ? 'none' : 'block'};">
-	                <input type="text" id="search-input" placeholder="搜尋作品名稱..." value="${filters.search}" oninput="window.handleSearch(this.value)" style="width: 100%; margin-bottom: 20px; font-size: 18px; padding: 15px 25px !important; border-radius: 50px !important;">
+	                <input type="text" id="search-input" class="search-ghost" placeholder="快速搜尋作品..." value="${filters.search}" oninput="window.handleSearch(this.value)">
 	                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
 	                    <div id="search-filters" class="horizontal-scroll-container" style="display: flex; gap: 12px; flex: 1; overflow-x: auto; overflow-y: hidden; padding: 8px 0; white-space: nowrap;">
 	                        ${window.renderSearchSelectsHTML()}
@@ -816,10 +934,11 @@ window.renderApp = function () {
 	                ${noticeHTML}
 	            </div>
 	            <div id="main-grid-content" style="display: ${isNotice ? 'none' : 'block'};">
+                    <div id="pagination-top-container" class="pagination-minimal" style="margin-bottom: 25px;">${window.renderPagination(filtered.length)}</div>
 	                <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}" style="display: ${gridColumns === 'mobile' ? 'flex' : 'grid'}; ${gridColumns === 'mobile' ? 'flex-direction: column; gap: 10px;' : `grid-template-columns: repeat(${gridColumns}, 1fr); gap: 20px;`}">
 	                    ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
 	                </div>
-	                <div id="pagination-container" style="display: flex; justify-content: center; gap: 15px; margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
+	                <div id="pagination-container" class="pagination-minimal" style="margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
 	            </div>
 	        </div>
 	    `;
@@ -827,16 +946,7 @@ window.renderApp = function () {
     // 重新初始化滾輪捲動監聽
     window.initGlobalScroll();
     window.updateAdminMenu();
-
-    // 更新統計顯示 - 移交給 analytics.js 統一處理，避免覆蓋導致的閃爍和數據丟失
-    // const analyticsContainer = document.getElementById('analytics-display');
-    // if (analyticsContainer && window.analyticsData) {
-    //     const analytics = window.analyticsData;
-    //     analyticsContainer.innerHTML = `
-    //         <span style="margin-right: 15px;">🖱️ ${(analytics.totalClicks || 0).toLocaleString()}</span>
-    //         <span>👤 ${(analytics.uniqueVisitors || 0).toLocaleString()}</span>
-    //     `;
-    // }
+    if (typeof window.updateTopMarquee === 'function') window.updateTopMarquee();
 
     // 確保詳情彈窗 HTML 存在
     if (!document.getElementById('detailModal')) {
@@ -891,27 +1001,7 @@ window.renderApp = function () {
 // 渲染邏輯已遷移至 js/render.js
 
 
-window.renderPagination = (total) => {
-    const pages = Math.ceil(total / itemsPerPage);
-    if (pages <= 1) return '';
-    let btns = [];
-    const maxVisible = 5;
-    let start = Math.max(1, currentPage - 2);
-    let end = Math.min(pages, start + maxVisible - 1);
-    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
-    if (start > 1) {
-        btns.push(`<button class="btn-primary" style="width: 45px; padding: 10px 0;" onclick="window.changePage(1)">1</button>`);
-        if (start > 2) btns.push(`<span style="color: var(--neon-cyan); align-self: center; padding: 0 5px;">...</span>`);
-    }
-    for (let i = start; i <= end; i++) {
-        btns.push(`<button class="btn-primary ${currentPage === i ? 'active' : ''}" style="width: 45px; padding: 10px 0;" onclick="window.changePage(${i})">${i}</button>`);
-    }
-    if (end < pages) {
-        if (end < pages - 1) btns.push(`<span style="color: var(--neon-cyan); align-self: center; padding: 0 5px;">...</span>`);
-        btns.push(`<button class="btn-primary" style="width: 45px; padding: 10px 0;" onclick="window.changePage(${pages})">${pages}</button>`);
-    }
-    return btns.join('');
-};
+
 
 window.changePage = (p) => { currentPage = p; window.renderApp(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(); };
@@ -1017,7 +1107,7 @@ window.switchCategory = async (cat) => {
     currentCategory = cat;
     currentPage = 1;
     adminPage = 1;
-    filters = { search: '', genre: '', year: '', rating: '', season: '', month: '' };
+    filters = { search: '', genre: '', year: '', rating: '', season: '', month: '', episodes: '' };
 
     // 判斷目前是否在後台模式
     const isAdminMode = document.querySelector('.admin-container') !== null;
@@ -1332,6 +1422,22 @@ window.renderAdmin = () => {
                                 </div>
                             </div>
                         </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-panel-v492" style="background: rgba(0,212,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2); grid-column: 1 / -1;">
+                        <h3 style="color: var(--neon-cyan); border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; margin-bottom: 20px; font-family: 'Orbitron';">🖱️ 遊標主題設定</h3>
+
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;" id="cursor-theme-list">
+                            ${(function () {
+                    if (!window.CursorManager) return '<div style="color:red">系統模組載入中...</div>';
+                    return window.CursorManager.getThemeList().map(theme =>
+                        `<button class="btn-primary" onclick="window.CursorManager.apply('${theme.id}')" style="flex: 1; min-width: 120px;">${theme.name}</button>`
+                    ).join('');
+                })()}
+                        </div>
+                        <div style="margin-top: 10px; font-size: 12px; color: #888; text-align: center;">切換後請移動滑鼠查看效果</div>
                     </div>
 
                     <div style="grid-column: 1 / -1; text-align: center; margin-top: 20px;">
@@ -1462,11 +1568,20 @@ window.renderOptionsManager = () => {
                     ${allKeys.map(key => `
                         <div class="form-custom-list" style="background: rgba(0,212,255,0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(0,212,255,0.15);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                <strong style="color: var(--neon-cyan); font-size: 15px;">${key === 'recommendation' ? '評分' : key === 'episodes' ? '集數' : key === 'season' ? '季度' : key.charAt(0).toUpperCase() + key.slice(1)}</strong>
+                                <strong style="color: var(--neon-cyan); font-size: 15px;">${key === 'genre' ? '類型' :
+            key === 'year' ? '年份' :
+                key === 'rating' ? '評分' :
+                    key === 'recommendation' ? '推薦度' :
+                        key === 'episodes' ? '集數' :
+                            key === 'season' ? '季度' :
+                                key === 'month' ? '月份' :
+                                    key === 'type' ? '類別' :
+                                        siteSettings.custom_labels?.[key] || key
+        }</strong>
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <span style="font-size: 12px; color: var(--text-secondary);">標籤色:</span>
                                     <div class="color-input-wrapper">
-                                        <input type="color" value="${categoryColors[key] || '#00d4ff'}" onchange="window.updateCategoryColor('${key}', this.value)">
+                                        <input type="color" value="${categoryColors[key] || '#00d4ff'}" oninput="window.updateCategoryColor('${key}', this.value, true)" onchange="window.updateCategoryColor('${key}', this.value)">
                                         <div class="color-swatch" style="background-color: ${categoryColors[key] || '#00d4ff'}; width: 18px; height: 18px;" onclick="this.previousElementSibling.click()"></div>
                                     </div>
                                     ${customKeys.includes(key) ? `<button class="btn-primary" onclick="window.deleteCustomList('${key}')" style="font-size: 11px; padding: 4px 8px; border-color: #ff4444; color: #ff4444; margin-left: 10px;">✕</button>` : ''}
@@ -1474,13 +1589,13 @@ window.renderOptionsManager = () => {
                             </div>
                             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                 ${(optionsData[key] || []).map((opt, idx) => `
-                                    <div id="opt-${key}-${idx}" style="display: flex; align-items: center; background: rgba(0,212,255,0.1); padding: 4px 8px; border-radius: 15px; border: 1px solid rgba(0,212,255,0.2);">
+                                    <div id="opt-${key}-${idx}" style="display: flex; align-items: center; background: ${key === 'rating' && ratingColors[opt] ? ratingColors[opt] + '33' : 'rgba(0,212,255,0.1)'}; padding: 4px 8px; border-radius: 15px; border: 1px solid ${key === 'rating' && ratingColors[opt] ? ratingColors[opt] + '66' : 'rgba(0,212,255,0.2)'};">
                                         <span id="opt-text-${key}-${idx}" style="font-size: 13px; margin-right: 4px;">${opt}</span>
                                         <input type="text" id="opt-input-${key}-${idx}" value="${opt}" style="display: none; width: 80px; padding: 2px 6px; font-size: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-cyan); border-radius: 4px; color: #fff;" onkeydown="window.handleOptionKeydown(event, '${key}', ${idx}, '${opt}')" onblur="window.handleOptionBlur('${key}', ${idx}, '${opt}')">
                                         
                                         ${key === 'rating' ? `
                                             <div class="color-input-wrapper" style="margin-left: 4px; margin-right: 4px;">
-                                                <input type="color" value="${ratingColors[opt] || '#b026ff'}" onchange="window.updateRatingColor('${opt}', this.value)">
+                                                <input type="color" value="${ratingColors[opt] || '#b026ff'}" oninput="window.updateRatingItemColor('${opt}', this.value, true)" onchange="window.updateRatingItemColor('${opt}', this.value)">
                                                 <div class="color-swatch" style="background-color: ${ratingColors[opt] || '#b026ff'}; width: 12px; height: 12px; border-radius: 50%; border: none;" onclick="this.previousElementSibling.click()"></div>
                                             </div>
                                         ` : ''}
@@ -1490,8 +1605,9 @@ window.renderOptionsManager = () => {
                                     </div>
                                 `).join('')}
                                 <div style="display: flex; gap: 6px;">
-                                    <input type="text" id="add-opt-${key}" placeholder="新增" style="font-size: 12px; padding: 4px 8px; width: 80px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; color: #fff;">
+                                    <input type="text" id="add-opt-${key}" placeholder="新增" style="font-size: 12px; padding: 4px 8px; width: 80px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; color: #fff;" onkeydown="if(event.key==='Enter')window.addOptionItem('${key}')">
                                     <button class="btn-primary" onclick="window.addOptionItem('${key}')" style="font-size: 11px; padding: 4px 8px;">＋</button>
+                                    <button class="btn-primary" onclick="window.showBulkImportModal('${key}')" style="font-size: 11px; padding: 4px 8px; border-color: rgba(139,92,246,0.6); color: #c4b5fd;" title="批量匯入">📋 批量</button>
                                 </div>
                             </div>
                         </div>
@@ -1500,17 +1616,17 @@ window.renderOptionsManager = () => {
                     <div class="form-custom-list" style="background: rgba(0,212,255,0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(0,212,255,0.15);">
                         <div style="margin-bottom: 10px;"><strong style="color: var(--neon-cyan);">🎨 其他全域顏色設定</strong></div>
                         <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
+                             <div style="display: flex; align-items: center; gap: 8px;">
                                  <span style="font-size: 13px;">作品名稱預設色</span>
                                  <div class="color-input-wrapper">
-                                    <input type="color" value="${categoryColors['name'] || '#ffffff'}" onchange="window.updateCategoryColor('name', this.value)">
+                                    <input type="color" value="${categoryColors['name'] || '#ffffff'}" oninput="window.updateCategoryColor('name', this.value, true)" onchange="window.updateCategoryColor('name', this.value)">
                                     <div class="color-swatch" style="background-color: ${categoryColors['name'] || '#ffffff'}; width: 20px; height: 20px;" onclick="this.previousElementSibling.click()"></div>
                                 </div>
                             </div>
                              <div style="display: flex; align-items: center; gap: 8px;">
                                  <span style="font-size: 13px;">按鈕背景預設色</span>
                                  <div class="color-input-wrapper">
-                                    <input type="color" value="${categoryColors['btn_bg'] || '#00d4ff'}" onchange="window.updateCategoryColor('btn_bg', this.value)">
+                                    <input type="color" value="${categoryColors['btn_bg'] || '#00d4ff'}" oninput="window.updateCategoryColor('btn_bg', this.value, true)" onchange="window.updateCategoryColor('btn_bg', this.value)">
                                     <div class="color-swatch" style="background-color: ${categoryColors['btn_bg'] || '#00d4ff'}; width: 20px; height: 20px;" onclick="this.previousElementSibling.click()"></div>
                                 </div>
                             </div>
@@ -1817,12 +1933,18 @@ window.updateCategoryColor = async (key, color) => {
 window.updateRatingColor = async (rating, color) => {
     if (!optionsData.rating_colors) optionsData.rating_colors = {};
     optionsData.rating_colors[rating] = color;
-    // 立即更新顯示
+    // 立即更新顯示：更新色圓圈 + 標籤背景
     const input = document.activeElement;
     if (input && input.nextElementSibling && input.nextElementSibling.classList.contains('color-swatch')) {
         input.nextElementSibling.style.backgroundColor = color;
     }
-    await window.saveOptionsToDB(true); // Skip render
+    // 更新標籤容器的背景和邊框色
+    const tagDiv = input?.closest('[id^="opt-rating-"]');
+    if (tagDiv) {
+        tagDiv.style.background = color + '33';
+        tagDiv.style.borderColor = color + '66';
+    }
+    await window.saveOptionsToDB(true);
 };
 
 
@@ -1841,7 +1963,10 @@ window.renderAnimeForm = (item = {}) => {
                 
                 <div style="margin-bottom: 15px;">
                     <label style="font-size: 11px; color: var(--neon-cyan);">作品名稱</label>
-                    <input type="text" id="form-name" value="${item.name || ''}" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px 12px; color: #fff; font-size: 14px; font-weight: bold;">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" id="form-name" value="${item.name || ''}" style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px 12px; color: #fff; font-size: 14px; font-weight: bold;">
+                        <button onclick="window.autoCompleteAnimeData()" class="btn-primary" style="white-space: nowrap; padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(139,92,246,0.2)); border-color: rgba(139,92,246,0.6); color: #c4b5fd;">✨ 補全資料</button>
+                    </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start;">
@@ -1945,6 +2070,12 @@ window.renderAnimeForm = (item = {}) => {
                         </div>
 
                         <div>
+                            <label style="font-size: 11px; color: var(--neon-cyan);">YouTube PV 影片</label>
+                            <input type="text" id="form-youtube" value="${item.youtube_url || ''}" placeholder="https://www.youtube.com/watch?v=..." style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,212,255,0.3); border-radius: 6px; padding: 8px; color: #fff; font-size: 13px;">
+                            <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;">支援 YouTube 網址格式</div>
+                        </div>
+
+                        <div>
                             <label style="font-size: 11px; color: var(--neon-cyan);">類型標籤</label>
                             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; border: 1px solid rgba(0,212,255,0.2); max-height: 120px; overflow-y: auto;">
                                 ${(optionsData.genre || []).map(g => {
@@ -1987,6 +2118,445 @@ window.renderAnimeForm = (item = {}) => {
         `;
 };
 
+// ============================================================================
+// Jikan API 自動補全功能
+// ============================================================================
+
+/**
+ * 主入口：自動補全動漫資料
+ */
+window.autoCompleteAnimeData = async () => {
+    const nameEl = document.getElementById('form-name');
+    const name = nameEl?.value?.trim();
+    if (!name) return window.showToast('✗ 請先輸入作品名稱', 'error');
+
+    // 顯示搜尋 Modal，預填作品名稱
+    window.showJikanSearchModal(name);
+};
+
+/**
+ * 顯示 Jikan 搜尋 Modal
+ */
+window.showJikanSearchModal = (defaultQuery) => {
+    const existing = document.getElementById('jikan-search-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'jikan-search-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px);';
+    modal.innerHTML = `
+        <div style="background: linear-gradient(135deg, #0a0e1a, #1a1e2e); border: 1px solid rgba(139,92,246,0.4); border-radius: 12px; width: 90%; max-width: 700px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(139,92,246,0.2);">
+            <div style="padding: 20px; border-bottom: 1px solid rgba(139,92,246,0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 style="color: #c4b5fd; margin: 0; font-size: 16px;">✨ MAL 資料補全</h3>
+                    <button onclick="document.getElementById('jikan-search-modal')?.remove()" style="background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;">✕</button>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="jikan-search-input" value="${defaultQuery}" placeholder="輸入日文或英文名稱搜尋效果最佳" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(139,92,246,0.3);border-radius:6px;padding:10px;color:#fff;font-size:14px;" onkeydown="if(event.key==='Enter')window.executeJikanSearch()">
+                    <button onclick="window.executeJikanSearch()" class="btn-primary" style="padding:10px 20px;border-color:rgba(139,92,246,0.6);color:#c4b5fd;">🔍 搜尋</button>
+                    <button onclick="window.open('https://www.movieffm.net/?s=' + encodeURIComponent('${defaultQuery}'), '_blank')" class="search-btn" style="border-color: #ff9900; color: #ff9900;">MovieFFM</button>
+                    <button onclick="window.open('https://search.bilibili.com/all?keyword=' + encodeURIComponent('${defaultQuery}'), '_blank')" class="search-btn" style="border-color: #00a1d6; color: #00a1d6;">Bilibili</button>
+                </div>
+                <div style="font-size: 11px; color: #888; margin-top: 6px;">💡 提示：使用日文或英文名稱搜尋準確度更高，例如「Jujutsu Kaisen」而非「咒術迴戰」</div>
+            </div>
+            <div id="jikan-results" style="flex:1;overflow-y:auto;padding:15px;">
+                <div style="text-align:center;color:#888;padding:30px;">輸入關鍵字後按搜尋</div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    // 自動開始搜尋
+    window.executeJikanSearch();
+};
+
+/**
+ * 檢查是否包含中文字元
+ */
+window._containsChinese = (text) => /[\u4e00-\u9fff\u3400-\u4dbf]/.test(text);
+
+/**
+ * 使用 Google Translate 將中文翻譯為英文
+ */
+window._translateToEnglish = async (text) => {
+    try {
+        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(text)}`);
+        if (!res.ok) return null;
+        const json = await res.json();
+        // Google Translate 回傳格式: [[["translated text","original text",...],...],...]
+        return json?.[0]?.map(s => s[0]).join('') || null;
+    } catch (err) {
+        console.warn('[翻譯] 翻譯失敗:', err);
+        return null;
+    }
+};
+
+/**
+ * 搜尋 Jikan API 並去重
+ */
+window._searchJikan = async (query, limit = 10) => {
+    try {
+        const res = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=${limit}&sfw=true`);
+        if (!res.ok) return [];
+        const json = await res.json();
+        return json.data || [];
+    } catch {
+        return [];
+    }
+};
+
+/**
+ * 執行 Jikan API 搜尋（支援中文自動翻譯）
+ */
+window.executeJikanSearch = async () => {
+    const input = document.getElementById('jikan-search-input');
+    const resultsDiv = document.getElementById('jikan-results');
+    const query = input?.value?.trim();
+    if (!query || !resultsDiv) return;
+
+    resultsDiv.innerHTML = '<div style="text-align:center;color:var(--neon-cyan);padding:30px;"><div style="font-size:24px;margin-bottom:10px;">⏳</div>搜尋中...</div>';
+
+    try {
+        let data = [];
+        let translatedQuery = null;
+
+        if (window._containsChinese(query)) {
+            // 中文輸入: 翻譯後搜尋
+            resultsDiv.innerHTML = '<div style="text-align:center;color:var(--neon-cyan);padding:30px;"><div style="font-size:24px;margin-bottom:10px;">🌐</div>翻譯中...</div>';
+            translatedQuery = await window._translateToEnglish(query);
+
+            if (translatedQuery) {
+                resultsDiv.innerHTML = `<div style="text-align:center;color:var(--neon-cyan);padding:30px;"><div style="font-size:24px;margin-bottom:10px;">⏳</div>以「${translatedQuery}」搜尋中...</div>`;
+                // 同時用原文和翻譯搜尋，合併去重
+                const [translatedResults, originalResults] = await Promise.all([
+                    window._searchJikan(translatedQuery, 8),
+                    window._searchJikan(query, 5)
+                ]);
+
+                // 合併去重（以 mal_id 為鍵）
+                const seen = new Set();
+                data = [...translatedResults, ...originalResults].filter(item => {
+                    if (seen.has(item.mal_id)) return false;
+                    seen.add(item.mal_id);
+                    return true;
+                });
+            } else {
+                // 翻譯失敗，只用原文搜
+                data = await window._searchJikan(query);
+            }
+        } else {
+            // 非中文：直接搜尋
+            data = await window._searchJikan(query);
+        }
+
+        if (data.length === 0) {
+            resultsDiv.innerHTML = '<div style="text-align:center;color:#ff6b6b;padding:30px;">找不到結果，請嘗試其他關鍵字</div>';
+            return;
+        }
+
+        // 顯示翻譯提示
+        const translateInfo = translatedQuery
+            ? `<div style="padding:8px 12px;margin-bottom:10px;background:rgba(139,92,246,0.1);border-radius:6px;font-size:12px;color:#c4b5fd;">🌐 已自動翻譯：「${query}」→「${translatedQuery}」</div>`
+            : '';
+
+        resultsDiv.innerHTML = translateInfo + data.map((item, i) => {
+            const title = item.title || '';
+            const titleJp = item.title_japanese || '';
+            const year = item.year || item.aired?.prop?.from?.year || '?';
+            const score = item.score ? `⭐ ${item.score}` : '';
+            const eps = item.episodes ? `${item.episodes} 集` : '';
+            const type = item.type || '';
+            const poster = item.images?.jpg?.small_image_url || '';
+            const status = item.status === 'Currently Airing' ? '🟢 放送中' : (item.status === 'Finished Airing' ? '🔴 已完結' : '');
+
+            return `
+                <div onclick="window.applyJikanData(${i})" style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer;border:1px solid rgba(139,92,246,0.15);margin-bottom:8px;transition:all 0.2s;background:rgba(0,0,0,0.2);" onmouseover="this.style.background='rgba(139,92,246,0.15)';this.style.borderColor='rgba(139,92,246,0.5)'" onmouseout="this.style.background='rgba(0,0,0,0.2)';this.style.borderColor='rgba(139,92,246,0.15)'">
+                    <img src="${poster}" alt="" style="width:50px;height:70px;object-fit:cover;border-radius:4px;flex-shrink:0;background:#1a1a2e;">
+                    <div style="flex:1;min-width:0;">
+                        <div style="color:#e2e8f0;font-weight:bold;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>
+                        <div style="color:#888;font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${titleJp}</div>
+                        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                            <span style="font-size:11px;color:#c4b5fd;background:rgba(139,92,246,0.15);padding:2px 6px;border-radius:3px;">${type}</span>
+                            <span style="font-size:11px;color:#94a3b8;">${year}</span>
+                            ${eps ? `<span style="font-size:11px;color:#94a3b8;">${eps}</span>` : ''}
+                            ${score ? `<span style="font-size:11px;color:#fbbf24;">${score}</span>` : ''}
+                            ${status ? `<span style="font-size:11px;">${status}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // 儲存搜尋結果以供選擇時使用
+        window._jikanSearchResults = data;
+    } catch (err) {
+        console.error('[Jikan] 搜尋失敗:', err);
+        resultsDiv.innerHTML = `<div style="text-align:center;color:#ff6b6b;padding:30px;">搜尋失敗: ${err.message}</div>`;
+    }
+};
+
+/**
+ * 從 Bangumi（番組計畫）取得中文簡介
+ */
+window._fetchBangumiSummary = async (jaTitle) => {
+    try {
+        const res = await fetch(`https://api.bgm.tv/search/subject/${encodeURIComponent(jaTitle)}?type=2&responseGroup=large&max_results=3`);
+        if (!res.ok) return null;
+        const json = await res.json();
+        const list = json.list || [];
+        if (list.length === 0) return null;
+        // 取第一筆結果的 summary
+        return list[0].summary || null;
+    } catch (err) {
+        console.warn('[Bangumi] 取得簡介失敗:', err);
+        return null;
+    }
+};
+
+/**
+ * 簡體中文 → 繁體中文
+ */
+window._simplifiedToTraditional = async (text) => {
+    try {
+        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=zh-TW&dt=t&q=${encodeURIComponent(text)}`);
+        if (!res.ok) return text;
+        const json = await res.json();
+        return json?.[0]?.map(s => s[0]).join('') || text;
+    } catch {
+        return text; // 轉換失敗時回傳原文
+    }
+};
+
+/**
+ * 將 Jikan API 資料填入表單（只補全空白欄位）
+ * 簡介來源：Bangumi（繁體中文）→ 如無則用英文原文
+ */
+window.applyJikanData = async (index) => {
+    const item = window._jikanSearchResults?.[index];
+    if (!item) return;
+
+    // 關閉 Modal
+    document.getElementById('jikan-search-modal')?.remove();
+    window.showToast('⏳ 正在補全資料...', 'info');
+
+    let filledCount = 0;
+    const animeName = document.getElementById('form-name')?.value?.trim() || item.title;
+
+    // 海報 (只在空白時填入)
+    const posterEl = document.getElementById('form-poster');
+    if (posterEl && !posterEl.value) {
+        posterEl.value = item.images?.jpg?.large_image_url || '';
+        if (posterEl.value) filledCount++;
+    }
+
+    // YouTube PV (只在空白時填入)
+    const ytEl = document.getElementById('form-youtube');
+    if (ytEl && !ytEl.value && item.trailer?.embed_url) {
+        const embedUrl = item.trailer.embed_url;
+        const vidMatch = embedUrl.match(/embed\/([^?]+)/);
+        ytEl.value = vidMatch ? `https://www.youtube.com/watch?v=${vidMatch[1]}` : embedUrl;
+        filledCount++;
+    }
+
+    // 集數 (只在空白時填入)
+    const epsEl = document.getElementById('form-episodes');
+    if (epsEl && !epsEl.value && item.episodes) {
+        epsEl.value = String(item.episodes);
+        filledCount++;
+    }
+
+    // 簡介 (只在空白時填入) - 優先使用 Bangumi 中文簡介
+    const descEl = document.getElementById('form-desc');
+    if (descEl && !descEl.value) {
+        let description = '';
+
+        // 1. 嘗試從 Bangumi 取得中文簡介
+        const jaTitle = item.title_japanese || item.title;
+        if (jaTitle) {
+            try {
+                const bangumiSummary = await window._fetchBangumiSummary(jaTitle);
+                if (bangumiSummary && bangumiSummary.length > 20) {
+                    // 簡體 → 繁體
+                    description = await window._simplifiedToTraditional(bangumiSummary);
+                }
+            } catch (err) {
+                console.warn('[補全] Bangumi 取得失敗, 使用備用方案:', err);
+            }
+        }
+
+        // 2. 若 Bangumi 沒有，用英文原文
+        if (!description && item.synopsis) {
+            description = item.synopsis.replace(/\s*\[Written by MAL Rewrite\]\s*/g, '').trim();
+        }
+
+        if (description) {
+            descEl.value = description;
+            filledCount++;
+        }
+    }
+
+    // 年份 (只在未選擇時填入)
+    const yearEl = document.getElementById('form-year');
+    const apiYear = item.year || item.aired?.prop?.from?.year;
+    if (yearEl && !yearEl.value && apiYear) {
+        const yearStr = String(apiYear);
+        const yearOpt = Array.from(yearEl.options).find(o => o.value === yearStr);
+        if (yearOpt) {
+            yearEl.value = yearStr;
+            filledCount++;
+        }
+    }
+
+    // 季度 (只在未選擇時填入)
+    const seasonEl = document.getElementById('form-season');
+    if (seasonEl && !seasonEl.value && item.season) {
+        const seasonMap = { 'winter': '冬', 'spring': '春', 'summer': '夏', 'fall': '秋' };
+        const seasonCN = seasonMap[item.season];
+        if (seasonCN) {
+            const seasonOpt = Array.from(seasonEl.options).find(o => o.value === seasonCN || o.value.includes(seasonCN));
+            if (seasonOpt) {
+                seasonEl.value = seasonOpt.value;
+                filledCount++;
+            }
+        }
+    }
+
+    // 月份 (只在未選擇時填入)
+    const monthEl = document.getElementById('form-month');
+    const apiMonth = item.aired?.prop?.from?.month;
+    if (monthEl && !monthEl.value && apiMonth) {
+        const monthStr = String(apiMonth);
+        const monthOpt = Array.from(monthEl.options).find(o => o.value === monthStr || o.value === `${apiMonth}月`);
+        if (monthOpt) {
+            monthEl.value = monthOpt.value;
+            filledCount++;
+        }
+    }
+
+    // 類型標籤 (自動勾選匹配的 genre)
+    const genreCheckboxes = document.querySelectorAll('input[name="form-genre"]');
+    if (genreCheckboxes.length > 0 && item.genres?.length > 0) {
+        // MAL 英文 → 中文映射
+        const genreMap = {
+            'Action': '動作', 'Adventure': '冒險', 'Comedy': '喜劇', 'Drama': '劇情',
+            'Fantasy': '奇幻', 'Horror': '恐怖', 'Mystery': '懸疑', 'Romance': '戀愛',
+            'Sci-Fi': '科幻', 'Supernatural': '超自然', 'Sports': '運動',
+            'Slice of Life': '日常', 'Thriller': '驚悚', 'Suspense': '懸疑',
+            'Ecchi': 'Ecchi', 'Harem': '後宮', 'Isekai': '異世界', 'Mecha': '機甲',
+            'Music': '音樂', 'Psychological': '心理', 'School': '校園',
+            'Military': '軍事', 'Historical': '歷史', 'Gore': '血腥',
+            'Award Winning': '得獎作品', 'Gourmet': '美食',
+            'Boys Love': 'BL', 'Girls Love': 'GL',
+        };
+        // 也收集 themes 和 demographics
+        const allGenres = [...(item.genres || []), ...(item.themes || []), ...(item.demographics || [])];
+        const mappedNames = allGenres.map(g => genreMap[g.name] || g.name);
+
+        let genreFilled = 0;
+        genreCheckboxes.forEach(cb => {
+            if (!cb.checked && mappedNames.some(m => cb.value === m || cb.value.includes(m) || m.includes(cb.value))) {
+                cb.checked = true;
+                // 更新視覺狀態
+                const label = cb.closest('label');
+                if (label) {
+                    label.style.background = 'rgba(0,212,255,0.2)';
+                    label.style.borderColor = 'var(--neon-cyan)';
+                }
+                genreFilled++;
+            }
+        });
+        if (genreFilled > 0) filledCount++;
+    }
+
+    // 自動新增平台搜尋連結（透過 Edge Function 驗證）
+    const linksList = document.getElementById('links-list');
+    if (linksList) {
+        const existingNames = Array.from(linksList.querySelectorAll('.link-name')).map(el => el.value.toLowerCase());
+
+        // 所有平台連結定義
+        const allPlatformLinks = [
+            { id: 'anime1', name: 'anime1.me', url: `https://anime1.me/?s=${encodeURIComponent(animeName)}` },
+            { id: 'age', name: 'AGE動漫', url: `https://www.agedm.org/search?query=${encodeURIComponent(animeName)}` },
+            { id: 'sn-video', name: '星夜動漫', url: `https://sn-video.com/search?q=${encodeURIComponent(animeName)}` },
+            { id: '99itv', name: '99動漫', url: `https://99itv.net/vodsearch/${encodeURIComponent(animeName)}----------1---.html` },
+            { id: 'dmmiku', name: '動漫MIKU', url: `https://www.dmmiku.com/index.php/vod/search.html?wd=${encodeURIComponent(animeName)}` },
+            { id: 'yinhuadm', name: '櫻花動漫', url: `https://www.yinhuadm.cc/search/${encodeURIComponent(animeName)}/` },
+            { id: 'anione', name: 'AniOne YT', url: `https://www.youtube.com/@AniOneAnime/search?query=${encodeURIComponent(animeName)}` },
+            { id: 'musetw', name: 'Muse木棉花 YT', url: `https://www.youtube.com/@MuseTW/search?query=${encodeURIComponent(animeName)}` },
+        ];
+
+        // 嘗試透過 Edge Function 驗證各網站
+        const addVerifiedLinks = async () => {
+            try {
+                const config = window.configManager?.getSupabaseConfig();
+                if (!config?.url) throw new Error('無 Supabase 配置');
+
+                const resp = await fetch(`${config.url}/functions/v1/check-anime-sites`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.anonKey}`,
+                    },
+                    body: JSON.stringify({ animeName }),
+                });
+
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+
+                let verifiedCount = 0;
+                const verifiedIds = new Set(data.results?.filter(r => r.available).map(r => r.id) || []);
+
+                allPlatformLinks.forEach(link => {
+                    if (existingNames.some(n => n.includes(link.name.toLowerCase().split(' ')[0]))) return;
+                    if (!verifiedIds.has(link.id)) return; // 該網站沒有此作品，跳過
+
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display:flex;gap:8px;';
+                    row.innerHTML = `
+                        <input type="text" placeholder="名稱" class="link-name" value="${link.name}" style="flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:6px;padding:6px;color:#fff;font-size:12px;">
+                        <input type="text" placeholder="網址" class="link-url" value="${link.url}" style="flex:3;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:6px;padding:6px;color:#fff;font-size:12px;">
+                        <button class="btn-icon delete" style="width:30px;height:30px;" onclick="this.parentElement.remove()">✕</button>
+                    `;
+                    linksList.appendChild(row);
+                    verifiedCount++;
+                });
+
+                if (verifiedCount > 0) {
+                    window.showToast(`🔗 已驗證並加入 ${verifiedCount} 個平台連結`, 'success');
+                } else {
+                    window.showToast('🔗 各平台均未搜尋到此作品', 'info');
+                }
+            } catch (err) {
+                console.warn('Edge Function 驗證失敗，改為全部加入:', err.message);
+                // Fallback：Edge Function 不可用時，全部加入
+                allPlatformLinks.forEach(link => {
+                    if (existingNames.some(n => n.includes(link.name.toLowerCase().split(' ')[0]))) return;
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display:flex;gap:8px;';
+                    row.innerHTML = `
+                        <input type="text" placeholder="名稱" class="link-name" value="${link.name}" style="flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:6px;padding:6px;color:#fff;font-size:12px;">
+                        <input type="text" placeholder="網址" class="link-url" value="${link.url}" style="flex:3;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:6px;padding:6px;color:#fff;font-size:12px;">
+                        <button class="btn-icon delete" style="width:30px;height:30px;" onclick="this.parentElement.remove()">✕</button>
+                    `;
+                    linksList.appendChild(row);
+                    filledCount++;
+                });
+                window.showToast('🔗 已加入所有平台連結（驗證服務未啟用）', 'info');
+            }
+        };
+
+        // 非同步執行驗證，不阻塞其他補全操作
+        addVerifiedLinks();
+    }
+
+    window.showToast(`✨ 已補全 ${filledCount} 項資料（簡介來源：${descEl?.value && !item.synopsis?.startsWith(descEl.value?.substring(0, 20)) ? 'Bangumi 繁中' : 'MAL'}）`, 'success');
+};
+
+// ============================================================================
+// 儲存功能
+// ============================================================================
+
 window.saveAnime = async () => {
     try {
         const nameEl = document.getElementById('form-name');
@@ -2011,6 +2581,7 @@ window.saveAnime = async () => {
             name: nameEl.value,
             genre: selectedGenres,
             poster_url: document.getElementById('form-poster')?.value || '',
+            youtube_url: document.getElementById('form-youtube')?.value || '',
             category: document.getElementById('form-category')?.value || 'anime',
             links: Array.from(document.querySelectorAll('#links-list > div')).map(row => {
                 const n = row.querySelector('.link-name');
@@ -2038,15 +2609,23 @@ window.saveAnime = async () => {
             await client.from('anime_list').insert([payload]);
 
         if (error) {
-            // 如果是欄位缺失錯誤，嘗試不帶 extra_data 再次儲存
-            if (error.message.includes('extra_data')) {
+            // 如果是欄位缺失錯誤，移除不存在的欄位後重試
+            const missingFields = ['youtube_url', 'extra_data'];
+            let retryNeeded = false;
+            for (const field of missingFields) {
+                if (error.message.includes(field)) {
+                    console.warn(`[Save] 欄位 ${field} 不存在，移除後重試`);
+                    delete payload[field];
+                    retryNeeded = true;
+                }
+            }
+            if (retryNeeded) {
                 window.showToast('⚠️ 偵測到資料庫欄位缺失，正在嘗試相容模式儲存...', 'info');
-                delete payload.extra_data;
                 const retry = editId ?
                     await client.from('anime_list').update(payload).eq('id', editId) :
                     await client.from('anime_list').insert([payload]);
                 if (!retry.error) {
-                    window.showToast('✓ 已儲存 (自定義標籤需補齊資料庫欄位後生效)');
+                    window.showToast('✓ 已儲存 (部分欄位需補齊資料庫後生效)');
                     await window.loadData();
                     window.switchAdminTab('manage');
                     return;
@@ -2062,7 +2641,9 @@ window.saveAnime = async () => {
     } catch (err) { window.showToast('✗ 儲存失敗：' + err.message, 'error'); }
 };
 
-window.editAnime = (id) => { window.switchAdminTab('edit', id); };
+window.editAnime = (id) => {
+    window.switchAdminTab('edit', id);
+};
 window.addLinkRow = () => { const c = document.getElementById('links-list'); const d = document.createElement('div'); d.style.display = 'flex'; d.style.gap = '8px'; d.style.marginBottom = '10px'; d.innerHTML = `<input type="text" placeholder="名" class="link-name" style="flex: 1;"><input type="text" placeholder="網" class="link-url" style="flex: 2;"><button class="btn-primary" style="padding: 8px 12px; border-color: #ff4444; color: #ff4444;" onclick="this.parentElement.remove()">✕</button>`; c.appendChild(d); };
 window.addOptionItem = async (key) => {
     const input = document.getElementById(`add-opt-${key}`);
@@ -2081,6 +2662,79 @@ window.addOptionItem = async (key) => {
     }
 };
 
+/**
+ * 顯示批量匯入 Modal
+ */
+window.showBulkImportModal = (key) => {
+    const existing = document.getElementById('bulk-import-modal');
+    if (existing) existing.remove();
+
+    const keyLabel = {
+        'genre': '類型', 'year': '年份', 'month': '月份', 'season': '季度',
+        'episodes': '集數', 'rating': '評分', 'recommendation': '推薦度'
+    }[key] || siteSettings.custom_labels?.[key] || key;
+
+    const modal = document.createElement('div');
+    modal.id = 'bulk-import-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px);';
+    modal.innerHTML = `
+        <div style="background: linear-gradient(135deg, #0a0e1a, #1a1e2e); border: 1px solid rgba(0,212,255,0.4); border-radius: 12px; width: 90%; max-width: 500px; display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(0,212,255,0.15);">
+            <div style="padding: 20px; border-bottom: 1px solid rgba(0,212,255,0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="color: var(--neon-cyan); margin: 0; font-size: 16px;">📋 批量匯入「${keyLabel}」選項</h3>
+                    <button onclick="document.getElementById('bulk-import-modal')?.remove()" style="background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;">✕</button>
+                </div>
+                <div style="font-size: 11px; color: #888; margin-top: 6px;">每行一個選項，可直接從 Excel 貼上直排資料。空白行與重複項會自動略過。</div>
+            </div>
+            <div style="padding: 20px;">
+                <textarea id="bulk-import-textarea" rows="12" placeholder="選項1\n選項2\n選項3\n..." style="width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(0,212,255,0.3);border-radius:6px;padding:10px;color:#fff;font-size:14px;line-height:1.6;resize:vertical;font-family:monospace;"></textarea>
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:15px;">
+                    <button onclick="document.getElementById('bulk-import-modal')?.remove()" class="btn-primary" style="padding:8px 20px;border-color:rgba(255,255,255,0.2);color:#aaa;">取消</button>
+                    <button onclick="window.executeBulkImport('${key}')" class="btn-primary" style="padding:8px 20px;border-color:var(--neon-cyan);color:var(--neon-cyan);">✓ 匯入</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+    document.getElementById('bulk-import-textarea')?.focus();
+};
+
+/**
+ * 執行批量匯入
+ */
+window.executeBulkImport = async (key) => {
+    const textarea = document.getElementById('bulk-import-textarea');
+    const text = textarea?.value?.trim();
+    if (!text) return window.showToast('✗ 請輸入選項內容', 'error');
+
+    try {
+        if (!optionsData[key]) optionsData[key] = [];
+        const existing = new Set(optionsData[key]);
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+        let added = 0;
+        let skipped = 0;
+
+        lines.forEach(line => {
+            if (existing.has(line)) {
+                skipped++;
+            } else {
+                optionsData[key].push(line);
+                existing.add(line);
+                added++;
+            }
+        });
+
+        await window.saveOptionsToDB();
+        document.getElementById('bulk-import-modal')?.remove();
+        window.renderAdmin();
+        window.showToast(`✓ 已匯入 ${added} 個選項${skipped > 0 ? `（跳過 ${skipped} 個重複）` : ''}`, 'success');
+    } catch (err) {
+        console.error('批量匯入失敗:', err);
+        window.showToast('✗ 匯入失敗：' + (err.message || err), 'error');
+    }
+};
+
 window.deleteOptionItem = async (key, idx) => {
     if (!confirm('確定要刪除此選項嗎？')) return;
     try {
@@ -2096,18 +2750,43 @@ window.deleteOptionItem = async (key, idx) => {
     }
 };
 
-window.updateCategoryColor = async (key, color) => {
+window.updateCategoryColor = async (key, color, isPreview = false) => {
     if (!optionsData.category_colors) optionsData.category_colors = {};
     optionsData.category_colors[key] = color;
-    await window.saveOptionsToDB();
-    window.renderAdmin();
+
+    // 實時更新色塊預覽 (不需要全量重繪)
+    const inputs = document.querySelectorAll(`input[type="color"][oninput*="updateCategoryColor('${key}'"]`);
+    inputs.forEach(input => {
+        const swatch = input.nextElementSibling;
+        if (swatch) swatch.style.backgroundColor = color;
+    });
+
+    if (!isPreview) {
+        await window.saveOptionsToDB(true);
+    }
 };
 
-window.updateRatingItemColor = async (opt, color) => {
+window.updateRatingItemColor = async (opt, color, isPreview = false) => {
     if (!optionsData.rating_colors) optionsData.rating_colors = {};
     optionsData.rating_colors[opt] = color;
-    await window.saveOptionsToDB();
-    window.renderAdmin();
+
+    // 實時更新評分標籤的預覽顏色
+    const ratingWrappers = document.querySelectorAll(`[id^="opt-rating-"]`);
+    ratingWrappers.forEach(wrapper => {
+        // 尋找包含該選項文字的標籤
+        const textSpan = wrapper.querySelector('span');
+        if (textSpan && textSpan.textContent.trim() === opt) {
+            wrapper.style.background = color + '33';
+            wrapper.style.borderColor = color + '66';
+            // 同步色塊
+            const swatch = wrapper.querySelector('.color-swatch');
+            if (swatch) swatch.style.backgroundColor = color;
+        }
+    });
+
+    if (!isPreview) {
+        await window.saveOptionsToDB(true);
+    }
 };
 
 window.triggerColorPicker = (el) => {
@@ -2536,16 +3215,6 @@ window.refreshSystem = async () => {
     window.showToast('✓ 資料已同步');
 };
 
-window.showToast = (msg, type = 'info') => {
-    const toast = document.getElementById('toast');
-    if (!toast) return;
-    toast.textContent = msg;
-    toast.style.borderColor = type === 'error' ? '#ff4444' : 'var(--neon-blue)';
-    toast.style.color = type === 'error' ? '#ff4444' : 'var(--neon-cyan)';
-    toast.classList.add('active');
-    setTimeout(() => toast.classList.remove('active'), 3000);
-};
-
 // ========== 主題切換 ==========
 window.toggleTheme = () => {
     if (window.usabilityManager) {
@@ -2660,3 +3329,11 @@ setTimeout(() => {
     // 初始化主題
     window.initTheme();
 }, 0);
+
+window.changeCursorTheme = (theme) => {
+    localStorage.setItem('cursorTheme', theme);
+    if (typeof window.applyCursorTheme === 'function') {
+        window.applyCursorTheme(theme);
+    }
+    window.showToast(`✨ 遊標主題已切換：${theme}`);
+};
