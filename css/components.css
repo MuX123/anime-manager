@@ -10,30 +10,76 @@
 .anime-card {
     width: 100%;
     min-width: 0;
-    background: var(--glass-bg);
-    border: 1.5px solid rgba(0, 212, 255, 0.2);
+    background: rgba(15, 20, 35, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-left: 4px solid var(--rating-color, rgba(0, 212, 255, 0.2));
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
     cursor: pointer;
-    transition: var(--transition-smooth);
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+        box-shadow 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+        border-color 0.3s ease;
     position: relative;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     display: flex;
     flex-direction: column;
-
-    /* 極致性能優化：佈局隔離 */
-    /* 移除 will-change 防止 VRAM 耗盡，僅在需要時由瀏覽器決定 */
-    contain: layout style;
-    /* 移除 content-visibility 以避免滾動跳動 */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    transform-style: preserve-3d;
+    perspective: 1000px;
 }
 
-/* Game Card Effect */
+/* Game Card Effect Base */
 .anime-card.game-card-effect {
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-        box-shadow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transition: transform 0.6s cubic-bezier(0.03, 0.98, 0.52, 0.99),
+        box-shadow 0.6s cubic-bezier(0.03, 0.98, 0.52, 0.99),
         border-color 0.3s ease;
     transform-style: preserve-3d;
+}
+
+/* Desktop List Glass Redesign */
+.anime-card.desktop-list-layout {
+    display: flex !important;
+    align-items: center;
+    margin: 0 0 15px 0 !important;
+    background: rgba(10, 15, 25, 0.4) !important;
+    background-image: var(--card-poster-url);
+    /* 由 JS 動態傳入 */
+    background-size: cover;
+    background-position: center 20%;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    padding: 0 !important;
+    gap: 0;
+    width: 100%;
+    height: 80px;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+        box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+.anime-card.desktop-list-layout::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    /* 遮罩確保文字可讀性 */
+    backdrop-filter: blur(25px) saturate(200%);
+    -webkit-backdrop-filter: blur(25px) saturate(200%);
+    z-index: 1;
+}
+
+.anime-card.desktop-list-layout>* {
+    position: relative;
+    z-index: 2;
+}
+
+.anime-card.desktop-list-layout:hover {
+    transform: translateX(10px) !important;
+    background-color: rgba(20, 25, 40, 0.6) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* 加強上半部高光效果 */
@@ -53,10 +99,10 @@
 }
 
 .anime-card.game-card-effect:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4),
-        0 0 20px color-mix(in srgb, var(--rating-color) 30%, transparent);
-    border-color: var(--rating-color);
+    transform: translateY(-10px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5),
+        0 0 30px color-mix(in srgb, var(--rating-color) 40%, transparent);
+    border-color: rgba(255, 255, 255, 0.3);
     z-index: 100;
 }
 
@@ -64,24 +110,36 @@
     transform: scale(1.08);
 }
 
-/* Glass Shine Effect V2 */
+/* Extreme Glass Shine V3 */
 .poster-shine {
     position: absolute;
     top: 0;
     left: -150%;
-    width: 60%;
+    width: 100%;
     height: 100%;
     background: linear-gradient(105deg,
             transparent 0%,
-            rgba(255, 255, 255, 0.05) 40%,
-            rgba(255, 255, 255, 0.6) 50%,
-            rgba(255, 255, 255, 0.05) 60%,
+            rgba(255, 255, 255, 0.02) 30%,
+            rgba(255, 255, 255, 0.5) 50%,
+            rgba(255, 255, 255, 0.02) 70%,
             transparent 100%);
     transform: skewX(-20deg);
     transition: none;
     pointer-events: none;
     z-index: 6;
-    filter: blur(1px);
+    filter: blur(2px);
+    opacity: 0.6;
+}
+
+.poster-shine::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    width: 15%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: skewX(-20deg);
 }
 
 /* Top-Left Corner Glow */

@@ -24,6 +24,76 @@ body {
     overflow-x: hidden;
 }
 
+/* ========== 1. 動態背景 (Poster Wall Atmosphere) ========== */
+.atmosphere-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    /* 比 blob 更深 */
+    overflow: hidden;
+    background: #050609;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 20px;
+    filter: grayscale(100%) brightness(0.2) contrast(1.2);
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.poster-wall-item {
+    width: 180px;
+    height: 260px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    opacity: 0.6;
+    animation: poster-drift 60s infinite linear;
+}
+
+@keyframes poster-drift {
+    0% {
+        transform: translateY(0) scale(1);
+    }
+
+    50% {
+        transform: translateY(-20px) scale(1.05);
+    }
+
+    100% {
+        transform: translateY(0) scale(1);
+    }
+}
+
+.atmosphere-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, transparent 0%, #050609 90%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* ========== 2. 列表進場動畫 (Staggered Entry) ========== */
+@keyframes card-fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.anime-card.entry-animation {
+    opacity: 0;
+    animation: card-fade-in-up 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
 #atmosphere-container {
     position: fixed;
     top: 0;
@@ -92,15 +162,16 @@ body {
     align-items: center;
 }
 
+/* ========== 3. 加載旋轉動畫 (Whirl) ========== */
 .whirl-ring {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    border: 3px solid transparent;
+    width: 60px;
+    height: 60px;
+    border: 3px solid rgba(0, 212, 255, 0.1);
     border-radius: 50%;
     border-top-color: var(--neon-cyan);
-    animation: whirl-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+    animation: whirl-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite !important;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
 }
 
 .whirl-ring:nth-child(2) {

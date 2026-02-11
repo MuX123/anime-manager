@@ -144,7 +144,25 @@ function renderMetaTags(item, colors, showEpisodes = true) {
     return `<div style="display: flex; gap: 8px; font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; align-items: center;">${tags.join('')}</div>`;
 }
 
-function renderGenreTags(genres, extraTags, color) {
+// ========== 2. 核心渲染輔助 ==========
+window.handleCardTilt = (e, el) => {
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -10; // 最大 10 度
+    const rotateY = ((x - centerX) / centerX) * 10;
+    el.style.setProperty('--tilt-x', `${rotateX}deg`);
+    el.style.setProperty('--tilt-y', `${rotateY}deg`);
+};
+
+window.resetCardTilt = (el) => {
+    el.style.setProperty('--tilt-x', `0deg`);
+    el.style.setProperty('--tilt-y', `0deg`);
+};
+
+function renderTags(genres, extraTags, color) {
     const escape = (str) => {
         if (typeof escapeHtml === 'function') return escapeHtml(str);
         return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[s]);
@@ -186,7 +204,11 @@ function renderGridCard(item, colors, data) {
     }
 
     return `
-        <div class="anime-card game-card-effect" onclick="window.showAnimeDetail('${id}')" style="--rating-color: ${ratingColor};">
+        <div class="anime-card game-card-effect entry-animation" 
+            onclick="window.showAnimeDetail('${id}')" 
+            onmousemove="window.handleCardTilt(event, this)"
+            onmouseleave="window.resetCardTilt(this)"
+            style="--rating-color: ${ratingColor};">
             ${renderAdminButton(id, 'grid-hover')}
             
             <!-- Cyber-Mini Badge (Card View) -->
@@ -249,22 +271,24 @@ function renderListCard(item, colors, data) {
 
     // List view style complex, keeping some inline for flex layout structures unique to this view
     return `
-        <div class="anime-card desktop-list-layout game-card-effect" onclick="window.showAnimeDetail('${id}')" style="display: flex !important; align-items: center; margin: 0 0 10px 0 !important; background: #000 !important; border: 1px solid ${ratingColor} !important; border-radius: 10px !important; padding: 12px 20px !important; gap: 0; width: 100%; overflow: hidden; position: relative; --rating-color: ${ratingColor};">
+        <div class="anime-card desktop-list-layout game-card-effect entry-animation" 
+            onclick="window.showAnimeDetail('${id}')" 
+            style="--rating-color: ${ratingColor}; --card-poster-url: url('${item.poster_url || ''}');">
             ${renderAdminButton(id)}
-            <div style="display: flex; align-items: center; justify-content: center; width: 120px; flex-shrink: 0; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px;">
+            <div style="display: flex; align-items: center; justify-content: center; width: 120px; flex-shrink: 0; border-right: 1px solid rgba(255,255,255,0.1); padding: 0 15px;">
                 ${renderRatingBadge(item.rating, ratingColor, item.recommendation, starColor)}
             </div>
             <div style="flex: 1; min-width: 0; display: flex; align-items: center; padding-left: 20px; gap: 20px; height: 100%;">
-                <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
-                    <h3 style="color: ${nameColor}; font-size: 15px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;">${escape(name)}</h3>
+                <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+                    <h3 style="color: ${nameColor}; font-size: 16px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${escape(name)}</h3>
                     ${renderMetaTags(item, colors)}
                 </div>
                 <div style="flex: 0 0 15%; min-width: 0; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 20px; justify-content: center;">
-                    <span style="color: ${genreColor}; font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escape(type || '')}</span>
+                    <span style="color: ${genreColor}; font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.9;">${escape(type || 'ANIME')}</span>
                 </div>
                 <div class="desktop-scroll-tags" onwheel="this.scrollLeft += event.deltaY; event.preventDefault();" style="flex: 1; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding: 10px 0; scrollbar-width: none; cursor: grab; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 20px; align-items: center;">
                     <style>.desktop-scroll-tags::-webkit-scrollbar { display: none; }</style>
-                    ${renderGenreTags(genres, extraTags, genreColor)}
+                    ${renderTags(genres, extraTags, genreColor)}
                 </div>
             </div>
         </div>
@@ -390,21 +414,17 @@ window.showAnimeDetail = (id) => {
         <div class="detail-modal-wrapper" style="--rating-color: ${ratingColor};">
             <!-- 左側滿版海報 -->
             <div class="detail-poster-column">
-                <div class="holographic-poster-container" style="flex: 1; position: relative; overflow: hidden; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+                <div class="poster-container-v35" style="position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; height: 320px; width: 220px;">
                     <img src="${item.poster_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22450%22 viewBox=%220 0 300 450%22%3E%3Crect fill=%22%231a1a2e%22 width=%22300%22 height=%22450%22/%3E%3Ctext fill=%22%23666%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENO+IMAGE%3C/text%3E%3C/svg%3E'}" style="width: 100%; height: 100%; object-fit: cover;">
                     <div class="poster-glow-overlay"></div>
                     <div class="poster-shine"></div>
                     
-                    <!-- Elite-Cyber Badge (Moved to Poster Top-Left) -->
-                    <div class="badge-elite-cyber" style="--rating-color: ${ratingColor}; --star-color: ${starColor}; position: absolute; top: 0; left: 0; z-index: 10; border-radius: 12px 0 12px 0;">
-                        <div class="badge-elite-inner">
-                            <div class="elite-rating text-glow-pulse" style="text-shadow: none;">${escape(item.rating || '普')}</div>
-                            <div class="elite-stars">${escape(item.recommendation || '★')}</div>
+                    <!-- Elite Badge Design V35 (Rounded) -->
+                    <div style="position: absolute; bottom: 15px; left: 15px; z-index: 10;">
+                        <div class="badge-elite-v35" style="--rating-color: ${ratingColor}; min-width: 65px; min-height: 65px;">
+                            <div class="elite-rating text-glow-pulse" style="font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 2px;">${escape(item.rating || '普')}</div>
+                            <div class="elite-stars" style="font-size: 10px; color: ${starColor}; letter-spacing: 1px;">${escape(item.recommendation || '★')}</div>
                         </div>
-                        <div class="elite-deco-dot dot-tl"></div>
-                        <div class="elite-deco-dot dot-tr"></div>
-                        <div class="elite-deco-dot dot-bl"></div>
-                        <div class="elite-deco-dot dot-br"></div>
                     </div>
                 </div>
             </div>

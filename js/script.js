@@ -757,6 +757,9 @@ window.loadData = async function (forceRefresh = false) {
             );
             if (!error) {
                 animeData = data || [];
+                if (window.AtmosphereAPI && window.AtmosphereAPI.refresh) {
+                    window.AtmosphereAPI.refresh();
+                }
                 console.log('✅ 資料抓取成功，共', animeData.length, '筆');
                 return animeData;
             }
@@ -2688,6 +2691,15 @@ window.saveAnime = async () => {
 
         window.showToast('✓ 儲存成功');
         await window.loadData();
+
+        // 若詳情視窗開啟且編輯的是同一個作品，立即重新渲染詳情頁
+        const modal = document.getElementById('anime-detail-modal');
+        if (modal && modal.classList.contains('active') && window.currentDetailId === editId) {
+            const updatedItem = (await window.supabaseManager.getClient()).from('anime_list').select('*').eq('id', editId).single();
+            const { data } = await updatedItem;
+            if (data) window.showAnimeDetail(data.id); // 重新呼叫即可刷新
+        }
+
         window.switchAdminTab('manage');
     } catch (err) { window.showToast('✗ 儲存失敗：' + err.message, 'error'); }
 };
