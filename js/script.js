@@ -247,6 +247,12 @@ let gridColumns = (() => {
 })();
 window.gridColumns = gridColumns;
 let sortOrder = localStorage.getItem('sortOrder') || 'desc';
+// 預設縮放 75%
+let zoomLevel = (() => {
+    const stored = localStorage.getItem('zoomLevel');
+    if (stored && ['50', '60', '75', '80', '90', '100'].includes(stored)) return parseInt(stored);
+    return 75;
+})();
 let importTarget = 'anime';
 let editId = null;
 let isFirstLoad = true;
@@ -261,6 +267,17 @@ window.showToast = (msg, type = 'info') => {
     toast.style.setProperty('--toast-border', type === 'error' ? '#ff4444' : 'var(--neon-cyan)');
     toast.classList.add('active');
     setTimeout(() => toast.classList.remove('active'), 2000);
+};
+
+// 空狀態 UI (Empty State)
+window.renderEmptyState = (message = '未找到相關資料', hint = '嘗試調整搜尋條件') => {
+    return `
+        <div class="empty-state">
+            <div class="empty-state-icon">🎭</div>
+            <div class="empty-state-title">${message}</div>
+            <div class="empty-state-message">${hint}</div>
+        </div>
+    `;
 };
 
 // Admin Authentication Functions
@@ -619,6 +636,9 @@ window.initApp = async function () {
         window.optionsData = optionsData;
         window.siteSettings = siteSettings;
 
+        // 7. 應用縮放設定
+        window.applyZoom();
+
         // 8. 檢查管理員登入狀態
         await window.checkAndUpdateAdminStatus();
 
@@ -646,18 +666,25 @@ window.initApp = async function () {
             setTimeout(() => window.showFirstVisitPopups(), 1000);
         }
 
-        // 11. 隱藏載入畫面並顯示內容 (延遲確保渲染穩定)
+        // 11. 隱藏載入畫面並顯示內容 (延遲確保渲染穩定 - 增加科技感等待時間)
         const loadingScreen = document.getElementById('loading-screen');
         const app = document.getElementById('app');
         if (loadingScreen) {
-            console.log('✨ 準備揭曉介面...');
+            console.log('✨ 系統初始化完成，準備啟動介面...');
+            
+            // 模擬系統啟動延遲 (2.5秒)
             setTimeout(() => {
+                // 添加淡出類 (如果 CSS 有定義) 或直接操作 opacity
                 loadingScreen.style.opacity = '0';
+                loadingScreen.style.pointerEvents = 'none';
+                
+                // 等待淡出動畫完成後隱藏
                 setTimeout(() => {
                     loadingScreen.style.display = 'none';
                     app.classList.add('loaded');
-                }, 1000); // 增加淡出動畫時間
-            }, 800); // 延長等待時間確保內容 (公告等) 已完成初始渲染
+                    console.log('🚀 介面已啟動');
+                }, 1000); 
+            }, 2500); 
         } else {
             app.classList.add('loaded');
         }
@@ -838,8 +865,16 @@ window.renderApp = (requestId = null) => {
                 <option value="bocchi" ${localStorage.getItem('cursorTheme') === 'bocchi' ? 'selected' : ''} style="background: var(--bg-dark);">🎯 波奇 (BTR)</option>
                 <option value="genshin" ${localStorage.getItem('cursorTheme') === 'genshin' ? 'selected' : ''} style="background: var(--bg-dark);">⚔️ 原神</option>
                 <option value="furina" ${localStorage.getItem('cursorTheme') === 'furina' ? 'selected' : ''} style="background: var(--bg-dark);">💧 芙寧娜</option>
-                <option value="witch" ${localStorage.getItem('cursorTheme') === 'witch' ? 'selected' : ''} style="background: var(--bg-dark);">掃 沉默魔女</option>
+                <option value="witch" ${localStorage.getItem('cursorTheme') === 'witch' ? 'selected' : ''} style="background: var(--bg-dark);">🧙‍♀️ 沉默魔女</option>
                 <option value="standard" ${localStorage.getItem('cursorTheme') === 'standard' || !localStorage.getItem('cursorTheme') ? 'selected' : ''} style="background: var(--bg-dark);">🖱️ 標準簡約</option>
+            </select>
+            <select onchange="window.changeZoomLevel(this.value)" style="width: 100%; background: rgba(255,165,0,0.1) !important; border: 1px solid rgba(255,165,0,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #ffa500 !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease; text-align: center; text-align-last: center;">
+                <option value="50" ${zoomLevel === 50 ? 'selected' : ''} style="background: var(--bg-dark);">🔍 50%</option>
+                <option value="60" ${zoomLevel === 60 ? 'selected' : ''} style="background: var(--bg-dark);">🔍 60%</option>
+                <option value="75" ${zoomLevel === 75 ? 'selected' : ''} style="background: var(--bg-dark);">🔍 75%</option>
+                <option value="80" ${zoomLevel === 80 ? 'selected' : ''} style="background: var(--bg-dark);">🔍 80%</option>
+                <option value="90" ${zoomLevel === 90 ? 'selected' : ''} style="background: var(--bg-dark);">🔍 90%</option>
+                <option value="100" ${zoomLevel === 100 ? 'selected' : ''} style="background: var(--bg-dark);">🔍 100%</option>
             </select>
             <select onchange="if(window.performanceOptimizer) window.performanceOptimizer.toggleLiteMode(this.value === 'true');" style="width: 100%; background: rgba(0,255,150,0.1) !important; border: 1px solid rgba(0,255,150,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease; text-align: center; text-align-last: center;">
                 <option value="false" ${!document.body.classList.contains('lite-mode') ? 'selected' : ''} style="background: var(--bg-dark);">✨ 高品質渲染</option>
@@ -906,7 +941,7 @@ window.renderApp = (requestId = null) => {
 
                 gridContainer.innerHTML = paged.length > 0
                     ? paged.map(item => window.renderCard(item)).join('')
-                    : `<div style="text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`;
+                    : window.renderEmptyState('未找到相關資料', '嘗試調整搜尋條件');
             }
 
             // 更新分頁 (頂部與底部)
@@ -959,7 +994,7 @@ window.renderApp = (requestId = null) => {
 	            <div id="main-grid-content" style="display: ${isNotice ? 'none' : 'block'};">
                     <div id="pagination-top-container" class="pagination-minimal" style="margin-bottom: 25px;">${window.renderPagination(filtered.length)}</div>
 	                <div id="anime-grid-container" class="anime-grid ${gridColumns === 'mobile' ? 'force-mobile-layout' : ''}" style="display: ${gridColumns === 'mobile' ? 'flex' : 'grid'}; ${gridColumns === 'mobile' ? 'flex-direction: column; gap: 10px;' : `grid-template-columns: repeat(${gridColumns}, 1fr); gap: 20px;`}">
-	                    ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : `<div style="text-align: center; padding: 80px 20px; color: var(--text-secondary); font-size: 18px;">[ 未找到相關資料 ]</div>`}
+	                    ${paged.length > 0 ? paged.map(item => window.renderCard(item)).join('') : window.renderEmptyState('未找到相關資料', '嘗試調整搜尋條件')}
 	                </div>
 	                <div id="pagination-container" class="pagination-minimal" style="margin-top: 40px;">${window.renderPagination(filtered.length)}</div>
 	            </div>
@@ -2527,7 +2562,7 @@ window.applyJikanData = async (index) => {
             { id: '99itv', name: '99動漫', url: `https://99itv.net/search/-------------.html?wd=${encodeURIComponent(animeName)}&submit=` },
             { id: 'ofiii', name: 'Ofiii', url: `https://www.ofiii.com/search/${encodeURIComponent(animeName)}` },
             { id: 'dmmiku', name: '動漫MIKU', url: `https://www.dmmiku.com/index.php/vod/search.html?wd=${encodeURIComponent(animeName)}` },
-            { id: 'yinhuadm', name: '櫻花動漫', url: `https://www.yinhuadm.cc/search/${encodeURIComponent(animeName)}/` },
+            { id: 'yinhuadm', name: '櫻花動漫', url: `https://www.yinhuadm.cc/label/${encodeURIComponent(animeName)}.html` },
             { id: 'anione', name: 'AniOne YT', url: `https://www.youtube.com/@AniOneAnime/search?query=${encodeURIComponent(animeName)}` },
             { id: 'musetw', name: 'Muse木棉花 YT', url: `https://www.youtube.com/@MuseTW/search?query=${encodeURIComponent(animeName)}` },
         ];
@@ -3420,4 +3455,19 @@ window.changeCursorTheme = (theme) => {
         window.applyCursorTheme(theme);
     }
     window.showToast(`✨ 遊標主題已切換：${theme}`);
+};
+
+// 縮放控制
+window.changeZoomLevel = (level) => {
+    zoomLevel = parseInt(level);
+    localStorage.setItem('zoomLevel', zoomLevel);
+    const scale = zoomLevel / 100;
+    document.documentElement.style.setProperty('--site-scale', scale);
+    window.showToast(`🔍 縮放：${zoomLevel}%`);
+};
+
+// 應用儲存的縮放
+window.applyZoom = () => {
+    const scale = zoomLevel / 100;
+    document.documentElement.style.setProperty('--site-scale', scale);
 };

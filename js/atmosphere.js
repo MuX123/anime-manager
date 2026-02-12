@@ -25,13 +25,9 @@ window.CursorManager = {
 
         const root = document.body;
 
-        // 使用 URL 建構子確保路徑正確
-        // 假設 assets 在根目錄 (index.html 所在位置)
+        // 使用相對於根目錄的路徑 (assets 在根目錄)
         // 這樣可以處理 /anime-manager/ 等子路徑部署情況
-        // 注意：若為 file:// 協議，pathname 可能包含磁碟代號，需要小心處理
-        // 使用相對於 CSS 檔案的路徑 (因為變數是在 css/animations.css 中使用的)
-        // 這樣瀏覽器在解析 url() 時才會正確指向根目錄的 assets
-        let basePath = '../assets/cursors';
+        let basePath = './assets/cursors';
 
         console.log(`[CursorManager] 套用主題: ${themeId}, BasePath: ${basePath}`);
         localStorage.setItem('cursorTheme', themeId);
@@ -74,73 +70,103 @@ window.initAtmosphere = () => {
         if (!container) {
             container = document.createElement('div');
             container.id = 'atmosphere-container';
-            container.style.opacity = '0'; // 初始透明
-            container.style.transition = 'opacity 1.5s ease'; // 平滑淡入
             document.body.prepend(container);
         }
 
-        // 啟動淡入
-        setTimeout(() => {
-            if (container) {
-                container.style.opacity = '1';
-                container.className = 'atmosphere-bg';
-                // 加入漂浮光斑
-                container.innerHTML = `
-                    <div class="atmosphere-blob"></div>
-                    <div class="atmosphere-blob"></div>
-                    <div class="atmosphere-blob" style="top: 60%; left: 70%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(0, 255, 255, 0.03) 0%, transparent 70%);"></div>
+        // 創建遮罩層 - 檢查是否已存在
+        let overlay = document.getElementById('atmosphere-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'atmosphere-overlay';
+            document.body.prepend(overlay);
+        }
+
+        // 監聽 animeData 載入完成後渲染背景
+        const checkAndRender = () => {
+            console.log('[Atmosphere] 檢查 animeData...', window.animeData ? window.animeData.length : 'undefined');
+            
+            if (window.animeData && window.animeData.length > 0) {
+                console.log('[Atmosphere] 檢測到 animeData，開始渲染背景...');
+                
+                // 添加 flex 樣式確保正確排列
+                container.style.cssText = `
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    align-content: center;
+                    gap: 15px;
+                    padding: 40px;
+                    opacity: 0;
+                    transition: opacity 1.5s ease;
                 `;
-
-                // 創建遮罩層
-                let overlay = document.getElementById('atmosphere-overlay');
-                if (!overlay) {
-                    overlay = document.createElement('div');
-                    overlay.id = 'atmosphere-overlay';
-                    overlay.className = 'atmosphere-overlay';
-                    document.body.prepend(overlay);
-                }
-
+                
                 // 渲染海報牆
                 window.AtmosphereAPI.renderPosterWall();
+                
+                // 淡入顯示
+                requestAnimationFrame(() => {
+                    container.style.opacity = '0.6'; // 調低透明度讓矩陣雨透出
+                });
+                
+                console.log('[Atmosphere] 背景渲染完成');
+            } else {
+                // 每 100ms 檢查一次，直到 animeData 載入完成
+                setTimeout(checkAndRender, 100);
             }
-        }, 100);
+        };
+
+        // 立即開始檢查
+        checkAndRender();
 
         // 導出 API
         window.AtmosphereAPI = {
-            pause: () => { },
-            resume: () => { },
+            pause: () => { container.style.opacity = '0'; },
+            resume: () => { container.style.opacity = '1'; },
             setQuality: () => { },
             renderPosterWall: () => {
-                const container = document.getElementById('atmosphere-container');
-                if (!container || !window.animeData || window.animeData.length === 0) return;
+                if (!container) return;
+
+                // 鎖定機制：如果已經渲染過，就不再重新渲染
+                if (container.getAttribute('data-locked') === 'true') {
+                    return;
+                }
 
                 // 隨機選取海報
                 const posters = window.animeData
-                    .filter(a => a.poster_url)
-                    .map(a => a.poster_url);
+                    ?.filter(a => a.poster_url || a.image_url)
+                    ?.map(a => a.poster_url || a.image_url) || [];
 
-                if (posters.length === 0) return;
+                if (posters.length === 0) {
+                    console.warn('[Atmosphere] 沒有找到海報資料');
+                    return;
+                }
 
-                // 計算需要的海報數量 (大致填滿畫面)
-                const count = 30;
+                // 計算需要的海報數量
+                const count = Math.min(24, posters.length * 2);
                 let html = '';
+
                 for (let i = 0; i < count; i++) {
                     const url = posters[Math.floor(Math.random() * posters.length)];
-                    const delay = (Math.random() * 10).toFixed(1);
-                    const duration = (40 + Math.random() * 40).toFixed(0);
-                    html += `<div class="poster-wall-item" style="background-image: url('${url}'); animation-delay: -${delay}s; animation-duration: ${duration}s;"></div>`;
-                }
-                container.innerHTML = html;
-            },
-            refresh: () => window.AtmosphereAPI.renderPosterWall()
-        };
+                    const delay = (Math.random() * 5).toFixed(1);
+                    const duration = (15 + Math.random() * 10).toFixed(0);
 
-        contentElements.forEach(el => {
-            if (el && !el.style.position) {
-                el.style.position = 'relative';
-                el.style.zIndex = '10';
+                    html += `
+                    <div class="poster-wall-item" style="animation-delay: -${delay}s;">
+                        <div class="mech-cycle-img img-a" style="background-image: url('${url}'); animation-duration: ${duration}s; animation-delay: -${delay}s;"></div>
+                        <div class="mech-cycle-img img-b" style="background-image: url('${url}'); animation-duration: ${duration}s; animation-delay: -${delay}s;"></div>
+                        <div class="mech-cycle-img img-c" style="background-image: url('${url}'); animation-duration: ${duration}s; animation-delay: -${delay}s;"></div>
+                    </div>`;
+                }
+                
+                container.innerHTML = html + container.innerHTML; // 保留光斑
+                container.setAttribute('data-locked', 'true');
+                console.log('[Atmosphere] 背景已生成 (Mechanical Cycle Mode)');
+            },
+            refresh: () => {
+                container.removeAttribute('data-locked');
+                window.AtmosphereAPI.renderPosterWall();
             }
-        });
+        };
 
     } catch (e) {
         console.error('[Atmosphere] 初始化失敗:', e);
@@ -148,14 +174,12 @@ window.initAtmosphere = () => {
 };
 
 // ==========================================
-// 初始化執行
+// 初始化執行 (等待 DOM 和數據載入)
 // ==========================================
-if (document.readyState === 'complete') {
-    window.initAtmosphere();
-    window.CursorManager.init();
-} else {
-    window.addEventListener('load', () => {
+// 延遲執行，確保 animeData 已載入
+window.addEventListener('load', () => {
+    setTimeout(() => {
         window.initAtmosphere();
         window.CursorManager.init();
-    });
-}
+    }, 200);
+});

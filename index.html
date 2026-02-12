@@ -22,13 +22,19 @@
         rel="stylesheet">
 
     <!-- CSS 模組化結構 -->
-    <link rel="stylesheet" href="./css/variables.css?v=20260205_v1">
-    <link rel="stylesheet" href="./css/base.css?v=20260205_v1">
-    <link rel="stylesheet" href="./css/layout.css">
-    <link rel="stylesheet" href="./css/components.css">
-    <link rel="stylesheet" href="./css/render.css?v=20260209_v1">
-    <link rel="stylesheet" href="./css/animations.css">
-    <link rel="stylesheet" href="./css/responsive.css?v=20260205_v2">
+    <link rel="stylesheet" href="./css/variables.css?v=20260213_v9">
+    <link rel="stylesheet" href="./css/base.css?v=20260213_v9">
+    <link rel="stylesheet" href="./css/layout.css?v=20260213_v9">
+    <link rel="stylesheet" href="./css/components.css?v=20260213_v9">
+    <link rel="stylesheet" href="./css/animations.css?v=20260213_v9">
+    <link rel="stylesheet" href="./css/responsive.css?v=20260213_v9">
+    <!-- 詳情頁樣式 (僅 Modal 使用) -->
+    <link rel="stylesheet" href="./css/detail-cyberpunk.css?v=20260213_v9">
+    <!-- 矩陣雨背景 -->
+    <link rel="stylesheet" href="./css/matrix-rain.css?v=20260213_v9">
+    <!-- 渲染系統樣式 (卡片、徽章) - 最後載入以確保優先權 -->
+    <link rel="stylesheet" href="./css/render.css?v=20260213_v9">
+    <link rel="stylesheet" href="./css/loader.css?v=20260213_v1">
     <!-- 關鍵渲染路徑樣式 -->
     <style>
         #loading-screen {
@@ -66,6 +72,9 @@
 </head>
 
 <body>
+    <!-- 駭客任務數碼雨背景 - 在 scaling 容器外面 -->
+    <canvas id="c"></canvas>
+
     <!-- ACG 互動氛圍層 -->
     <div id="atmosphere-container">
         <div class="atmosphere-grid"></div>
@@ -73,14 +82,22 @@
         <div class="atmosphere-tech-overlay"></div>
     </div>
 
+    <!-- 加載畫面 (移出 site-scaler 以避免縮放影響並確保置頂) -->
     <div id="loading-screen">
-        <div class="whirl-container">
-            <div class="whirl-ring"></div>
-            <div class="whirl-ring"></div>
-            <div class="whirl-ring"></div>
+        <div class="loader-content">
+            <div class="tech-spinner">
+                <div class="spinner-hex"></div>
+                <div class="spinner-core"></div>
+            </div>
+            <div class="loader-text glitch" data-text="SYSTEM INITIALIZING">SYSTEM INITIALIZING</div>
+            <div class="loader-bar-container">
+                <div class="loader-bar-fill"></div>
+            </div>
+            <div class="system-msg">Loading modules...</div>
         </div>
-        <div class="whirl-text">LOADING SYSTEM...</div>
     </div>
+
+    <div class="site-scaler">
 
     <div class="site-header">
         <div id="adminHeaderBar" class="admin-header-bar"></div>
@@ -130,6 +147,10 @@
     <script src="./js/render.js?v=20260209_v4"></script>
     <script src="./js/script.js?v=20260209_v2"></script>
     <script src="./js/atmosphere.js?v=20260210_v1"></script>
+
+    <!-- 視覺效果模組 -->
+    <script src="./js/matrix-rain.js"></script>
+    <script src="./js/background-switcher.js"></script>
 
     <!-- 調試工具 (開發模式) -->
     <script src="./js/debug.js?v=20260202_v1"></script>

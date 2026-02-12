@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="zh-TW" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reflective Poster Card</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&amp;family=Playfair+Display:wght@700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    .poster-card {
+      position: relative;
+      width: 320px;
+      height: 450px;
+      border-radius: 20px;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .poster-card:hover {
+      transform: perspective(1000px) rotateX(var(--rotateX, 0deg)) rotateY(var(--rotateY, 0deg)) scale(1.02);
+    }
+    
+    .card-background {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    }
+    
+    .card-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        radial-gradient(circle at 20% 80%, rgba(233, 69, 96, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(72, 219, 251, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+    }
+    
+    .gloss-layer {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        105deg,
+        transparent 20%,
+        rgba(255, 255, 255, 0.03) 30%,
+        rgba(255, 255, 255, 0.1) 38%,
+        rgba(255, 255, 255, 0.2) 40%,
+        rgba(255, 255, 255, 0.1) 42%,
+        rgba(255, 255, 255, 0.03) 50%,
+        transparent 60%
+      );
+      transform: translateX(var(--glossX, -100%));
+      transition: transform 0.5s ease;
+      pointer-events: none;
+    }
+    
+    .poster-card:hover .gloss-layer {
+      transform: translateX(var(--glossX, 100%));
+    }
+    
+    .shine-effect {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        circle at var(--mouseX, 50%) var(--mouseY, 50%),
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0.05) 20%,
+        transparent 50%
+      );
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    
+    .poster-card:hover .shine-effect {
+      opacity: 1;
+    }
+    
+    .rainbow-edge {
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      padding: 2px;
+      background: linear-gradient(
+        var(--angle, 45deg),
+        #ff0080,
+        #ff8c00,
+        #40e0d0,
+        #7b68ee,
+        #ff0080
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    
+    .poster-card:hover .rainbow-edge {
+      opacity: 0.8;
+      animation: rotateGradient 3s linear infinite;
+    }
+    
+    @keyframes rotateGradient {
+      from { --angle: 0deg; }
+      to { --angle: 360deg; }
+    }
+    
+    @property --angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+    
+    .card-content {
+      position: relative;
+      z-index: 10;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 30px;
+    }
+    
+    .decorative-circle {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      width: 80px;
+      height: 80px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .decorative-circle::before {
+      content: '';
+      width: 60px;
+      height: 60px;
+      border: 2px solid rgba(233, 69, 96, 0.5);
+      border-radius: 50%;
+    }
+    
+    .tag {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(233, 69, 96, 0.8);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      width: fit-content;
+    }
+    
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 12px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .card-subtitle {
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 14px;
+      opacity: 0.8;
+      line-height: 1.6;
+    }
+    
+    .bottom-decoration {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 120px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
+      pointer-events: none;
+    }
+    
+    .floating-particles {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      animation: float 6s infinite ease-in-out;
+    }
+    
+    .particle:nth-child(1) { left: 10%; top: 20%; animation-delay: 0s; }
+    .particle:nth-child(2) { left: 30%; top: 60%; animation-delay: 1s; }
+    .particle:nth-child(3) { left: 70%; top: 30%; animation-delay: 2s; }
+    .particle:nth-child(4) { left: 85%; top: 70%; animation-delay: 3s; }
+    .particle:nth-child(5) { left: 50%; top: 85%; animation-delay: 4s; }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+      50% { transform: translateY(-20px) scale(1.5); opacity: 1; }
+    }
+    
+    .hint-text {
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 30px;
+      text-align: center;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="h-full w-full flex flex-col items-center justify-center" style="background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);">
+   <div class="poster-card" id="posterCard">
+    <div class="card-background"></div>
+    <div class="card-pattern"></div>
+    <div class="floating-particles">
+     <div class="particle"></div>
+     <div class="particle"></div>
+     <div class="particle"></div>
+     <div class="particle"></div>
+     <div class="particle"></div>
+    </div>
+    <div class="bottom-decoration"></div>
+    <div class="gloss-layer"></div>
+    <div class="shine-effect"></div>
+    <div class="rainbow-edge"></div>
+    <div class="card-content">
+     <div class="decorative-circle"></div>
+     <div class="tag">
+      Premium
+     </div>
+     <h2 class="card-title text-white" id="titleText">夜空幻影</h2>
+     <p class="card-subtitle text-white" id="subtitleText">探索無限可能的視覺體驗，感受光影的魔法</p>
+    </div>
+   </div>
+   <p class="hint-text">✨ 移動滑鼠感受反光效果</p>
+  </div>
+  <script>
+    const defaultConfig = {
+      card_title: '夜空幻影',
+      card_subtitle: '探索無限可能的視覺體驗，感受光影的魔法',
+      background_color: '#0a0a0f',
+      card_bg_color: '#1a1a2e',
+      text_color: '#ffffff',
+      accent_color: '#e94560',
+      highlight_color: '#48dbfb'
+    };
+
+    let config = { ...defaultConfig };
+
+    async function onConfigChange(newConfig) {
+      config = { ...config, ...newConfig };
+      
+      const titleEl = document.getElementById('titleText');
+      const subtitleEl = document.getElementById('subtitleText');
+      
+      if (titleEl) {
+        titleEl.textContent = config.card_title || defaultConfig.card_title;
+      }
+      if (subtitleEl) {
+        subtitleEl.textContent = config.card_subtitle || defaultConfig.card_subtitle;
+      }
+    }
+
+    function mapToCapabilities(cfg) {
+      return {
+        recolorables: [
+          {
+            get: () => cfg.background_color || defaultConfig.background_color,
+            set: (value) => {
+              cfg.background_color = value;
+              window.elementSdk.setConfig({ background_color: value });
+            }
+          },
+          {
+            get: () => cfg.card_bg_color || defaultConfig.card_bg_color,
+            set: (value) => {
+              cfg.card_bg_color = value;
+              window.elementSdk.setConfig({ card_bg_color: value });
+            }
+          },
+          {
+            get: () => cfg.text_color || defaultConfig.text_color,
+            set: (value) => {
+              cfg.text_color = value;
+              window.elementSdk.setConfig({ text_color: value });
+            }
+          },
+          {
+            get: () => cfg.accent_color || defaultConfig.accent_color,
+            set: (value) => {
+              cfg.accent_color = value;
+              window.elementSdk.setConfig({ accent_color: value });
+            }
+          },
+          {
+            get: () => cfg.highlight_color || defaultConfig.highlight_color,
+            set: (value) => {
+              cfg.highlight_color = value;
+              window.elementSdk.setConfig({ highlight_color: value });
+            }
+          }
+        ],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      };
+    }
+
+    function mapToEditPanelValues(cfg) {
+      return new Map([
+        ['card_title', cfg.card_title || defaultConfig.card_title],
+        ['card_subtitle', cfg.card_subtitle || defaultConfig.card_subtitle]
+      ]);
+    }
+
+    // Initialize Element SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+
+    // Interactive reflection effect
+    const card = document.getElementById('posterCard');
+    const shineEffect = card.querySelector('.shine-effect');
+
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const rotateX = ((y - centerY) / centerY) * -10;
+      const rotateY = ((x - centerX) / centerX) * 10;
+      
+      card.style.setProperty('--rotateX', `${rotateX}deg`);
+      card.style.setProperty('--rotateY', `${rotateY}deg`);
+      
+      const mouseXPercent = (x / rect.width) * 100;
+      const mouseYPercent = (y / rect.height) * 100;
+      
+      shineEffect.style.setProperty('--mouseX', `${mouseXPercent}%`);
+      shineEffect.style.setProperty('--mouseY', `${mouseYPercent}%`);
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.setProperty('--rotateX', '0deg');
+      card.style.setProperty('--rotateY', '0deg');
+    });
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cc7f1b8454b843f',t:'MTc3MDg1NTg3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

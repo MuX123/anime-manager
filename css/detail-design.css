@@ -1,0 +1,337 @@
+/* ========== 詳情頁面 - 按照用戶設計範本 ========== */
+
+/* 詳情模態框 - 簡化設計 */
+.detail-modal-v9 {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90vw !important;
+    max-width: 1400px !important;
+    height: auto !important;
+    min-height: 85vh !important;
+    max-height: 95vh !important;
+    background: rgba(20, 20, 30, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-radius: 20px !important;
+    overflow: visible !important;
+    display: grid !important;
+    grid-template-columns: 300px 1fr !important;
+    grid-template-rows: 1fr auto !important;
+    gap: 20px !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    box-shadow: 
+        0 25px 80px rgba(0,0,0,0.8),
+        inset 0 1px 0 rgba(255,255,255,0.1) !important;
+    animation: none !important;
+    padding: 20px !important;
+}
+
+/* 移除霓虹邊框動畫 */
+.detail-modal-v9::before {
+    display: none;
+}
+
+/* 左側海報欄 */
+.left-col-v9 {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+}
+
+/* 評級徽章容器 */
+.rank-badge-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+/* 評級徽章 - 五邊形設計 */
+.rank-badge {
+    font-family: 'Orbitron', sans-serif !important;
+    position: relative !important;
+    width: 120px !important;
+    height: 120px !important;
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: linear-gradient(135deg, #ffd700 0%, #ff6b35 25%, #ff1493 50%, #9400d3 75%, #00bfff 100%) !important;
+    background-size: 400% 400% !important;
+    animation: rainbow-shift 3s ease infinite !important;
+}
+
+/* 評級文字 */
+.rank-text {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 0 15px rgba(255,255,255,0.8);
+    z-index: 2;
+    position: relative;
+}
+
+/* 評級樣式 */
+.rank-ssr {
+    background: linear-gradient(135deg, #ffd700 0%, #ff6b35 25%, #ff1493 50%, #9400d3 75%, #00bfff 100%);
+    animation: rainbow-shift 3s ease infinite;
+}
+
+.rank-sr {
+    background: linear-gradient(135deg, #ffd700 0%, #ffaa00 50%, #ff8c00 100%);
+}
+
+.rank-s {
+    background: linear-gradient(135deg, #e8d5b7 0%, #c9a959 50%, #b8860b 100%);
+}
+
+.rank-a {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 50%, #dc143c 100%);
+}
+
+.rank-b {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 50%, #6c3483 100%);
+}
+
+.rank-c {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 50%, #1a5276 100%);
+}
+
+.rank-d {
+    background: linear-gradient(135deg, #27ae60 0%, #229954 50%, #1e8449 100%);
+}
+
+.rank-e {
+    background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7a 50%, #566573 100%);
+}
+
+/* 彩虹動畫 */
+@keyframes rainbow-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* 星光動畫 */
+@keyframes pulse-glow {
+    0%, 100% { 
+        filter: drop-shadow(0 0 8px currentColor) drop-shadow(0 0 16px currentColor);
+        }
+    50% { 
+        filter: drop-shadow(0 0 12px currentColor) drop-shadow(0 0 24px currentColor);
+        }
+}
+
+.star-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+    color: #ffd700;
+}
+
+/* 星星評分區域 */
+.star-rating {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.stars-container {
+    display: flex;
+    gap: 2px;
+}
+
+.star {
+    font-size: 1.2rem;
+    color: #ffd700;
+}
+
+.star-count {
+    font-size: 0.9rem;
+    color: #ffd700;
+    font-weight: bold;
+}
+
+/* 海報框架 */
+.poster-frame-v9 {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+}
+
+.poster-img-v9 {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    display: block;
+    border-radius: 12px;
+}
+
+/* 右側內容欄 */
+.right-col-v9 {
+    position: relative !important;
+    z-index: 10 !important;
+    padding: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    background: transparent !important;
+}
+
+/* 內容容器 - 無變換 */
+.right-col-v9 > * {
+    transform: none;
+}
+
+/* 標題區域 */
+.title-section {
+    margin-bottom: 20px;
+}
+
+.anime-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 10px;
+    line-height: 1.2;
+}
+
+.anime-info {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.7);
+}
+
+/* 詳情資訊區域 */
+.detail-section {
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 10px;
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+    padding-bottom: 5px;
+}
+
+.section-content {
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* 標籤區域 */
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.tag {
+    font-size: 0.8rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* 操作按鈕區域 */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.action-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+}
+
+.action-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .detail-modal-v9 {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        width: 95vw;
+        height: auto;
+        max-height: 90vh;
+        padding: 15px;
+    }
+    
+    .left-col-v9 {
+        order: 2;
+    }
+    
+    .right-col-v9 {
+        order: 1;
+    }
+    
+    .rank-badge {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .rank-text {
+        font-size: 2rem;
+    }
+    
+    .anime-title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .detail-modal-v9 {
+        width: 98vw;
+        padding: 10px;
+    }
+    
+    .rank-badge {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .rank-text {
+        font-size: 1.5rem;
+    }
+    
+    .anime-title {
+        font-size: 1.2rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}

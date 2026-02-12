@@ -321,11 +321,11 @@ function trackAdminAction(actionName) {
 
 // 設置全局點擊監聽器（已停用，改為只追蹤板塊切換）
 
-// 在頁面載入後延遲追蹤訪問
+// 在頁面載入後延遲追蹤訪問（縮短延遲以提高準確性）
 setTimeout(() => {
     console.log('📊 開始追蹤訪客統計');
     trackVisit();
-}, 3000);
+}, 500);
 
 // 立即初始化顯示（使用預設值或快取），避免空白
 updateAnalyticsDisplay();

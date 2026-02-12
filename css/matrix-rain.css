@@ -1,0 +1,62 @@
+/* ========== 駭客任務數碼雨背景 (Matrix Rain) - Canvas 版本 ========== */
+
+body {
+    background: #050609;
+    overflow-x: hidden;
+}
+
+canvas#c {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -10; /* 最底層 */
+}
+
+/* atmosphere-container 層級 - 在矩陣雨上方 */
+#atmosphere-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -5;
+    pointer-events: none;
+    background: transparent;
+}
+
+/* atmosphere-bg 層級 - 在 atmosphere-container 上方 */
+.atmosphere-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -4;
+    pointer-events: none;
+    background: transparent;
+}
+
+/* atmosphere-overlay 層級 - 在背景效果上方 */
+#atmosphere-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: -3;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(5, 6, 9, 0.2) 70%, rgba(5, 6, 9, 0.5) 100%);
+}
+
+/* 確保 site-scaler 不會覆蓋 canvas */
+.site-scaler {
+    position: relative;
+    z-index: 1;
+}
+
+/* 詳情頁面覆蓋數碼雨 */
+.detail-modal-v9,
+#anime-detail-overlay {
+    z-index: 10000;
+}

@@ -6,7 +6,7 @@
 /* ========== 大型螢幕 (1400px) ========== */
 @media (max-width: 1400px) {
     html {
-        font-size: 13.1px;
+        font-size: 10.48px; /* 13.1px * 0.8 */
     }
 
     .anime-grid {
@@ -17,7 +17,7 @@
 /* ========== 大型螢幕 (1200px) ========== */
 @media (max-width: 1200px) {
     html {
-        font-size: 12.7px;
+        font-size: 10.16px; /* 12.7px * 0.8 */
     }
 
     .anime-grid {
@@ -28,7 +28,7 @@
 /* ========== 平板 (1024px) ========== */
 @media (max-width: 1024px) {
     html {
-        font-size: 12.3px;
+        font-size: 9.84px; /* 12.3px * 0.8 */
     }
 
     .anime-grid {
@@ -48,7 +48,7 @@
 /* ========== 平板/大手機 (768px) ========== */
 @media (max-width: 768px) {
     html {
-        font-size: 11.9px;
+        font-size: 9.52px; /* 11.9px * 0.8 */
     }
 
     /* 隱藏桌面版元素 */
@@ -164,10 +164,63 @@
         font-size: 16px;
     }
 
-    /* 詳情頁手機版優化 */
+    /* 詳情頁手機版優化 (V7 Cyber-Deck) */
+    .detail-modal-v7 {
+        flex-direction: column !important;
+        max-height: 95vh;
+        width: 100vw;
+        border-radius: 0;
+        min-height: auto;
+    }
+
+    .visual-core-column {
+        flex: 0 0 auto !important;
+        padding: 20px !important;
+        width: 100% !important;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        align-items: center;
+    }
+
+    .visual-poster-frame {
+        width: 200px !important;
+        height: 300px !important;
+    }
+
+    .info-deck-column {
+        max-height: none !important;
+        overflow-y: visible;
+    }
+
+    /* Mobile HUD Grid */
+    .hud-data-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 15px 20px;
+    }
+
+    .deck-header {
+        padding: 20px 20px 10px 20px;
+    }
+
+    .deck-content-area {
+        padding: 20px;
+    }
+
+    .cyber-badge-float {
+        /* Adjust badge for mobile */
+        bottom: 10px;
+        right: -5px;
+        padding: 5px 15px 5px 20px;
+    }
+
+    .badge-val {
+        font-size: 20px;
+    }
+
+    /* Hide old styles */
     .detail-container-v35 {
-        display: flex;
-        flex-direction: column;
+        display: none;
         max-height: 90vh;
         overflow-y: auto;
         max-width: 100vw;
@@ -243,7 +296,7 @@
 /* ========== 小螢幕手機 (480px) ========== */
 @media (max-width: 480px) {
     html {
-        font-size: 11px;
+        font-size: 8.8px; /* 11px * 0.8 */
     }
 
     .anime-grid {

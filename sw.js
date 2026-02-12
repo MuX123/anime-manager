@@ -76,7 +76,13 @@ self.addEventListener('install', (event) => {
                     './js/supabase.js',
                     './js/analytics.js',
                     './js/announcements.js',
-                    './js/script.js'
+                    './js/script.js',
+                    './js/background-switcher.js',
+                    './js/matrix-rain.js',
+                    './js/hearts-background.js',
+                    './js/atmosphere.js',
+                    './js/logger.js',
+                    './js/state.js'
                 ]);
             })
             .then(() => self.skipWaiting())
@@ -270,19 +276,78 @@ self.addEventListener('sync', (event) => {
  * 同步數據
  */
 async function syncData() {
-    // 獲取待同步的數據
-    const cache = await caches.open('pending-sync');
-    const requests = await cache.keys();
+    try {
+        // 獲取待同步的數據
+        const cache = await caches.open('pending-sync');
+        const requests = await cache.keys();
 
-    for (const request of requests) {
-        try {
-            const response = await fetch(request);
-            if (response.ok) {
-                await cache.delete(request);
-            }
-        } catch (error) {
-            console.error('[SW] Sync failed:', error);
+        if (requests.length === 0) {
+            console.log('[SW] No pending data to sync');
+            return;
         }
+
+        console.log('[SW] Syncing', requests.length, 'pending requests');
+
+        const results = await Promise.allSettled(
+            requests.map(async (request) => {
+                try {
+                    // 重新構造請求，因為原始請求可能已經失效
+                    const requestData = await request.clone().text();
+                    const options = requestData ? JSON.parse(requestData) : {};
+
+                    const response = await fetch(request.url, {
+                        method: options.method || 'GET',
+                        headers: options.headers || {},
+                        body: options.body ? JSON.stringify(options.body) : undefined
+                    });
+
+                    if (response.ok) {
+                        await cache.delete(request);
+                        return { url: request.url, success: true };
+                    }
+                    return { url: request.url, success: false, status: response.status };
+                } catch (error) {
+                    console.error('[SW] Sync request failed:', error);
+                    return { url: request.url, success: false, error: error.message };
+                }
+            })
+        );
+
+        const successCount = results.filter(r => r.success).length;
+        console.log('[SW] Sync complete:', successCount, '/', requests.length, 'succeeded');
+    } catch (error) {
+        console.error('[SW] Sync error:', error);
+    }
+}
+
+/**
+ * 將請求添加到待同步佇列
+ * @param {string} url - 請求 URL
+ * @param {Object} options - 請求選項
+ */
+async function addToPendingSync(url, options = {}) {
+    const cache = await caches.open('pending-sync');
+    const requestData = JSON.stringify({
+        url,
+        method: options.method || 'GET',
+        headers: options.headers || {},
+        body: options.body,
+        timestamp: Date.now()
+    });
+
+    const request = new Request(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: requestData
+    });
+
+    await cache.put(request);
+
+    // 嘗試觸發背景同步
+    if ('sync' in self.registration) {
+        await self.registration.sync.register('sync-data').catch(err => {
+            console.log('[SW] Background sync registration failed:', err);
+        });
     }
 }
 

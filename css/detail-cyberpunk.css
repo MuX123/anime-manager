@@ -1,0 +1,415 @@
+/* ========== 詳情頁面 - 素材庫設計 ========== */
+
+/* 詳情遮罩 */
+#anime-detail-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* 主容器 - 置中顯示 */
+.detail-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    max-width: 900px;
+    width: 100%;
+}
+
+/* 左側海報 - 直接展示 */
+.detail-poster-section {
+    position: relative;
+    perspective: 1200px;
+    transform: perspective(1200px) rotateY(15deg) rotateX(3deg);
+    transform-origin: center;
+    flex-shrink: 0;
+}
+
+/* 海報卡片 */
+.detail-card-1 {
+    width: 280px;
+    height: 390px;
+    perspective: 1000px;
+    position: relative;
+}
+
+.detail-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    /* backdrop-filter: blur(20px); */
+    /* border: 3px solid var(--rating-color, rgba(0, 255, 136, 0.4)); */
+    /* border-radius: 12px; */
+    /* overflow: hidden; */ /* 移除以允許魔法效果擴散 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* box-shadow: 0 0 40px var(--rating-glow, rgba(0, 255, 136, 0.3)), inset 0 0 20px var(--rating-glow, rgba(0, 255, 136, 0.1)); */
+    padding: 15px;
+}
+
+/* 海報圖片 - 確保裁切但允許背景特效溢出 */
+.detail-poster-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px; /* 圖片圓角 */
+    position: relative;
+    z-index: 2;
+    border: 2px solid var(--rating-color);
+    box-shadow: 0 0 15px var(--rating-glow);
+}
+
+/* 向外擴散的魔力效果 */
+.magic-diffuse-layer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    height: 90%;
+    z-index: 1; /* 在圖片後面 */
+    border-radius: 12px;
+}
+
+.magic-diffuse-layer::before,
+.magic-diffuse-layer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: var(--rating-color);
+    opacity: 0.6;
+    filter: blur(20px);
+    animation: magic-pulse-out 3s infinite ease-out;
+}
+
+.magic-diffuse-layer::after {
+    animation-delay: 1.5s;
+    filter: blur(30px);
+    opacity: 0.4;
+}
+
+@keyframes magic-pulse-out {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(1.4);
+        opacity: 0;
+    }
+}
+
+/* 移除舊的光暈效果 */
+.detail-poster-glow, .detail-poster-shine, .detail-card-inner::before {
+    display: none;
+}
+
+/* 資訊卡片 - 移除預設文字顏色，只保留邊框 */
+.detail-info-1 {
+    backdrop-filter: blur(20px);
+    padding: 25px;
+    border: 2px solid var(--rating-color, rgba(0, 255, 136, 0.4));
+    box-shadow: 0 0 40px var(--rating-glow, rgba(0, 255, 136, 0.3)), inset 0 0 20px var(--rating-glow, rgba(0, 255, 136, 0.1));
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 12px;
+    /* color: var(--rating-color, #00ff88); */ /* 移除強制顏色 */
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rating-color, rgba(0, 255, 136, 0.4)) transparent;
+}
+
+.detail-info-1::-webkit-scrollbar {
+    width: 4px;
+}
+
+.detail-info-1::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.detail-info-1::-webkit-scrollbar-thumb {
+    background: var(--rating-color, rgba(0, 255, 136, 0.4));
+    border-radius: 2px;
+}
+
+/* 標題 */
+.detail-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--rating-color, #00ff88);
+    text-shadow: 0 0 15px var(--rating-glow, rgba(0, 255, 136, 0.8));
+    letter-spacing: 1px;
+    line-height: 1.2;
+}
+
+/* 描述 */
+.detail-desc {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    max-height: 100px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 255, 136, 0.3) transparent;
+}
+
+.detail-desc::-webkit-scrollbar {
+    width: 3px;
+}
+
+.detail-desc::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.detail-desc::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 136, 0.3);
+    border-radius: 2px;
+}
+
+/* 標籤 */
+.detail-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.detail-tag {
+    padding: 5px 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--rating-color, currentColor);
+    background: rgba(255, 255, 255, 0.05);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--rating-color, #00ff88);
+}
+
+/* YouTube 容器 */
+.detail-youtube {
+    width: 100%;
+    max-width: 360px;
+    aspect-ratio: 16 / 9;
+    border: 2px solid var(--rating-color, #00ff88);
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 0 15px var(--rating-glow, rgba(0, 255, 136, 0.2));
+    position: relative;
+}
+
+.detail-youtube-preview {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    transition: all 0.2s ease;
+}
+
+.detail-youtube:hover .detail-youtube-preview {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.detail-youtube-play-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--rating-color, rgba(0, 255, 136, 0.9));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #000;
+    box-shadow: 0 0 20px var(--rating-glow, rgba(0, 255, 136, 0.6));
+    transition: all 0.2s ease;
+}
+
+.detail-youtube:hover .detail-youtube-play-icon {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px var(--rating-glow, rgba(0, 255, 136, 0.8));
+}
+
+/* 網站按鈕 */
+.detail-links {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.detail-link-btn {
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--rating-color, #00ff88);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--rating-color, rgba(0, 255, 136, 0.5));
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.5px;
+}
+
+.detail-link-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 20px var(--rating-glow, rgba(0, 255, 136, 0.5));
+    transform: translateY(-2px);
+}
+
+/* 關閉按鈕 */
+.detail-close-btn {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid rgba(255, 68, 68, 0.5);
+    color: #ff6b6b;
+    font-size: 1.3rem;
+    cursor: pointer;
+    z-index: 10001;
+}
+
+/* 編輯按鈕 */
+.detail-edit-btn {
+    position: fixed;
+    top: 15px;
+    right: 60px;
+    padding: 10px 16px;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.5);
+    color: #00d4ff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    z-index: 10001;
+}
+
+/* YouTube 播放視窗 */
+.detail-youtube-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10002;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    animation: modal-fade-in 0.3s ease;
+}
+
+.detail-youtube-modal.active {
+    display: flex;
+}
+
+.detail-youtube-modal.active .detail-youtube-player {
+    animation: player-scale-in 0.3s ease;
+}
+
+.detail-youtube-player {
+    width: 80vw;
+    max-width: 1200px;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border: 2px solid var(--rating-color, rgba(0, 255, 136, 0.5));
+    box-shadow: 0 0 50px var(--rating-glow, rgba(0, 255, 136, 0.5));
+    position: relative;
+}
+
+.detail-youtube-player iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.detail-youtube-close {
+    position: absolute;
+    top: -50px;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 68, 68, 0.2);
+    border: 1px solid rgba(255, 68, 68, 0.5);
+    color: #ff6b6b;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.detail-youtube-close:hover {
+    background: rgba(255, 68, 68, 0.4);
+    transform: scale(1.1);
+}
+
+@keyframes modal-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes player-scale-in {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* 響應式 */
+@media (max-width: 900px) {
+    .detail-container {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    #anime-detail-overlay {
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow: auto;
+    }
+
+    .detail-poster-section,
+    .detail-info-section {
+        transform: none;
+    }
+
+    .detail-title {
+        font-size: 1.5rem;
+    }
+
+    .detail-card-1 {
+        width: 200px;
+        height: 280px;
+    }
+
+    .detail-rating-badge {
+        width: 100px;
+        height: 100px;
+        top: -60px;
+    }
+
+    .badge-inner {
+        inset: 15px;
+    }
+
+    .badge-rank-text {
+        font-size: 1.4rem;
+    }
+
+    .badge-star {
+        font-size: 0.9rem;
+    }
+}

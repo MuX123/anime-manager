@@ -98,8 +98,15 @@ class ConfigManager {
             };
 
             console.error = (...args) => {
-                // 避免無限迴圈 - 不要在錯誤處理中呼叫 logger
-                // 直接靜默錯誤，不做任何處理
+                // 保留錯誤日誌以便排查問題
+                // 只抑制常見的非關鍵錯誤
+                if (args[0] && typeof args[0] === 'string') {
+                    const suppressedPatterns = ['ResizeObserver', 'favicon'];
+                    const shouldSuppress = suppressedPatterns.some(pattern => args[0].includes(pattern));
+                    if (!shouldSuppress) {
+                        originalConsole.error.apply(console, args);
+                    }
+                }
             };
 
             console.info = () => { }; // 完全靜默
@@ -250,6 +257,44 @@ class ConfigManager {
             environment: this.config.app.environment,
             isProduction: this.isProduction
         };
+    }
+
+    /**
+     * 獲取 CSP 配置
+     * @returns {Object} CSP 配置對象
+     */
+    getCSPConfig() {
+        const cspRules = {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", 'data:', 'https:'],
+            connectSrc: ["'self'", 'https://*.supabase.co', 'https://*.google-analytics.com'],
+            fontSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            frameAncestors: ["'none'"]
+        };
+
+        return {
+            enabled: this.config.security.cspEnabled,
+            rules: cspRules,
+            reportOnly: !this.isProduction // 生產環境強制啟用
+        };
+    }
+
+    /**
+     * 生成 CSP 頭部字串
+     * @returns {string} CSP 頭部字串
+     */
+    getCSPHeader() {
+        const config = this.getCSPConfig();
+        if (!config.enabled) return '';
+
+        const directives = Object.entries(config.rules)
+            .map(([key, values]) => `${key} ${values.join(' ')}`)
+            .join('; ');
+
+        return directives;
     }
 
     /**

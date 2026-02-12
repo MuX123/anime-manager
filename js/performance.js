@@ -368,12 +368,12 @@ window.performanceOptimizer = new PerformanceOptimizer();
 window.offlineManager = window.performanceOptimizer.offlineManager;
 window.healthMonitor = window.performanceOptimizer.healthMonitor;
 
-window.performance = {
-    ...window.performance,
-    getDetailedMetrics: () => window.performanceOptimizer.getMetrics(),
-    clearCache: () => window.performanceOptimizer.clearCache(),
-    getHealthStatus: () => window.healthMonitor.getStatus()
-};
+// 避免覆蓋原生 performance 物件導致 performance.now() 失效
+if (window.performance) {
+    window.performance.getDetailedMetrics = () => window.performanceOptimizer.getMetrics();
+    window.performance.clearCache = () => window.performanceOptimizer.clearCache();
+    window.performance.getHealthStatus = () => window.healthMonitor.getStatus();
+}
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { PerformanceOptimizer, LazyLoader, ResourceOptimizer, MemoryManager, OfflineManager, HealthMonitor };
