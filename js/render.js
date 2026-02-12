@@ -549,7 +549,7 @@ window.showAnimeDetail = (id) => {
     const links = Array.isArray(item.links) ? item.links : [];
     const starColor = item.star_color || optionsData.category_colors?.recommendation || '#ffcc00';
     const btnColor = item.extra_data?.btn_bg || optionsData.category_colors?.btn_bg || '#00d4ff';
-    const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[item.rating]) ? optionsData.rating_colors[item.rating] : (optionsData.category_colors?.rating || 'var(--neon-purple)');
+    // Removed duplicate ratingColor declaration
     const yearColor = optionsData.category_colors?.year || 'var(--neon-cyan)';
     const genreColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
     const episodesColor = optionsData.category_colors?.episodes || 'var(--neon-green)';
@@ -570,34 +570,51 @@ window.showAnimeDetail = (id) => {
     const rating = item.rating || '普';
     const recommendation = item.recommendation || 0;
     
-    // 評級顏色對應
-    const ratingColors = {
-        'S': { color: '#ff00ff', secondary: '#ff00ff', star: '#ffdd00', glow: 'rgba(255, 0, 255, 0.8)' },
-        'SSR': { color: '#ff00ff', secondary: '#00ffff', star: '#ffdd00', glow: 'rgba(255, 0, 255, 0.8)' },
-        'SR': { color: '#ff6600', secondary: '#ffaa00', star: '#ffaa00', glow: 'rgba(255, 102, 0, 0.8)' },
-        'R': { color: '#00ff88', secondary: '#00ffaa', star: '#ffdd00', glow: 'rgba(0, 255, 136, 0.8)' },
-        'A': { color: '#00aaff', secondary: '#00ddff', star: '#88ddff', glow: 'rgba(0, 170, 255, 0.8)' },
-        'B': { color: '#888888', secondary: '#aaaaaa', star: '#cccccc', glow: 'rgba(136, 136, 136, 0.8)' },
-        'C': { color: '#666666', secondary: '#888888', star: '#999999', glow: 'rgba(102, 102, 102, 0.8)' },
-        '普': { color: '#00ff88', secondary: '#00ffaa', star: '#ffdd00', glow: 'rgba(0, 255, 136, 0.8)' }
+    // 優先使用後台設定的 rating_colors，如果沒有則使用預設
+    // 這確保了徽章顏色與管理後台一致
+    const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[rating]) 
+        ? optionsData.rating_colors[rating] 
+        : (optionsData.category_colors?.rating || '#00ff88');
+
+    // 構建 colors 對象供模板使用
+    const colors = {
+        color: ratingColor,
+        // 其他顏色保留默認或根據 ratingColor 衍生
+        secondary: ratingColor, 
+        glow: ratingColor, // 使用 rgba 轉換會更好，但這裡先用主色
+        star: '#ffdd00'
     };
     
-    const colors = ratingColors[rating] || ratingColors['普'];
-    const litStars = Math.min(6, Math.max(0, recommendation));
+    // Restore missing variables
     const nameColor = item.name_color || optionsData.category_colors?.name || '#ffffff';
-    // Removed duplicate const declaration
-    // descColor was already declared above, reusing or reassigning if needed
-    // Actually, looking at previous code, descColor was declared way above.
-    // Let's just assign it to the new logic variable if we want to override, but 'const' throws error.
-    // I will rename the variable here to detailDescColor to avoid conflict
     const detailDescColor = item.desc_color || optionsData.category_colors?.description || 'rgba(255,255,255,0.8)';
     const tagColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
+
+    // 生成星星 HTML - 順時針亮起 (推薦數決定亮起數量)
+    // 獲取數字類型的推薦數，處理可能的字串格式
+    let recCount = 0;
+    const recStr = String(recommendation); // 確保轉為字串處理
     
-    // 生成星星 HTML - 順時針亮起
+    if (recStr.includes('★') || recStr.includes('⭐')) {
+        // 如果包含星星符號，計算符號數量
+        recCount = (recStr.match(/[★⭐]/g) || []).length;
+    } else {
+        // 嘗試提取字串中的第一個數字 (例如 "4", "Rank 5", "6/10")
+        const match = recStr.match(/\d+/);
+        if (match) {
+            recCount = parseInt(match[0], 10);
+        } else {
+            // 如果完全沒有數字，也沒有星星，保持 0 (除非本身是數字類型)
+            recCount = typeof recommendation === 'number' ? recommendation : 0;
+        }
+    }
+    
+    const litStars = Math.min(6, Math.max(0, recCount));
+    
     let starsHTML = '';
     for (let i = 1; i <= 6; i++) {
         const isLit = i <= litStars;
-        starsHTML += `<span class="badge-star badge-star-${i} ${isLit ? 'lit' : ''}">✦</span>`;
+        starsHTML += `<div class="star star-${i} ${isLit ? 'lit' : ''}">✦</div>`;
     }
     
     overlay.innerHTML = `
@@ -621,13 +638,16 @@ window.showAnimeDetail = (id) => {
                         <!-- 六邊形徽章 -->
                         <div class="detail-rating-badge">
                             <div class="badge-outer">
-                                <div class="badge-core badge-hexagon"></div>
+                                <div class="badge-core hexagon"></div>
                                 <div class="badge-inner">
-                                    <div class="badge-stars-container">
+                                    <div class="stars-container">
                                         ${starsHTML}
                                     </div>
-                                    <span class="badge-rank-text">${rating}</span>
+                                    <div class="rank-text-wrapper">
+                                        <span class="rank-text">${rating}</span>
+                                    </div>
                                 </div>
+                                <div class="glow-effect"></div>
                             </div>
                         </div>
                         <!-- 海報圖片 -->
