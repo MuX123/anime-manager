@@ -372,10 +372,10 @@ body {
 }
 
 /* ========== 互動遊標主題套用 (強制覆蓋) ========== */
-/* 
-   使用 !important 確保覆蓋瀏覽器預設與其他樣式
-   涵蓋常見互動元素
-*/
+/*
+    使用 !important 確保覆蓋瀏覽器預設與其他樣式
+    涵蓋常見互動元素
+ */
 body,
 html,
 .app-container,
@@ -413,7 +413,7 @@ input[type="email"],
 input[type="password"],
 textarea,
 .editable {
-    cursor: var(--cur-pen) !important;
+    cursor: var(--cur-text) !important;
 }
 
 /* 針對特定狀態 */

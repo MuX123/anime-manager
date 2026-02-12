@@ -639,10 +639,11 @@ window.showAnimeDetail = (id) => {
                         <div class="detail-rating-badge">
                             <div class="badge-outer">
                                 <div class="badge-core hexagon"></div>
+                                <!-- 星星容器移到 badge-inner 外面，避免被 clip-path 裁切 -->
+                                <div class="stars-container">
+                                    ${starsHTML}
+                                </div>
                                 <div class="badge-inner">
-                                    <div class="stars-container">
-                                        ${starsHTML}
-                                    </div>
                                     <div class="rank-text-wrapper">
                                         <span class="rank-text">${rating}</span>
                                     </div>

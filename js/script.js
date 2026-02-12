@@ -247,11 +247,13 @@ let gridColumns = (() => {
 })();
 window.gridColumns = gridColumns;
 let sortOrder = localStorage.getItem('sortOrder') || 'desc';
-// 預設縮放 75%
+// 預設縮放 90%
 let zoomLevel = (() => {
     const stored = localStorage.getItem('zoomLevel');
     if (stored && ['50', '60', '75', '80', '90', '100'].includes(stored)) return parseInt(stored);
-    return 75;
+    // 強制使用 90%
+    localStorage.setItem('zoomLevel', '90');
+    return 90;
 })();
 let importTarget = 'anime';
 let editId = null;
@@ -861,25 +863,15 @@ window.renderApp = (requestId = null) => {
                 <option value="asc" ${sortOrder === 'asc' ? 'selected' : ''} style="background: var(--bg-dark);">時間：從舊到新</option>
                 <option value="name" ${sortOrder === 'name' ? 'selected' : ''} style="background: var(--bg-dark);">名稱：A-Z</option>
             </select>
-            <select onchange="window.changeCursorTheme(this.value)" style="width: 100%; background: rgba(176,38,255,0.1) !important; border: 1px solid rgba(176,38,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease; text-align: center; text-align-last: center;">
-                <option value="bocchi" ${localStorage.getItem('cursorTheme') === 'bocchi' ? 'selected' : ''} style="background: var(--bg-dark);">🎯 波奇 (BTR)</option>
-                <option value="genshin" ${localStorage.getItem('cursorTheme') === 'genshin' ? 'selected' : ''} style="background: var(--bg-dark);">⚔️ 原神</option>
-                <option value="furina" ${localStorage.getItem('cursorTheme') === 'furina' ? 'selected' : ''} style="background: var(--bg-dark);">💧 芙寧娜</option>
-                <option value="witch" ${localStorage.getItem('cursorTheme') === 'witch' ? 'selected' : ''} style="background: var(--bg-dark);">🧙‍♀️ 沉默魔女</option>
-                <option value="standard" ${localStorage.getItem('cursorTheme') === 'standard' || !localStorage.getItem('cursorTheme') ? 'selected' : ''} style="background: var(--bg-dark);">🖱️ 標準簡約</option>
+<select onchange="window.changeCursorTheme(this.value)" style="width: 100%; background: rgba(176,38,255,0.1) !important; border: 1px solid rgba(176,38,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease; text-align: center; text-align-last: center;">
+                <option value="cursor" ${(!localStorage.getItem('cursorTheme') || localStorage.getItem('cursorTheme') === 'cursor') ? 'selected' : ''} style="background: var(--bg-dark);">🎯 Cursor 風格</option>
+                <option value="anya" ${localStorage.getItem('cursorTheme') === 'anya' ? 'selected' : ''} style="background: var(--bg-dark);">🦊 阿尼亞</option>
+                <option value="elysia" ${localStorage.getItem('cursorTheme') === 'elysia' ? 'selected' : ''} style="background: var(--bg-dark);">🦋 愛莉希雅</option>
+                <option value="frieren" ${localStorage.getItem('cursorTheme') === 'frieren' ? 'selected' : ''} style="background: var(--bg-dark);">🧙‍♀️ 芙蕾蓮</option>
+                <option value="miku" ${localStorage.getItem('cursorTheme') === 'miku' ? 'selected' : ''} style="background: var(--bg-dark);">🎤 初音未來</option>
+                <option value="nikke" ${localStorage.getItem('cursorTheme') === 'nikke' ? 'selected' : ''} style="background: var(--bg-dark);">🐰 NIKKE Doro</option>
             </select>
-            <select onchange="window.changeZoomLevel(this.value)" style="width: 100%; background: rgba(255,165,0,0.1) !important; border: 1px solid rgba(255,165,0,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #ffa500 !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease; text-align: center; text-align-last: center;">
-                <option value="50" ${zoomLevel === 50 ? 'selected' : ''} style="background: var(--bg-dark);">🔍 50%</option>
-                <option value="60" ${zoomLevel === 60 ? 'selected' : ''} style="background: var(--bg-dark);">🔍 60%</option>
-                <option value="75" ${zoomLevel === 75 ? 'selected' : ''} style="background: var(--bg-dark);">🔍 75%</option>
-                <option value="80" ${zoomLevel === 80 ? 'selected' : ''} style="background: var(--bg-dark);">🔍 80%</option>
-                <option value="90" ${zoomLevel === 90 ? 'selected' : ''} style="background: var(--bg-dark);">🔍 90%</option>
-                <option value="100" ${zoomLevel === 100 ? 'selected' : ''} style="background: var(--bg-dark);">🔍 100%</option>
-            </select>
-            <select onchange="if(window.performanceOptimizer) window.performanceOptimizer.toggleLiteMode(this.value === 'true');" style="width: 100%; background: rgba(0,255,150,0.1) !important; border: 1px solid rgba(0,255,150,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: #fff !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease; text-align: center; text-align-last: center;">
-                <option value="false" ${!document.body.classList.contains('lite-mode') ? 'selected' : ''} style="background: var(--bg-dark);">✨ 高品質渲染</option>
-                <option value="true" ${document.body.classList.contains('lite-mode') ? 'selected' : ''} style="background: var(--bg-dark);">🚀 輕量效能模式</option>
-            </select>
+
             <div style="height: 1px; background: rgba(0,212,255,0.2); margin: 4px 0;"></div>
             ${window.isAdminLoggedIn ? `
                 <button onclick="window.toggleAdminMode(true)" style="width: 100%; background: rgba(0,212,255,0.1) !important; border: 1px solid rgba(0,212,255,0.25) !important; padding: 10px !important; font-size: 13px !important; cursor: pointer; color: var(--neon-cyan) !important; font-weight: 500; outline: none !important; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif; transition: all 0.3s ease;">⚙️ 後台管理</button>

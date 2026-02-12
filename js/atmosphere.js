@@ -8,41 +8,139 @@
 // ==========================================
 window.CursorManager = {
     themes: {
-        bocchi: { name: '🎸 孤獨搖滾', type: 'image' },
-        furina: { name: '🌊 芙寧娜', type: 'image' },
-        genshin: { name: '✨ 原神通用', type: 'image' },
-        witch: { name: '🧙‍♀️ 魔女之旅', type: 'image' },
-        standard: { name: '⚪ 標準樣式', type: 'image' }
+        cursor: { 
+            name: '🎯 Cursor 風格', 
+            folder: 'cursor',
+            files: {
+                'pointer': '04_Point',
+                'text': '05_Type',
+                'move': '10_Move',
+                'wait': '02_Loading',
+                'help': '03_Question',
+                'resize-v': '06_Vertical',
+                'resize-h': '09_Horizontal',
+                'resize-nwse': '07_LDiag',
+                'resize-nesw': '08_RDiag',
+                'default': '01_Normal'
+            }
+        },
+        anya: { 
+            name: '🦊 阿尼亞', 
+            folder: 'anya-forger',
+            files: {
+                'pointer': 'Link_Select',
+                'text': 'Text_Select',
+                'move': 'Move',
+                'wait': 'Busy',
+                'help': 'Help_Select',
+                'resize-v': 'Vertical',
+                'resize-h': 'Horizontal',
+                'resize-nwse': 'Resize_1',
+                'resize-nesw': 'resize_2',
+                'default': 'Normal'
+            }
+        },
+        elysia: { 
+            name: '🦋 愛莉希雅', 
+            folder: 'elysia-honkai',
+            files: {
+                'pointer': 'Link',
+                'text': 'Text',
+                'move': 'Move',
+                'wait': 'busy',
+                'help': 'Help',
+                'resize-v': 'Vertical',
+                'resize-h': 'Horizontal',
+                'resize-nwse': 'Diagonal1',
+                'resize-nesw': 'Diagonal2',
+                'default': 'Normal'
+            }
+        },
+        frieren: { 
+            name: '🧙‍♀️ 芙蕾蓮', 
+            folder: 'frieren',
+            files: {
+                'pointer': 'Frieren link',
+                'text': 'Frieren text',
+                'move': 'Frieren move',
+                'wait': 'Frieren busy',
+                'help': 'Frieren help',
+                'resize-v': 'Frieren vert',
+                'resize-h': 'Frieren horz',
+                'resize-nwse': 'Frieren dgn1',
+                'resize-nesw': 'Frieren dgn2',
+                'default': 'Frieren normal'
+            }
+        },
+        miku: { 
+            name: '🎤 初音未來', 
+            folder: 'hatsune-miku',
+            files: {
+                'pointer': 'Link',
+                'text': 'Text',
+                'move': 'Move',
+                'wait': 'Busy',
+                'help': 'Help',
+                'resize-v': 'Vertical',
+                'resize-h': 'Horizontal',
+                'resize-nwse': 'Diagonal1',
+                'resize-nesw': 'Diagonal2',
+                'default': 'Normal'
+            }
+        },
+        nikke: { 
+            name: '🐰 NIKKE Doro', 
+            folder: 'nikke-doro',
+            files: {
+                'pointer': 'doro_1',
+                'text': 'doro_5',
+                'move': 'doro_4',
+                'wait': 'doro_3',
+                'help': 'doro_2',
+                'resize-v': 'doro_9',
+                'resize-h': 'doro_8',
+                'resize-nwse': 'doro_7',
+                'resize-nesw': 'doro_6',
+                'default': 'doro_10'
+            }
+        }
     },
 
     init() {
-        const savedTheme = localStorage.getItem('cursorTheme') || 'bocchi';
+        const savedTheme = localStorage.getItem('cursorTheme') || 'cursor';
         this.apply(savedTheme);
     },
 
     apply(themeId) {
-        if (!this.themes[themeId]) themeId = 'bocchi';
+        if (!this.themes[themeId]) themeId = 'cursor';
 
+        const theme = this.themes[themeId];
         const root = document.body;
+        const basePath = `./assets/cursors/${theme.folder}`;
 
-        // 使用相對於根目錄的路徑 (assets 在根目錄)
-        // 這樣可以處理 /anime-manager/ 等子路徑部署情況
-        let basePath = './assets/cursors';
-
-        console.log(`[CursorManager] 套用主題: ${themeId}, BasePath: ${basePath}`);
-        localStorage.setItem('cursorTheme', themeId);
+        console.log(`[CursorManager] 套用主題: ${theme.name}`);
 
         // 設定 CSS 變數
-        // 使用絕對路徑無效 (file://)，必須依賴瀏覽器的相對路徑解析
-        // 移除 ./ 嘗試讓瀏覽器自行決定
-        root.style.setProperty('--cur-pointer', `url('${basePath}/${themeId}-pointer.cur'), auto`);
-        root.style.setProperty('--cur-finger', `url('${basePath}/${themeId}-finger.cur'), pointer`);
-        root.style.setProperty('--cur-pen', `url('${basePath}/${themeId}-pen.cur'), text`);
-        root.style.setProperty('--cur-nah', `url('${basePath}/${themeId}-nah.cur'), not-allowed`);
+        const mapping = theme.files;
+        const ext = '.ani';
 
-        // 發送 Toast 通知 (如果在互動中)
+        root.style.setProperty('--cur-pointer', `url('${basePath}/${mapping.pointer}${ext}'), pointer`);
+        root.style.setProperty('--cur-finger', `url('${basePath}/${mapping.pointer}${ext}'), pointer`);
+        root.style.setProperty('--cur-text', `url('${basePath}/${mapping.text}${ext}'), text`);
+        root.style.setProperty('--cur-move', `url('${basePath}/${mapping.move}${ext}'), move`);
+        root.style.setProperty('--cur-wait', `url('${basePath}/${mapping.wait}${ext}'), wait`);
+        root.style.setProperty('--cur-help', `url('${basePath}/${mapping.help}${ext}'), help`);
+        root.style.setProperty('--cur-resize-v', `url('${basePath}/${mapping['resize-v']}${ext}'), ns-resize`);
+        root.style.setProperty('--cur-resize-h', `url('${basePath}/${mapping['resize-h']}${ext}'), ew-resize`);
+        root.style.setProperty('--cur-resize-nwse', `url('${basePath}/${mapping['resize-nwse']}${ext}'), nwse-resize`);
+        root.style.setProperty('--cur-resize-nesw', `url('${basePath}/${mapping['resize-nesw']}${ext}'), nesw-resize`);
+        root.style.setProperty('--cur-default', `url('${basePath}/${mapping.default}${ext}'), default`);
+
+        localStorage.setItem('cursorTheme', themeId);
+
+        // 發送 Toast 通知
         if (window.showToast && document.visibilityState === 'visible') {
-            window.showToast(`✨ 遊標主題已切換：${this.themes[themeId].name}`);
+            window.showToast(`✨ 遊標主題已切換：${theme.name}`);
         }
     },
 
