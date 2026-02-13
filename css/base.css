@@ -103,17 +103,16 @@ body {
     color: var(--text-secondary);
 }
 
-/* 跑馬燈容器 - 絕對置中 */
+/* 跑馬燈容器 - 向右偏移，避免與人數重疊 */
 .marquee-container {
     position: absolute;
-    left: 50%;
+    left: 60%;
     transform: translateX(-50%);
-    width: 50%;
-    max-width: 700px;
+    width: 35%;
+    max-width: 500px;
     overflow: hidden;
     white-space: nowrap;
     pointer-events: none;
-    /* 防止遮擋點擊 */
 }
 
 .marquee-content {

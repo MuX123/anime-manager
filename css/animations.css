@@ -364,11 +364,21 @@ body {
 }
 
 /* ========== ACG 遊標主題變數 (預設) ========== */
+/* 注意：這些值會被 JavaScript (atmosphere.js) 的 CursorManager 動態覆蓋 */
+/* 使用 ../ 回上一層目錄（因為 CSS 在 css/ 目錄下） */
 body {
-    --cur-pointer: url('../assets/cursors/bocchi-pointer.cur'), auto;
-    --cur-finger: url('../assets/cursors/bocchi-finger.cur'), pointer;
-    --cur-pen: url('../assets/cursors/bocchi-pen.cur'), text;
-    --cur-nah: url('../assets/cursors/bocchi-nah.cur'), not-allowed;
+    --cur-pointer: url('../assets/cursors/04_Point.ani'), pointer;
+    --cur-finger: url('../assets/cursors/04_Point.ani'), pointer;
+    --cur-text: url('../assets/cursors/05_Type.ani'), text;
+    --cur-move: url('../assets/cursors/10_Move.ani'), move;
+    --cur-wait: url('../assets/cursors/02_Loading.ani'), wait;
+    --cur-help: url('../assets/cursors/03_Question.ani'), help;
+    --cur-resize-v: url('../assets/cursors/06_Vertical.ani'), ns-resize;
+    --cur-resize-h: url('../assets/cursors/09_Horizontal.ani'), ew-resize;
+    --cur-resize-nwse: url('../assets/cursors/07_LDiag.ani'), nwse-resize;
+    --cur-resize-nesw: url('../assets/cursors/08_RDiag.ani'), nesw-resize;
+    --cur-default: url('../assets/cursors/01_Normal.ani'), default;
+    --cur-nah: url('../assets/cursors/03_Question.ani'), not-allowed;
 }
 
 /* ========== 互動遊標主題套用 (強制覆蓋) ========== */

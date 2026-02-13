@@ -117,12 +117,12 @@ window.checkImage = (url, callback) => {
 // 針對 MyAnimeList (MAL) 圖片進行畫質提升
 window.getOptimizedPosterUrl = (url, forceHighQuality = false) => {
     if (!url) return null;
-    
+
     // 如果是 MAL 圖片
     if (url.includes('cdn.myanimelist.net/images/anime')) {
         // 檢查是否為高畫質 (l.jpg)
         const isLarge = url.endsWith('l.jpg') || url.endsWith('l.webp');
-        
+
         if (forceHighQuality) {
             // 如果強制高畫質，且目前不是，嘗試替換
             if (!isLarge) {
@@ -198,7 +198,6 @@ function processCardData(item) {
     return {
         genres,
         extraTags,
-        starCount: (item.recommendation || '').split('★').length - 1,
         starCount: (item.recommendation || '').split('★').length - 1,
         starText: item.recommendation || '★'
     };
@@ -302,7 +301,7 @@ function renderGridCard(item, colors, data) {
     const { ratingColor, episodesColor, nameColor, yearColor, cyanBase, starColor } = colors;
     // gridColumns might be global
     const gridSize = (typeof gridColumns !== 'undefined' && gridColumns == 5) ? 14 : ((typeof gridColumns !== 'undefined' && gridColumns == 4) ? 15 : 16);
-    
+
     // 判斷是否需要高畫質 (3欄佈局強制高畫質)
     const useHighQuality = (typeof gridColumns !== 'undefined' && gridColumns <= 3);
     const posterUrl = window.getOptimizedPosterUrl(item.poster_url, useHighQuality);
@@ -504,14 +503,10 @@ window.renderCard = (item) => {
 };
 
 window.showAnimeDetail = (id) => {
-    // 性能優化：開啟詳情時停止並徹底隱藏背景動畫 -> 恢復動畫顯示
-    /*
+    // ✅ 性能優化：開啟詳情時停止背景動畫
     if (window.AtmosphereAPI) {
         window.AtmosphereAPI.pause();
-        const bgCanvas = document.getElementById('atmosphere-canvas');
-        if (bgCanvas) bgCanvas.style.display = 'none';
     }
-    */
 
     const escape = (str) => {
         if (typeof escapeHtml === 'function') return escapeHtml(str);
@@ -532,18 +527,20 @@ window.showAnimeDetail = (id) => {
         console.warn('[Render] 建立獨立詳情頁容器 #anime-detail-overlay');
         overlay = document.createElement('div');
         overlay.id = 'anime-detail-overlay';
-        overlay.onclick = (e) => {
-            // 點擊背景關閉
-            if (e.target === overlay) window.closeAnimeDetail();
-        };
         document.body.appendChild(overlay);
     }
+
+    // 確保點擊背景關閉功能始終有效
+    overlay.onclick = (e) => {
+        if (e.target === overlay) window.closeAnimeDetail();
+    };
 
     // 確保舊 modal 關閉 (以防萬一)
     const oldModal = document.getElementById('detailModal');
     if (oldModal) oldModal.classList.remove('active');
 
     overlay.classList.add('active');
+    document.body.classList.add('detail-view-open');
 
     const genres = Array.isArray(item.genre) ? item.genre : (typeof item.genre === 'string' ? item.genre.split(/[|,]/).map(g => g.trim()) : []);
     const links = Array.isArray(item.links) ? item.links : [];
@@ -569,54 +566,51 @@ window.showAnimeDetail = (id) => {
     const videoId = item.youtube_url ? getYouTubeEmbedUrl(item.youtube_url) : null;
     const rating = item.rating || '普';
     const recommendation = item.recommendation || 0;
-    
+
     // 優先使用後台設定的 rating_colors，如果沒有則使用預設
     // 這確保了徽章顏色與管理後台一致
-    const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[rating]) 
-        ? optionsData.rating_colors[rating] 
+    const ratingColor = (optionsData.rating_colors && optionsData.rating_colors[rating])
+        ? optionsData.rating_colors[rating]
         : (optionsData.category_colors?.rating || '#00ff88');
 
     // 構建 colors 對象供模板使用
     const colors = {
         color: ratingColor,
         // 其他顏色保留默認或根據 ratingColor 衍生
-        secondary: ratingColor, 
+        secondary: ratingColor,
         glow: ratingColor, // 使用 rgba 轉換會更好，但這裡先用主色
         star: '#ffdd00'
     };
-    
+
     // Restore missing variables
     const nameColor = item.name_color || optionsData.category_colors?.name || '#ffffff';
     const detailDescColor = item.desc_color || optionsData.category_colors?.description || 'rgba(255,255,255,0.8)';
     const tagColor = optionsData.category_colors?.genre || 'var(--neon-cyan)';
 
     // 生成星星 HTML - 順時針亮起 (推薦數決定亮起數量)
-    // 獲取數字類型的推薦數，處理可能的字串格式
     let recCount = 0;
-    const recStr = String(recommendation); // 確保轉為字串處理
-    
-    if (recStr.includes('★') || recStr.includes('⭐')) {
-        // 如果包含星星符號，計算符號數量
-        recCount = (recStr.match(/[★⭐]/g) || []).length;
-    } else {
-        // 嘗試提取字串中的第一個數字 (例如 "4", "Rank 5", "6/10")
-        const match = recStr.match(/\d+/);
-        if (match) {
-            recCount = parseInt(match[0], 10);
+    const recValue = item.recommendation;
+    if (typeof recValue === 'number') {
+        recCount = recValue;
+    } else if (typeof recValue === 'string') {
+        // 先嘗試提取數字 (處理 "★3" 格式)
+        const matchDigits = recValue.match(/\d+/);
+        if (matchDigits) {
+            recCount = parseInt(matchDigits[0], 10);
         } else {
-            // 如果完全沒有數字，也沒有星星，保持 0 (除非本身是數字類型)
-            recCount = typeof recommendation === 'number' ? recommendation : 0;
+            // 如果沒有數字，則計算星星符號數量
+            recCount = (recValue.match(/[★⭐]/g) || []).length;
         }
     }
-    
-    const litStars = Math.min(6, Math.max(0, recCount));
-    
+
+    const starCount = Math.min(6, Math.max(0, recCount));
+    console.log(`[Detail] Rendering: ${item.name}, Rating: ${rating}, Stars: ${starCount}/${recValue}`);
+
     let starsHTML = '';
     for (let i = 1; i <= 6; i++) {
-        const isLit = i <= litStars;
-        starsHTML += `<div class="star star-${i} ${isLit ? 'lit' : ''}">✦</div>`;
+        starsHTML += `<span class="star star-${i} ${i <= starCount ? 'lit' : ''}">★</span>`;
     }
-    
+
     overlay.innerHTML = `
         <!-- 關閉按鈕 -->
         <button class="detail-close-btn" onclick="window.closeAnimeDetail()">×</button>
@@ -635,20 +629,19 @@ window.showAnimeDetail = (id) => {
                         <!-- 魔力擴散層 (取代舊的光暈) -->
                         <div class="magic-diffuse-layer"></div>
                         
-                        <!-- 六邊形徽章 -->
+                        <!-- 六邊形評級徽章 (重構版) -->
                         <div class="detail-rating-badge">
-                            <div class="badge-outer">
-                                <div class="badge-core hexagon"></div>
-                                <!-- 星星容器移到 badge-inner 外面，避免被 clip-path 裁切 -->
-                                <div class="stars-container">
-                                    ${starsHTML}
-                                </div>
-                                <div class="badge-inner">
-                                    <div class="rank-text-wrapper">
-                                        <span class="rank-text">${rating}</span>
-                                    </div>
-                                </div>
-                                <div class="glow-effect"></div>
+                            <!-- 底層發光與彩色背景 -->
+                            <div class="badge-base hexagon" style="background-color: ${colors.color}; box-shadow: 0 0 25px ${colors.glow};"></div>
+                            
+                            <!-- 中間深色核心 -->
+                            <div class="badge-content hexagon">
+                                <span class="rank-text">${rating}</span>
+                            </div>
+
+                            <!-- 星星層 - 放在最頂層且不被裁切 -->
+                            <div class="stars-layer">
+                                ${starsHTML}
                             </div>
                         </div>
                         <!-- 海報圖片 -->
@@ -687,7 +680,7 @@ window.showAnimeDetail = (id) => {
                     
                     <!-- 網站按鈕 -->
                     ${links && links.length > 0 ? `
-                    <div class="detail-links">
+                    <div class="detail-links" id="detail-links-container">
                         ${links.map(l => `<a href="${l.url}" target="_blank" class="detail-link-btn" style="color: ${tagColor}; border-color: ${tagColor}80;">${escape(l.name)}</a>`).join('')}
                     </div>
                     ` : ''}
@@ -707,12 +700,27 @@ window.showAnimeDetail = (id) => {
     if (typeof window.initGlobalScroll === 'function') {
         window.initGlobalScroll();
     }
+
+    // 詳情頁滾輪支援 (解決 inline onwheel 失效問題)
+    const linksContainer = document.getElementById('detail-links-container');
+    if (linksContainer) {
+        linksContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            linksContainer.scrollLeft += e.deltaY;
+        }, { passive: false });
+    }
 };
 
 window.closeAnimeDetail = () => {
     // 關閉新 Overlay
     const overlay = document.getElementById('anime-detail-overlay');
     if (overlay) overlay.classList.remove('active');
+    document.body.classList.remove('detail-view-open');
+
+    // 關閉 YouTube 視窗
+    if (typeof window.closeYouTubeModal === 'function') {
+        window.closeYouTubeModal();
+    }
 
     // 關閉舊 Modal (相容性)
     const oldModal = document.getElementById('detailModal');
@@ -730,11 +738,11 @@ window.closeAnimeDetail = () => {
 window.toggleDescription = (itemId) => {
     const descArea = document.getElementById(`desc-area-${itemId}`);
     const descBtn = document.getElementById(`desc-toggle-btn-${itemId}`);
-    
+
     if (!descArea) return;
-    
+
     const isCollapsed = descArea.classList.contains('desc-collapsed');
-    
+
     if (isCollapsed) {
         // 展開
         descArea.classList.remove('desc-collapsed');
@@ -749,31 +757,11 @@ window.toggleDescription = (itemId) => {
 };
 
 // 強制導出以避免 Race Condition
-// window.renderCard 已在第 424 行定義，這裡不需要重新賦值
 window.renderGridCard = renderGridCard;
 window.renderListCard = renderListCard;
 window.getCardColors = getCardColors;
 window.processCardData = processCardData;
 window.toggleDescription = toggleDescription;
-
-// 確保 renderCard 存在於 window 對象上
-if (typeof window.renderCard !== 'function') {
-    console.error('[Render] renderCard 未正確定義!');
-}
-
-// 關閉詳情頁面函數
-window.closeAnimeDetail = () => {
-    // 關閉新 Overlay
-    const overlay = document.getElementById('anime-detail-overlay');
-    if (overlay) overlay.classList.remove('active');
-
-    // 關閉 YouTube 視窗
-    window.closeYouTubeModal();
-
-    // 關閉舊 Modal (相容性)
-    const oldModal = document.getElementById('detailModal');
-    if (oldModal) oldModal.classList.remove('active');
-};
 
 // 打開 YouTube 播放視窗
 window.openYouTubeModal = (videoId) => {

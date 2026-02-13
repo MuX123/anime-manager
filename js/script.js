@@ -17,7 +17,76 @@ if (IS_PRODUCTION) {
     console.info = () => { };
 }
 
+// --- 進度條模擬系統 (V6 Zero-Delay) ---
+window.startLoadingSimulation = function () {
+    const progressBar = document.getElementById('progress-bar-fill');
+    const progressPercent = document.getElementById('progress-percent');
+    const loadingStatus = document.getElementById('loading-status');
+    const app = document.getElementById('app');
+
+    const statusMessages = [
+        '正在建立神經連結...',
+        '載入核心模組...',
+        '初始化神經網絡...',
+        '校準觀測傳感器...',
+        '同步量子處理器...',
+        '解密資料串流...',
+        '啟動防禦協定...',
+        '準備全息投影介面...',
+        '完成啟動程序...',
+        '系統就緒。開啟閘門...'
+    ];
+
+    let progress = 0;
+    const duration = 4000; // 響應速度優化
+    const interval = 50;
+    const increment = 100 / (duration / interval);
+
+    const loadingInterval = setInterval(() => {
+        progress += increment + Math.random() * 0.8;
+        const currentProgress = Math.min(progress, 100);
+
+        if (progressBar) progressBar.style.width = `${currentProgress}%`;
+        if (progressPercent) progressPercent.textContent = `${Math.floor(currentProgress)}`;
+
+        // V9 Mechanical Torque: Gradually rotate the hub based on progress
+        const hub = document.querySelector('.rotating-hub');
+        if (hub) {
+            hub.style.setProperty('--hub-rotation', `${currentProgress}deg`);
+        }
+
+        const messageIndex = Math.min(Math.floor(currentProgress / 10), statusMessages.length - 1);
+        if (loadingStatus) loadingStatus.textContent = statusMessages[messageIndex];
+
+        if (currentProgress >= 100) {
+            clearInterval(loadingInterval);
+            if (progressPercent) progressPercent.textContent = '100';
+
+            window.waitForAppRender().then(() => {
+                if (typeof window.openGatesAndHide === 'function') {
+                    window.openGatesAndHide();
+                }
+            });
+        }
+    }, interval);
+};
+
+window.waitForAppRender = function () {
+    const app = document.getElementById('app');
+    return new Promise((resolve) => {
+        const checkRender = () => {
+            if (app && app.innerHTML.length > 500) {
+                setTimeout(resolve, 300);
+            } else {
+                setTimeout(checkRender, 100);
+            }
+        };
+        checkRender();
+    });
+};
+
 let currentSection = 'notice';
+let isAdminLoggedIn = false; // Added global state
 let animeData = [];
 let optionsData = {
     genre: ['冒險', '奇幻', '熱血', '校園', '戀愛', '喜劇', '科幻', '懸疑', '日常', '異世界'],
@@ -103,6 +172,7 @@ const demoAnimeData = [
         recommendation: '★★★★★',
         image_url: 'https://cdn.myanimelist.net/images/anime/1173/142080l.jpg',
         description: '2022年，VRMMO遊戲「SAO」正式營運，玩家們被困在遊戲中無法登出，只有打倒BOSS才能離開...',
+        category: 'anime',
         created_at: new Date().toISOString()
     },
     {
@@ -117,6 +187,7 @@ const demoAnimeData = [
         recommendation: '★★★★★',
         image_url: 'https://cdn.myanimelist.net/images/anime/1178/142083l.jpg',
         description: '大正時期，名為「鬼」的怪物存在於世。主角炭治郎的家人被鬼殺害，他踏上了成為鬼殺隊的旅程...',
+        category: 'anime',
         created_at: new Date().toISOString()
     },
     {
@@ -131,6 +202,7 @@ const demoAnimeData = [
         recommendation: '★★★★★',
         image_url: 'https://cdn.myanimelist.net/images/anime/3408/142078l.jpg',
         description: '間諜「黃昏」為了完成任務，需要組建一個臨時家庭。他收養了具有讀心能力的女兒，展開了意想不到的生活...',
+        category: 'anime',
         created_at: new Date().toISOString()
     },
     {
@@ -145,6 +217,7 @@ const demoAnimeData = [
         recommendation: '★★★★★',
         image_url: 'https://cdn.myanimelist.net/images/anime/1174/142081l.jpg',
         description: '在巨人威脅下的人類最後的城堡，面對巨人捕食的恐懼，主角艾倫決定加入訓練兵團，展開復仇之旅...',
+        category: 'anime',
         created_at: new Date().toISOString()
     },
     {
@@ -159,6 +232,7 @@ const demoAnimeData = [
         recommendation: '★★★★',
         image_url: 'https://cdn.myanimelist.net/images/anime/1205/142085l.jpg',
         description: '在80%的人類都擁有名為「個性」的超能力的時代，沒有力量的少年綠谷出久如何成為英雄？',
+        category: 'anime',
         created_at: new Date().toISOString()
     },
     {
@@ -173,6 +247,7 @@ const demoAnimeData = [
         recommendation: '★★★★★',
         image_url: 'https://cdn.myanimelist.net/images/anime/1173/142079l.jpg',
         description: '高中生虎杖悠仁在吞下詛咒的手指後，成為了詛咒的容器，必須進入咒術高等學校學習...',
+        category: 'anime',
         created_at: new Date().toISOString()
     },
     {
@@ -187,6 +262,7 @@ const demoAnimeData = [
         recommendation: '★★★★★',
         image_url: 'https://cdn.myanimelist.net/images/anime/1795/142084l.jpg',
         description: '自動手記人偶「薇爾莉特·伊芙加登」在戰後尋找「愛」的意義，替人們代筆書信...',
+        category: 'anime',
         created_at: new Date().toISOString()
     },
     {
@@ -201,6 +277,7 @@ const demoAnimeData = [
         recommendation: '★★★★★',
         image_url: 'https://cdn.myanimelist.net/images/anime/1315/142086l.jpg',
         description: '住在東京的少年與住在鄉下的少女，在夢中交換了身體。跨越時空的奇蹟就此展開...',
+        category: 'anime',
         created_at: new Date().toISOString()
     },
     {
@@ -215,6 +292,7 @@ const demoAnimeData = [
         recommendation: '★★★★★',
         image_url: 'https://cdn.myanimelist.net/images/anime/152/142088l.jpg',
         description: '被召喚到異世界的少年菜月昴，擁有「死亡回歸」的能力，只有拯救他人才能打破詛咒...',
+        category: 'anime',
         created_at: new Date().toISOString()
     },
     {
@@ -229,10 +307,11 @@ const demoAnimeData = [
         recommendation: '★★★★★',
         image_url: 'https://cdn.myanimelist.net/images/anime/456/142090l.jpg',
         description: '戴上草帽的少年魯夫踏上尋找「大海賊王」寶藏的冒險旅程，組建了草帽海賊團...',
+        category: 'anime',
         created_at: new Date().toISOString()
     }
 ];
-let currentCategory = 'notice';
+let currentCategory = 'anime';
 let currentAdminTab = 'manage';
 let currentPage = 1;
 const itemsPerPage = 20;
@@ -559,6 +638,11 @@ document.addEventListener('mousemove', (e) => {
 });
 
 window.initApp = async function () {
+    // 立即啟動進度條模擬 (V7 Zero-Delay)
+    if (typeof window.startLoadingSimulation === 'function') {
+        window.startLoadingSimulation();
+    }
+
     try {
         console.log('🚀 系統初始化中...');
 
@@ -642,7 +726,15 @@ window.initApp = async function () {
         window.applyZoom();
 
         // 8. 檢查管理員登入狀態
-        await window.checkAndUpdateAdminStatus();
+        try {
+            if (typeof window.checkAndUpdateAdminStatus === 'function') {
+                await window.checkAndUpdateAdminStatus();
+            } else {
+                console.warn('checkAndUpdateAdminStatus not defined, skipping');
+            }
+        } catch (e) {
+            console.warn('Admin status check failed:', e);
+        }
 
         // 9. 渲染初始介面
         window.renderApp();
@@ -663,48 +755,132 @@ window.initApp = async function () {
             }
         }
 
-        // 11. 顯示首次訪問彈窗
-        if (isFirstLoad) {
-            setTimeout(() => window.showFirstVisitPopups(), 1000);
-        }
+        // 揭露函數定義 (V10 Final Refactor - Physical Bonding & Non-Clipped Lighting)
+        window.openGatesAndHide = function () {
+            console.log('🚀 啟動 V10 核心釋放序列 (Physical Bonding Model)...');
 
-        // 11. 隱藏載入畫面並顯示內容 (延遲確保渲染穩定 - 增加科技感等待時間)
-        const loadingScreen = document.getElementById('loading-screen');
-        const app = document.getElementById('app');
-        if (loadingScreen) {
-            console.log('✨ 系統初始化完成，準備啟動介面...');
-            
-            // 模擬系統啟動延遲 (2.5秒)
+            const rotatingHub = document.querySelector('.rotating-hub');
+            const hubAura = document.querySelector('.hub-aura');
+            const lockPlates = document.querySelectorAll('.lock-plate');
+            const centerUI = document.querySelector('.center-ui-container');
+            const centerGas = document.querySelector('.center-gas');
+            const circuitBurst = document.querySelector('.circuit-burst');
+            const loadingScreen = document.getElementById('loading-screen');
+            const app = document.getElementById('app');
+            const gateLeft = document.querySelector('.gate-left');
+            const gateRight = document.querySelector('.gate-right');
+            const loadingStatus = document.getElementById('loading-status');
+
+            if (!loadingScreen) return;
+
+            // 0. 開始序列
             setTimeout(() => {
-                // 添加淡出類 (如果 CSS 有定義) 或直接操作 opacity
-                loadingScreen.style.opacity = '0';
-                loadingScreen.style.pointerEvents = 'none';
-                
-                // 等待淡出動畫完成後隱藏
+                console.log('🔄 初始化同步旋轉件...');
+                // 鎖片旋轉 (V10: 現在在門裡，獨立旋轉但軸心對齊)
+                lockPlates.forEach(p => p.classList.add('spinning'));
+
+                if (rotatingHub) rotatingHub.classList.add('spinning');
+                if (hubAura) hubAura.classList.add('active');
+
+                if (loadingScreen) {
+                    loadingScreen.classList.add('spraying');
+                    if (loadingStatus) loadingStatus.textContent = "SYNCHRONIZING HUB CORE...";
+                }
+
+                // 1. 解鎖序列 (V13: 鎖片顫動) - 縮短至 0.4s
                 setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                    app.classList.add('loaded');
-                    console.log('🚀 介面已啟動');
-                }, 1000); 
-            }, 2500); 
-        } else {
-            app.classList.add('loaded');
-        }
+                    console.log('⚡ 階段一：鎖片解鎖顫動...');
+                    lockPlates.forEach(p => p.classList.add('unlocking'));
+                    if (loadingStatus) loadingStatus.textContent = "安全鎖定解除中...";
+                }, 400);
 
-        isFirstLoad = false;
-        console.log('✅ 系統初始化完成');
+                // 2. 螺栓回縮 (V13: 實體細節位移) - 縮短至 0.8s
+                setTimeout(() => {
+                    console.log('🔩 階段二：固定螺栓回縮...');
+                    lockPlates.forEach(p => p.classList.remove('unlocking'));
+                    if (gateLeft) gateLeft.classList.add('retracting');
+                    if (gateRight) gateRight.classList.add('retracting');
+                    if (loadingStatus) loadingStatus.textContent = "實體螺栓回縮中...";
+                }, 800);
 
-        // 安全超時：10秒後強制隱藏載入畫面
+                // 3. 核心釋放與淡出開啟 (V22) - 縮短至 1.5s
+                setTimeout(() => {
+                    console.log('🚪 階段三：大門淡出...');
+                    if (loadingStatus) loadingStatus.textContent = "存取權限：已核准";
+                    if (loadingScreen) loadingScreen.classList.add('opening-gates');
+
+                    if (rotatingHub) {
+                        rotatingHub.classList.remove('spinning');
+                        rotatingHub.classList.add('splitting');
+                    }
+                    if (gateLeft) {
+                        gateLeft.classList.remove('retracting');
+                        gateLeft.classList.add('opening');
+                    }
+                    if (gateRight) {
+                        gateRight.classList.remove('retracting');
+                        gateRight.classList.add('opening');
+                    }
+
+                    if (centerUI) centerUI.classList.add('fading');
+                    if (centerGas) centerGas.classList.add('spraying');
+
+                    // 同步開始 Revel App
+                    if (app) {
+                        app.classList.add('site-content-blur');
+                        setTimeout(() => {
+                            app.classList.remove('site-content-blur');
+                            app.classList.add('loaded');
+                        }, 100); // 幾乎立即開始 reveal
+                    }
+                }, 1500);
+
+                // 4. 收尾清理 (V22) - 3.0s 完成
+                setTimeout(() => {
+                    if (loadingScreen) {
+                        loadingScreen.classList.add('hidden');
+                    }
+
+                    if (isFirstLoad) {
+                        setTimeout(() => {
+                            if (typeof window.showFirstVisitPopups === 'function') {
+                                window.showFirstVisitPopups();
+                            }
+                        }, 500);
+                    }
+
+                    isFirstLoad = false;
+                    console.log('✅ 系統入口序列圓滿完成');
+                }, 3000);
+            }, 500);
+        };
+
+        // 安全超時 (V5 Optimized Fallback)
         setTimeout(() => {
             const loadingScreen = document.getElementById('loading-screen');
             const app = document.getElementById('app');
-            if (loadingScreen && loadingScreen.style.display !== 'none') {
-                loadingScreen.style.opacity = '0';
-                loadingScreen.style.display = 'none';
-                app.classList.add('loaded');
-                console.log('⚠️ 安全超時強制隱藏載入畫面');
+            const rotatingHub = document.querySelector('.rotating-hub');
+            const hubAura = document.querySelector('.hub-aura');
+            const gateLeft = document.querySelector('.gate-left');
+            const gateRight = document.querySelector('.gate-right');
+            const centerUI = document.querySelector('.center-ui-container');
+
+            if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+                console.warn('⚠️ 動畫執行超時，啟動安全強制揭露程式...');
+                if (app) {
+                    app.classList.add('loaded');
+                }
+                if (rotatingHub) rotatingHub.classList.add('splitting');
+                if (hubAura) hubAura.classList.add('dispersing');
+                if (centerUI) centerUI.classList.add('fading');
+                if (gateLeft) gateLeft.classList.add('fading');
+                if (gateRight) gateRight.classList.add('fading');
+
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                }, 3000);
             }
-        }, 10000);
+        }, 15000);
 
     } catch (err) {
         console.error('Init error:', err);
@@ -716,26 +892,38 @@ window.initApp = async function () {
         // 確保隱藏載入畫面
         const loadingScreen = document.getElementById('loading-screen');
         const app = document.getElementById('app');
+        const gateLeft = document.querySelector('.gate-left');
+        const gateRight = document.querySelector('.gate-right');
+        const centerConsole = document.querySelector('.center-console');
         if (loadingScreen) {
-            loadingScreen.style.opacity = '0';
+            if (centerConsole) centerConsole.classList.add('fading');
+            if (gateLeft) gateLeft.classList.add('fading');
+            if (gateRight) gateRight.classList.add('fading');
             setTimeout(() => {
-                loadingScreen.style.display = 'none';
-                app.classList.add('loaded');
-            }, 500);
+                if (app) {
+                    app.classList.remove('site-content-blur');
+                    app.classList.add('loaded');
+                }
+                loadingScreen.classList.add('hidden');
+            }, 1500);
         } else {
             app.classList.add('loaded');
         }
 
         // 初始化動態背景 (Night City Rain)
-        if (typeof window.initAtmosphere === 'function') {
-            window.initAtmosphere();
-        }
+        try {
+            if (typeof window.initAtmosphere === 'function') {
+                window.initAtmosphere();
+            }
+        } catch (e) { console.warn('Atmosphere init failed:', e); }
 
         // 恢復上次選擇的遊標主題
-        const savedTheme = localStorage.getItem('cursorTheme') || 'standard';
-        if (typeof window.applyCursorTheme === 'function') {
-            window.applyCursorTheme(savedTheme);
-        }
+        try {
+            const savedTheme = localStorage.getItem('cursorTheme') || 'standard';
+            if (typeof window.applyCursorTheme === 'function') {
+                window.applyCursorTheme(savedTheme);
+            }
+        } catch (e) { console.warn('Cursor init failed:', e); }
     }
 };
 
@@ -948,8 +1136,9 @@ window.renderApp = (requestId = null) => {
         window.updateAdminMenu();
 
         // 確保 loading 關閉
+        // 確保 loading 關閉 (僅在非首次載入時執行，首次載入由 initApp 的動畫序列控制)
         const loadingScreen = document.getElementById('loading-screen');
-        if (loadingScreen && loadingScreen.style.display !== 'none') {
+        if (loadingScreen && loadingScreen.style.display !== 'none' && !isFirstLoad) {
             loadingScreen.style.opacity = '0';
             setTimeout(() => loadingScreen.style.display = 'none', 500);
         }
@@ -1027,7 +1216,7 @@ window.renderApp = (requestId = null) => {
     app.style.opacity = '1';
 
     const loadingScreen = document.getElementById('loading-screen');
-    if (loadingScreen) {
+    if (loadingScreen && !isFirstLoad) {
         loadingScreen.style.opacity = '0';
         setTimeout(() => {
             loadingScreen.style.display = 'none';
@@ -2554,7 +2743,7 @@ window.applyJikanData = async (index) => {
             { id: '99itv', name: '99動漫', url: `https://99itv.net/search/-------------.html?wd=${encodeURIComponent(animeName)}&submit=` },
             { id: 'ofiii', name: 'Ofiii', url: `https://www.ofiii.com/search/${encodeURIComponent(animeName)}` },
             { id: 'dmmiku', name: '動漫MIKU', url: `https://www.dmmiku.com/index.php/vod/search.html?wd=${encodeURIComponent(animeName)}` },
-            { id: 'yinhuadm', name: '櫻花動漫', url: `https://www.yinhuadm.cc/label/${encodeURIComponent(animeName)}.html` },
+            { id: 'yinhuadm', name: '櫻花動漫', url: `https://www.yinhuadm.cc/vch/${encodeURIComponent(animeName)}.html` },
             { id: 'anione', name: 'AniOne YT', url: `https://www.youtube.com/@AniOneAnime/search?query=${encodeURIComponent(animeName)}` },
             { id: 'musetw', name: 'Muse木棉花 YT', url: `https://www.youtube.com/@MuseTW/search?query=${encodeURIComponent(animeName)}` },
         ];
@@ -3462,4 +3651,43 @@ window.changeZoomLevel = (level) => {
 window.applyZoom = () => {
     const scale = zoomLevel / 100;
     document.documentElement.style.setProperty('--site-scale', scale);
+};
+
+// Helper to check admin status
+window.checkAndUpdateAdminStatus = async () => {
+    try {
+        window.isAdminLoggedIn = false;
+
+        if (!window.supabaseManager || !window.supabaseManager.isConnectionReady()) {
+            document.body.classList.remove('is-admin');
+            return;
+        }
+
+        const client = window.supabaseManager.getClient();
+        const { data: { session }, error } = await client.auth.getSession();
+
+        if (!error && session) {
+            window.isAdminLoggedIn = true;
+            document.body.classList.add('is-admin');
+            console.log('👤 Admin logged in:', session.user.email);
+
+            // Render admin panel if needed
+            if (typeof window.renderAdmin === 'function') {
+                // window.renderAdmin(); // Let main render loop handle it
+            }
+        } else {
+            document.body.classList.remove('is-admin');
+        }
+
+        // Update UI elements that depend on admin status
+        const adminElements = document.querySelectorAll('.admin-only');
+        adminElements.forEach(el => {
+            el.style.display = window.isAdminLoggedIn ? 'block' : 'none';
+        });
+
+    } catch (e) {
+        console.warn('Check admin status failed:', e);
+        window.isAdminLoggedIn = false;
+        document.body.classList.remove('is-admin');
+    }
 };

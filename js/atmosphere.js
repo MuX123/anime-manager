@@ -1,283 +1,193 @@
 /**
- * atmosphere.js - 處理全域動態背景（粒子連線網絡）與遊標管理
- * ACG 收藏庫 v8.0.0
+ * atmosphere.js - GIF 遊標系統 + 背景控制
+ * ACG 收藏庫 v8.3.1
+ * 
+ * 特色：
+ * - GIF 游標永遠在最上層
+ * - AtmosphereAPI 控制背景動畫
  */
 
+console.log('[CursorSystem] 初始化游標系統...');
+
 // ==========================================
-// 遊標管理器 (Cursor Manager)
+// SVG 游標數據 (回退)
 // ==========================================
-window.CursorManager = {
-    themes: {
-        cursor: { 
-            name: '🎯 Cursor 風格', 
-            folder: 'cursor',
-            files: {
-                'pointer': '04_Point',
-                'text': '05_Type',
-                'move': '10_Move',
-                'wait': '02_Loading',
-                'help': '03_Question',
-                'resize-v': '06_Vertical',
-                'resize-h': '09_Horizontal',
-                'resize-nwse': '07_LDiag',
-                'resize-nesw': '08_RDiag',
-                'default': '01_Normal'
-            }
-        },
-        anya: { 
-            name: '🦊 阿尼亞', 
-            folder: 'anya-forger',
-            files: {
-                'pointer': 'Link_Select',
-                'text': 'Text_Select',
-                'move': 'Move',
-                'wait': 'Busy',
-                'help': 'Help_Select',
-                'resize-v': 'Vertical',
-                'resize-h': 'Horizontal',
-                'resize-nwse': 'Resize_1',
-                'resize-nesw': 'resize_2',
-                'default': 'Normal'
-            }
-        },
-        elysia: { 
-            name: '🦋 愛莉希雅', 
-            folder: 'elysia-honkai',
-            files: {
-                'pointer': 'Link',
-                'text': 'Text',
-                'move': 'Move',
-                'wait': 'busy',
-                'help': 'Help',
-                'resize-v': 'Vertical',
-                'resize-h': 'Horizontal',
-                'resize-nwse': 'Diagonal1',
-                'resize-nesw': 'Diagonal2',
-                'default': 'Normal'
-            }
-        },
-        frieren: { 
-            name: '🧙‍♀️ 芙蕾蓮', 
-            folder: 'frieren',
-            files: {
-                'pointer': 'Frieren link',
-                'text': 'Frieren text',
-                'move': 'Frieren move',
-                'wait': 'Frieren busy',
-                'help': 'Frieren help',
-                'resize-v': 'Frieren vert',
-                'resize-h': 'Frieren horz',
-                'resize-nwse': 'Frieren dgn1',
-                'resize-nesw': 'Frieren dgn2',
-                'default': 'Frieren normal'
-            }
-        },
-        miku: { 
-            name: '🎤 初音未來', 
-            folder: 'hatsune-miku',
-            files: {
-                'pointer': 'Link',
-                'text': 'Text',
-                'move': 'Move',
-                'wait': 'Busy',
-                'help': 'Help',
-                'resize-v': 'Vertical',
-                'resize-h': 'Horizontal',
-                'resize-nwse': 'Diagonal1',
-                'resize-nesw': 'Diagonal2',
-                'default': 'Normal'
-            }
-        },
-        nikke: { 
-            name: '🐰 NIKKE Doro', 
-            folder: 'nikke-doro',
-            files: {
-                'pointer': 'doro_1',
-                'text': 'doro_5',
-                'move': 'doro_4',
-                'wait': 'doro_3',
-                'help': 'doro_2',
-                'resize-v': 'doro_9',
-                'resize-h': 'doro_8',
-                'resize-nwse': 'doro_7',
-                'resize-nesw': 'doro_6',
-                'default': 'doro_10'
-            }
-        }
-    },
-
-    init() {
-        const savedTheme = localStorage.getItem('cursorTheme') || 'cursor';
-        this.apply(savedTheme);
-    },
-
-    apply(themeId) {
-        if (!this.themes[themeId]) themeId = 'cursor';
-
-        const theme = this.themes[themeId];
-        const root = document.body;
-        const basePath = `./assets/cursors/${theme.folder}`;
-
-        console.log(`[CursorManager] 套用主題: ${theme.name}`);
-
-        // 設定 CSS 變數
-        const mapping = theme.files;
-        const ext = '.ani';
-
-        root.style.setProperty('--cur-pointer', `url('${basePath}/${mapping.pointer}${ext}'), pointer`);
-        root.style.setProperty('--cur-finger', `url('${basePath}/${mapping.pointer}${ext}'), pointer`);
-        root.style.setProperty('--cur-text', `url('${basePath}/${mapping.text}${ext}'), text`);
-        root.style.setProperty('--cur-move', `url('${basePath}/${mapping.move}${ext}'), move`);
-        root.style.setProperty('--cur-wait', `url('${basePath}/${mapping.wait}${ext}'), wait`);
-        root.style.setProperty('--cur-help', `url('${basePath}/${mapping.help}${ext}'), help`);
-        root.style.setProperty('--cur-resize-v', `url('${basePath}/${mapping['resize-v']}${ext}'), ns-resize`);
-        root.style.setProperty('--cur-resize-h', `url('${basePath}/${mapping['resize-h']}${ext}'), ew-resize`);
-        root.style.setProperty('--cur-resize-nwse', `url('${basePath}/${mapping['resize-nwse']}${ext}'), nwse-resize`);
-        root.style.setProperty('--cur-resize-nesw', `url('${basePath}/${mapping['resize-nesw']}${ext}'), nesw-resize`);
-        root.style.setProperty('--cur-default', `url('${basePath}/${mapping.default}${ext}'), default`);
-
-        localStorage.setItem('cursorTheme', themeId);
-
-        // 發送 Toast 通知
-        if (window.showToast && document.visibilityState === 'visible') {
-            window.showToast(`✨ 遊標主題已切換：${theme.name}`);
-        }
-    },
-
-    getThemeList() {
-        return Object.entries(this.themes).map(([id, data]) => ({
-            id,
-            name: data.name
-        }));
-    }
+const SVG_CURSORS = {
+    default: `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 8 L24 24 L16 24 L16 8 Z" fill="%2300d4ff" stroke="%2300ff88" stroke-width="1"/></svg>`,
+    pointer: `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 4 L24 24 L18 24 L12 12 Z" fill="%2300d4ff" stroke="%2300ff88" stroke-width="1.5"/></svg>`,
 };
 
-// 兼容舊版函數呼叫
+// ==========================================
+// 遊標管理器
+// ==========================================
+window.CursorManager = {
+    config: {
+        cursorSize: 32,
+        followSpeed: 0.2,
+        zIndex: 2147483647,
+    },
+    
+    currentTheme: 'cursor',
+    gifThemes: ['miku', 'elysia'],
+    
+    mouseX: 0,
+    mouseY: 0,
+    cursorX: 0,
+    cursorY: 0,
+    
+    cursorElement: null,
+    cursorImage: null,
+    
+    init() {
+        console.log('[CursorManager] 初始化...');
+        this.createCursorElements();
+        
+        const savedTheme = localStorage.getItem('cursorTheme') || 'cursor';
+        this.apply(savedTheme);
+        
+        this.bindEvents();
+        this.startAnimation();
+    },
+    
+    createCursorElements() {
+        if (this.cursorElement) return;
+        
+        this.cursorElement = document.createElement('div');
+        this.cursorElement.id = 'custom-cursor';
+        this.cursorElement.innerHTML = `<img id="cursor-image" src="" alt="cursor">`;
+        
+        document.body.appendChild(this.cursorElement);
+        this.cursorImage = document.getElementById('cursor-image');
+        
+        this.cursorElement.style.cssText = `
+            position: fixed;
+            pointer-events: none;
+            z-index: 2147483647;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            transform: translate(-50%, -50%);
+            will-change: left, top;
+        `;
+        
+        this.cursorImage.style.cssText = `
+            display: block;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        `;
+    },
+    
+    bindEvents() {
+        document.addEventListener('mousemove', (e) => {
+            this.mouseX = e.clientX;
+            this.mouseY = e.clientY;
+        });
+    },
+    
+    startAnimation() {
+        const animate = () => {
+            if (this.cursorElement) {
+                this.cursorX += (this.mouseX - this.cursorX) * this.config.followSpeed;
+                this.cursorY += (this.mouseY - this.cursorY) * this.config.followSpeed;
+                this.cursorElement.style.left = this.cursorX + 'px';
+                this.cursorElement.style.top = this.cursorY + 'px';
+            }
+            requestAnimationFrame(animate);
+        };
+        animate();
+    },
+    
+    apply(themeId) {
+        console.log(`[CursorManager] 應用主題: ${themeId}`);
+        this.currentTheme = themeId;
+        
+        const isGifTheme = this.gifThemes.includes(themeId);
+        const basePath = 'assets/cursors';
+        
+        if (isGifTheme) {
+            this.cursorImage.src = `${basePath}/${themeId}/pointer.gif`;
+        } else {
+            this.cursorImage.src = SVG_CURSORS.pointer;
+        }
+        
+        localStorage.setItem('cursorTheme', themeId);
+        
+        if (window.showToast && document.visibilityState === 'visible') {
+            window.showToast(`✨ 游標主題已切換：${this.getThemeName(themeId)}`);
+        }
+    },
+    
+    getThemeName(themeId) {
+        const names = {
+            cursor: '🎯 Cursor 風格',
+            anya: '🦊 阿尼亞',
+            elysia: '🦋 愛莉希雅',
+            frieren: '🧙‍♀️ 芙蕾蓮',
+            miku: '🎤 初音未來',
+            nikke: '🐰 NIKKE Doro',
+        };
+        return names[themeId] || themeId;
+    },
+};
+
+// 兼容函數
 window.changeCursorTheme = (theme) => window.CursorManager.apply(theme);
 window.applyCursorTheme = (theme) => window.CursorManager.apply(theme);
 
-
 // ==========================================
-// 動態背景 (Digital Constellation / Particle Network)
+// AtmosphereAPI - 背景控制
 // ==========================================
-window.initAtmosphere = () => {
-    try {
-        console.log('[Atmosphere] 初始化星空連線背景...');
-
-        let container = document.getElementById('atmosphere-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'atmosphere-container';
-            document.body.prepend(container);
+window.AtmosphereAPI = {
+    isPaused: false,
+    container: null,
+    
+    init() {
+        this.container = document.getElementById('atmosphere-container');
+    },
+    
+    pause() {
+        this.init();
+        this.isPaused = true;
+        if (this.container) {
+            this.container.style.opacity = '0';
         }
-
-        // 創建遮罩層 - 檢查是否已存在
-        let overlay = document.getElementById('atmosphere-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'atmosphere-overlay';
-            document.body.prepend(overlay);
+        const posterWall = document.getElementById('atmosphere-container');
+        if (posterWall) posterWall.style.opacity = '0';
+    },
+    
+    resume() {
+        this.init();
+        this.isPaused = false;
+        if (this.container) {
+            this.container.style.opacity = '0.6';
         }
-
-        // 監聽 animeData 載入完成後渲染背景
-        const checkAndRender = () => {
-            console.log('[Atmosphere] 檢查 animeData...', window.animeData ? window.animeData.length : 'undefined');
-            
-            if (window.animeData && window.animeData.length > 0) {
-                console.log('[Atmosphere] 檢測到 animeData，開始渲染背景...');
-                
-                // 添加 flex 樣式確保正確排列
-                container.style.cssText = `
-                    display: flex;
-                    flex-wrap: wrap;
-                    justify-content: center;
-                    align-content: center;
-                    gap: 15px;
-                    padding: 40px;
-                    opacity: 0;
-                    transition: opacity 1.5s ease;
-                `;
-                
-                // 渲染海報牆
-                window.AtmosphereAPI.renderPosterWall();
-                
-                // 淡入顯示
-                requestAnimationFrame(() => {
-                    container.style.opacity = '0.6'; // 調低透明度讓矩陣雨透出
-                });
-                
-                console.log('[Atmosphere] 背景渲染完成');
-            } else {
-                // 每 100ms 檢查一次，直到 animeData 載入完成
-                setTimeout(checkAndRender, 100);
-            }
-        };
-
-        // 立即開始檢查
-        checkAndRender();
-
-        // 導出 API
-        window.AtmosphereAPI = {
-            pause: () => { container.style.opacity = '0'; },
-            resume: () => { container.style.opacity = '1'; },
-            setQuality: () => { },
-            renderPosterWall: () => {
-                if (!container) return;
-
-                // 鎖定機制：如果已經渲染過，就不再重新渲染
-                if (container.getAttribute('data-locked') === 'true') {
-                    return;
-                }
-
-                // 隨機選取海報
-                const posters = window.animeData
-                    ?.filter(a => a.poster_url || a.image_url)
-                    ?.map(a => a.poster_url || a.image_url) || [];
-
-                if (posters.length === 0) {
-                    console.warn('[Atmosphere] 沒有找到海報資料');
-                    return;
-                }
-
-                // 計算需要的海報數量
-                const count = Math.min(24, posters.length * 2);
-                let html = '';
-
-                for (let i = 0; i < count; i++) {
-                    const url = posters[Math.floor(Math.random() * posters.length)];
-                    const delay = (Math.random() * 5).toFixed(1);
-                    const duration = (15 + Math.random() * 10).toFixed(0);
-
-                    html += `
-                    <div class="poster-wall-item" style="animation-delay: -${delay}s;">
-                        <div class="mech-cycle-img img-a" style="background-image: url('${url}'); animation-duration: ${duration}s; animation-delay: -${delay}s;"></div>
-                        <div class="mech-cycle-img img-b" style="background-image: url('${url}'); animation-duration: ${duration}s; animation-delay: -${delay}s;"></div>
-                        <div class="mech-cycle-img img-c" style="background-image: url('${url}'); animation-duration: ${duration}s; animation-delay: -${delay}s;"></div>
-                    </div>`;
-                }
-                
-                container.innerHTML = html + container.innerHTML; // 保留光斑
-                container.setAttribute('data-locked', 'true');
-                console.log('[Atmosphere] 背景已生成 (Mechanical Cycle Mode)');
-            },
-            refresh: () => {
-                container.removeAttribute('data-locked');
-                window.AtmosphereAPI.renderPosterWall();
-            }
-        };
-
-    } catch (e) {
-        console.error('[Atmosphere] 初始化失敗:', e);
+        const posterWall = document.getElementById('atmosphere-container');
+        if (posterWall) posterWall.style.opacity = '0.6';
+    },
+    
+    toggle() {
+        if (this.isPaused) {
+            this.resume();
+        } else {
+            this.pause();
+        }
     }
 };
 
 // ==========================================
-// 初始化執行 (等待 DOM 和數據載入)
+// 初始化執行
 // ==========================================
-// 延遲執行，確保 animeData 已載入
-window.addEventListener('load', () => {
+document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
-        window.initAtmosphere();
-        window.CursorManager.init();
-    }, 200);
+        try {
+            window.CursorManager.init();
+            window.AtmosphereAPI.init();
+        } catch (error) {
+            console.error('[Init] 初始化失敗:', error);
+        }
+    }, 100);
 });
+
+console.log('✅ atmosphere.js 模組已載入 (v8.3.1)');
