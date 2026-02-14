@@ -247,7 +247,7 @@ class PerformanceOptimizer {
     async setupServiceWorker() {
         if (!('serviceWorker' in navigator)) return;
         try {
-            const registration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+            const registration = await navigator.serviceWorker.register('./sw.js?v=20260214_v1', { scope: './' });
             console.log('[Performance] Service Worker 已註冊:', registration.scope);
             await navigator.serviceWorker.ready;
             this.serviceWorkerReady = true;

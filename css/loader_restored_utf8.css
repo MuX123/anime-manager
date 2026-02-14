@@ -1,4 +1,4 @@
-/* Sci-Fi Entry Animation - V2 Mechanical */
+﻿/* Sci-Fi Entry Animation - V2 Mechanical */
 :root {
     --mech-dark: #0a0a10;
     --mech-metal: #1a1a24;
@@ -294,7 +294,7 @@
 }
 
 /* When opening, gas puffs out */
-#loading-screen.spraying .gas-steam {
+.loading-screen.spraying .gas-steam {
     opacity: 1;
     animation: gasSpray 1s ease-out forwards;
 }
@@ -644,177 +644,107 @@
     }
 }
 
-/* --- V16 High-Fidelity Masterpiece Locks (Additional Elements) --- */
-.lock-core-spinner {
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    z-index: 60;
-}
-
-.core-ring {
-    position: absolute;
-    inset: 0;
-    border: 2px dashed rgba(0, 240, 255, 0.3);
-    border-radius: 50%;
-}
-
-.core-ring.outer {
-    animation: spin 10s linear infinite;
-    inset: -20px;
-}
-
-.core-ring.inner {
-    animation: spin-reverse 8s linear infinite;
-    inset: 20px;
-    border-color: rgba(0, 240, 255, 0.1);
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes spin-reverse {
-    from {
-        transform: rotate(360deg);
-    }
-
-    to {
-        transform: rotate(0deg);
-    }
-}
-
-.mech-detail-1 {
-    position: absolute;
-    top: 50px;
-    left: 20px;
-    width: 60px;
-    height: 2px;
-    background: var(--mech-accent);
-    box-shadow: 0 0 10px var(--mech-accent);
-    opacity: 0.3;
-}
-
-
 /* --- Progress Bar (Mechanical Charging) --- */
 .progress-container {
     margin-top: 20px;
     position: relative;
-    width: 300px;
 }
 
 .progress-bar-frame {
     height: 24px;
-    background: #0a0a0f;
-    border: 2px solid #00f0ff;
-    border-radius: 4px;
-    padding: 3px;
+    background: #111;
+    border: 1px solid #444;
+    padding: 2px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.5), inset 0 0 15px rgba(0, 0, 0, 0.8);
 }
 
 .progress-bar-fill {
     height: 100%;
     width: 0%;
-    background: repeating-linear-gradient(90deg, #00f0ff 0px, #00f0ff 4px, transparent 4px, transparent 8px);
-    box-shadow: 0 0 10px #00f0ff;
-    transition: width 0.3s ease;
-    position: relative;
+    background: repeating-linear-gradient(90deg,
+            var(--mech-accent),
+            var(--mech-accent) 4px,
+            transparent 4px,
+            transparent 8px);
+    box-shadow: 0 0 10px var(--mech-accent);
+    transition: width 0.1s linear;
 }
 
-.progress-bar-fill::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 6px;
-    background: #fff;
-    box-shadow: 0 0 10px #fff, 0 0 20px #00f0ff;
-}
-
-.progress-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    color: #fff;
-    text-shadow: 0 0 5px #000;
-    z-index: 10;
-    letter-spacing: 2px;
-}
-
+/* Text Styles (System Style) */
 .loading-status {
     font-family: 'Space Mono', monospace;
-    color: #00f0ff;
+    color: var(--mech-accent);
     font-size: 14px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     text-transform: uppercase;
-    letter-spacing: 3px;
-    text-shadow: 0 0 10px #00f0ff;
+    letter-spacing: 2px;
+    text-shadow: 0 0 5px var(--mech-accent);
     background: rgba(0, 240, 255, 0.1);
-    padding: 10px 20px;
-    border: 1px solid rgba(0, 240, 255, 0.5);
+    padding: 4px 8px;
     border-radius: 4px;
-    position: relative;
-    overflow: hidden;
-    display: inline-block;
-}
-
-.loading-status::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent);
-    animation: scanLine 2s linear infinite;
-}
-
-@keyframes scanLine {
-    0% { left: -100%; }
-    100% { left: 100%; }
-}
-
-.status-cursor {
-    display: inline-block;
-    width: 10px;
-    height: 16px;
-    background: #00f0ff;
-    margin-left: 5px;
-    animation: cursorBlink 0.8s steps(2) infinite;
-    box-shadow: 0 0 10px #00f0ff;
-    vertical-align: middle;
-}
-
-@keyframes cursorBlink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
 }
 
 .loading-title {
     font-family: 'Orbitron', sans-serif;
     color: #fff;
-    font-size: 32px;
-    letter-spacing: 8px;
-    margin-bottom: 10px;
-    text-shadow: 0 0 20px #00f0ff, 0 0 40px #00f0ff;
+    font-size: 24px;
+    letter-spacing: 4px;
+    margin-bottom: 5px;
+    text-shadow: 0 0 10px var(--mech-accent);
 }
 
 .loading-subtitle {
     font-size: 14px;
-    letter-spacing: 4px;
-    color: #00f0ff;
-    opacity: 0.9;
-    margin-top: 10px;
+    letter-spacing: 2px;
+    color: var(--mech-accent);
+    opacity: 0.8;
+    margin-top: 5px;
 }
+
+/* --- Powered State (Glowing Circuits) --- */
+.gate-left.powered .gate-pattern,
+.gate-right.powered .gate-pattern {
+    opacity: 0.8;
+    filter: drop-shadow(0 0 5px var(--mech-accent));
+    transition: opacity 1s ease, filter 1s ease;
+    background-image:
+        linear-gradient(45deg, var(--mech-accent) 1px, transparent 1px),
+        linear-gradient(-45deg, var(--mech-accent) 1px, transparent 1px),
+        radial-gradient(circle at center, rgba(0, 240, 255, 0.2) 0%, transparent 70%);
+}
+
+.gate-left.powered .circuit-trace,
+.gate-right.powered .circuit-trace {
+    box-shadow: 0 0 15px var(--mech-accent), 0 0 30px var(--mech-accent);
+    background: #fff;
+    /* White hot center */
+    transition: box-shadow 0.5s ease, background 0.5s ease;
+}
+
+/* Hide content after loading */
+#loading-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    filter: blur(20px);
+}
+
+/* --- Blur Reveal --- */
+#app {
+    transition: filter 1s ease-out;
+}
+
+#app.site-content-blur {
+    filter: blur(40px) brightness(0.5);
+    transform: scale(1.05);
+}
+
+#app.loaded {
+    filter: blur(0) brightness(1);
+    transform: scale(1);
+}
+
+
+
+/* Removed extra scan details */

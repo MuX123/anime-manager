@@ -1,0 +1,142 @@
+/* ========== System Menu (Compact) ========== */
+.system-menu {
+    position: fixed !important;
+    top: 60px !important;
+    right: 0 !important;
+    background: rgba(10, 15, 25, 0.98) !important;
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    border-radius: 8px 0 0 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    z-index: 10000 !important;
+    padding: 6px !important;
+    width: 160px !important;
+    max-width: 160px !important;
+    overflow-x: hidden !important;
+    /* 确保不会遮挡主内容 - 放在最右侧 */
+    transform: translateX(0) !important;
+}
+
+.system-menu.hidden {
+    display: none !important;
+}
+
+.system-menu select {
+    display: block;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: var(--neon-cyan, #00d4ff);
+    padding: 5px 6px !important;
+    border-radius: 4px;
+    font-size: 11px !important;
+    cursor: pointer;
+    font-family: 'Noto Sans TC', sans-serif;
+    margin-bottom: 5px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-sizing: border-box !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%2300d4ff' d='M2 3L5 6L8 3'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 4px center !important;
+}
+
+.system-menu select:hover {
+    background: rgba(0, 212, 255, 0.15);
+}
+
+.system-menu button {
+    display: block;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.25);
+    padding: 5px 6px !important;
+    font-size: 11px !important;
+    cursor: pointer;
+    color: var(--neon-cyan);
+    border-radius: 4px;
+    font-family: 'Noto Sans TC', sans-serif;
+    margin-bottom: 5px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.system-menu button:hover {
+    background: rgba(0, 212, 255, 0.15);
+}
+
+.system-menu button.logout {
+    background: rgba(255,68,68,0.1);
+    border-color: rgba(255,68,68,0.25);
+    color: #ff6b6b;
+}
+
+.system-menu .menu-divider {
+    height: 1px;
+    background: rgba(0, 212, 255, 0.15);
+    margin: 5px 0 !important;
+}
+
+/* 滑鼠大小控制 */
+.system-menu .cursor-size-control {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 5px !important;
+}
+
+.system-menu .cursor-size-control label {
+    color: var(--neon-cyan, #00d4ff);
+    font-size: 11px;
+    text-align: center;
+}
+
+.system-menu .cursor-size-control input[type="range"] {
+    width: 100% !important;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(0, 212, 255, 0.2);
+    border-radius: 2px;
+    outline: none;
+}
+
+.system-menu .cursor-size-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--neon-cyan, #00d4ff);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.system-menu .cursor-size-control input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: var(--neon-cyan, #00d4ff);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+.system-menu .cursor-size-control span {
+    color: var(--neon-cyan, #00d4ff);
+    font-size: 10px;
+    text-align: center;
+}
+
+#adminMenuOptions {
+    width: 100% !important;
+}
+
+#adminMenuOptions button {
+    margin-bottom: 5px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}

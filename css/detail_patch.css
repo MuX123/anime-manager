@@ -1,0 +1,185 @@
+/* ========== Detail Modal Layout (Restored) ========== */
+
+.detail-container {
+    display: flex;
+    width: 900px;
+    max-width: 95vw;
+    background: rgba(15, 20, 30, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8),
+        inset 0 0 100px rgba(0, 0, 0, 0.5);
+    position: relative;
+    z-index: 10002;
+    animation: modal-entry-v9 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.detail-poster-section {
+    width: 320px;
+    padding: 30px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.4), transparent);
+}
+
+.detail-poster-container {
+    width: 100%;
+    aspect-ratio: 2/3;
+    perspective: 1000px;
+    position: relative;
+    z-index: 10;
+}
+
+.detail-poster-card {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    overflow: visible;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(calc(var(--mouse-y, 0.5) * -10deg + 5deg)) rotateY(calc(var(--mouse-x, 0.5) * 10deg - 5deg));
+    transition: transform 0.1s ease-out;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-poster-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.detail-info-section {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.detail-info-block {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.detail-title {
+    font-size: 32px;
+    font-weight: 800;
+    font-family: 'Montserrat', sans-serif;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.scrollable-tag-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.detail-tag {
+    font-size: 12px;
+    padding: 4px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.detail-desc {
+    font-size: 15px;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: auto;
+    padding-right: 10px;
+}
+
+/* 關閉按鈕 */
+.detail-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10010;
+    transition: all 0.3s;
+}
+
+.detail-close-btn:hover {
+    background: rgba(255, 0, 0, 0.6);
+    transform: rotate(90deg);
+}
+
+/* YouTube Modal */
+.detail-youtube-min {
+    width: 140px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.play-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    font-size: 14px;
+    font-weight: bold;
+    backdrop-filter: blur(2px);
+}
+
+/* Responsive Mobile */
+@media (max-width: 768px) {
+    .detail-container {
+        flex-direction: column;
+        width: 100vw;
+        height: 100vh;
+        max-width: none;
+        border-radius: 0;
+        background: rgba(10, 10, 15, 0.95);
+    }
+
+    .detail-poster-section {
+        width: 100%;
+        height: 40vh;
+        padding: 20px;
+        align-items: center;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.8));
+    }
+
+    .detail-poster-container {
+        width: 160px;
+        aspect-ratio: 2/3;
+        margin: 0 auto;
+    }
+
+    .detail-info-section {
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .detail-title {
+        font-size: 24px;
+    }
+}

@@ -363,29 +363,26 @@ body {
     display: none;
 }
 
-/* ========== ACG 遊標主題變數 (預設) ========== */
-/* 注意：這些值會被 JavaScript (atmosphere.js) 的 CursorManager 動態覆蓋 */
-/* 使用 ../ 回上一層目錄（因為 CSS 在 css/ 目錄下） */
-body {
-    --cur-pointer: url('../assets/cursors/04_Point.ani'), pointer;
-    --cur-finger: url('../assets/cursors/04_Point.ani'), pointer;
-    --cur-text: url('../assets/cursors/05_Type.ani'), text;
-    --cur-move: url('../assets/cursors/10_Move.ani'), move;
-    --cur-wait: url('../assets/cursors/02_Loading.ani'), wait;
-    --cur-help: url('../assets/cursors/03_Question.ani'), help;
-    --cur-resize-v: url('../assets/cursors/06_Vertical.ani'), ns-resize;
-    --cur-resize-h: url('../assets/cursors/09_Horizontal.ani'), ew-resize;
-    --cur-resize-nwse: url('../assets/cursors/07_LDiag.ani'), nwse-resize;
-    --cur-resize-nesw: url('../assets/cursors/08_RDiag.ani'), nesw-resize;
-    --cur-default: url('../assets/cursors/01_Normal.ani'), default;
-    --cur-nah: url('../assets/cursors/03_Question.ani'), not-allowed;
+/* ========== ACG 遊標主題變數 (由 JS 動態注入) ========== */
+:root {
+    --cur-pointer: auto;
+    --cur-text: auto;
+    --cur-move: auto;
+    --cur-wait: auto;
+    --cur-help: auto;
+    --cur-resize-v: auto;
+    --cur-resize-h: auto;
+    --cur-resize-nwse: auto;
+    --cur-resize-nesw: auto;
+    --cur-default: auto;
+    --cur-not-allowed: auto;
 }
 
 /* ========== 互動遊標主題套用 (強制覆蓋) ========== */
-/*
-    使用 !important 確保覆蓋瀏覽器預設與其他樣式
-    涵蓋常見互動元素
- */
+/* 
+   使用 !important 確保覆蓋瀏覽器預設與其他樣式
+   涵蓋常見互動元素
+*/
 body,
 html,
 .app-container,
@@ -413,7 +410,7 @@ input[type="radio"],
 input[type="file"]::-webkit-file-upload-button,
 .clickable,
 [onclick] {
-    cursor: var(--cur-finger) !important;
+    cursor: var(--cur-pointer) !important;
 }
 
 input[type="text"],
@@ -431,7 +428,42 @@ button:disabled,
 input:disabled,
 .disabled,
 [aria-disabled="true"] {
-    cursor: var(--cur-nah) !important;
+    cursor: var(--cur-not-allowed) !important;
+}
+
+/* 其他 cursor 類型 */
+.move,
+[style*="cursor: move"],
+.resizable {
+    cursor: var(--cur-move) !important;
+}
+
+.wait,
+.loading,
+[style*="cursor: wait"] {
+    cursor: var(--cur-wait) !important;
+}
+
+.help,
+[title]:hover {
+    cursor: var(--cur-help) !important;
+}
+
+/* 調整大小 cursor */
+*[style*="resize: both"],
+*[style*="resize: vertical"],
+.se-resize {
+    cursor: var(--cur-resize-nwse) !important;
+}
+
+*[style*="resize: horizontal"],
+.ew-resize {
+    cursor: var(--cur-resize-h) !important;
+}
+
+.ns-resize,
+.resize-v {
+    cursor: var(--cur-resize-v) !important;
 }
 
 /* 跑馬燈位移動畫 */

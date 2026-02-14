@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-TW">
 
 <head>
-    <!-- 安全性強化 Head -->
+    <!-- 摰?批撥??Head -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -14,29 +14,29 @@
     <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="theme-color" content="#050609">
-    <title>ACG 收藏庫</title>
+    <title>ACG ?嗉?摨?/title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap"
         rel="stylesheet">
 
-    <!-- CSS 模組化結構 -->
-    <link rel="stylesheet" href="./css/variables.css?v=20260213_v9">
-    <link rel="stylesheet" href="./css/base.css?v=20260213_v9">
-    <link rel="stylesheet" href="./css/layout.css?v=20260213_v9">
-    <link rel="stylesheet" href="./css/components.css?v=20260213_v9">
-    <link rel="stylesheet" href="./css/animations.css?v=20260213_v9">
-    <link rel="stylesheet" href="./css/responsive.css?v=20260213_v9">
-    <!-- 詳情頁樣式 (僅 Modal 使用) -->
-    <link rel="stylesheet" href="./css/detail-cyberpunk.css?v=20260214_shine_v11">
-    <!-- 矩陣雨背景 -->
-    <link rel="stylesheet" href="./css/matrix-rain.css?v=20260213_v9">
-    <!-- 渲染系統樣式 (卡片、徽章) - 最後載入以確保優先權 -->
-    <link rel="stylesheet" href="./css/render.css?v=20260214_poster_fix_v2">
-    <link rel="stylesheet" href="./css/loader.css?v=20260213_v1">
-    <link rel="stylesheet" href="./css/restore_menu.css">
-    <!-- 關鍵渲染路徑樣式 -->
+    <!-- CSS 璅∠???瑽?-->
+    <link rel="stylesheet" href="./css/variables.css?v=20260213_v16">
+    <link rel="stylesheet" href="./css/base.css?v=20260213_v16">
+    <link rel="stylesheet" href="./css/layout.css?v=20260213_v16">
+    <link rel="stylesheet" href="./css/components.css?v=20260213_v16">
+    <link rel="stylesheet" href="./css/responsive.css?v=20260213_v16">
+    <!-- 閰單??見撘?(??Modal 雿輻) -->
+    <link rel="stylesheet" href="./css/detail-cyberpunk.css?v=20260213_v16">
+    <!-- ?拚?刻???-->
+    <link rel="stylesheet" href="./css/matrix-rain.css?v=20260213_v16">
+    <!-- 皜脫?蝟餌絞璅?? (?∠??噬蝡? -->
+    <link rel="stylesheet" href="./css/render.css?v=20260213_v16">
+    <!-- ??銝駁?璅?? (?敺??乩誑閬????cursor 璅??) -->
+    <link rel="stylesheet" href="./css/animations.css?v=20260212_v16">
+    <link rel="stylesheet" href="./css/loader.css?v=20260213_v16">
+    <!-- ?皜脫?頝臬?璅?? -->
     <style>
         #loading-screen {
             position: fixed !important;
@@ -73,18 +73,18 @@
 </head>
 
 <body>
-    <!-- 駭客任務數碼雨背景 - 在 scaling 容器外面 -->
+    <!-- 擏剖恥隞餃??貊Ⅳ?刻???- ??scaling 摰孵憭 -->
     <canvas id="c"></canvas>
 
-    <!-- ACG 互動氛圍層 -->
+    <!-- ACG 鈭?瘞?撅?-->
     <div id="atmosphere-container">
         <div class="atmosphere-grid"></div>
         <div class="atmosphere-glow"></div>
         <div class="atmosphere-tech-overlay"></div>
     </div>
 
-    <!-- 加載畫面 (移出 site-scaler 以避免縮放影響並確保置頂) -->
-    <!-- 加載畫面 (Gate Animation v8.0 Original) -->
+    <!-- ???恍 (蝘餃 site-scaler 隞仿?葬?曉蔣?蹂蒂蝣箔?蝵桅?) -->
+    <!-- ???恍 (蝘餃 site-scaler 隞仿?葬?曉蔣?蹂蒂蝣箔?蝵桅?) -->
     <div id="loading-screen">
         <div class="gas-steam gas-left"></div>
         <div class="gas-steam gas-right"></div>
@@ -101,6 +101,7 @@
                         <stop offset="100%" style="stop-color:#8000ff;stop-opacity:0.5" />
                     </linearGradient>
                 </defs>
+                <!-- Optimized Paths from Reference for Left Gate -->
                 <path class="line-breathe" d="M1000,100 H700 L680,120 H500 L480,100 H300 L270,130 H0"
                     stroke="url(#circuitGradLeft)" stroke-width="3" fill="none" />
                 <path class="line-breathe-delay" d="M1000,300 H750 L730,280 H550 L530,300 H350 L330,280 H0"
@@ -110,6 +111,7 @@
                     stroke="url(#circuitGradLeft)" stroke-width="3" fill="none" />
                 <path class="line-breathe-slow" d="M1000,150 H800 L780,170 H620 L600,150 H420 L400,170 H200 L180,150 H0"
                     stroke="url(#circuitGradLeft)" stroke-width="2" fill="none" />
+                <!-- Vertical -->
                 <path class="line-breathe" d="M900,0 V200 L880,220 V400 L900,420 V600 L880,650 V1000"
                     stroke="url(#circuitGradLeft)" stroke-width="3" fill="none" />
                 <path class="line-breathe-delay"
@@ -120,10 +122,12 @@
             <div class="gate-beam"></div>
             <div class="gate-bolt t-1"></div>
             <div class="gate-bolt b-1"></div>
+
             <div class="mech-detail-1"></div>
 
-            <!-- Masterpiece Armored Lock -->
+            <!-- Masterpiece Armored Lock (V21) -->
             <div class="lock-plate left">
+                <!-- Neural Mesh Layer -->
                 <svg class="gate-pattern" viewBox="0 0 300 600" preserveAspectRatio="none">
                     <path class="line-breathe-delay" d="M300,50 H100 L80,70 H0" stroke="url(#circuitGradLeft)"
                         stroke-width="2" fill="none" />
@@ -131,7 +135,10 @@
                         stroke-width="2" fill="none" />
                     <path class="line-breathe" d="M300,550 H120 L100,530 H0" stroke="url(#circuitGradLeft)"
                         stroke-width="2" fill="none" />
+                    <path class="line-breathe-accent" d="M300,150 H180 L160,130 H200 V450"
+                        stroke="url(#circuitGradLeft)" stroke-width="1" fill="none" />
                 </svg>
+                <!-- Armored structural details -->
                 <div class="lock-armor-frame"></div>
                 <div class="lock-bolts">
                     <div class="bolt bolt-1"></div>
@@ -153,6 +160,7 @@
                         <stop offset="100%" style="stop-color:#8000ff;stop-opacity:0.5" />
                     </linearGradient>
                 </defs>
+                <!-- Optimized Paths from Reference for Right Gate -->
                 <path class="line-breathe" d="M0,100 H300 L320,120 H500 L520,100 H700 L730,130 H1000"
                     stroke="url(#circuitGradRight)" stroke-width="3" fill="none" />
                 <path class="line-breathe-delay" d="M0,300 H250 L270,280 H450 L470,300 H650 L670,280 H1000"
@@ -162,6 +170,7 @@
                     stroke="url(#circuitGradRight)" stroke-width="3" fill="none" />
                 <path class="line-breathe-slow" d="M0,150 H200 L220,170 H380 L400,150 H580 L600,170 H800 L820,150 H1000"
                     stroke="url(#circuitGradRight)" stroke-width="2" fill="none" />
+                <!-- Vertical -->
                 <path class="line-breathe" d="M100,0 V200 L120,220 V400 L100,420 V600 L120,650 V1000"
                     stroke="url(#circuitGradRight)" stroke-width="3" fill="none" />
                 <path class="line-breathe-delay"
@@ -172,9 +181,10 @@
             <div class="gate-beam"></div>
             <div class="gate-bolt t-1"></div>
             <div class="gate-bolt b-1"></div>
+
             <div class="mech-detail-1"></div>
 
-            <!-- Masterpiece Armored Lock -->
+            <!-- Masterpiece Armored Lock (V21) -->
             <div class="lock-plate right">
                 <svg class="gate-pattern" viewBox="0 0 300 600" preserveAspectRatio="none">
                     <path class="line-breathe-delay" d="M0,50 H200 L220,70 H300" stroke="url(#circuitGradRight)"
@@ -183,7 +193,10 @@
                         stroke-width="2" fill="none" />
                     <path class="line-breathe" d="M0,550 H180 L200,530 H300" stroke="url(#circuitGradRight)"
                         stroke-width="2" fill="none" />
+                    <path class="line-breathe-accent" d="M0,150 H120 L140,130 H100 V450" stroke="url(#circuitGradRight)"
+                        stroke-width="1" fill="none" />
                 </svg>
+                <!-- Armored structural details -->
                 <div class="lock-armor-frame"></div>
                 <div class="lock-bolts">
                     <div class="bolt bolt-1"></div>
@@ -193,12 +206,20 @@
             </div>
         </div>
 
-        <!-- Center Hub & UI -->
-        <div class="center-hub-wrapper">
+        <!-- Center Effects & UI -->
+        <div class="center-stage">
+            <!-- Explosive Gas -->
             <div class="center-gas"></div>
+
+            <!-- Circuit Burst Effect -->
             <div class="circuit-burst"></div>
+
+            <!-- Unified Hub (The whole assembly that spins together) -->
             <div class="rotating-hub">
+                <!-- Mechanical Aura (No Glow) -->
                 <div class="hub-aura"></div>
+
+                <!-- Supportive Visual Ring -->
                 <div class="lock-core-spinner">
                     <div class="core-ring outer"></div>
                     <div class="core-ring inner"></div>
@@ -206,18 +227,21 @@
             </div>
 
             <div class="center-ui-container">
-                <div class="loading-title">ACG 收藏庫</div>
-                <div class="loading-status" id="loading-status">
-                    系統初始化中<span class="status-cursor">_</span>
+                <!-- Loading Title -->
+                <div class="loading-title">
+                    ACG ?嗉?摨?                    <div class="loading-subtitle">ACG ?嗉?摨怨???/div>
                 </div>
+
+                <!-- Loading Status -->
+                <div class="loading-status" id="loading-status">銝餅敹?甇乩葉...</div>
+
+                <!-- Progress Bar -->
                 <div class="progress-container">
                     <div class="progress-bar-frame">
                         <div class="progress-bar-fill" id="progress-bar-fill"></div>
-                        <div class="progress-scan-line"></div>
                     </div>
-                    <div class="progress-text"><span id="progress-percent">0</span>%</div>
+                    <div class="progress-text"><span id="progress-percent">0</span>% ?賣?頛詨</div>
                 </div>
-                <div class="loading-subtitle">V8.0 ORIGINAL EDITION</div>
             </div>
         </div>
     </div>
@@ -230,20 +254,20 @@
 
         <div class="analytics-bar">
             <div id="analytics-display">
-                <span style="margin-right: 8px;">👤 <span
+                <span style="margin-right: 8px;">? <span
                         style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
-                <span style="margin-right: 8px;">🖱️ <span
+                <span style="margin-right: 8px;">?儭?<span
                         style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
-                <span>📄 <span style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
+                <span>?? <span style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
             </div>
             <div class="marquee-container">
                 <div id="top-marquee-content" class="marquee-content"></div>
             </div>
         </div>
 
-        <div id="app" class="site-content-blur"></div>
+        <div id="app"></div>
 
-        <!-- 詳情彈窗 (Detail Modal) -->
+        <!-- 閰單?敶? (Detail Modal) -->
         <div id="detailModal" class="modal">
             <div class="modal-content">
                 <span class="close-btn" onclick="window.closeAnimeDetail()">&times;</span>
@@ -252,93 +276,45 @@
         </div>
 
         <div id="toast" class="toast"></div>
+        <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
-    </div> <!-- site-scaler 結束 -->
+        <!-- GitHub Pages ?蔭 (????? -->
+        <script src="./js/github-pages-config.js?v=20260204_v1"></script>
 
-    <!-- 右側系統選單 (Compact) - 在 site-scaler 外面，跟隨視窗邊界 -->
-    <div id="systemMenu" class="system-menu active">
-        <!-- 板塊選擇下拉選單 -->
-        <select id="section-select" onchange="window.switchCategory(this.value)">
-            <option value="notice">📢 公告列表</option>
-            <option value="anime">🎬 動畫</option>
-            <option value="manga">📚 漫畫</option>
-            <option value="movie">🎥 電影</option>
-        </select>
+        <!-- ?詨??箇?璅∠? (頛????) -->
+        <script src="./js/config.js?v=20260205_v1"></script>
+        <script src="./js/logger.js?v=20260205_v4"></script>
+        <script src="./js/security.js?v=20260204_v2"></script>
+        <script src="./js/usability.js?v=20260204_v1"></script>
+        <script src="./js/performance.js?v=20260204_v1"></script>
 
-        <!-- 佈局下拉選單 -->
-        <select id="layout-select" onchange="window.changeGridLayout(this.value)">
-            <option value="5">📐 五欄佈局</option>
-            <option value="4">📐 四欄佈局</option>
-            <option value="3">📐 三欄佈局</option>
-            <option value="mobile">📱 資料列表</option>
-        </select>
+        <!-- ??璅∠? -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="./js/supabase.js?v=20260213_v12"></script>
+        <script src="./js/analytics.js?v=20260213_v12"></script>
+        <script src="./js/announcements.js?v=20260213_v12"></script>
+        <script src="./js/render.js?v=20260213_v12"></script>
+        <script src="./js/script.js?v=20260213_v12"></script>
+        <script src="./js/atmosphere.js?v=20260213_v12"></script>
 
-        <!-- 排序下拉選單 -->
-        <select id="sort-select" onchange="window.changeSortOrder(this.value)">
-            <option value="desc">📅 最新作品</option>
-            <option value="asc">📅 最早作品</option>
-        </select>
+        <!-- 閬死??璅∠? -->
+        <script src="./js/matrix-rain.js"></script>
+        <script src="./js/background-switcher.js"></script>
 
-        <!-- 滑鼠風格下拉選單 -->
-        <select id="cursor-theme-select" onchange="window.CursorManager.apply(this.value)">
-            <option value="anya">🦊 阿尼亞</option>
-            <option value="frieren">🧙‍♀️ 芙莉蓮</option>
-            <option value="elysia">🦋 愛莉希雅</option>
-        </select>
+        <!-- 隤輯岫撌亙 (?璅∪?) -->
+        <script src="./js/debug.js?v=20260202_v1"></script>
 
-        <!-- 滑鼠大小滑桿 -->
-        <div class="cursor-size-control">
-            <label for="cursor-size-slider">🔍 大小</label>
-            <input type="range" id="cursor-size-slider" min="0.5" max="3" step="0.1" value="1"
-                oninput="const v=parseFloat(this.value).toFixed(1)+'x';document.getElementById('cursor-size-value').textContent=v;window.CursorManager.setScale(this.value)">
-            <span id="cursor-size-value">1.0x</span>
-        </div>
+        <!-- ??靽桀儔鋆? -->
+        <script src="./js/fix-recommendation.js?v=20260204_v1"></script>
 
-        <div class="menu-divider"></div>
-
-        <!-- 登入/登出按鈕 -->
-        <div id="adminMenuOptions"></div>
-    </div>
-
-    <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
-
-    <!-- GitHub Pages 配置 (最先載入) -->
-    <script src="./js/github-pages-config.js?v=20260204_v1"></script>
-
-    <!-- 核心基礎模組 (載入順序重要) -->
-    <script src="./js/config.js?v=20260205_v1"></script>
-    <script src="./js/logger.js?v=20260205_v4"></script>
-    <script src="./js/security.js?v=20260204_v2"></script>
-    <script src="./js/usability.js?v=20260204_v1"></script>
-    <script src="./js/performance.js?v=20260204_v1"></script>
-
-    <!-- 應用功能模組 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./js/supabase.js?v=20260205_v4"></script>
-    <script src="./js/analytics.js?v=20260202_v1"></script>
-    <script src="./js/announcements.js?v=20260209_v5"></script>
-    <script src="./js/render.js?v=20260214_fix_v1"></script>
-    <script src="./js/script.js?v=20260214_fix_v1"></script>
-    <script src="./js/atmosphere.js?v=20260214_v3"></script>
-
-    <!-- 視覺效果模組 -->
-    <script src="./js/matrix-rain.js"></script>
-    <script src="./js/background-switcher.js"></script>
-
-    <!-- 調試工具 (開發模式) -->
-    <script src="./js/debug.js?v=20260202_v1"></script>
-
-    <!-- 問題修復補丁 -->
-    <script src="./js/fix-recommendation.js?v=20260204_v1"></script>
-
-    <!-- Service Worker 註冊 -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                console.log('[Main] 正在註冊 Service Worker...');
-            });
-        }
-    </script>
+        <!-- Service Worker 閮餃? -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    console.log('[Main] 甇?閮餃? Service Worker...');
+                });
+            }
+        </script>
 </body>
 
 </html>

@@ -5,10 +5,10 @@
  * @date 2026-02-04
  */
 
-const CACHE_NAME = 'acg-manager-v8.3.0';
-const STATIC_CACHE = 'static-v8.3.0';
-const DYNAMIC_CACHE = 'dynamic-v8.3.0';
-const API_CACHE = 'api-v8.3.0';
+const CACHE_NAME = 'acg-manager-v8.3.1';
+const STATIC_CACHE = 'static-v8.3.1';
+const DYNAMIC_CACHE = 'dynamic-v8.3.1';
+const API_CACHE = 'api-v8.3.1';
 
 // 快取策略
 const CACHE_STRATEGIES = {
@@ -67,6 +67,7 @@ const CORE_ASSETS = [
     './css/render.css',
     './css/loader.css',
     './css/variables.css',
+    './css/restore_menu.css',
     './js/config.js',
     './js/security.js',
     './js/performance.js',

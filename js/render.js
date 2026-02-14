@@ -272,6 +272,76 @@ function renderRatingBadge(rating, color, stars = '★', starColor = '#ffdd00') 
     `;
 }
 
+// 渲染六邊形徽章 - 6個角上順時針排列星星
+function renderHexBadge(rating, recommendation, ratingColor, ratingGlow) {
+    const escape = (str) => {
+        if (typeof escapeHtml === 'function') return escapeHtml(str);
+        if (str === null || str === undefined) return '';
+        return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[s]);
+    };
+
+    // 提取推薦度中的星星數量（支持格式: ★, ★2, ★3, ★6）
+    let starCount = 0;
+    console.log('[HexBadge DEBUG] Input recommendation:', recommendation, 'Type:', typeof recommendation);
+
+    if (typeof recommendation === 'string') {
+        const trimmed = recommendation.trim();
+        if (trimmed.startsWith('★')) {
+            // 格式是 ★ 或 ★2, ★3 等
+            const numPart = trimmed.substring(1).trim(); // 去掉 ★ 后的部分
+            if (numPart === '') {
+                // 只有 ★，没有数字，就是 1 颗星
+                starCount = 1;
+            } else {
+                // 有数字部分，如 ★2, ★3, ★6
+                const parsed = parseInt(numPart);
+                starCount = isNaN(parsed) ? 1 : parsed;
+            }
+            console.log('[HexBadge DEBUG] Format ★ detected, numPart:', numPart, '=> starCount:', starCount);
+        } else {
+            // 尝试提取任何数字
+            const match = trimmed.match(/\d+/);
+            if (match) {
+                starCount = parseInt(match[0]) || 0;
+                console.log('[HexBadge DEBUG] Found number:', match[0], '=> starCount:', starCount);
+            }
+        }
+    } else if (typeof recommendation === 'number' && !isNaN(recommendation)) {
+        starCount = Math.round(recommendation);
+        console.log('[HexBadge DEBUG] Number type, starCount:', starCount);
+    }
+
+    const originalStarCount = starCount;
+    starCount = Math.min(6, Math.max(0, starCount)); // 限制在 0-6 之間
+    console.log('[HexBadge] Final starCount:', starCount, '(from:', originalStarCount, ')');
+
+    // 生成6個星星（順時針排列）- 只生成需要的星星
+    let starsHtml = '';
+    for (let i = 1; i <= 6; i++) {
+        const isVisible = i <= starCount;
+        if (isVisible) {
+            starsHtml += `<span class="hex-star star-pos-${i}">★</span>`;
+        }
+    }
+    console.log('[HexBadge DEBUG] Generated starsHtml length:', starsHtml.length, 'HTML:', starsHtml);
+
+    // 添加 stars-X 類名來決定所有星星的顏色
+    const starsClass = starCount > 0 ? `stars-${starCount}` : '';
+
+    const result = `
+        <div class="badge-cyber-hex ${starsClass}" style="--rating-color: ${ratingColor}; --rating-glow: ${ratingGlow};">
+            <div class="hex-inner">
+                <div class="badge-type">${escape(rating || '普')}</div>
+            </div>
+            <div class="hex-stars-container">
+                ${starsHtml}
+            </div>
+        </div>
+    `;
+    console.log('[HexBadge DEBUG] Final HTML generated');
+    return result;
+}
+
 function renderStarDisplay(starText, color, size = 12) {
     return `<span style="color: ${color}; font-size: ${size}px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">${starText}</span>`;
 }
@@ -297,18 +367,42 @@ function renderMetaTags(item, colors, showEpisodes = true) {
 }
 
 // ========== 2. 核心渲染輔助 ==========
+// ========== 2. 核心渲染輔助 ==========
+// Performance Optimization: Use WeakMap to store animation frame IDs for each element
+const tiltFrameMap = new WeakMap();
+
 window.handleCardTilt = (e, el) => {
-    const rect = el.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    // Cancel any pending frame for this element to avoid stacking
+    if (tiltFrameMap.has(el)) {
+        cancelAnimationFrame(tiltFrameMap.get(el));
+    }
 
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -12;
-    const rotateY = ((x - centerX) / centerX) * 12;
+    // Schedule the update
+    const frameId = requestAnimationFrame(() => {
+        const rect = el.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
-    el.style.setProperty('--tilt-x', `${rotateX}deg`);
-    el.style.setProperty('--tilt-y', `${rotateY}deg`);
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        // Intensity scaling for Small Data Cards (gentler than full poster)
+        const rotateX = ((y - centerY) / centerY) * -8; // Reduced from -12
+        const rotateY = ((x - centerX) / centerX) * 8;  // Reduced from 12
+
+        el.style.setProperty('--tilt-x', `${rotateX}deg`);
+        el.style.setProperty('--tilt-y', `${rotateY}deg`);
+
+        // Add mouse position for shine/gloss effects (0% - 100%)
+        el.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
+        el.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
+
+        // For Gloss: Calculate X relative to card width for sliding effect
+        // normalize -1 to 1 range for parallax
+        el.style.setProperty('--gloss-x', `${((x - centerX) / centerX) * 100}%`);
+    });
+
+    tiltFrameMap.set(el, frameId);
 };
 
 window.resetCardTilt = (el) => {
@@ -441,48 +535,38 @@ function renderListCard(item, colors, data) {
         return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[s]);
     };
 
-    const { id, name, type } = item;
+    const { id, name, year, season, month, episodes } = item;
     const { ratingColor, nameColor, starColor, genreColor } = colors;
     const { genres, extraTags, starText } = data;
 
+    // 構建元信息標籤（年/季/月/集）
+    const metaTags = [];
+    if (year) metaTags.push(`<span class="list-meta-tag">${escape(year)}</span>`);
+    if (season) metaTags.push(`<span class="list-meta-tag">${escape(season)}</span>`);
+    if (month) metaTags.push(`<span class="list-meta-tag">${escape(String(month).includes('月') ? String(month) : `${month}月`)}</span>`);
+    if (episodes) metaTags.push(`<span class="list-meta-tag">全${escape(episodes)}集</span>`);
+
     // List view style complex, keeping some inline for flex layout structures unique to this view
     return `
-        <div class="anime-card desktop-list-layout game-card-effect entry-animation"
+        <div class="mobile-card-v2 desktop-list-layout"
             onclick="window.showAnimeDetail('${id}')"
             onmousemove="window.handleCardTilt(event, this)"
             onmouseleave="window.resetCardTilt(this)"
-            style="--rating-color: ${ratingColor}; --card-poster-url: url('${item.poster_url || ''}');">
-
-            <!-- 新海報卡片特效層 -->
-            <div class="card-pattern-bg"></div>
-            <div class="card-inner-glow"></div>
-            <div class="card-particles">
-                <div class="card-particle"></div>
-                <div class="card-particle"></div>
-                <div class="card-particle"></div>
-                <div class="card-particle"></div>
-                <div class="card-particle"></div>
-            </div>
-            <div class="card-rainbow-border"></div>
+            style="--rating-color: ${ratingColor};">
+            
+            <!-- Poster Effects Layers -->
+            <div class="card-rainbow-edge"></div>
+            <div class="card-shine-effect"></div>
             <div class="card-gloss-layer"></div>
-
-            <!-- 原有特效層 -->
-            <div class="card-mouse-glow"></div>
-            ${renderAdminButton(id)}
-            <div style="display: flex; align-items: center; justify-content: center; width: 120px; flex-shrink: 0; border-right: 1px solid rgba(255,255,255,0.1); padding: 0 15px;">
+            
+            ${renderAdminButton(id, 'small')}
+            
+            <div style="display: flex; align-items: center; gap: 12px; width: 100%; position: relative; z-index: 5;">
                 ${renderRatingBadge(item.rating, ratingColor, item.recommendation, starColor)}
-            </div>
-            <div style="flex: 1; min-width: 0; display: flex; align-items: center; padding-left: 20px; gap: 20px; height: 100%;">
-                <div style="flex: 0 0 40%; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
-                    <h3 style="color: ${nameColor}; font-size: 16px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${escape(name)}</h3>
+                
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="color: ${nameColor}; font-weight: 700; font-size: 15px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escape(name)}</div>
                     ${renderMetaTags(item, colors)}
-                </div>
-                <div style="flex: 0 0 15%; min-width: 0; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 20px; justify-content: center;">
-                    <span style="color: ${genreColor}; font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.9;">${escape(type || 'ANIME')}</span>
-                </div>
-                <div class="desktop-scroll-tags" onwheel="this.scrollLeft += event.deltaY; event.preventDefault();" style="flex: 1; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; padding: 10px 0; scrollbar-width: none; cursor: grab; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 20px; align-items: center;">
-                    <style>.desktop-scroll-tags::-webkit-scrollbar { display: none; }</style>
-                    ${renderTags(genres, extraTags, genreColor)}
                 </div>
             </div>
         </div>
@@ -501,26 +585,30 @@ function renderMobileCard(item, colors, data) {
     const { starText } = data;
 
     return `
-        <div class="anime-card mobile-layout-card game-card-effect" onclick="window.showAnimeDetail('${id}')" style="display: flex !important; flex-direction: column; justify-content: center; margin: 0 0 8px 0 !important; background: #000 !important; border: 1px solid ${ratingColor} !important; border-radius: 8px !important; padding: 8px 12px !important; gap: 4px; width: 100%; height: 60px; overflow: hidden; position: relative; --rating-color: ${ratingColor};">
-            <!-- 新海報卡片特效層 -->
-            <div class="card-pattern-bg"></div>
-            <div class="card-inner-glow"></div>
-            <div class="card-particles">
-                <div class="card-particle"></div>
-                <div class="card-particle"></div>
-                <div class="card-particle"></div>
-            </div>
-            <div class="card-rainbow-border"></div>
+        <div class="mobile-card-v2"
+            onclick="window.showAnimeDetail('${id}')"
+            onmousemove="window.handleCardTilt(event, this)"
+            onmouseleave="window.resetCardTilt(this)"
+            style="--rating-color: ${ratingColor};">
+            
+            <!-- Poster Effects Layers -->
+            <div class="card-rainbow-edge"></div>
+            <div class="card-shine-effect"></div>
             <div class="card-gloss-layer"></div>
-
-            <div style="position: absolute; inset: 0; background: linear-gradient(135deg, ${ratingColor}15 0%, transparent 60%); z-index: 0;"></div>
+            
             ${renderAdminButton(id, 'small')}
-            <div style="display: flex; align-items: center; gap: 10px; width: 100%; overflow: hidden; position: relative; z-index: 21;">
+            
+            <div style="display: flex; align-items: center; gap: 12px; width: 100%; position: relative; z-index: 5;">
                 ${renderRatingBadge(item.rating, ratingColor, item.recommendation, starColor)}
-                ${renderMetaTags(item, colors)}
+                
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="color: ${nameColor}; font-weight: 700; font-size: 15px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escape(name)}</div>
+                    ${renderMetaTags(item, colors)}
+                </div>
             </div>
         </div>
     `;
+
 }
 
 // 4. 主入口函數
@@ -662,7 +750,14 @@ window.showAnimeDetail = (id) => {
             <!-- 左側海報區塊 (組合懸浮組) -->
             <div class="detail-poster-section">
                 <div class="detail-poster-container">
-                    <div class="detail-poster-card" style="--rating-color: ${colors.color}; --rating-glow: ${colors.glow}; border-color: ${colors.color}; box-shadow: 0 0 30px ${colors.color}40;">
+                    <!-- 統一精品評級徽章 - 六邊形星星環繞，置於海報中心上方 -->
+                    ${renderHexBadge(item.rating, item.recommendation, colors.color, colors.glow)}
+                    <div class="detail-poster-card"
+                        style="--rating-color: ${colors.color}; --rating-glow: ${colors.glow}; border-color: ${colors.color};">
+                        <!-- 向外擴散的魔力效果 -->
+                        <div class="magic-diffuse-layer"></div>
+                        <!-- 光效層 -->
+                        <div class="detail-poster-shine"></div>
                         <!-- 海報圖片 -->
                         <img src="${item.poster_url || ''}" class="detail-poster-img" onerror="this.src='./assets/no-poster.jpg'">
                     </div>
@@ -672,45 +767,70 @@ window.showAnimeDetail = (id) => {
             <!-- 右側資訊區塊 -->
             <div class="detail-info-section">
                 <div class="detail-info-block" style="border-color: ${colors.color}; --rating-color: ${colors.color}; --rating-glow: ${colors.glow};">
-                    <!-- 標題區域 (Rank Badge + Title) -->
+                    <!-- 標題區域 -->
                     <div class="detail-header-row">
-                        <!-- 統一精品評級徽章 -->
-                        <div class="badge-cyber-hex" style="--rating-color: ${colors.color}; --rating-glow: ${colors.glow};">
-                            <div class="badge-type">${item.rating}</div>
-                            <div class="badge-stars">${generateStars(item.recommendation)}</div>
-                        </div>
                         <!-- 標題 -->
                         <div class="detail-title" style="color: ${nameColor}; text-shadow: 0 0 10px ${nameColor}60;">${escape(item.name)}</div>
                     </div>
                     
                     <!-- 標籤滾動列 -->
                     ${genres && genres.length > 0 ? `
-                    <div class="scrollable-tag-list">
+                    <div class="scrollable-tag-list" onwheel="event.preventDefault(); this.scrollLeft += event.deltaY;">
                         ${genres.map(g => `<span class="detail-tag" style="color: ${genreColor}; border-color: ${genreColor}60;">${escape(g)}</span>`).join('')}
                     </div>
                     ` : ''}
 
-                    <div class="card-separator" style="margin: 15px 0;"></div>
+                    <div class="card-separator" style="margin: 12px 0;"></div>
+
+                    <!-- 年季月、全x集、評級、推薦度 -->
+                    <div class="detail-meta-row">
+                        <!-- 評級+推薦度 -->
+                        <div class="meta-item">
+                            <span class="meta-label">評級</span>
+                            <span class="meta-value rating">${escape(item.rating || '普')}</span>
+                            <span class="meta-value stars">${'★'.repeat(Math.min(6, Math.max(0, item.recommendation || 0)))}</span>
+                        </div>
+                        
+                        <!-- 年 -->
+                        ${item.year ? `<div class="meta-item"><span class="meta-label">年</span><span class="meta-value" style="color: ${yearColor};">${escape(item.year)}</span></div>` : ''}
+                        
+                        <!-- 季 -->
+                        ${item.season ? `<div class="meta-item"><span class="meta-label">季</span><span class="meta-value" style="color: ${yearColor};">${escape(item.season)}</span></div>` : ''}
+                        
+                        <!-- 月 -->
+                        ${item.month ? `<div class="meta-item"><span class="meta-label">月</span><span class="meta-value" style="color: ${yearColor};">${escape(String(item.month).includes('月') ? String(item.month) : `${item.month}月`)}</span></div>` : ''}
+                        
+                        <!-- 全x集 -->
+                        ${item.episodes ? `<div class="meta-item"><span class="meta-label">集數</span><span class="meta-value" style="color: ${episodesColor};">全${escape(item.episodes)}集</span></div>` : ''}
+                        
+                        <!-- 推薦度 -->
+                        <div class="meta-item">
+                            <span class="meta-label">推薦度</span>
+                            <span class="meta-value" style="color: ${starColor};">${item.recommendation || 0}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-separator" style="margin: 12px 0;"></div>
 
                     <!-- 描述 (捲動區域) -->
-                    <div class="detail-desc" style="color: ${detailDescColor}; max-height: 200px; overflow-y: auto;">
+                    <div class="detail-desc" style="color: ${detailDescColor}; max-height: 150px; overflow-y: auto;">
                         ${escape(item.description || '暫無介紹')}
                     </div>
                     
-                    <div class="card-separator" style="margin: 15px 0;"></div>
+                    <div class="card-separator" style="margin: 12px 0;"></div>
 
                     <!-- YouTube 與網站按鈕 -->
-                    <div style="display: flex; flex-direction: column; gap: 15px; align-items: flex-start;">
+                    <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start;">
                         ${videoId ? `
-                        <div class="detail-youtube-min" onclick="window.openYouTubeModal('${videoId}')" style="border-color: ${ratingColor};">
-                            <img src="https://img.youtube.com/vi/${videoId}/mqdefault.jpg" style="width:100%; height:100%; object-fit:cover; opacity:0.6;">
-                            <div class="play-hint">▶ PV</div>
+                        <div class="detail-youtube-btn" onclick="window.openYouTubeModal('${videoId}')" style="border-color: ${ratingColor};">
+                            <span class="play-icon">▶</span>
+                            <span class="play-text">觀看預告</span>
                         </div>
                         ` : ''}
 
                         <!-- 網站按鈕水平滾動 -->
                         ${links && links.length > 0 ? `
-                        <div class="scrollable-link-list">
+                        <div class="scrollable-link-list" onwheel="event.preventDefault(); this.scrollLeft += event.deltaY;">
                             ${links.map(l => `<a href="${l.url}" target="_blank" class="detail-link-btn" style="--btn-color: ${btnColor};">${escape(l.name)}</a>`).join('')}
                         </div>
                         ` : ''}
@@ -728,6 +848,9 @@ window.showAnimeDetail = (id) => {
         </div>
     `;
 
+    // 禁止背景滾動
+    document.body.style.overflow = 'hidden';
+
     if (typeof window.initGlobalScroll === 'function') {
         window.initGlobalScroll();
     }
@@ -741,6 +864,9 @@ window.closeAnimeDetail = () => {
     // 關閉舊 Modal (相容性)
     const oldModal = document.getElementById('detailModal');
     if (oldModal) oldModal.classList.remove('active');
+
+    // 恢復背景滾動
+    document.body.style.overflow = '';
 
     // 性能優化：關閉詳情時恢復背景動畫
     if (window.AtmosphereAPI) {
@@ -779,6 +905,7 @@ window.renderListCard = renderListCard;
 window.getCardColors = getCardColors;
 window.processCardData = processCardData;
 window.toggleDescription = toggleDescription;
+window.renderHexBadge = renderHexBadge;
 
 // 確保 renderCard 存在於 window 對象上
 if (typeof window.renderCard !== 'function') {
@@ -797,6 +924,16 @@ window.closeAnimeDetail = () => {
     // 關閉舊 Modal (相容性)
     const oldModal = document.getElementById('detailModal');
     if (oldModal) oldModal.classList.remove('active');
+
+    // 恢復背景滾動
+    document.body.style.overflow = '';
+
+    // 性能優化：關閉詳情時恢復背景動畫
+    if (window.AtmosphereAPI) {
+        const bgCanvas = document.getElementById('atmosphere-canvas');
+        if (bgCanvas) bgCanvas.style.display = 'block';
+        window.AtmosphereAPI.resume();
+    }
 };
 
 // 打開 YouTube 播放視窗
@@ -815,44 +952,6 @@ window.closeYouTubeModal = () => {
     const frame = document.getElementById('youtube-frame');
     if (modal) modal.classList.remove('active');
     if (frame) frame.src = '';
-};
-
-// 詳情頁海報滑鼠移動處理
-window.handleDetailPosterMouseMove = (e) => {
-    const inner = e.currentTarget.querySelector('.detail-card-inner');
-    if (!inner) return;
-
-    const rect = inner.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const mouseXPercent = (x / rect.width) * 100;
-    const mouseYPercent = (y / rect.height) * 100;
-
-    // 更新光暈位置
-    const glow = inner.querySelector('.detail-poster-glow');
-    if (glow) {
-        glow.style.setProperty('--mouseX', `${mouseXPercent}%`);
-        glow.style.setProperty('--mouseY', `${mouseYPercent}%`);
-    }
-
-    // 更新光澤滑動方向
-    const shine = inner.querySelector('.detail-poster-shine');
-    if (shine) {
-        const shineX = mouseXPercent < 50 ? '100%' : '-100%';
-        shine.style.setProperty('--shineX', shineX);
-    }
-};
-
-// 詳情頁海報滑鼠離開處理
-window.handleDetailPosterMouseLeave = () => {
-    const inners = document.querySelectorAll('.detail-card-inner');
-    inners.forEach(inner => {
-        const glow = inner.querySelector('.detail-poster-glow');
-        const shine = inner.querySelector('.detail-poster-shine');
-        if (glow) glow.style.opacity = '0';
-        if (shine) shine.style.transform = 'translateX(-100%)';
-    });
 };
 
 console.log('✅ Render Module Fully Loaded');

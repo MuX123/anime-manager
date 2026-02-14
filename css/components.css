@@ -53,6 +53,7 @@
     background-size: cover;
     background-position: center 20%;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-left: none !important;
     border-radius: 16px !important;
     padding: 0 !important;
     gap: 0;
@@ -62,6 +63,291 @@
     position: relative;
     transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
         box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+/* 評級區域 - 左側 */
+.list-rating-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0 15px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    height: 100%;
+}
+
+/* 主內容區域 - 右側，垂直居中排列 */
+.list-content-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 20px;
+    gap: 6px;
+    height: 100%;
+}
+
+/* 作品名稱 - 置中顯示 */
+.list-name {
+    color: var(--name-color, var(--rating-color, #fff));
+    font-size: 15px;
+    font-weight: 800;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    width: 100%;
+}
+
+/* 元信息標籤（年/季/月/集）- 評級風格，置中 */
+.list-meta-tags {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-self: center;
+    width: 100%;
+}
+
+.list-meta-tag {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--rating-color, rgba(0, 212, 255, 0.3));
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    color: var(--rating-color, #00d4ff);
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.2);
+}
+
+/* 風格標籤 - 靠左 */
+.list-genre-tags {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    white-space: nowrap;
+    flex-shrink: 1;
+    justify-content: flex-start;
+    align-self: flex-start;
+    width: 100%;
+    padding-right: 10px;
+}
+
+.list-genre-tags .tag-base {
+    font-size: 11px;
+    padding: 2px 8px;
+    flex-shrink: 0;
+}
+
+/* 評級徽章 - 放大 */
+.anime-card.desktop-list-layout .badge-cyber-mini {
+    transform: scale(1.2);
+}
+
+.anime-card.desktop-list-layout .badge-cyber-mini .badge-rating {
+    font-size: 16px !important;
+    padding: 0 12px !important;
+}
+
+.anime-card.desktop-list-layout .badge-cyber-mini .badge-stars {
+    font-size: 13px !important;
+    padding: 0 10px !important;
+}
+
+/* 標籤滾動條隱藏 */
+.list-genre-tags::-webkit-scrollbar {
+    height: 2px;
+}
+
+.list-genre-tags::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.list-genre-tags::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 255, 0.2);
+    border-radius: 2px;
+}
+
+/* 隱藏所有裝飾元素 */
+.anime-card.desktop-list-layout .card-pattern-bg,
+.anime-card.desktop-list-layout .card-inner-glow,
+.anime-card.desktop-list-layout .card-particles,
+.anime-card.desktop-list-layout .card-particle,
+.anime-card.desktop-list-layout .card-rainbow-border,
+.anime-card.desktop-list-layout .card-gloss-layer,
+.anime-card.desktop-list-layout .card-mouse-glow,
+.anime-card.desktop-list-layout .admin-edit-btn {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+.anime-card.desktop-list-layout::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    /* 遮罩確保文字可讀性 */
+    backdrop-filter: blur(25px) saturate(200%);
+    -webkit-backdrop-filter: blur(25px) saturate(200%);
+    z-index: 1;
+}
+
+/* ========== 詳情頁樣式 ========== */
+
+/* 詳情頁元信息行 */
+.detail-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+}
+
+/* 單個信息項目 */
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.meta-label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+}
+
+.meta-value {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.meta-value.rating {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.meta-value.stars {
+    color: var(--star-color, #ffdd00);
+    letter-spacing: 1px;
+}
+
+/* 年季月信息 */
+.detail-year-info {
+    display: flex;
+    gap: 6px;
+}
+
+.detail-year-info .year-tag,
+.detail-year-info .season-tag,
+.detail-year-info .month-tag {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
+/* 集數標籤 */
+.episodes-tag {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
+/* 推薦度文字 */
+.recommendation-text {
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+/* 推薦指數 */
+.recommendation-stars {
+    font-size: 14px;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* YouTube 播放按鈕 */
+.detail-youtube-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.detail-youtube-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.02);
+}
+
+.detail-youtube-btn .play-icon {
+    font-size: 14px;
+    color: inherit;
+}
+
+.detail-youtube-btn .play-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: inherit;
+}
+
+/* 詳情頁遮罩層 - 禁止背景交互 */
+#anime-detail-overlay {
+    pointer-events: auto !important;
+}
+
+#anime-detail-overlay ~ *:not(#anime-detail-overlay) {
+    pointer-events: none !important;
+}
+
+/* 讓詳情頁內的元素可以交互 */
+#anime-detail-overlay *,
+#anime-detail-overlay ~ body {
+    pointer-events: auto !important;
+}
+
+/* 評級區域容器 */
+.anime-card.desktop-list-layout > div:first-child {
+    border-left: none !important;
+}
+
+/* 移除評級區域左邊的 4px 邊框 */
+.anime-card.desktop-list-layout .badge-cyber-mini {
+    border-left: none !important;
+}
+
+/* 移除所有可能的左邊裝飾線 */
+.anime-card.desktop-list-layout,
+.anime-card.desktop-list-layout *,
+.anime-card.desktop-list-layout > div {
+    border-left-color: transparent !important;
+    border-left-style: none !important;
+    border-left-width: 0 !important;
 }
 
 .anime-card.desktop-list-layout::before {
@@ -445,13 +731,15 @@ select option {
 #systemMenu {
     position: fixed;
     top: 80px;
-    right: 20px;
+    right: 0;
     z-index: 499;
     background: var(--panel-bg);
     border: 2px solid var(--neon-blue);
-    border-radius: 12px;
+    border-radius: 12px 0 0 12px;
     overflow: hidden;
-    min-width: 220px;
+    min-width: unset !important;
+    max-width: 160px !important;
+    width: 160px !important;
     box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -1141,6 +1429,94 @@ select option {
     align-self: center;
     padding: 0 5px;
     font-size: 12px;
+}
+
+/* ========== 游標縮放系統 (Cursor Scale System) ========== */
+:root {
+    --cursor-scale: 1;
+}
+
+* {
+    cursor: var(--cur-default, auto);
+}
+
+a,
+button,
+[role="button"],
+input[type="submit"],
+.pointer {
+    cursor: var(--cur-pointer, pointer);
+}
+
+input[type="text"],
+input[type="search"],
+textarea,
+.text {
+    cursor: var(--cur-text, text);
+}
+
+/* 讓系統選單中的遊標列表可滾動庫 */
+.cursor-theme-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 5px;
+    margin-top: 10px;
+    --cursor-list-bg: rgba(0, 212, 255, 0.05);
+    /* 修正語法錯誤 */
+}
+
+.cursor-theme-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.cursor-theme-list .menu-btn {
+    width: 100%;
+    text-align: left;
+    padding: 10px 15px;
+    background: var(--cursor-list-bg);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+/* 管理後台寬度優化：確保側欄固定，內容區捲動 */
+body.admin-mode-active .admin-layout {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+body.admin-mode-active .admin-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    overflow-y: auto;
+}
+
+body.admin-mode-active .admin-main {
+    flex: 1;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+
+.cursor-theme-list .menu-btn:hover {
+    background: rgba(0, 212, 255, 0.15);
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+}
+
+.menu-label {
+    font-size: 12px;
+    color: var(--neon-cyan);
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+    opacity: 0.8;
 }
 
 /* ========== 輕量模式 (Lite Mode) 深度優化 ========== */

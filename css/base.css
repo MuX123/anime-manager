@@ -42,6 +42,14 @@ body {
     min-height: 100vh;
 }
 
+/* 管理員模式：解除寬度限制 */
+body.admin-mode-active .site-scaler {
+    max-width: none;
+    margin: 0;
+    --site-scale: 1 !important;
+    /* 後台強制 1:1 比例 */
+}
+
 /* 站點標題區域 */
 .site-header {
     display: flex;
@@ -103,16 +111,17 @@ body {
     color: var(--text-secondary);
 }
 
-/* 跑馬燈容器 - 向右偏移，避免與人數重疊 */
+/* 跑馬燈容器 - 絕對置中 */
 .marquee-container {
     position: absolute;
-    left: 60%;
+    left: 50%;
     transform: translateX(-50%);
-    width: 35%;
-    max-width: 500px;
+    width: 50%;
+    max-width: 700px;
     overflow: hidden;
     white-space: nowrap;
     pointer-events: none;
+    /* 防止遮擋點擊 */
 }
 
 .marquee-content {
@@ -480,114 +489,10 @@ textarea:focus {
 }
 
 /* ========== 系統選單 ========== */
-.system-menu {
-    display: none;
-    position: fixed;
-    top: 60px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.95);
-    border: 1px solid rgba(0, 212, 255, 0.3);
-    border-radius: 12px;
-    padding: 10px;
-    z-index: 1000;
-    min-width: 180px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-}
-
-.system-menu.active {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.system-menu .menu-btn {
-    background: rgba(0, 212, 255, 0.1);
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 8px;
-    padding: 12px 16px;
-    color: var(--neon-cyan);
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: left;
-}
-
-.system-menu .menu-btn:hover {
-    background: rgba(0, 212, 255, 0.2);
-    border-color: var(--neon-cyan);
-}
-
-.system-menu .menu-divider {
-    height: 1px;
-    background: rgba(0, 212, 255, 0.2);
-    margin: 8px 0;
-}
-
-.system-menu .admin-menu-section {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.system-menu .admin-sidebar-btn {
-    background: rgba(0, 212, 255, 0.1);
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 8px;
-    padding: 12px 16px;
-    color: var(--neon-cyan);
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: left;
-}
-
-.system-menu .admin-sidebar-btn:hover {
-    background: rgba(0, 212, 255, 0.2);
-    border-color: var(--neon-cyan);
-}
-
-.system-menu .admin-sidebar-btn.logout {
-    background: rgba(255, 68, 68, 0.1);
-    border-color: rgba(255, 68, 68, 0.3);
-    color: #ff6b6b;
-}
-
-.system-menu .admin-sidebar-btn.logout:hover {
-    background: rgba(255, 68, 68, 0.2);
-    border-color: #ff4444;
-}
-
-.admin-header-bar {
+/* 樣式已移至 restore_menu.css */
     display: flex;
     gap: 10px;
     align-items: center;
-}
-
-.header-menu-btn {
-    position: relative;
-    top: auto;
-    right: auto;
-    background: rgba(0, 212, 255, 0.1);
-    border: 1px solid rgba(0, 212, 255, 0.3);
-    border-radius: 8px;
-    color: var(--neon-cyan);
-    font-size: 20px;
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    z-index: 1001;
-    transition: all 0.2s ease;
-    display: none;
-}
-
-.header-menu-btn:hover {
-    background: rgba(0, 212, 255, 0.2);
-    border-color: var(--neon-cyan);
-}
-
-.header-menu-btn:focus {
-    outline: 2px solid var(--neon-cyan);
-    outline-offset: 2px;
 }
 
 .admin-header-btn {
