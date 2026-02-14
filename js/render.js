@@ -711,7 +711,7 @@ window.showAnimeDetail = (id) => {
                         <!-- 網站按鈕水平滾動 -->
                         ${links && links.length > 0 ? `
                         <div class="scrollable-link-list">
-                            ${links.map(l => `<a href="${l.url}" target="_blank" class="detail-link-btn" style="color: ${btnColor}; border-color: ${btnColor}40;">${escape(l.name)}</a>`).join('')}
+                            ${links.map(l => `<a href="${l.url}" target="_blank" class="detail-link-btn" style="--btn-color: ${btnColor};">${escape(l.name)}</a>`).join('')}
                         </div>
                         ` : ''}
                     </div>

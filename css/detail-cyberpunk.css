@@ -448,10 +448,15 @@
     align-items: center;
     gap: 20px;
     margin-bottom: 10px;
+    position: relative; /* Ensure context */
 }
 
 .badge-cyber-hex {
-    position: relative;
+    position: relative; /* Force relative positioning */
+    top: auto;
+    right: auto;
+    left: auto;
+    bottom: auto;
     z-index: 20;
     background: #000;
     border: 2px solid var(--rating-color);
@@ -488,12 +493,13 @@
     display: flex;
     flex-wrap: nowrap;
     overflow-x: auto;
-    gap: 8px;
-    padding-bottom: 5px;
+    gap: 10px;
+    padding: 5px 0 10px 0; /* Add bottom padding for scrollbar/shadow */
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
     mask-image: linear-gradient(to right, black 90%, transparent 100%);
     -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
+    width: 100%;
 }
 
 .scrollable-tag-list::-webkit-scrollbar,
@@ -506,7 +512,33 @@
     flex-shrink: 0;
 }
 
-/* 3. YouTube Player (Resized) */
+.detail-link-btn {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--btn-color, #00ff88);
+    background: transparent;
+    border: 1px solid var(--btn-color, #00ff88);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.5px;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.detail-link-btn:hover {
+    background: var(--btn-color, #00ff88);
+    color: #000;
+    box-shadow: 0 0 20px var(--btn-color, #00ff88);
+    transform: translateY(-2px);
+    text-shadow: none;
+}
+
+.detail-link-btn:active {
+    transform: translateY(0);
+}
 .detail-youtube-min {
     width: 280px;
     aspect-ratio: 16/9;
