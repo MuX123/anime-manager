@@ -37,6 +37,27 @@
     display: flex;
     align-items: flex-start;
     justify-content: center;
+    overflow: visible;
+}
+
+/* 徽章和海報的組合容器 - 統一飄動動畫 */
+.poster-badge-group {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: group-float 4s ease-in-out infinite;
+}
+
+@keyframes group-float {
+    0%, 100% {
+        transform: translateY(0);
+        filter: drop-shadow(0 25px 50px rgba(0, 0, 0, 0.5));
+    }
+    50% {
+        transform: translateY(-10px);
+        filter: drop-shadow(0 35px 60px rgba(0, 0, 0, 0.6));
+    }
 }
 
 /* 右側資訊區塊 */
@@ -50,6 +71,8 @@
 
 .detail-poster-container {
     margin-top: 35px;
+    overflow: visible; /* 允許光澤和徽章顯示 */
+    border-radius: 12px;
 }
 
 .detail-poster-card {
@@ -59,6 +82,7 @@
     position: relative;
     border-radius: 12px;
     transform-style: preserve-3d;
+    overflow: hidden; /* 限制光澤在容器內 */
 }
 
 .detail-card-inner {
@@ -72,25 +96,28 @@
     padding: 15px;
 }
 
-/* 海報卡片持續上下飄動 - 高優先級 */
+/* 海報卡片樣式 - 飄動動畫由父容器 poster-badge-group 控制 */
 .detail-poster-container .detail-poster-card,
 #anime-detail-overlay .detail-poster-card {
-    animation: poster-float 4s ease-in-out infinite !important;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 40px var(--rating-glow), 0 0 60px var(--rating-color) !important;
 }
 
-@keyframes poster-float {
+/* 金屬光澤動畫 - 只使用 ::after */
+.detail-poster-container .detail-poster-card::before,
+#anime-detail-overlay .detail-poster-card::before {
+    display: none !important; /* 移除 ::before，只保留 ::after */
+}
+
+@keyframes card-shine {
     0%, 100% {
-        transform: translateY(0);
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 40px var(--rating-glow), 0 0 60px var(--rating-color);
+        opacity: 0;
     }
-    50% {
-        transform: translateY(-10px);
-        box-shadow: 0 35px 60px rgba(0, 0, 0, 0.6), 0 0 50px var(--rating-glow), 0 0 80px var(--rating-color);
+    20%, 80% {
+        opacity: 1;
     }
 }
 
-/* 海報圖片 - 直接添加金屬反光效果 */
+/* 海報圖片 */
 .detail-poster-img {
     width: 100%;
     height: 100%;
@@ -100,48 +127,46 @@
     z-index: 5;
     border: 2px solid var(--rating-color);
     box-shadow: 0 0 15px var(--rating-glow);
-    transition: box-shadow 0.6s ease-out, transform 0.6s ease-out;
 }
 
-/* 海報圖片金屬反光 - 直接在圖片上實現 */
-.detail-poster-container .detail-poster-card .detail-poster-img,
-#anime-detail-overlay .detail-poster-card .detail-poster-img {
-    position: relative;
-    overflow: hidden;
+/* 金屬光澤效果 - 使用伪元素在海报上方,徽章下方 */
+/* 只保留這一個定義，另一個在下方移除 */
+.detail-poster-container .detail-poster-card::after,
+#anime-detail-overlay .detail-poster-card::after {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        transparent 30%,
+        rgba(255, 255, 255, 0.3) 45%,
+        rgba(255, 255, 255, 0.5) 50%,
+        rgba(255, 255, 255, 0.3) 55%,
+        transparent 70%,
+        transparent 100%
+    ) !important;
+    pointer-events: none !important;
+    z-index: 10 !important; /* 海報(z:5) < 光澤(z:10) < 徽章(z:30) */
+    border-radius: 12px !important;
+    animation: shine-sweep 2.5s ease-in-out infinite !important;
 }
 
+/* 禁用伪元素的光泽效果，只保留 detail-poster-shine */
 .detail-poster-container .detail-poster-card .detail-poster-img::after,
 #anime-detail-overlay .detail-poster-card .detail-poster-img::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-        135deg,
-        transparent 40%,
-        rgba(255, 255, 255, 0.4) 48%,
-        rgba(255, 255, 255, 0.8) 50%,
-        rgba(255, 255, 255, 0.4) 52%,
-        transparent 60%
-    );
-    background-size: 400% 400%;
-    pointer-events: none;
-    z-index: 15;
-    animation: img-shine-diagonal 3s ease-in-out infinite;
-    border-radius: 10px;
+    display: none !important;
 }
 
-@keyframes img-shine-diagonal {
+@keyframes metallic-shine {
     0% {
-        background-position: 0% 0%;
-    }
-    50% {
-        background-position: 100% 100%;
+        transform: translateX(-100%) translateY(-100%);
     }
     100% {
-        background-position: 0% 0%;
+        transform: translateX(100%) translateY(100%);
     }
 }
 
@@ -199,37 +224,27 @@
     opacity: 0 !important;
 }
 
-/* 詳情頁金屬反光效果 - 對角線來回掃過 */
+/* 禁用单独的 shine 元素，使用伪元素替代 */
 .detail-poster-container .detail-poster-card .detail-poster-shine,
 #anime-detail-overlay .detail-poster-card .detail-poster-shine {
-    position: absolute !important;
-    inset: 0 !important;
-    background: linear-gradient(
-        135deg,
-        transparent 35%,
-        rgba(255, 255, 255, 0.5) 45%,
-        rgba(255, 255, 255, 0.9) 50%,
-        rgba(255, 255, 255, 0.5) 55%,
-        transparent 65%
-    ) !important;
-    background-size: 400% 400% !important;
-    pointer-events: none !important;
-    z-index: 10 !important;
-    border-radius: 12px !important;
-    display: block !important;
-    animation: shine-diagonal 3s ease-in-out infinite !important;
+    display: none !important;
 }
 
 /* 對角線來回掃過 */
-@keyframes shine-diagonal {
+@keyframes shine-sweep {
     0% {
-        background-position: 0% 0%;
+        transform: translateX(-100%) skewX(-20deg);
+        opacity: 0;
     }
-    50% {
-        background-position: 100% 100%;
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
     }
     100% {
-        background-position: 0% 0%;
+        transform: translateX(200%) skewX(-20deg);
+        opacity: 0;
     }
 }
 
@@ -554,16 +569,17 @@
     position: relative; /* Ensure context */
 }
 
-/* 六邊形徽章容器 */
+/* 六邊形徽章容器 - 一半覆蓋在海報上，屬於 poster-badge-group */
+.poster-badge-group .badge-cyber-hex,
 .detail-poster-container .badge-cyber-hex,
 #anime-detail-overlay .badge-cyber-hex {
     position: absolute;
     width: 104px !important;
     height: 120px !important;
-    top: -60px !important;
+    top: -30px !important;
     left: 50% !important;
     right: auto !important;
-    transform: translateX(-50%) rotate(0deg);
+    transform: translateX(-50%) rotate(0deg) !important;
     z-index: 30;
     filter: drop-shadow(0 0 20px var(--rating-color));
     pointer-events: none;
@@ -577,16 +593,7 @@
     box-shadow: none;
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
     transition: transform 0.5s ease-out, filter 0.5s ease-out;
-    animation: badge-float 4s ease-in-out infinite !important;
-}
-
-@keyframes badge-float {
-    0%, 100% {
-        transform: translateX(-50%) translateY(0);
-    }
-    50% {
-        transform: translateX(-50%) translateY(-6px);
-    }
+    animation: none !important; /* 禁用獨立動畫，跟隨 group 一起動 */
 }
 
 /* 六邊形外框 - 加粗邊框 */
@@ -777,38 +784,22 @@
     left: 10px;
 }
 
-/* 1-6星顏色定義 - 所有星星統一顏色，由星級決定 */
-.detail-poster-container .badge-cyber-hex.stars-1,
-#anime-detail-overlay .badge-cyber-hex.stars-1 { --star-color: #ffffff; }
-.detail-poster-container .badge-cyber-hex.stars-2,
-#anime-detail-overlay .badge-cyber-hex.stars-2 { --star-color: #00d4ff; }
-.detail-poster-container .badge-cyber-hex.stars-3,
-#anime-detail-overlay .badge-cyber-hex.stars-3 { --star-color: #b026ff; }
-.detail-poster-container .badge-cyber-hex.stars-4,
-#anime-detail-overlay .badge-cyber-hex.stars-4 { --star-color: #ff8c00; }
-.detail-poster-container .badge-cyber-hex.stars-5,
-#anime-detail-overlay .badge-cyber-hex.stars-5 { --star-color: #ff006e; }
-
+/* 星星顏色使用 CSS 變數 --rating-color（由 JavaScript 傳入） */
 .detail-poster-container .badge-cyber-hex.stars-1 .hex-star,
-#anime-detail-overlay .badge-cyber-hex.stars-1 .hex-star { color: #ffffff; }
+#anime-detail-overlay .badge-cyber-hex.stars-1 .hex-star { color: var(--rating-color) !important; }
 .detail-poster-container .badge-cyber-hex.stars-2 .hex-star,
-#anime-detail-overlay .badge-cyber-hex.stars-2 .hex-star { color: #00d4ff; }
+#anime-detail-overlay .badge-cyber-hex.stars-2 .hex-star { color: var(--rating-color) !important; }
 .detail-poster-container .badge-cyber-hex.stars-3 .hex-star,
-#anime-detail-overlay .badge-cyber-hex.stars-3 .hex-star { color: #b026ff; }
+#anime-detail-overlay .badge-cyber-hex.stars-3 .hex-star { color: var(--rating-color) !important; }
 .detail-poster-container .badge-cyber-hex.stars-4 .hex-star,
-#anime-detail-overlay .badge-cyber-hex.stars-4 .hex-star { color: #ff8c00; }
+#anime-detail-overlay .badge-cyber-hex.stars-4 .hex-star { color: var(--rating-color) !important; }
 .detail-poster-container .badge-cyber-hex.stars-5 .hex-star,
-#anime-detail-overlay .badge-cyber-hex.stars-5 .hex-star { color: #ff006e; }
+#anime-detail-overlay .badge-cyber-hex.stars-5 .hex-star { color: var(--rating-color) !important; }
 
-/* 6星 - 霓虹彩色漸變 */
+/* 6星 - 使用與 1-5 星相同的動畫效果 */
 .detail-poster-container .badge-cyber-hex.stars-6 .hex-star,
 #anime-detail-overlay .badge-cyber-hex.stars-6 .hex-star {
-    background: linear-gradient(45deg, #ff006e, #ff8c00, #00d4ff, #b026ff, #ff006e);
-    background-size: 300% 300%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 0 8px rgba(255,0,110,0.8)) !important;
+    color: var(--rating-color) !important;
     animation: star-glow-sequential 3s ease-in-out infinite !important;
 }
 

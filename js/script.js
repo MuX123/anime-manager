@@ -497,6 +497,21 @@ window.toggleAdminMode = (enable) => {
         if (adminHeaderBar) adminHeaderBar.style.display = 'none';
         if (analyticsBar) analyticsBar.style.display = 'none';
         if (systemMenu) systemMenu.classList.add('hidden'); // 隱藏系統菜單
+        
+        // 隱藏背景元素（全黑背景）
+        const matrixCanvas = document.getElementById('c');
+        const atmosphereContainer = document.getElementById('atmosphere-container');
+        const atmosphereOverlay = document.getElementById('atmosphere-overlay');
+        
+        if (matrixCanvas) matrixCanvas.style.display = 'none';
+        if (atmosphereContainer) atmosphereContainer.style.display = 'none';
+        if (atmosphereOverlay) atmosphereOverlay.style.display = 'none';
+        
+        // 暫停前台視覺特效以節省資源
+        if (window.visualEngine?.stop) {
+            window.visualEngine.stop();
+        }
+        
         window.renderAdmin();
     } else {
         document.body.classList.remove('admin-mode-active');
@@ -504,6 +519,21 @@ window.toggleAdminMode = (enable) => {
         if (topControlBar) topControlBar.style.display = 'flex';
         if (analyticsBar) analyticsBar.style.display = 'flex';
         if (systemMenu) systemMenu.classList.remove('hidden'); // 顯示系統菜單
+        
+        // 恢復背景元素
+        const matrixCanvas = document.getElementById('c');
+        const atmosphereContainer = document.getElementById('atmosphere-container');
+        const atmosphereOverlay = document.getElementById('atmosphere-overlay');
+        
+        if (matrixCanvas) matrixCanvas.style.display = 'block';
+        if (atmosphereContainer) atmosphereContainer.style.display = 'block';
+        if (atmosphereOverlay) atmosphereOverlay.style.display = 'block';
+        
+        // 恢復前台視覺特效
+        if (window.visualEngine?.start) {
+            window.visualEngine.start();
+        }
+        
         window.switchCategory(currentSection);
     }
 };

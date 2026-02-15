@@ -20,10 +20,16 @@
     /* V13: Metal focus, no bleed glow needed */
 }
 
-/* Ensure background is transparent when opening gates so we see the site behind */
-#loading-screen.opening-gates {
-    background-color: transparent !important;
-    transition: background-color 0.5s ease;
+/* 閘門打開動畫 - 加快速度 */
+.gate-left.fading,
+.gate-right.fading {
+    opacity: 0 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease !important;
+}
+
+.gate-right.fading {
+    transform: translateX(100%) !important;
 }
 
 /* --- Mechanical Gates (V13 Heavy Industrial) --- */
@@ -128,11 +134,11 @@
 .gate-right.opening,
 .gate-left.fading,
 .gate-right.fading {
-    opacity: 0;
+    opacity: 0 !important;
     filter: blur(30px);
-    transform: none !important;
+    transform: translateX(0) !important;
     pointer-events: none;
-    transition: opacity 1s ease, filter 1s ease;
+    transition: opacity 1s ease, filter 1s ease !important;
 }
 
 .gate-left.recoiling,
@@ -140,17 +146,6 @@
     /* Subtle mechanical thud without large movement */
     filter: brightness(1.2);
     transition: filter 0.1s;
-}
-
-/* Gate Opening Animation States: Unified with lock plates at 3s */
-.gate-left,
-.gate-right {
-    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8);
-}
-
-/* Gate Opening Animation States */
-.gate-left.fading {
-    transform: translateX(-100%);
 }
 
 .gate-right.fading {
@@ -327,9 +322,32 @@
     align-items: center;
     pointer-events: none;
     width: 600px;
-    height: 600px;
     overflow: visible;
     /* Ensure light expands freely */
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.center-stage.fading,
+.center-hub-wrapper.fading {
+    opacity: 0 !important;
+    transform: translate(-50%, -50%) scale(1.5);
+    pointer-events: none;
+}
+
+.center-hub-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 55;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    width: 600px;
+    height: 600px;
+    overflow: visible;
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 
 /* Unified Rotating Hub (V9 Mechanical Torque Control) */
@@ -782,8 +800,13 @@
 }
 
 @keyframes scanLine {
-    0% { left: -100%; }
-    100% { left: 100%; }
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 100%;
+    }
 }
 
 .status-cursor {
@@ -798,8 +821,15 @@
 }
 
 @keyframes cursorBlink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
 }
 
 .loading-title {

@@ -302,7 +302,7 @@ class AnnouncementSystem {
         setTimeout(() => this.switchTab(this.currentTab), 0);
 
         return `
-            <div id="announcement-board" class="premium-board" style="width: 95%; max-width: 1400px; margin: 20px auto;">
+            <div id="announcement-board" class="premium-board">
                 <div class="premium-tab-container">
                     <button class="premium-tab ${this.currentTab === 'announcements' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('announcements')">📢 公告消息</button>
                     <button class="premium-tab ${this.currentTab === 'guestbook' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('guestbook')">💬 留言板</button>

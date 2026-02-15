@@ -73,11 +73,8 @@
 </head>
 
 <body>
-<!-- 駭客任務數碼雨背景 - 在 scaling 容器外面 -->
-<canvas id="c"></canvas>
-
-<!-- 黑色半透明蒙版 -->
-<div id="atmosphere-overlay"></div>
+    <!-- 駭客任務數碼雨背景 - 在 scaling 容器外面 -->
+    <canvas id="c"></canvas>
 
     <!-- ACG 互動氛圍層 -->
     <div id="atmosphere-container">
@@ -244,7 +241,7 @@
             </div>
         </div>
 
-        <div id="app"></div>
+        <div id="app" class="site-content-blur"></div>
 
         <!-- 詳情彈窗 (Detail Modal) -->
         <div id="detailModal" class="modal">
@@ -318,36 +315,26 @@
 
     <!-- 3. 資料與邏輯層 (Data & Logic) -->
     <script src="./js/supabase.js?v=20260205_v4"></script>
-    <!-- script - migrated.js disabled to modular architecture -->
-    <script src="./js/data-manager.js"></script>
-    <script src="./js/admin-manager.js"></script>
-    <script src="./js/ui-controller.js"></script>
-    <script src="./js/event-handler.js"></script>
+    <script src="./js/script.js?v=20260214_opt_v1"></script>
     <script src="./js/announcements.js?v=20260209_v5"></script>
     <script src="./js/analytics.js?v=20260202_v1"></script>
 
     <!-- 4. 渲染與 UI 層 (Render & UI) -->
     <script src="./js/render.js?v=20260214_opt_v1"></script>
-    <script src="./js/render-app.js?v=20260215_v1"></script>
 
-    <!-- 5. 視覺特效層 (Visual Effects Engine) - 必須在 main.js 之前載入 -->
-    <script src="./js/atmosphere.js?v=20260215_v1"></script>
-    <script src="./js/poster-wall.js?v=20260215_v1"></script>
-    <script src="./js/matrix-rain.js?v=20260215_engine_v1"></script>
+    <!-- 5. 視覺特效層 (Visual Effects Engine) -->
     <script src="./js/visual-engine.js"></script>
-
-    <!-- 6. 應用入口 (Entry Point) - 必須在所有模組之後 -->
-    <script src="./js/main.js"></script>
+    <script src="./js/atmosphere.js?v=20260215_engine_v1"></script>
+    <script src="./js/matrix-rain.js?v=20260215_engine_v1"></script>
 
     <!-- 啟動視覺引擎 -->
-    <!-- VisualEngine init is now handled by main.js after loading animation -->
-    <!-- <script>
+    <script>
         window.addEventListener('load', () => {
             if (window.VisualEngine) {
                 window.VisualEngine.init();
             }
         });
-    </script> -->
+    </script>
 
     <!-- 6. 調試與補丁 (Debug & Patches) -->
     <!-- <script src="./js/debug.js?v=20260202_v1"></script> -->

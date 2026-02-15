@@ -400,7 +400,7 @@
     transform: scale(1.08);
 }
 
-/* Extreme Glass Shine V3 */
+/* Extreme Glass Shine V3 - Sweep Effect (Hover Triggered) */
 .poster-shine {
     position: absolute;
     top: 0;
@@ -414,11 +414,28 @@
             rgba(255, 255, 255, 0.02) 70%,
             transparent 100%);
     transform: skewX(-20deg);
-    transition: none;
     pointer-events: none;
     z-index: 6;
     filter: blur(2px);
-    opacity: 0.6;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+}
+    transition: opacity 0.3s ease;
+}
+
+/* Hover 觸發滑過動畫 */
+.anime-card:hover .poster-shine {
+    opacity: 1;
+    animation: poster-shine-sweep 2.5s ease-in-out infinite;
+}
+
+@keyframes poster-shine-sweep {
+    0% {
+        left: -150%;
+    }
+    100% {
+        left: 150%;
+    }
 }
 
 .poster-shine::after {

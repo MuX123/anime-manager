@@ -5,6 +5,7 @@
 
 :root {
     /* 背景色彩 - 深色主題 (預設) */
+    --bg-primary: #050609;  /* 主要背景 - 與 bg-darker 相同 */
     --bg-dark: #0a0e1a;
     --bg-darker: #050609;
     --panel-bg: rgba(10, 15, 25, 0.95);

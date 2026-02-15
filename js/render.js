@@ -368,47 +368,93 @@ function renderMetaTags(item, colors, showEpisodes = true) {
 
 // ========== 2. 核心渲染輔助 ==========
 // ========== 2. 核心渲染輔助 ==========
-// Performance Optimization: Use WeakMap to store animation frame IDs for each element
-const tiltFrameMap = new WeakMap();
+// ========== 2. 核心渲染輔助 (Low-End Optimized) ==========
+// Performance Optimization: Global Event Delegation + RAF Throttling
+// Replaces thousands of inline listeners with a single passive listener
+(function () {
+    let activeCard = null;
+    let rafId = null;
 
-window.handleCardTilt = (e, el) => {
-    // Cancel any pending frame for this element to avoid stacking
-    if (tiltFrameMap.has(el)) {
-        cancelAnimationFrame(tiltFrameMap.get(el));
-    }
+    // Helper to reset card state
+    window.resetCardTilt = (el) => {
+        if (!el) return;
+        el.style.setProperty('--tilt-x', `0deg`);
+        el.style.setProperty('--tilt-y', `0deg`);
+        el.style.setProperty('--mouse-x', `50%`);
+        el.style.setProperty('--mouse-y', `50%`);
+        el.style.setProperty('--gloss-x', `-100%`);
+    };
 
-    // Schedule the update
-    const frameId = requestAnimationFrame(() => {
-        const rect = el.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+    // Global Interaction Handler
+    document.addEventListener('mousemove', (e) => {
+        if (rafId) return; // Throttling: Skip if frame already scheduled
 
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
+        rafId = requestAnimationFrame(() => {
+            // Efficiently find the closest card
+            const target = e.target.closest('.mobile-card-v2, .anime-card.game-card-effect');
 
-        // Intensity scaling for Small Data Cards (gentler than full poster)
-        const rotateX = ((y - centerY) / centerY) * -8; // Reduced from -12
-        const rotateY = ((x - centerX) / centerX) * 8;  // Reduced from 12
+            // 1. Handle Card Switching or Mouse Leave
+            if (activeCard && activeCard !== target) {
+                window.resetCardTilt(activeCard);
+            }
 
-        el.style.setProperty('--tilt-x', `${rotateX}deg`);
-        el.style.setProperty('--tilt-y', `${rotateY}deg`);
+            // 2. Handle Active Card Tilt
+            if (target) {
+                activeCard = target;
+                const rect = target.getBoundingClientRect();
 
-        // Add mouse position for shine/gloss effects (0% - 100%)
-        el.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
-        el.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
+                // Coordinates relative to card
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
 
-        // For Gloss: Calculate X relative to card width for sliding effect
-        // normalize -1 to 1 range for parallax
-        el.style.setProperty('--gloss-x', `${((x - centerX) / centerX) * 100}%`);
+                // Center-based coordinates
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                // Intensity Check (Reduce calculation for extreme edge cases?)
+                // Optimized Math: Pre-calculate constants if possible, but rect changes.
+                // Clamping to prevent extreme values if mouse is slightly outside (due to throttle)
+                const percentX = (x - centerX) / centerX;
+                const percentY = (y - centerY) / centerY;
+
+                // Tilt Physics (Max 8 deg for mobile, maybe 12 for grid)
+                const isMobile = target.classList.contains('mobile-card-v2');
+                const maxTilt = isMobile ? 8 : 12;
+
+                const rotateX = percentY * -maxTilt;
+                const rotateY = percentX * maxTilt;
+
+                target.style.setProperty('--tilt-x', `${rotateX.toFixed(2)}deg`);
+                target.style.setProperty('--tilt-y', `${rotateY.toFixed(2)}deg`);
+
+                // Effects: Shine & Gloss (0% - 100%)
+                const posX = (x / rect.width) * 100;
+                const posY = (y / rect.height) * 100;
+
+                target.style.setProperty('--mouse-x', `${posX.toFixed(1)}%`);
+                target.style.setProperty('--mouse-y', `${posY.toFixed(1)}%`);
+
+                // Parallax Gloss
+                target.style.setProperty('--gloss-x', `${(percentX * 100).toFixed(1)}%`);
+            } else {
+                activeCard = null;
+            }
+
+            rafId = null;
+        });
+    }, { passive: true }); // Passive listener for scroll performance
+
+    // Handle mouse leaving the window entirely
+    document.addEventListener('mouseleave', () => {
+        if (activeCard) {
+            window.resetCardTilt(activeCard);
+            activeCard = null;
+        }
     });
+})();
 
-    tiltFrameMap.set(el, frameId);
-};
-
-window.resetCardTilt = (el) => {
-    el.style.setProperty('--tilt-x', `0deg`);
-    el.style.setProperty('--tilt-y', `0deg`);
-};
+// Legacy stub to prevent errors if inline handlers still exist momentarily
+window.handleCardTilt = () => { };
 
 function renderTags(genres, extraTags, color) {
     const escape = (str) => {
@@ -458,8 +504,6 @@ function renderGridCard(item, colors, data) {
     return `
         <div class="anime-card game-card-effect entry-animation"
             onclick="window.showAnimeDetail('${id}')"
-            onmousemove="window.handleCardTilt(event, this)"
-            onmouseleave="window.resetCardTilt(this)"
             style="--rating-color: ${ratingColor};">
 
             <!-- 新海報卡片特效層 -->
@@ -550,8 +594,6 @@ function renderListCard(item, colors, data) {
     return `
         <div class="mobile-card-v2 desktop-list-layout"
             onclick="window.showAnimeDetail('${id}')"
-            onmousemove="window.handleCardTilt(event, this)"
-            onmouseleave="window.resetCardTilt(this)"
             style="--rating-color: ${ratingColor};">
             
             <!-- Poster Effects Layers -->
@@ -587,8 +629,6 @@ function renderMobileCard(item, colors, data) {
     return `
         <div class="mobile-card-v2"
             onclick="window.showAnimeDetail('${id}')"
-            onmousemove="window.handleCardTilt(event, this)"
-            onmouseleave="window.resetCardTilt(this)"
             style="--rating-color: ${ratingColor};">
             
             <!-- Poster Effects Layers -->
@@ -613,6 +653,10 @@ function renderMobileCard(item, colors, data) {
 
 // 4. 主入口函數
 window.renderCard = (item) => {
+    if (!item) {
+        console.warn('[renderCard] Empty item!');
+        return '';
+    }
     const colors = getCardColors(item);
     const data = processCardData(item);
 
@@ -749,17 +793,18 @@ window.showAnimeDetail = (id) => {
         <div class="detail-container">
             <!-- 左側海報區塊 (組合懸浮組) -->
             <div class="detail-poster-section">
-                <div class="detail-poster-container">
-                    <!-- 統一精品評級徽章 - 六邊形星星環繞，置於海報中心上方 -->
+                <!-- 徽章和海報的組合容器 - 統一飄動動畫 -->
+                <div class="poster-badge-group">
+                    <!-- 徽章 - 一半覆蓋在海報上方 -->
                     ${renderHexBadge(item.rating, item.recommendation, colors.color, colors.glow)}
-                    <div class="detail-poster-card"
-                        style="--rating-color: ${colors.color}; --rating-glow: ${colors.glow}; border-color: ${colors.color};">
-                        <!-- 向外擴散的魔力效果 -->
-                        <div class="magic-diffuse-layer"></div>
-                        <!-- 光效層 -->
-                        <div class="detail-poster-shine"></div>
-                        <!-- 海報圖片 -->
-                        <img src="${item.poster_url || ''}" class="detail-poster-img" onerror="this.src='./assets/no-poster.jpg'">
+                    <div class="detail-poster-container">
+                        <div class="detail-poster-card"
+                            style="--rating-color: ${colors.color}; --rating-glow: ${colors.glow}; border-color: ${colors.color};">
+                            <!-- 向外擴散的魔力效果 -->
+                            <div class="magic-diffuse-layer"></div>
+                            <!-- 海報圖片 -->
+                            <img src="${item.poster_url || ''}" class="detail-poster-img" onerror="this.src='./assets/no-poster.jpg'">
+                        </div>
                     </div>
                 </div>
             </div>
