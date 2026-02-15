@@ -1,9 +1,8 @@
 /* =============================================
-   Responsive Design - 響應式設計
-   ACG 收藏庫 v6.0.0
+   Responsive Design - ?��?式設�?   ACG ?��?�?v6.0.0
    ============================================= */
 
-/* ========== 大型螢幕 (1400px) ========== */
+/* ========== 大�??��? (1400px) ========== */
 @media (max-width: 1400px) {
     html {
         font-size: 10.48px; /* 13.1px * 0.8 */
@@ -14,7 +13,7 @@
     }
 }
 
-/* ========== 大型螢幕 (1200px) ========== */
+/* ========== 大�??��? (1200px) ========== */
 @media (max-width: 1200px) {
     html {
         font-size: 10.16px; /* 12.7px * 0.8 */
@@ -45,13 +44,13 @@
     }
 }
 
-/* ========== 平板/大手機 (768px) ========== */
+/* ========== 平板/大�?�?(768px) ========== */
 @media (max-width: 768px) {
     html {
         font-size: 9.52px; /* 11.9px * 0.8 */
     }
 
-    /* 隱藏桌面版元素 */
+    /* ?��?桌面?��?�?*/
     .desktop-only {
         display: none !important;
     }
@@ -70,7 +69,7 @@
         display: none;
     }
 
-    /* ========== 後台響應式樣式（已統一至 components.css，此處僅保留 media query 覆蓋） ========== */
+    /* ========== 後台?��?式樣式�?已統一??components.css，此?��?保�? media query 覆�?�?========== */
 
     /* 網格調整 */
     .anime-grid {
@@ -78,7 +77,7 @@
         gap: 15px;
     }
 
-    /* 類別按鈕 */
+    /* 類別?��? */
     .category-buttons-container {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -95,7 +94,7 @@
         white-space: nowrap;
     }
 
-    /* 標題調整 */
+    /* 標�?調整 */
     .app-header {
         margin-bottom: 20px;
     }
@@ -128,7 +127,7 @@
         padding: 6px 12px;
     }
 
-    /* 統計列 - 手機版置中於頂部 */
+    /* 統�???- ?��??�置中於?�部 */
     .analytics-bar {
         position: fixed;
         top: 8px;
@@ -146,7 +145,7 @@
         font-size: 11px;
     }
 
-    /* 手機版隱藏登入按鈕文字 */
+    /* ?��??�隱?�登?��??��?�?*/
     .admin-header-btn.login .login-text {
         display: none;
     }
@@ -160,11 +159,11 @@
     }
 
     .admin-header-btn.login::before {
-        content: '🔐';
+        content: '??';
         font-size: 16px;
     }
 
-    /* 詳情頁手機版優化 (V7 Cyber-Deck) */
+    /* 詳�??��?機�??��? (V7 Cyber-Deck) */
     .detail-modal-v7 {
         flex-direction: column !important;
         max-height: 95vh;
@@ -269,7 +268,7 @@
         line-height: 1.6;
     }
 
-    /* 公告版手機優化 */
+    /* ?��??��?機優??*/
     .announcement-card {
         padding: 12px;
     }
@@ -293,7 +292,7 @@
     }
 }
 
-/* ========== 小螢幕手機 (480px) ========== */
+/* ========== 小螢幕�?�?(480px) ========== */
 @media (max-width: 480px) {
     html {
         font-size: 8.8px; /* 11px * 0.8 */
@@ -304,7 +303,7 @@
         gap: 12px;
     }
 
-    /* 置中並縮小統計列 */
+    /* 置中並縮小統計�? */
     .analytics-bar {
         width: 90%;
         max-width: 320px;
@@ -329,7 +328,7 @@
         font-size: 10px;
     }
 
-    /* 統計列居中 */
+    /* 統�??��?�?*/
     .analytics-bar {
         margin-top: 0;
         margin-bottom: 12px;
@@ -387,7 +386,7 @@
     }
 }
 
-/* ========== 橫向滾動條優化 ========== */
+/* ========== 橫�?滾�?條優??========== */
 .scroll-row-v35 {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -398,7 +397,7 @@
     height: 4px;
 }
 
-/* ========== 手機端列表模式垂直排列 ========== */
+/* ========== ?��?端�?表模式�??��???========== */
 @media (max-width: 768px) {
     .anime-grid.force-mobile-layout .anime-card {
         flex-direction: column;
@@ -424,7 +423,7 @@
         text-align: center;
     }
 
-    /* 資料列表作品名稱橫軸滾動 */
+    /* 資�??�表作�??�稱橫軸滾�? */
     .mobile-layout-card h3 {
         overflow-x: auto;
         white-space: nowrap;
@@ -435,7 +434,7 @@
         display: none;
     }
 
-    /* 桌面資料列表佈局 - 全局樣式已在 layout.css 中定義 */
+    /* 桌面資�??�表佈�? - ?��?�??已在 layout.css 中�?�?*/
     .desktop-list-layout {
         display: flex !important;
         flex-direction: row !important;

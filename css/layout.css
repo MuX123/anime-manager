@@ -1,9 +1,9 @@
 /* =============================================
-    Layout Styles - 佈局系統
-    ACG 收藏庫 v6.0.0
+    Layout Styles - 佈�?系統
+    ACG ?��?�?v6.0.0
     ============================================= */
 
-/* 主容器 */
+/* 主容??*/
 .app-container {
     max-width: 765px;
     margin: 0 auto;
@@ -12,7 +12,7 @@
     width: 100%;
 }
 
-/* 分類按鈕容器 - 置中 */
+/* ?��??��?容器 - 置中 */
 .category-buttons-container {
     display: flex;
     justify-content: center;
@@ -26,7 +26,7 @@
     min-width: 80px;
 }
 
-/* 頁首 */
+/* ?��? */
 header {
     text-align: center;
     margin-bottom: 40px;
@@ -41,7 +41,7 @@ h1 {
     text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
 }
 
-/* App 容器內的標題樣式 */
+/* App 容器?��?標�?�?? */
 .app-header {
     text-align: center;
     margin-bottom: 30px;
@@ -79,7 +79,7 @@ h1 {
     gap: 10px;
 }
 
-/* 網格列數響應式 */
+/* 網格?�數?��?�?*/
 @media (max-width: 1400px) {
     .anime-grid {
         grid-template-columns: repeat(4, 1fr);
@@ -110,7 +110,7 @@ h1 {
     }
 }
 
-/* 列表佈局 */
+/* ?�表佈�? */
 .anime-grid.force-mobile-layout .anime-card {
     display: flex;
     flex-direction: column;
@@ -136,7 +136,7 @@ h1 {
     gap: 20px;
 }
 
-/* 桌面資料列表佈局 - 全局樣式 */
+/* 桌面資�??�表佈�? - ?��?�?? */
 .desktop-list-layout {
     display: flex !important;
     flex-direction: row !important;

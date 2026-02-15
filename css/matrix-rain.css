@@ -1,6 +1,5 @@
-/* ========== 駭客任務數碼雨背景 (Matrix Rain) - Canvas 版本 ========== */
+/* ========== 駭客任�??�碼?��???(Matrix Rain) - Canvas ?�本 ========== */
 
-/* body 必須透明以顯示背景 canvas */
 body {
     background: transparent !important;
     overflow-x: hidden;
@@ -14,26 +13,10 @@ canvas#c {
     width: 100vw;
     height: 100vh;
     pointer-events: none;
-    z-index: 3;
-    /* Layer 3: Top - Matrix Rain (數碼雨) */
+    z-index: 9999;
 }
 
-/* 20% 黑色遮罩 - 在海報牆上面 */
-#atmosphere-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 2;
-    /* Layer 2: 20% Black Overlay */
-    background: rgba(0, 0, 0, 0.2);
-}
-
-/* 詳情頁面覆蓋數碼雨 */
+/* 詳�??�面覆�??�碼??*/
 .detail-modal-v9,
 #anime-detail-overlay {
     z-index: 10000;

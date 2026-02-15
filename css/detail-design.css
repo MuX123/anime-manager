@@ -1,6 +1,6 @@
-/* ========== 詳情頁面 - 按照用戶設計範本 ========== */
+/* ========== 詳�??�面 - ?�照?�戶設�?範本 ========== */
 
-/* 詳情模態框 - 簡化設計 */
+/* 詳�?模�?�?- 簡�?設�? */
 .detail-modal-v9 {
     position: absolute !important;
     top: 50% !important;
@@ -28,12 +28,12 @@
     padding: 20px !important;
 }
 
-/* 移除霓虹邊框動畫 */
+/* 移除?�虹?��??�畫 */
 .detail-modal-v9::before {
     display: none;
 }
 
-/* 左側海報欄 */
+/* 左側海報�?*/
 .left-col-v9 {
     position: relative !important;
     display: flex !important;
@@ -41,7 +41,7 @@
     gap: 15px !important;
 }
 
-/* 評級徽章容器 */
+/* 評�?徽�?容器 */
 .rank-badge-container {
     position: relative;
     width: 100%;
@@ -50,7 +50,7 @@
     margin-bottom: 15px;
 }
 
-/* 評級徽章 - 五邊形設計 */
+/* 評�?徽�? - 五�?形設�?*/
 .rank-badge {
     font-family: 'Orbitron', sans-serif !important;
     position: relative !important;
@@ -65,7 +65,7 @@
     animation: rainbow-shift 3s ease infinite !important;
 }
 
-/* 評級文字 */
+/* 評�??��? */
 .rank-text {
     font-size: 2.5rem;
     font-weight: 900;
@@ -75,7 +75,7 @@
     position: relative;
 }
 
-/* 評級樣式 */
+/* 評�?�?? */
 .rank-ssr {
     background: linear-gradient(135deg, #ffd700 0%, #ff6b35 25%, #ff1493 50%, #9400d3 75%, #00bfff 100%);
     animation: rainbow-shift 3s ease infinite;
@@ -109,13 +109,13 @@
     background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7a 50%, #566573 100%);
 }
 
-/* 彩虹動畫 */
+/* 彩虹?�畫 */
 @keyframes rainbow-shift {
     0%, 100% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
 }
 
-/* 星光動畫 */
+/* ?��??�畫 */
 @keyframes pulse-glow {
     0%, 100% { 
         filter: drop-shadow(0 0 8px currentColor) drop-shadow(0 0 16px currentColor);
@@ -130,7 +130,7 @@
     color: #ffd700;
 }
 
-/* 星星評分區域 */
+/* ?��?評�??�??*/
 .star-rating {
     display: flex;
     flex-direction: column;
@@ -173,7 +173,7 @@
     border-radius: 12px;
 }
 
-/* 右側內容欄 */
+/* ?�側?�容�?*/
 .right-col-v9 {
     position: relative !important;
     z-index: 10 !important;
@@ -184,12 +184,12 @@
     background: transparent !important;
 }
 
-/* 內容容器 - 無變換 */
+/* ?�容容器 - ?��???*/
 .right-col-v9 > * {
     transform: none;
 }
 
-/* 標題區域 */
+/* 標�??�??*/
 .title-section {
     margin-bottom: 20px;
 }
@@ -218,7 +218,7 @@
     color: rgba(255,255,255,0.7);
 }
 
-/* 詳情資訊區域 */
+/* 詳�?資�??�??*/
 .detail-section {
     margin-bottom: 20px;
 }
@@ -239,7 +239,7 @@
     font-size: 0.95rem;
 }
 
-/* 標籤區域 */
+/* 標籤?�??*/
 .tags-container {
     display: flex;
     flex-wrap: wrap;
@@ -256,7 +256,7 @@
     border: 1px solid rgba(255,255,255,0.2);
 }
 
-/* 操作按鈕區域 */
+/* ?��??��??�??*/
 .action-buttons {
     display: flex;
     gap: 10px;
@@ -269,7 +269,6 @@
     border: none;
     background: rgba(255,255,255,0.1);
     color: white;
-    cursor: pointer;
     transition: background 0.3s ease;
     font-family: 'Orbitron', sans-serif;
     font-weight: 700;
@@ -279,7 +278,7 @@
     background: rgba(255,255,255,0.2);
 }
 
-/* 響應式設計 */
+/* ?��?式設�?*/
 @media (max-width: 768px) {
     .detail-modal-v9 {
         grid-template-columns: 1fr;

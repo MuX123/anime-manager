@@ -1,0 +1,409 @@
+/**
+ * atmosphere.js
+ * ACG 收藏庫 - 氛圍與遊標管理模組
+ * 包含:
+ * 1. CursorManager (遊標) - 保留
+ * 2. PosterWall (海報牆) - 已移至 poster-wall.js
+ */
+
+/* ==========================================
+   Cursor Manager
+   ========================================== */
+window.CursorManager = {
+    // 計算絕對路徑，確保 CSS 變數在外部樣式表中使用時能正確解析
+    BASE_PATH: new URL('./assets/cursors', window.location.href).href,
+    themes: {
+        anya: {
+            name: '🦊 阿尼亞',
+            folder: 'anya',
+            files: {
+                'default': 'default.gif',
+                'pointer': 'pointer.gif',
+                'text': 'text.gif',
+                'help': 'help.gif',
+                'wait': 'wait.gif',
+                'move': 'move.gif',
+                'not-allowed': 'not-allowed.gif',
+                'resize-v': 'resize-v.gif',
+                'resize-h': 'resize-h.gif',
+                'resize-nwse': 'resize-nwse.gif',
+                'resize-nesw': 'resize-nesw.gif'
+            }
+        },
+        frieren: {
+            name: '🧙‍♀️ 芙莉蓮',
+            folder: 'frieren',
+            files: {
+                'default': 'default.gif',
+                'pointer': 'pointer.gif',
+                'text': 'text.gif',
+                'help': 'help.gif',
+                'wait': 'wait.gif',
+                'move': 'move.gif',
+                'not-allowed': 'not-allowed.gif',
+                'resize-v': 'resize-v.gif',
+                'resize-h': 'resize-h.gif',
+                'resize-nwse': 'resize-nwse.gif',
+                'resize-nesw': 'resize-nesw.gif'
+            }
+        },
+        elysia: {
+            name: '🦋 愛莉希雅',
+            folder: 'elysia',
+            files: {
+                'default': 'default.gif',
+                'pointer': 'pointer.gif',
+                'text': 'text.gif',
+                'help': 'help.gif',
+                'wait': 'wait.gif',
+                'move': 'move.gif',
+                'not-allowed': 'not-allowed.gif',
+                'resize-v': 'resize-v.gif',
+                'resize-h': 'resize-h.gif',
+                'resize-nwse': 'resize-nwse.gif',
+                'resize-nesw': 'resize-nesw.gif'
+            }
+        }
+    },
+
+    getThemeList() {
+        return Object.keys(this.themes).map(key => ({
+            id: key,
+            name: this.themes[key].name
+        }));
+    },
+
+    // VisualEngine Module Interface
+    init(isLowSpec) {
+        console.log('[CursorManager] Init...');
+
+        // 1. 創建視覺游標層 (Visual Cursor Layer)
+        this.createVisualCursor();
+
+        // 2. 載入儲存的設定
+        let savedTheme = localStorage.getItem('cursorTheme') || 'anya';
+        let savedScale = localStorage.getItem('cursorScale') || '1';
+
+        // 3. 套用設定
+        this.apply(savedTheme);
+        this.setScale(savedScale);
+
+        // 4. 同步 UI
+        this.syncUI(savedTheme, savedScale);
+
+        // 5. 綁定滑鼠追蹤 (採用全局監聽以確保效能)
+        this.bindEvents();
+    },
+
+    createVisualCursor() {
+        if (document.getElementById('custom-cursor-visual')) return;
+
+        const cursor = document.createElement('div');
+        cursor.id = 'custom-cursor-visual';
+        // 基本樣式 (其餘在 CSS 中定義)
+        Object.assign(cursor.style, {
+            position: 'fixed',
+            pointerEvents: 'none',
+            zIndex: '999999',
+            width: '32px',
+            height: '32px',
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            transformOrigin: 'top left', // 設定縮放基準點為左上角
+            transform: 'scale(1)',       // 移除 translate(-5px)，保持熱點精確
+            display: 'none',
+            willChange: 'transform, left, top'
+        });
+        document.body.appendChild(cursor);
+        this.visualCursor = cursor;
+    },
+
+    bindEvents() {
+        // 優化：使用 ticking 避免高頻觸發
+        let ticking = false;
+        let mouseX = 0;
+        let mouseY = 0;
+
+        // 狀態標記
+        this.isHovering = true;
+        this.isInIframe = false;
+
+        document.addEventListener('mousemove', (e) => {
+            if (!this.visualCursor) return;
+
+            this.isHovering = true; // 確保狀態正確
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+
+            // Self-Healing: 如果滑鼠移動到了非 iframe 區域，但狀態仍卡在 isInIframe，強制修正
+            // 這能防止 mouseout 事件丟失導致遊標消失或卡住
+            if (this.isInIframe && e.target && !e.target.closest('.detail-youtube, .yt-facade-v7, iframe')) {
+                this.handleIframeLeave(e);
+            }
+
+            // 檢測目前元素類型以切換圖標 (隨時檢測)
+            this.updateCursorType(e.target);
+
+            // 如果在 iframe 內，不執行位置更新，避免遊標殘影
+            if (this.isInIframe) return;
+
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    this.updateCursorPosition(mouseX, mouseY);
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }, { passive: true });
+
+        // 處理游標離開視窗 (綁定於 documentElement 以確保是視窗邊界)
+        document.documentElement.addEventListener('mouseleave', () => {
+            this.hideCursor();
+        });
+
+        // 處理游標進入視窗
+        document.documentElement.addEventListener('mouseenter', (e) => {
+            this.showCursor(e.clientX, e.clientY);
+        });
+
+        // 額外保險：當視窗失去焦點時隱藏 (例如 Alt-Tab)
+        window.addEventListener('blur', () => {
+            this.hideCursor();
+        });
+
+        // 初始化時確保 class 存在
+        document.documentElement.classList.add('custom-cursor-active');
+
+        // 6. 綁定 iframe 事件
+        this.bindIframeEvents();
+    },
+
+    bindIframeEvents() {
+        // 定義在這以便移除監聽時引用相同的函數引用
+        this.handleIframeEnter = (e) => {
+            // 如果目標是自定義覆蓋層，則不隱藏遊標！ (這是 Custom Player 的關鍵)
+            if (e.target && e.target.closest('.custom-video-overlay')) return;
+
+            this.isInIframe = true;
+            // 隱藏自定義遊標，還原原生遊標 (讓使用者可以操作 iframe 內容)
+            if (this.visualCursor) this.visualCursor.style.display = 'none';
+            document.documentElement.classList.remove('custom-cursor-active');
+        };
+
+        this.handleIframeLeave = (e) => {
+            // 如果單純是在 overlay 內部移動，不觸發離開邏輯
+            if (e.target && e.target.closest('.custom-video-overlay')) return;
+
+            this.isInIframe = false;
+            // 離開 iframe，恢復自定義遊標
+            document.documentElement.classList.add('custom-cursor-active');
+            if (this.visualCursor) this.visualCursor.style.display = 'block';
+        };
+
+        const attachListeners = (iframe) => {
+            // 嘗試綁定容器 (如果有) 或 iframe 本身
+            const container = iframe.closest('.detail-youtube, .yt-facade-v7') || iframe;
+
+            container.removeEventListener('mouseover', this.handleIframeEnter);
+            container.removeEventListener('mouseout', this.handleIframeLeave);
+
+            container.addEventListener('mouseover', this.handleIframeEnter);
+            container.addEventListener('mouseout', this.handleIframeLeave);
+        };
+
+        // 1. 處理現有 iframe
+        document.querySelectorAll('iframe').forEach(attachListeners);
+
+        // 2. 監聽動態新增的 iframe
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.tagName === 'IFRAME') {
+                        attachListeners(node);
+                    } else if (node.querySelectorAll) {
+                        node.querySelectorAll('iframe').forEach(attachListeners);
+                    }
+                });
+            });
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    },
+
+    showCursor(x, y) {
+        this.isHovering = true;
+        if (this.visualCursor) {
+            this.visualCursor.style.display = 'block';
+            if (x !== undefined && y !== undefined) {
+                this.visualCursor.style.left = `${x}px`;
+                this.visualCursor.style.top = `${y}px`;
+            }
+            // 確保 class 存在
+            if (!document.documentElement.classList.contains('custom-cursor-active')) {
+                document.documentElement.classList.add('custom-cursor-active');
+            }
+        }
+    },
+
+    hideCursor() {
+        this.isHovering = false;
+        if (this.visualCursor) {
+            this.visualCursor.style.display = 'none';
+            // 不移除 custom-cursor-active class，以免原生游標在視窗內閃爍
+            // document.documentElement.classList.remove('custom-cursor-active');
+        }
+    },
+
+    updateCursorPosition(x, y) {
+        if (!this.visualCursor || !this.isHovering) return;
+
+        this.visualCursor.style.left = `${x}px`;
+        this.visualCursor.style.top = `${y}px`;
+
+        // 雙重保險：確保顯示
+        if (this.visualCursor.style.display === 'none') {
+            this.visualCursor.style.display = 'block';
+        }
+    },
+
+    // 強制隱藏原生遊標並恢復狀態 (用於過場動畫結束後)
+    forceHideNativeCursor() {
+        if (!document.documentElement.classList.contains('custom-cursor-active')) {
+            document.documentElement.classList.add('custom-cursor-active');
+        }
+        if (this.visualCursor && this.visualCursor.style.display === 'none') {
+            this.visualCursor.style.display = 'block';
+        }
+        this.isInIframe = false; // 重置狀態
+        console.log('[CursorManager] Force hid native cursor.');
+    },
+
+    updateCursorType(target) {
+        if (!target) return;
+
+        // 判斷是否為交互元素
+        const isPointer = target.closest('a, button, select, .btn-primary, .anime-card, .clickable, [onclick], .custom-video-overlay');
+        const isText = target.closest('input[type="text"], input[type="search"], textarea, .editable');
+        const isHelp = target.closest('[title], .help');
+
+        let type = 'default';
+        if (isPointer) type = 'pointer';
+        else if (isText) type = 'text';
+        else if (isHelp) type = 'help';
+
+        if (this.currentType !== type) {
+            this.currentType = type;
+            const theme = this.themes[localStorage.getItem('cursorTheme') || 'anya'];
+            const url = `url('${this.buildPath(theme, theme.files[type])}')`;
+            this.visualCursor.style.backgroundImage = url;
+
+            // 針對 pointer (手指) 類型進行熱點校正
+            // 嘗試給予指尖一點偏移 (假設手指尖端在圖片中間偏上)
+            if (type === 'pointer') {
+                this.visualCursor.style.transform = `translate(-6px, -2px) scale(${localStorage.getItem('cursorScale') || 1})`;
+            } else {
+                this.visualCursor.style.transform = `scale(${localStorage.getItem('cursorScale') || 1})`;
+            }
+        }
+    },
+
+    start() { },
+    stop() { },
+    resize() { },
+
+    buildPath(theme, filename) {
+        return `${this.BASE_PATH}/${theme.folder}/${filename}`;
+    },
+
+    apply(themeId) {
+        if (!this.themes[themeId]) themeId = 'anya';
+        localStorage.setItem('cursorTheme', themeId);
+
+        const theme = this.themes[themeId];
+        const root = document.documentElement;
+
+        // 1. 同時更新 CSS 變數 (備用) 與視覺游標層 (主用)
+        Object.keys(theme.files).forEach(type => {
+            const filename = theme.files[type];
+            let fallback = 'auto';
+            if (['pointer', 'text', 'help', 'wait', 'move'].includes(type)) fallback = type;
+            else if (type === 'not-allowed') fallback = 'not-allowed';
+            else if (type === 'resize-v') fallback = 'ns-resize';
+            else if (type === 'resize-h') fallback = 'ew-resize';
+            else if (type === 'resize-nwse') fallback = 'nwse-resize';
+            else if (type === 'resize-nesw') fallback = 'nesw-resize';
+
+            const cursorValue = `url('${this.buildPath(theme, filename)}'), ${fallback}`;
+            root.style.setProperty(`--cur-${type}`, cursorValue);
+        });
+
+        // 2. 更新當前視覺游標圖標
+        if (this.visualCursor) {
+            const url = `url('${this.buildPath(theme, theme.files[this.currentType || 'default'])}')`;
+            this.visualCursor.style.backgroundImage = url;
+        }
+
+        console.log(`[CursorManager] Applied theme: ${themeId}`);
+    },
+
+    setScale(scale) {
+        const root = document.documentElement;
+        root.style.setProperty('--cur-scale', scale);
+        localStorage.setItem('cursorScale', scale);
+
+        if (this.visualCursor) {
+            // 需要保持 updateCursorType 中的偏移邏輯
+            if (this.currentType === 'pointer') {
+                this.visualCursor.style.transform = `translate(-6px, -2px) scale(${scale})`;
+            } else {
+                this.visualCursor.style.transform = `scale(${scale})`;
+            }
+        }
+
+        // 更新 UI 文字標籤
+        const display = document.getElementById('cursor-size-display');
+        if (display) display.textContent = parseFloat(scale).toFixed(1) + 'x';
+    },
+
+    // 供 HTML 調用的新方法 (Stepper UI)
+    changeScale(delta) {
+        let current = parseFloat(localStorage.getItem('cursorScale') || '1');
+        let newScale = current + delta;
+        // 限制範圍 0.5 ~ 3.0
+        if (newScale < 0.5) newScale = 0.5;
+        if (newScale > 3.0) newScale = 3.0;
+
+        this.setScale(newScale);
+    },
+
+    syncUI(theme, scale) {
+        const select = document.getElementById('cursor-theme-select');
+        if (select) select.value = theme;
+
+        const display = document.getElementById('cursor-size-display');
+        if (display) display.textContent = parseFloat(scale).toFixed(1) + 'x';
+    }
+};
+
+// 註冊到引擎 - CursorManager
+if (window.VisualEngine) {
+    window.VisualEngine.register('CursorManager', window.CursorManager);
+}
+
+// Priority #1: 立即啟動游標 (不等待 onload)
+// 因為 atmosphere.js 位於 body 底部，此時 body 已存在
+if (document.body) {
+    // 立即加上 class 確保原生游標隱藏
+    document.documentElement.classList.add('custom-cursor-active');
+
+    // 立即初始化
+    // 注意：這裡假設 isLowSpec 為 false，因為還沒偵測性能
+    // 但游標是核心體驗，應優先載入
+    window.CursorManager.init(false);
+} else {
+    // 備用：如果腳本被移動到 head
+    document.addEventListener('DOMContentLoaded', () => {
+        document.documentElement.classList.add('custom-cursor-active');
+        window.CursorManager.init(false);
+    });
+}

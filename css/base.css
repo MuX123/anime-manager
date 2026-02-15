@@ -1,9 +1,9 @@
 /* =============================================
-   Base Styles - 基礎樣式
-   ACG 收藏庫 v8.0.0
+   Base Styles - ?��?�??
+   ACG ?��?�?v8.0.0
    ============================================= */
 
-/* 重置樣式 */
+/* ?�置�?? */
 *,
 *::before,
 *::after {
@@ -31,7 +31,7 @@ body {
     min-height: 100vh;
 }
 
-/* 缩放容器 - 将 scale 应用到这里，保持 body 为 containing block */
+/* 缩放容器 - �?scale 应用?��??��?保�? body �?containing block */
 .site-scaler {
     position: relative;
     z-index: 10; /* Lift content above Matrix Rain (z-index: 3), higher to allow children to go above */
@@ -43,20 +43,20 @@ body {
     min-height: 100vh;
 }
 
-/* 管理員模式：解除寬度限制 */
+/* 管�??�模式�?�?��寬度?�制 */
 body.admin-mode-active .site-scaler {
     max-width: none;
     margin: 0;
     --site-scale: 1 !important;
-    /* 後台強制 1:1 比例 */
+    /* 後台強制 1:1 比�? */
 }
 
-/* 站點標題區域 */
+/* 站�?標�??�??*/
 .site-header {
     display: flex;
     align-items: center;
     padding: 0 25px;
-    /* 移除上下 padding */
+    /* 移除上�? padding */
     background: rgba(0, 0, 0, 0.4);
     border-bottom: 1px solid rgba(0, 212, 255, 0.1);
     gap: 20px;
@@ -78,7 +78,7 @@ body.admin-mode-active .site-scaler {
     flex-shrink: 0;
 }
 
-/* 頂部狀態欄 (整合人數與跑馬燈) */
+/* ?�部?�?��? (?��?人數?��?馬�?) */
 .analytics-bar {
     position: fixed;
     top: 0;
@@ -102,7 +102,7 @@ body.admin-mode-active .site-scaler {
     gap: 12px;
     white-space: nowrap;
     z-index: 20;
-    color: #00d4ff; /* 水藍色 */
+    color: #00d4ff; /* 水�???*/
     text-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
 }
 
@@ -115,10 +115,10 @@ body.admin-mode-active .site-scaler {
     display: flex;
     align-items: center;
     gap: 4px;
-    /* 縮小圖示與數字間隙 */
+    /* 縮�??�示?�數字�???*/
 }
 
-/* 跑馬燈容器 - 絕對置中 */
+/* 跑馬?�容??- 絕�?置中 */
 .marquee-container {
     position: absolute;
     left: 55%;
@@ -128,7 +128,7 @@ body.admin-mode-active .site-scaler {
     overflow: hidden;
     white-space: nowrap;
     pointer-events: none;
-    /* 防止遮擋點擊 */
+    /* ?�止?��?點�? */
 }
 
 .marquee-content {
@@ -139,7 +139,7 @@ body.admin-mode-active .site-scaler {
     font-weight: 500;
 }
 
-/* 搜尋框極簡風格 (Ghost Style) */
+/* ?��?框極簡風??(Ghost Style) */
 .search-ghost {
     background: rgba(0, 212, 255, 0.03) !important;
     border: 1px solid rgba(0, 212, 255, 0.15) !important;
@@ -161,7 +161,7 @@ body.admin-mode-active .site-scaler {
     box-shadow: 0 0 15px rgba(0, 212, 255, 0.1) !important;
 }
 
-/* 右上角管理員區域 */
+/* ?��?角管?�員?�??*/
 .admin-header-bar {
     display: flex;
     align-items: center;
@@ -203,7 +203,6 @@ body.admin-mode-active .site-scaler {
     font-size: 12px;
     font-weight: 500;
     border-radius: 6px;
-    cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
 }
@@ -241,7 +240,7 @@ body.admin-mode-active .site-scaler {
     border-color: var(--neon-cyan);
 }
 
-/* ========== 表單樣式 ========== */
+/* ========== 表單�?? ========== */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -272,7 +271,6 @@ input[type="color"] {
     width: 50px;
     height: 40px;
     padding: 4px;
-    cursor: pointer;
 }
 
 .color-input-wrapper {
@@ -285,7 +283,6 @@ input[type="color"] {
     opacity: 0;
     width: 100%;
     height: 100%;
-    cursor: pointer;
 }
 
 .color-swatch {
@@ -305,7 +302,7 @@ input[type="color"] {
     color: var(--neon-cyan);
 }
 
-/* 滾動條樣式 */
+/* 滾�?條樣�?*/
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -324,7 +321,7 @@ input[type="color"] {
     background: rgba(0, 212, 255, 0.5);
 }
 
-/* 隱藏滾動條（可訪問性保留） */
+/* ?��?滾�?條�??�訪?�性�??��? */
 .hide-scrollbar {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -336,7 +333,7 @@ input[type="color"] {
     background: transparent;
 }
 
-/* 基礎排版 */
+/* ?��??��? */
 h1,
 h2,
 h3,
@@ -378,7 +375,7 @@ a:hover {
     color: var(--neon-cyan);
 }
 
-/* 圖片基礎 */
+/* ?��??��? */
 img {
     max-width: 100%;
     height: auto;
@@ -426,9 +423,9 @@ img {
     visibility: hidden;
 }
 
-/* ========== 可訪問性 ========== */
+/* ========== ?�訪?��?========== */
 
-/* 聚焦樣式 - 鍵盤導航可見 */
+/* ?�焦�?? - ?�盤導航?��? */
 :focus {
     outline: 2px solid var(--neon-cyan);
     outline-offset: 2px;
@@ -443,20 +440,20 @@ img {
     outline-offset: 2px;
 }
 
-/* 連結聚焦樣式 */
+/* ????�焦�?? */
 a:focus {
     outline: 2px solid var(--neon-cyan);
     outline-offset: 2px;
     border-radius: 2px;
 }
 
-/* 按鈕聚焦樣式 */
+/* ?��??�焦�?? */
 button:focus {
     outline: 2px solid var(--neon-cyan);
     outline-offset: 2px;
 }
 
-/* 輸入框聚焦樣式 */
+/* 輸入框�??�樣�?*/
 input:focus,
 select:focus,
 textarea:focus {
@@ -464,7 +461,7 @@ textarea:focus {
     outline-offset: 2px;
 }
 
-/* 減少動畫偏好 */
+/* 減�??�畫?�好 */
 @media (prefers-reduced-motion: reduce) {
 
     *,
@@ -477,7 +474,7 @@ textarea:focus {
     }
 }
 
-/* 高對比度模式支援 */
+/* 高�?比度模�??�援 */
 @media (prefers-contrast: high) {
     :root {
         --neon-blue: #00ffff;
@@ -495,8 +492,8 @@ textarea:focus {
     }
 }
 
-/* ========== 系統選單 ========== */
-/* 樣式已移至 restore_menu.css */
+/* ========== 系統?�單 ========== */
+/* �??已移??restore_menu.css */
     display: flex;
     gap: 10px;
     align-items: center;
@@ -509,7 +506,6 @@ textarea:focus {
     padding: 8px 12px;
     color: var(--neon-cyan);
     font-size: 13px;
-    cursor: pointer;
     transition: all 0.2s ease;
 }
 

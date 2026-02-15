@@ -64,13 +64,21 @@ class EventHandler {
     toggleAdminMode(enable) {
         if (enable) {
             // Check auth
-            // Assume isAdminLoggedIn is managed by main.js/auth
             if (!window.isAdminLoggedIn) {
                 window.showAdminLoginModal();
                 return;
             }
+
+            // [Optimization] Pause visual engine and force black background
+            if (window.visualEngine) window.visualEngine.stop();
+            document.documentElement.classList.add('admin-active');
+
             window.uiController.renderAdmin();
         } else {
+            // [Optimization] Restore visual engine
+            if (window.visualEngine) window.visualEngine.start();
+            document.documentElement.classList.remove('admin-active');
+
             window.renderApp();
         }
     }

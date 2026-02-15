@@ -44,7 +44,7 @@ window.startLoadingSimulation = function () {
         if (barFill) barFill.style.width = `${displayProgress}%`;
         if (percentText) percentText.innerText = Math.floor(displayProgress);
         if (hub) hub.style.setProperty('--hub-rotation', `${displayProgress * 3.6}deg`);
-        
+
         // 更新狀態文字
         if (statusText) {
             if (displayProgress < 25) statusText.innerText = '正在初始化系統...';
@@ -89,6 +89,12 @@ window.openGatesAndHide = function () {
         if (loadingScreen) {
             loadingScreen.style.display = 'none';
         }
+
+        // Fix: 防止過場結束後原生遊標閃現
+        if (window.CursorManager) {
+            window.CursorManager.forceHideNativeCursor();
+        }
+
         // 初始化公告系統
         if (window.announcementSystem?.init) {
             window.announcementSystem.init();
@@ -99,6 +105,7 @@ window.openGatesAndHide = function () {
 window.initApp = async function () {
     try {
         console.log('🚀 系統初始化中...');
+        window.siteSettings = window.siteSettings || {}; // Ensure object exists early
         window.startLoadingSimulation();
 
         // 1. Supabase Check
@@ -131,7 +138,7 @@ window.initApp = async function () {
 
         // 4. Render App
         window.renderApp();
-        
+
         console.log('✅ 頁面渲染完成');
 
         // 5. Init announcement system
@@ -151,9 +158,9 @@ window.initApp = async function () {
     } catch (err) {
         console.error('Init Error:', err);
         window.showToast('系統初始化異常', 'error');
-        setTimeout(() => { 
+        setTimeout(() => {
             const ls = document.getElementById('loading-screen');
-            if (ls) ls.style.display = 'none'; 
+            if (ls) ls.style.display = 'none';
         }, 2000);
     }
 };

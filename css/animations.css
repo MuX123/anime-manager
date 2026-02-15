@@ -26,19 +26,9 @@ body {
     bottom: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 1;
-    /* Layer 1: Poster Wall (海報牆) */
-    overflow: hidden;
+    z-index: 12;
+    overflow: visible;
     pointer-events: none;
-    background: transparent;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-content: center;
-    gap: 15px;
-    padding: 40px;
-    opacity: 1;
-    transition: opacity 0.5s ease;
 }
 
 body {
@@ -75,49 +65,34 @@ body {
     pointer-events: none;
 }
 
-/* ========== Mechanical Cycle Background (V8) ========== */
-#atmosphere-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 0;
-    /* Full page background - Poster Wall (海報牆) */
-    overflow: hidden;
-    pointer-events: none;
-    background: rgba(0, 0, 0, 0.3) !important;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-content: center;
-    gap: 15px;
-    padding: 40px;
-    opacity: 1;
-    transition: opacity 0.5s ease;
-}
-
+/* 海報樣式 */
 #atmosphere-container .poster-wall-item {
-    position: relative;
-    width: 160px;
-    height: 240px;
+    position: absolute;
     border-radius: 8px;
     overflow: hidden;
-    filter: brightness(0.6) grayscale(0.4);
-    flex-shrink: 0;
-    transform: scale(0.9);
-    transition: all 0.5s ease;
-    background-color: rgba(0, 212, 255, 0.1); /* 後備背景色 */
     background-position: center;
     background-repeat: no-repeat;
+    pointer-events: none;
+    opacity: 0.8;
+    z-index: 3;
 }
 
-#atmosphere-container .poster-wall-item:hover {
-    filter: brightness(0.8) grayscale(0.1);
-    transform: scale(1.05);
-    z-index: 100;
+/* 海報漂移動畫 */
+@keyframes poster-drift {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(var(--rotation, 0deg)) scale(0.85);
+    }
+
+    50% {
+        transform: translateY(-15px) rotate(var(--rotation, 0deg)) scale(0.85);
+    }
+}
+
+.poster-wall-animated .poster-wall-item {
+    --rotation: 0deg;
+    animation: poster-drift 10s ease-in-out infinite;
 }
 
 .mech-cycle-img {
@@ -208,51 +183,6 @@ body {
 }
 
 /* Floating Blobs - 已停用
-.atmosphere-blob {
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
-    border-radius: 50%;
-    animation: blob-pulse 8s ease-in-out infinite;
-    pointer-events: none;
-    z-index: -3;
-}
-
-.atmosphere-blob:nth-child(1) {
-    top: 20%;
-    left: 10%;
-}
-
-.atmosphere-blob:nth-child(2) {
-    bottom: 20%;
-    right: 10%;
-    background: radial-gradient(circle, rgba(138, 43, 226, 0.08) 0%, transparent 70%);
-    animation-delay: -4s;
-}
-
-@keyframes blob-pulse {
-    0%, 100% {
-        transform: scale(1) translate(0, 0);
-        opacity: 0.6;
-    }
-    50% {
-        transform: scale(1.3) translate(30px, -30px);
-        opacity: 1;
-    }
-}
-*/
-
-/* 暗角覆蓋層 - z-index 3 (Layer 3) */
-#atmosphere-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 3;
-    /* Above Atmosphere(2) and Rain(1) */
-    pointer-events: none;
-    background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(5, 6, 9, 0.2) 70%, rgba(5, 6, 9, 0.5) 100%);
-}
-
 /* 星星基礎樣式 - 已停用 */
 .star {
     display: none !important;
@@ -275,11 +205,6 @@ body {
 }
 
 /* 載入時模糊效果 - 已移除，由動畫控制 */
-
-/* #app.site-content-blur { */
-/*     filter: blur(10px); */
-/*     pointer-events: none; */
-/* } */
 
 #loading-screen {
     position: fixed;
@@ -366,10 +291,6 @@ body {
     }
 }
 
-/* (已移除雨滴與閃電樣式) */
-
-
-
 /* 海報發光效果 */
 .holographic-poster-container {
     position: relative;
@@ -443,92 +364,100 @@ body {
     --cur-not-allowed: auto;
 }
 
-/* ========== 互動遊標主題套用 (強制覆蓋) ========== */
+/* ========== 互動遊標主題套用 (Global Overlay Strategy) ========== */
 /* 
-   使用 !important 確保覆蓋瀏覽器預設與其他樣式
-   涵蓋常見互動元素
+   核心邏輯 V4 (Modern Approach):
+   使用 @supports 檢測瀏覽器是否支援 cursor: none，
+   支援則直接用 cursor: none，不支援則用 1x1 透明圖片 fallback。
 */
-body,
-html,
-.app-container,
-.anime-card,
-.modal-content {
-    cursor: var(--cur-pointer) !important;
+
+/* 現代瀏覽器：直接隱藏 */
+@supports (cursor: none) {
+    html.custom-cursor-active,
+    html.custom-cursor-active *,
+    html.custom-cursor-active body,
+    html.custom-cursor-active iframe,
+    html.custom-cursor-active .app-container,
+    html.custom-cursor-active .site-scaler,
+    html.custom-cursor-active .modal,
+    html.custom-cursor-active .modal-content,
+    html.custom-cursor-active #atmosphere-container,
+    html.custom-cursor-active #atmosphere-overlay,
+    html.custom-cursor-active #loading-screen {
+        cursor: none !important;
+    }
+
+    html.custom-cursor-active a,
+    html.custom-cursor-active button,
+    html.custom-cursor-active input,
+    html.custom-cursor-active textarea,
+    html.custom-cursor-active select,
+    html.custom-cursor-active label,
+    html.custom-cursor-active [role="button"],
+    html.custom-cursor-active [onclick],
+    html.custom-cursor-active .clickable {
+        cursor: none !important;
+    }
+
+    html.custom-cursor-active ::-webkit-scrollbar {
+        cursor: none !important;
+    }
+
+    button:disabled,
+    input:disabled,
+    .disabled {
+        cursor: none !important;
+    }
 }
 
-a,
-button,
-.btn-primary,
-.btn-icon,
-.nav-btn,
-.sidebar-item,
-.tag-pill,
-.admin-tab-btn,
-.pagination-btn,
-.anime-card,
-.anime-card img,
-.detail-poster-column img,
-.close-btn,
-select,
-input[type="checkbox"],
-input[type="radio"],
-input[type="file"]::-webkit-file-upload-button,
-.clickable,
-[onclick] {
-    cursor: var(--cur-pointer) !important;
+/* 不支援 cursor: none 的瀏覽器：使用 1x1 透明圖片 fallback */
+@supports not (cursor: none) {
+    html.custom-cursor-active,
+    html.custom-cursor-active *,
+    html.custom-cursor-active body,
+    html.custom-cursor-active iframe,
+    html.custom-cursor-active .app-container,
+    html.custom-cursor-active .site-scaler,
+    html.custom-cursor-active .modal,
+    html.custom-cursor-active .modal-content,
+    html.custom-cursor-active #atmosphere-container,
+    html.custom-cursor-active #atmosphere-overlay,
+    html.custom-cursor-active #loading-screen {
+        cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='), none !important;
+    }
+
+    html.custom-cursor-active a,
+    html.custom-cursor-active button,
+    html.custom-cursor-active input,
+    html.custom-cursor-active textarea,
+    html.custom-cursor-active select,
+    html.custom-cursor-active label,
+    html.custom-cursor-active [role="button"],
+    html.custom-cursor-active [onclick],
+    html.custom-cursor-active .clickable {
+        cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='), none !important;
+    }
+
+    html.custom-cursor-active ::-webkit-scrollbar {
+        cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='), none !important;
+    }
+
+    button:disabled,
+    input:disabled,
+    .disabled {
+        cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='), none !important;
+    }
 }
 
-input[type="text"],
-input[type="number"],
-input[type="search"],
-input[type="email"],
-input[type="password"],
-textarea,
-.editable {
-    cursor: var(--cur-text) !important;
-}
-
-/* 針對特定狀態 */
-button:disabled,
-input:disabled,
-.disabled,
-[aria-disabled="true"] {
-    cursor: var(--cur-not-allowed) !important;
-}
-
-/* 其他 cursor 類型 */
-.move,
-[style*="cursor: move"],
-.resizable {
-    cursor: var(--cur-move) !important;
-}
-
-.wait,
-.loading,
-[style*="cursor: wait"] {
-    cursor: var(--cur-wait) !important;
-}
-
-.help,
-[title]:hover {
-    cursor: var(--cur-help) !important;
-}
-
-/* 調整大小 cursor */
-*[style*="resize: both"],
-*[style*="resize: vertical"],
-.se-resize {
-    cursor: var(--cur-resize-nwse) !important;
-}
-
-*[style*="resize: horizontal"],
-.ew-resize {
-    cursor: var(--cur-resize-h) !important;
-}
-
-.ns-resize,
-.resize-v {
-    cursor: var(--cur-resize-v) !important;
+/* 視覺游標層專屬樣式 */
+#custom-cursor-visual {
+    /* 預設使用 block 但 opacity 0，避免 display:none 導致的初始化狀態判定問題 */
+    display: block !important;
+    opacity: 0;
+    will-change: transform, opacity;
+    filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.5));
+    transition: opacity 0.2s ease-out, background-image 0.15s ease-out, transform 0.1s ease-out;
+    /* 初始位置由 JS 控制 (lerp 迴圈) */
 }
 
 /* 跑馬燈位移動畫 */
@@ -574,4 +503,12 @@ input:disabled,
         animation: none;
         padding-left: 0;
     }
+}
+
+/* ========== 管理員模式 - 暫停所有動畫降低能耗 ========== */
+body.admin-mode-active *,
+body.admin-mode-active *::before,
+body.admin-mode-active *::after {
+    animation: none !important;
+    transition: none !important;
 }

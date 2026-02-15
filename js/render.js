@@ -69,79 +69,112 @@ window.changeSortOrder = function (order) {
     window.showToast(`排序已切換：${order === 'desc' ? '最新優先' : '舊件優先'}`, 'info');
 };
 
-// YouTube 影片加載器 (性能優化：點擊才加載)
-// YouTube 影片加載器 (性能優化：點擊才加載 + 預熱 + 轉場)
+// YouTube API Initialization
+window.isYouTubeReady = false;
+window.youTubePlayerQueue = [];
+
+function initYouTubeAPI() {
+    if (window.YT && window.YT.Player) {
+        window.isYouTubeReady = true;
+        return;
+    }
+
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    window.onYouTubeIframeAPIReady = () => {
+        window.isYouTubeReady = true;
+        window.youTubePlayerQueue.forEach(fn => fn());
+        window.youTubePlayerQueue = [];
+    };
+}
+
+// Initial load
+initYouTubeAPI();
+
+// YouTube 影片加載器 (Custom Overlay Version)
 window.loadYouTubeVideo = (containerId, videoId) => {
     const container = document.getElementById(containerId);
-    if (!container) {
-        console.error('[YouTube] Container not found:', containerId);
-        return;
-    }
+    if (!container) return;
 
-    // 驗證 videoId 格式
-    if (!videoId || !/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
-        console.error('[YouTube] Invalid video ID:', videoId);
-        container.innerHTML = `
-            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#ff6b6b;">
-                <div style="text-align:center;">
-                    <div style="font-size:48px;margin-bottom:10px;">⚠️</div>
-                    <div>無法載入影片</div>
-                </div>
-            </div>
-        `;
-        return;
-    }
-
-    // 清空容器，先顯示 loading
+    // 清空容器
     container.innerHTML = '';
 
-    // 創建 loading 元素
-    const loadingEl = document.createElement('div');
-    loadingEl.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000;z-index:10;';
-    loadingEl.innerHTML = `<div class="whirl-ring" style="width:40px;height:40px;border-width:3px;border-color:var(--neon-cyan) transparent var(--neon-cyan) transparent;"></div>`;
+    // 建立結構
+    const wrapper = document.createElement('div');
+    wrapper.className = 'video-wrapper';
 
-    // 創建 iframe with proper class for overflow prevention
-    const iframe = document.createElement('iframe');
-    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
-    iframe.className = 'video-iframe-v9';
-    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-    iframe.allowFullscreen = true;
-    iframe.title = 'YouTube video player';
+    const playerDiv = document.createElement('div');
+    playerDiv.id = `yt-player-${videoId}`;
 
-    // 設置 timeout 防止永遠 loading（10秒）
-    const timeout = setTimeout(() => {
-        console.warn('[YouTube] Load timeout, showing error');
-        loadingEl.innerHTML = `
-            <div style="text-align:center;color:#ff6b6b;">
-                <div style="font-size:32px;margin-bottom:8px;">⚠️</div>
-                <div style="font-size:12px;">載入超時</div>
-                <div style="font-size:10px;opacity:0.7;margin-top:4px;">請檢查網路連線</div>
-            </div>
-        `;
-    }, 10000);
+    const overlay = document.createElement('div');
+    overlay.className = 'custom-video-overlay';
+    // 初始狀態為暫停
+    overlay.classList.add('paused');
+    overlay.innerHTML = `<div class="state-icon">▶</div>`;
 
-    // iframe 載入成功
-    iframe.onload = () => {
-        clearTimeout(timeout);
-        iframe.classList.add('loaded');
-        // 載入完成後移除 loading
-        loadingEl.remove();
+    wrapper.appendChild(playerDiv);
+    wrapper.appendChild(overlay);
+    container.appendChild(wrapper);
+
+    // 定義創建播放器函數
+    const createPlayer = () => {
+        let player;
+
+        // 點擊 overlay 控制播放
+        overlay.addEventListener('click', () => {
+            if (!player || typeof player.getPlayerState !== 'function') return;
+
+            const state = player.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
+        });
+
+        player = new YT.Player(`yt-player-${videoId}`, {
+            height: '100%',
+            width: '100%',
+            videoId: videoId,
+            playerVars: {
+                'autoplay': 1,
+                'controls': 0, // 隱藏原生控制項
+                'rel': 0,
+                'modestbranding': 1,
+                'playsinline': 1,
+                'disablekb': 1, // 禁用鍵盤控制以防誤觸
+                'origin': window.location.origin
+            },
+            events: {
+                'onReady': (event) => {
+                    // 確保靜音播放以允許自動播放 (瀏覽器政策)
+                    // event.target.playVideo(); 
+                },
+                'onStateChange': (event) => {
+                    const icon = overlay.querySelector('.state-icon');
+                    if (event.data === YT.PlayerState.PLAYING) {
+                        overlay.classList.remove('paused');
+                        icon.classList.add('playing');
+                        icon.innerText = '⏸'; // 其實播放時不會顯示，但預備著
+                    } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                        overlay.classList.add('paused');
+                        icon.classList.remove('playing');
+                        icon.innerText = '▶';
+                    }
+                }
+            }
+        });
     };
 
-    // iframe 載入失敗
-    iframe.onerror = () => {
-        clearTimeout(timeout);
-        console.error('[YouTube] Failed to load video:', videoId);
-        loadingEl.innerHTML = `
-            <div style="text-align:center;color:#ff6b6b;">
-                <div style="font-size:32px;margin-bottom:8px;">⚠️</div>
-                <div style="font-size:12px;">影片載入失敗</div>
-                <div style="font-size:10px;opacity:0.7;margin-top:4px;">請稍後再試</div>
-            </div>
-        `;
-    };
-
-    container.appendChild(iframe);
+    // 排隊或執行
+    if (window.isYouTubeReady) {
+        createPlayer();
+    } else {
+        window.youTubePlayerQueue.push(createPlayer);
+    }
 };
 
 // 圖片檢查與回退機制 (主要用於 YouTube 縮圖)

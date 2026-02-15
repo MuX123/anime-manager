@@ -105,7 +105,7 @@ class MatrixRain {
         this.ctx.globalCompositeOperation = 'source-over';
 
         // 2. Text properites
-        this.ctx.fillStyle = "#00ff88"; // Green
+        this.ctx.fillStyle = "rgba(0, 200, 255, 0.8)"; // Cyan
         this.ctx.font = this.fontSize + "px monospace";
 
         // 3. Draw drops

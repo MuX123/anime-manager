@@ -73,7 +73,7 @@ class UIController {
                     </div>
                 </header>
                 <div class="category-buttons-container" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; position: relative; z-index: 100;">
-                    <button class="btn-primary" onclick="window.switchCategory('notice')">◆ 公告</button>
+                    <button class="btn-primary" onclick="window.switchCategory('notice')">◆ 訊息</button>
                     <button class="btn-primary" onclick="window.switchCategory('anime')">◆ 動畫</button>
                     <button class="btn-primary" onclick="window.switchCategory('manga')">◆ 漫畫</button>
                     <button class="btn-primary" onclick="window.switchCategory('movie')">◆ 電影</button>
@@ -118,7 +118,7 @@ class UIController {
         const paged = filtered.slice((currentPage - 1) * this.itemsPerPage, currentPage * this.itemsPerPage);
 
         const gridContainer = document.getElementById('anime-grid-container');
-        
+
         // Show error state if data load failed
         if (window.dataLoadError) {
             if (gridContainer) {
@@ -127,7 +127,7 @@ class UIController {
             document.querySelectorAll('#pagination-container, #pagination-top-container').forEach(el => el.innerHTML = '');
             return;
         }
-        
+
         if (gridContainer) {
             const cols = window.gridColumns;
             gridContainer.className = `anime-grid ${cols === 'mobile' ? 'force-mobile-layout' : ''}`;
@@ -207,7 +207,7 @@ class UIController {
 
     updateActiveCategoryButton() {
         const btns = document.querySelectorAll('.category-buttons-container .btn-primary');
-        const map = { 'anime': '動畫', 'manga': '漫畫', 'movie': '電影', 'notice': '公告' };
+        const map = { 'anime': '動畫', 'manga': '漫畫', 'movie': '電影', 'notice': '訊息' };
         btns.forEach(btn => {
             const text = btn.textContent.replace(/◆\s*/, '').trim();
             btn.classList.toggle('active', text === map[window.currentCategory]);
@@ -233,7 +233,7 @@ class UIController {
     renderNotices() {
         const container = document.getElementById('notice-container');
         if (container) {
-            container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--neon-cyan);">⚡ 公告系統載入中...</div>';
+            container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--neon-cyan);">⚡ 訊息系統載入中...</div>';
             setTimeout(() => {
                 if (window.renderAnnouncements) container.innerHTML = window.renderAnnouncements();
                 if (window.announcementSystem?.loadInitialContent) window.announcementSystem.loadInitialContent();
@@ -307,9 +307,21 @@ class UIController {
             </div>
         `;
 
+        // Handle async rendering or specific setup for certain tabs
         if (this.currentAdminTab === 'guestbook') {
             const loadingDiv = document.getElementById('guestbook-loading');
-            if (loadingDiv) this.renderGuestbookAdmin().then(html => loadingDiv.outerHTML = html);
+            if (loadingDiv) {
+                if (window.renderGuestbookAdmin) {
+                    window.renderGuestbookAdmin().then(html => {
+                        const body = document.getElementById('admin-content-body');
+                        if (body && this.currentAdminTab === 'guestbook') body.innerHTML = html;
+                    });
+                } else {
+                    this.renderGuestbookAdmin().then(html => {
+                        if (loadingDiv && loadingDiv.parentNode) loadingDiv.outerHTML = html;
+                    });
+                }
+            }
         }
         window.initGlobalScroll && window.initGlobalScroll();
     }
@@ -355,14 +367,13 @@ class UIController {
                 </div>`;
         } else if (this.currentAdminTab === 'add' || this.currentAdminTab === 'edit') {
             const item = this.editId ? window.animeData.find(a => a.id === this.editId) : {};
-            return this.renderAnimeForm(item || {});
+            return window.renderAnimeForm ? window.renderAnimeForm(item || {}) : this.renderAnimeForm(item || {});
         } else if (this.currentAdminTab === 'options') {
-            return this.renderOptionsManager();
+            return window.renderOptionsManager?.() || this.renderOptionsManager();
         } else if (this.currentAdminTab === 'settings') {
-            // Returning simplified placeholder that matches original structure for now
-            return `<div style="padding: 20px; color: var(--neon-cyan);">網站設定 (功能開發中)</div>`;
+            return window.renderSettingsPanel?.() || `<div style="padding: 20px; color: var(--neon-cyan);">網站設定 (功能開發中)</div>`;
         } else if (this.currentAdminTab === 'guestbook') {
-            return '<div id="guestbook-loading">載入中...</div>';
+            return '<div id="guestbook-loading" style="padding: 50px; text-align: center; color: var(--neon-cyan);">⌛ 正在載入留言資料...</div>';
         }
         return '';
     }
@@ -495,7 +506,10 @@ class UIController {
     }
 
     async renderGuestbookAdmin() {
-        const messages = await window.dataManager.loadGuestbookMessagesForAdmin(); // Assume DataManager has this
+        // This is a backup method in case global one isn't loaded
+        if (window.renderGuestbookAdmin) return window.renderGuestbookAdmin();
+
+        const messages = await window.dataManager.loadGuestbookMessagesForAdmin();
         const pending = messages.filter(m => m.status === 'pending');
         const approved = messages.filter(m => m.status === 'approved');
         const rejected = messages.filter(m => m.status === 'rejected');

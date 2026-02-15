@@ -22,21 +22,21 @@ async function updateClickCount() {
         } else {
             return;
         }
-        
+
         const { count } = await client
             .from('category_clicks')
             .select('*', { count: 'exact', head: true });
-            
+
         analyticsData.totalClicks = count || 0;
-        
+
         // 更新顯示
         updateAnalyticsDisplay();
-        
+
         // 更新緩存
         const cached = JSON.parse(localStorage.getItem('analytics_cache') || '{}');
         cached.totalClicks = analyticsData.totalClicks;
         localStorage.setItem('analytics_cache', JSON.stringify(cached));
-        
+
     } catch (err) {
         console.error('Update click count error:', err);
     }
@@ -44,47 +44,52 @@ async function updateClickCount() {
 
 async function trackVisit() {
     try {
+        // 等待 Supabase 連接就緒
+        let attempts = 0;
+        while (!window.supabaseManager?.isConnectionReady() && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+
         // 確保使用正確的 Supabase 客戶端
         let client;
         if (window.supabaseManager && window.supabaseManager.isConnectionReady()) {
             client = window.supabaseManager.getClient();
-        } else if (window.supabaseClient) {
-            client = window.supabaseClient;
         } else {
             console.warn('⚠️ Analytics: Supabase 客戶端尚未準備就緒');
             return;
         }
-        
+
         const visitorId = getVisitorId();
         const lastTrack = localStorage.getItem('last_visit_time');
         const now = Date.now();
-        
+
         // 防止同一次會話重複計算，但允許重新載入頁面後重新計算
         if (lastTrack && (now - parseInt(lastTrack)) < 300000) { // 5分鐘內不重複計算
             await loadAnalytics();
             return;
         }
-        
+
         localStorage.setItem('last_visit_time', now.toString());
-        
+
         // 檢查是否為新訪客
         const { data: existingVisitor, error: fetchError } = await client
             .from('site_visitors')
             .select('*')
             .eq('visitor_id', visitorId)
             .single();
-        
+
         if (fetchError && fetchError.code !== 'PGRST116') {
             console.error('Analytics fetch error:', fetchError);
             return;
         }
-        
+
         // 如果是新訪客，記錄到訪客表
         if (!existingVisitor) {
             try {
                 await client
                     .from('site_visitors')
-                    .insert([{ 
+                    .insert([{
                         visitor_id: visitorId,
                         first_visit: new Date().toISOString(),
                         last_visit: new Date().toISOString()
@@ -105,12 +110,12 @@ async function trackVisit() {
                 console.warn('更新訪客時間失敗:', updateErr);
             }
         }
-        
+
         // 記錄頁面訪問
         try {
             await client
                 .from('page_views')
-                .insert([{ 
+                .insert([{
                     visitor_id: visitorId,
                     page_url: window.location.href,
                     page_title: document.title,
@@ -119,7 +124,7 @@ async function trackVisit() {
         } catch (pageViewErr) {
             console.warn('記錄頁面訪問失敗:', pageViewErr);
         }
-        
+
         await loadAnalytics();
     } catch (err) {
         console.error('Track visit error:', err);
@@ -138,10 +143,10 @@ async function loadAnalytics() {
             console.warn('⚠️ Analytics Load: Supabase 客戶端尚未準備就緒');
             return;
         }
-        
+
         const cached = localStorage.getItem('analytics_cache');
         const cacheTime = localStorage.getItem('analytics_cache_time');
-        
+
         // 使用5分鐘快取（如果快取數據有效則直接使用）
         if (cached && cacheTime && (Date.now() - parseInt(cacheTime)) < 300000) {
             const data = JSON.parse(cached);
@@ -154,23 +159,23 @@ async function loadAnalytics() {
                 return;
             }
         }
-        
+
         // 順序獲取數據以避免並行查詢導致的不一致
         let clicksResult, visitorsResult, pageViewsResult;
-        
+
         try {
             // 按順序獲取點擊次數
             clicksResult = await client.from('category_clicks').select('id', { count: 'exact', head: true });
             analyticsData.totalClicks = clicksResult.count || 0;
-            
+
             // 然後獲取訪客數量
             visitorsResult = await client.from('site_visitors').select('visitor_id', { count: 'exact', head: true });
             analyticsData.uniqueVisitors = visitorsResult.count || 0;
-            
+
             // 最後獲取頁面瀏覽數量
             pageViewsResult = await client.from('page_views').select('id', { count: 'exact', head: true });
             analyticsData.totalPageViews = pageViewsResult.count || 0;
-            
+
         } catch (error) {
             console.warn('Analytics 載入錯誤:', error);
             // 使用快取數據或預設值
@@ -182,12 +187,12 @@ async function loadAnalytics() {
                 analyticsData.totalPageViews = data.totalPageViews || 0;
             }
         }
-        
+
         localStorage.setItem('analytics_cache', JSON.stringify(analyticsData));
         localStorage.setItem('analytics_cache_time', Date.now().toString());
-        
+
         console.log('📊 Analytics 數據載入:', { clicks: analyticsData.totalClicks, visitors: analyticsData.uniqueVisitors, pageViews: analyticsData.totalPageViews });
-        
+
         updateAnalyticsDisplay();
     } catch (err) {
         console.error('Load analytics error:', err);
@@ -199,12 +204,12 @@ async function loadAnalytics() {
 function updateAnalyticsDisplay() {
     const container = document.getElementById('analytics-display');
     if (!container) return;
-    
+
     // 檢查是否所有數據都已載入（但允許顯示部分數據）
-    const hasAnyData = analyticsData.totalClicks !== null || 
-                       analyticsData.uniqueVisitors !== null || 
-                       analyticsData.totalPageViews !== null;
-    
+    const hasAnyData = analyticsData.totalClicks !== null ||
+        analyticsData.uniqueVisitors !== null ||
+        analyticsData.totalPageViews !== null;
+
     // 如果從未載入過任何數據，顯示載入中
     if (!hasAnyData) {
         // 嘗試使用快取數據
@@ -221,26 +226,26 @@ function updateAnalyticsDisplay() {
             return;
         }
     }
-    
+
     // 確保數值為數字（避免 null）
     const clicks = analyticsData.totalClicks !== undefined && analyticsData.totalClicks !== null ? analyticsData.totalClicks : '--';
     const visitors = analyticsData.uniqueVisitors !== undefined && analyticsData.uniqueVisitors !== null ? analyticsData.uniqueVisitors : '--';
     const pageViews = analyticsData.totalPageViews !== undefined && analyticsData.totalPageViews !== null ? analyticsData.totalPageViews : '--';
-    
+
     // 數據載入完成，顯示並添加淡入動畫
     container.style.visibility = 'visible';
     container.style.pointerEvents = 'auto';
     container.style.opacity = '0';
-    
+
     // 使用固定寬度容器避免數字變化導致的佈局跳動
     const itemStyle = "display: inline-block; min-width: 35px; text-align: left; font-size: 10px;";
-    
+
     container.innerHTML = `
         <span style="margin-right: 8px; color: rgba(0, 212, 255, 0.6);">👤 <span style="${itemStyle}">${visitors === '--' ? '--' : visitors.toLocaleString()}</span></span>
         <span style="margin-right: 8px; color: rgba(0, 212, 255, 0.6);">🖱️ <span style="${itemStyle}">${clicks === '--' ? '--' : clicks.toLocaleString()}</span></span>
         <span style="color: rgba(0, 212, 255, 0.6);">📄 <span style="${itemStyle}">${pageViews === '--' ? '--' : pageViews.toLocaleString()}</span></span>
     `;
-    
+
     // 觸發淡入效果
     requestAnimationFrame(() => {
         container.style.opacity = '1';
@@ -264,13 +269,13 @@ function trackCategorySwitch(categoryName) {
             console.warn('⚠️ Category Switch Track: Supabase 客戶端尚未準備就緒');
             return;
         }
-        
+
         const visitorId = getVisitorId();
-        
+
         // 記錄板塊切換到 category_clicks 表
         client
             .from('category_clicks')
-            .insert([{ 
+            .insert([{
                 visitor_id: visitorId,
                 category_name: categoryName,
                 page_url: window.location.href,
@@ -282,7 +287,7 @@ function trackCategorySwitch(categoryName) {
             .catch(err => {
                 // 靜默失敗
             });
-            
+
     } catch (err) {
         console.error('Track category switch error:', err);
     }
@@ -299,12 +304,12 @@ function trackAdminAction(actionName) {
         } else {
             return;
         }
-        
+
         const visitorId = getVisitorId();
-        
+
         client
             .from('category_clicks')
-            .insert([{ 
+            .insert([{
                 visitor_id: visitorId,
                 category_name: 'admin_' + actionName,
                 page_url: window.location.href,
@@ -313,7 +318,7 @@ function trackAdminAction(actionName) {
             .catch(err => {
                 // 靜默失敗，不顯示錯誤
             });
-            
+
     } catch (err) {
         // 靜默失敗
     }

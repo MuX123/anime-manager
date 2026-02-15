@@ -26,16 +26,12 @@
     <link rel="stylesheet" href="./css/base.css?v=20260213_v9">
     <link rel="stylesheet" href="./css/layout.css?v=20260213_v9">
     <link rel="stylesheet" href="./css/components.css?v=20260213_v9">
-    <link rel="stylesheet" href="./css/animations.css?v=20260215_fix_v3">
-    <link rel="stylesheet" href="./css/responsive.css?v=20260213_v9">
-    <!-- 詳情頁樣式 (僅 Modal 使用) -->
-    <link rel="stylesheet" href="./css/detail-cyberpunk.css?v=20260215_v18">
-    <!-- 矩陣雨背景 -->
-    <link rel="stylesheet" href="./css/matrix-rain.css?v=20260215_fix_v3">
-    <!-- 渲染系統樣式 (卡片、徽章) - 最後載入以確保優先權 -->
     <link rel="stylesheet" href="./css/render.css?v=20260214_opt_v1">
+    <link rel="stylesheet" href="./css/detail-cyberpunk.css">
     <link rel="stylesheet" href="./css/loader.css?v=20260213_v1">
     <link rel="stylesheet" href="./css/restore_menu.css">
+    <!-- Cursor Animations (Moved to bottom for priority) -->
+    <link rel="stylesheet" href="./css/animations.css?v=20260215_v2">
     <!-- 關鍵渲染路徑樣式 -->
     <style>
         #loading-screen {
@@ -70,14 +66,17 @@
             opacity: 0;
         }
     </style>
+    <script>
+        // 系統初始化配置
+    </script>
 </head>
 
 <body>
-<!-- 駭客任務數碼雨背景 - 在 scaling 容器外面 -->
-<canvas id="c"></canvas>
+    <!-- 駭客任務數碼雨背景 - 在 scaling 容器外面 -->
+    <canvas id="c"></canvas>
 
-<!-- 黑色半透明蒙版 -->
-<div id="atmosphere-overlay"></div>
+    <!-- 黑色半透明蒙版 -->
+    <div id="atmosphere-overlay"></div>
 
     <!-- ACG 互動氛圍層 -->
     <div id="atmosphere-container">
@@ -231,6 +230,24 @@
             <div id="adminHeaderBar" class="admin-header-bar"></div>
         </div>
 
+        <!-- 左側搜尋菜單 -->
+        <div id="search-sidebar" class="search-sidebar" style="display: none;">
+            <div class="search-sidebar-header">
+                <span class="search-sidebar-icon">🔍</span>
+                <span class="search-sidebar-title">搜尋</span>
+            </div>
+            <div class="search-sidebar-content">
+                <div class="search-input-group">
+                    <input type="text" id="search-sidebar-input" class="search-sidebar-field"
+                        placeholder="搜尋名稱或描述..."
+                        oninput="window.handleSearch(this.value)">
+                </div>
+                <div id="search-sidebar-filters" class="search-filters-container">
+                    <!-- 搜尋條件選擇將由 render-app.js 渲染 -->
+                </div>
+            </div>
+        </div>
+
         <div class="analytics-bar">
             <div id="analytics-display">
                 <span style="margin-right: 8px;">👤 <span
@@ -262,7 +279,7 @@
     <div id="systemMenu" class="system-menu active">
         <!-- 板塊選擇下拉選單 -->
         <select id="section-select" onchange="window.switchCategory(this.value)">
-            <option value="notice">📢 公告列表</option>
+            <option value="notice">💬 訊息列表</option>
             <option value="anime">🎬 動畫</option>
             <option value="manga">📚 漫畫</option>
             <option value="movie">🎥 電影</option>
@@ -292,9 +309,11 @@
         <!-- 滑鼠大小滑桿 -->
         <div class="cursor-size-control">
             <label for="cursor-size-slider">🔍 大小</label>
-            <input type="range" id="cursor-size-slider" min="0.5" max="3" step="0.1" value="1"
-                oninput="const v=parseFloat(this.value).toFixed(1)+'x';document.getElementById('cursor-size-value').textContent=v;window.CursorManager.setScale(this.value)">
-            <span id="cursor-size-value">1.0x</span>
+            <div class="cursor-size-stepper">
+                <button class="step-btn" onclick="window.CursorManager.changeScale(-0.1)">-</button>
+                <span id="cursor-size-display">1.0x</span>
+                <button class="step-btn" onclick="window.CursorManager.changeScale(0.1)">+</button>
+            </div>
         </div>
 
         <div class="menu-divider"></div>
@@ -331,10 +350,11 @@
     <script src="./js/render-app.js?v=20260215_v1"></script>
 
     <!-- 5. 視覺特效層 (Visual Effects Engine) - 必須在 main.js 之前載入 -->
-    <script src="./js/atmosphere.js?v=20260215_v1"></script>
-    <script src="./js/poster-wall.js?v=20260215_v1"></script>
-    <script src="./js/matrix-rain.js?v=20260215_engine_v1"></script>
+    <!-- 先載入 VisualEngine 核心，再載入視覺模組 -->
     <script src="./js/visual-engine.js"></script>
+    <script src="./js/atmosphere.js?v=20260215_v3"></script>
+    <script src="./js/poster-wall.js?v=20260215_v2"></script>
+    <script src="./js/matrix-rain.js?v=20260215_engine_v1"></script>
 
     <!-- 6. 應用入口 (Entry Point) - 必須在所有模組之後 -->
     <script src="./js/main.js"></script>

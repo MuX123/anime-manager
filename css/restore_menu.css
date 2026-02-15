@@ -12,8 +12,11 @@
     width: 160px !important;
     max-width: 160px !important;
     overflow-x: hidden !important;
-    /* 确保不会遮挡主内容 - 放在最右侧 */
+    /* 确�?不�??�挡主�?�?- ?�在?�?�侧 */
     transform: translateX(0) !important;
+    user-select: none;
+    /* 禁止?��?框選 */
+    -webkit-user-select: none;
 }
 
 .system-menu.hidden {
@@ -28,7 +31,6 @@
     padding: 5px 6px !important;
     border-radius: 4px;
     font-size: 11px !important;
-    cursor: pointer;
     font-family: 'Noto Sans TC', sans-serif;
     margin-bottom: 5px !important;
     width: 100% !important;
@@ -50,11 +52,10 @@
 
 .system-menu button {
     display: block;
-    background: rgba(0,212,255,0.1);
-    border: 1px solid rgba(0,212,255,0.25);
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.25);
     padding: 5px 6px !important;
     font-size: 11px !important;
-    cursor: pointer;
     color: var(--neon-cyan);
     border-radius: 4px;
     font-family: 'Noto Sans TC', sans-serif;
@@ -71,8 +72,8 @@
 }
 
 .system-menu button.logout {
-    background: rgba(255,68,68,0.1);
-    border-color: rgba(255,68,68,0.25);
+    background: rgba(255, 68, 68, 0.1);
+    border-color: rgba(255, 68, 68, 0.25);
     color: #ff6b6b;
 }
 
@@ -82,7 +83,7 @@
     margin: 5px 0 !important;
 }
 
-/* 滑鼠大小控制 */
+/* 滑�?大�??�制 */
 .system-menu .cursor-size-control {
     display: flex;
     flex-direction: column;
@@ -96,39 +97,51 @@
     text-align: center;
 }
 
-.system-menu .cursor-size-control input[type="range"] {
-    width: 100% !important;
-    height: 4px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: rgba(0, 212, 255, 0.2);
-    border-radius: 2px;
-    outline: none;
+.system-menu .cursor-size-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 4px;
+    padding: 2px;
 }
 
-.system-menu .cursor-size-control input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 12px;
-    height: 12px;
-    background: var(--neon-cyan, #00d4ff);
-    border-radius: 50%;
-    cursor: pointer;
+.system-menu .step-btn {
+    flex: 0 0 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 212, 255, 0.15) !important;
+    border: 1px solid rgba(0, 212, 255, 0.3) !important;
+    color: var(--neon-cyan, #00d4ff) !important;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 14px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 24px !important;
+    min-width: 24px !important;
 }
 
-.system-menu .cursor-size-control input[type="range"]::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-    background: var(--neon-cyan, #00d4ff);
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
+.system-menu .step-btn:hover {
+    background: rgba(0, 212, 255, 0.3) !important;
+    box-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
 }
 
-.system-menu .cursor-size-control span {
-    color: var(--neon-cyan, #00d4ff);
-    font-size: 10px;
+.system-menu .step-btn:active {
+    transform: scale(0.95);
+}
+
+.system-menu #cursor-size-display {
+    flex: 1;
     text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--neon-cyan, #00d4ff);
+    user-select: none;
 }
 
 #adminMenuOptions {

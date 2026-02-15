@@ -85,6 +85,12 @@ window.openGatesAndHide = function () {
         setTimeout(() => {
             loadingScreen.style.display = 'none';
             isFirstLoad = false;
+
+            // Fix: 防止過場結束後原生遊標閃現
+            if (window.CursorManager) {
+                window.CursorManager.forceHideNativeCursor();
+            }
+
             // Update admin menu items if logged in
             if (window.updateAdminMenu) window.updateAdminMenu();
         }, 3000);
@@ -497,21 +503,21 @@ window.toggleAdminMode = (enable) => {
         if (adminHeaderBar) adminHeaderBar.style.display = 'none';
         if (analyticsBar) analyticsBar.style.display = 'none';
         if (systemMenu) systemMenu.classList.add('hidden'); // 隱藏系統菜單
-        
+
         // 隱藏背景元素（全黑背景）
         const matrixCanvas = document.getElementById('c');
         const atmosphereContainer = document.getElementById('atmosphere-container');
         const atmosphereOverlay = document.getElementById('atmosphere-overlay');
-        
+
         if (matrixCanvas) matrixCanvas.style.display = 'none';
         if (atmosphereContainer) atmosphereContainer.style.display = 'none';
         if (atmosphereOverlay) atmosphereOverlay.style.display = 'none';
-        
+
         // 暫停前台視覺特效以節省資源
         if (window.visualEngine?.stop) {
             window.visualEngine.stop();
         }
-        
+
         window.renderAdmin();
     } else {
         document.body.classList.remove('admin-mode-active');
@@ -519,21 +525,21 @@ window.toggleAdminMode = (enable) => {
         if (topControlBar) topControlBar.style.display = 'flex';
         if (analyticsBar) analyticsBar.style.display = 'flex';
         if (systemMenu) systemMenu.classList.remove('hidden'); // 顯示系統菜單
-        
+
         // 恢復背景元素
         const matrixCanvas = document.getElementById('c');
         const atmosphereContainer = document.getElementById('atmosphere-container');
         const atmosphereOverlay = document.getElementById('atmosphere-overlay');
-        
+
         if (matrixCanvas) matrixCanvas.style.display = 'block';
         if (atmosphereContainer) atmosphereContainer.style.display = 'block';
         if (atmosphereOverlay) atmosphereOverlay.style.display = 'block';
-        
+
         // 恢復前台視覺特效
         if (window.visualEngine?.start) {
             window.visualEngine.start();
         }
-        
+
         window.switchCategory(currentSection);
     }
 };
@@ -1058,7 +1064,7 @@ window.renderApp = (requestId = null) => {
     const existingApp = document.querySelector('.app-container');
     if (existingApp && currentSection !== 'admin') {
         // 更新分類按鈕狀態
-        const categoryMap = { 'anime': '動畫', 'manga': '漫畫', 'movie': '電影', 'notice': '公告' };
+        const categoryMap = { 'anime': '動畫', 'manga': '漫畫', 'movie': '電影', 'notice': '訊息' };
         document.querySelectorAll('.category-buttons-container .btn-primary').forEach(btn => {
             const btnText = btn.textContent.replace(/◆\s*/, '').trim();
             btn.classList.toggle('active', btnText === categoryMap[currentCategory]);
@@ -1138,10 +1144,10 @@ window.renderApp = (requestId = null) => {
                 </div>
             </header>
             <div class="category-buttons-container" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; position: relative; z-index: 100;">
-                <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">◆ 公告</button>
-                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">◆ 動畫</button>
-                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">◆ 漫畫</button>
-                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">◆ 電影</button>
+                <button class="btn-primary ${currentCategory === 'notice' ? 'active' : ''}" onclick="window.switchCategory('notice')">訊息</button>
+                <button class="btn-primary ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">動畫</button>
+                <button class="btn-primary ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">漫畫</button>
+                <button class="btn-primary ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">電影</button>
             </div>
 	            <div style="margin-bottom: 30px; display: ${isNotice ? 'none' : 'block'};">
 	                <input type="text" id="search-input" class="search-ghost" placeholder="快速搜尋作品..." value="${filters.search}" oninput="window.handleSearch(this.value)">
@@ -1230,7 +1236,6 @@ window.renderApp = (requestId = null) => {
 
 
 window.changePage = (p) => { currentPage = p; window.renderApp(lastSwitchRequestId); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-window.handleSearch = (val) => { filters.search = val; currentPage = 1; window.renderApp(lastSwitchRequestId); };
 
 window.changeGridLayout = (n) => {
     if (n === 'mobile') {
@@ -1244,11 +1249,11 @@ window.changeGridLayout = (n) => {
     }
     window.gridColumns = gridColumns;
     localStorage.setItem('gridColumns', gridColumns);
-    
+
     // 更新下拉選單顯示
     const layoutSelect = document.getElementById('layout-select');
     if (layoutSelect) layoutSelect.value = gridColumns;
-    
+
     window.renderApp();
 };
 
@@ -1256,44 +1261,15 @@ window.changeSortOrder = (order) => {
     sortOrder = order;
     localStorage.setItem('sortOrder', sortOrder);
     currentPage = 1;
-    
+
     // 更新下拉選單顯示
     const sortSelect = document.getElementById('sort-select');
     if (sortSelect) sortSelect.value = order;
-    
+
     window.renderApp();
 };
 
-window.renderSearchSelectsHTML = () => {
-    let html = '';
-    const defaultKeys = ['genre', 'year', 'season', 'month', 'episodes', 'rating', 'recommendation'];
-    const customKeys = optionsData.custom_lists || [];
-    const allKeys = [...defaultKeys, ...customKeys];
 
-    allKeys.forEach(key => {
-        const options = optionsData[key] || [];
-        if (options.length === 0) return;
-
-        const label = window.getOptionLabel(key);
-        const activeVal = filters[key] || '';
-
-        html += `
-            <select class="auto-width-select" onchange="window.handleFilter('${key}', this.value)" style="border-color: rgba(0, 212, 255, 0.3);">
-                <option value="">${label}</option>
-                ${options.map(opt => `
-                    <option value="${opt}" ${activeVal === opt ? 'selected' : ''}>${opt}</option>
-                `).join('')}
-            </select>
-        `;
-    });
-    return html;
-};
-
-window.handleFilter = (key, val) => {
-    filters[key] = val;
-    currentPage = 1;
-    window.renderApp();
-};
 
 window.getFilteredData = () => {
     const filtered = animeData.filter(item => {
@@ -1554,9 +1530,9 @@ window.renderAdmin = () => {
                 <div class="admin-section">
                     <div class="admin-section-header">
                         <div class="admin-category-tabs">
-                            <button class="category-tab ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">🎬 動畫</button>
-                            <button class="category-tab ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">📚 漫畫</button>
-                            <button class="category-tab ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">🎥 電影</button>
+                            <button class="category-tab ${currentCategory === 'anime' ? 'active' : ''}" onclick="window.switchCategory('anime')">動畫</button>
+                            <button class="category-tab ${currentCategory === 'manga' ? 'active' : ''}" onclick="window.switchCategory('manga')">漫畫</button>
+                            <button class="category-tab ${currentCategory === 'movie' ? 'active' : ''}" onclick="window.switchCategory('movie')">電影</button>
                         </div>
                         <div class="admin-actions">
                             <span class="data-count">共 ${total} 筆資料</span>
@@ -1633,9 +1609,9 @@ window.renderAdmin = () => {
                                 <input type="color" id="set-title-color" value="${siteSettings.title_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
                             </div>
                         </div>
-                        <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">公告內容</label><textarea id="set-announcement" style="width: 100%; height: 120px; resize: vertical;" onclick="event.stopPropagation()" onfocus="event.stopPropagation()">${siteSettings.announcement}</textarea></div>
+                        <div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">首頁跑馬燈訊息</label><textarea id="set-announcement" style="width: 100%; height: 120px; resize: vertical;" onclick="event.stopPropagation()" onfocus="event.stopPropagation()">${siteSettings.announcement}</textarea></div>
                         <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">公告顏色</label>
+                            <label style="display: block; margin-bottom: 8px; color: var(--neon-cyan); font-weight: bold;">跑馬燈顏色</label>
                             <div class="color-input-wrapper" style="width: 100%;">
                                 <div class="color-swatch" style="background: ${siteSettings.announcement_color || '#ffffff'}; width: 100%; height: 40px; border-radius: 8px;" onclick="document.getElementById('set-announcement-color').click()"></div>
                                 <input type="color" id="set-announcement-color" value="${siteSettings.announcement_color || '#ffffff'}" onchange="this.previousElementSibling.style.background = this.value">
@@ -3456,7 +3432,7 @@ window.bulkDeleteAnime = async () => {
         if (!client) throw new Error('Supabase 未連接');
         const { error } = await client.from('anime_list').delete().in('id', ids);
         if (error) throw error;
-        window.showToast('✓ 公告已刪除');
+        window.showToast('✓ 訊息已刪除');
         setTimeout(() => window.renderAnnouncements(), 300);
     } catch (err) {
         console.error('Delete announcement error:', err);

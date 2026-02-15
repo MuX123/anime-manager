@@ -82,13 +82,13 @@ class AnnouncementSystem {
             window.announcementData = { announcements, updates, shownPopups };
 
             if (window.logger) {
-                window.logger.info('公告系統初始化完成', {
+                window.logger.info('訊息系統初始化完成', {
                     announcements: announcements.length,
                     updates: updates.length
                 });
             }
         } catch (err) {
-            console.warn('公告系統載入失敗:', err);
+            console.warn('訊息系統載入失敗:', err);
         }
 
         // 當資料載入完成，若畫面上已有公告區塊，立即刷新內容
@@ -109,7 +109,7 @@ class AnnouncementSystem {
             if (error) throw error;
             return data || [];
         } catch (err) {
-            console.warn('載入公告失敗:', err);
+            console.warn('載入訊息失敗:', err);
             return [];
         }
     }
@@ -304,8 +304,8 @@ class AnnouncementSystem {
         return `
             <div id="announcement-board" class="premium-board">
                 <div class="premium-tab-container">
-                    <button class="premium-tab ${this.currentTab === 'announcements' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('announcements')">📢 公告消息</button>
-                    <button class="premium-tab ${this.currentTab === 'guestbook' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('guestbook')">💬 留言板</button>
+                    <button class="premium-tab ${this.currentTab === 'announcements' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('announcements')">💬 系統訊息</button>
+                    <button class="premium-tab ${this.currentTab === 'guestbook' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('guestbook')">📝 留言板</button>
                     <button class="premium-tab ${this.currentTab === 'updates' ? 'active' : ''}" onclick="window.announcementSystem.switchTab('updates')">📋 版本更新</button>
                 </div>
                 
@@ -326,10 +326,10 @@ class AnnouncementSystem {
         modal.id = 'announcement-admin-modal';
         modal.className = 'modal active';
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
-                <h2 style="color: var(--neon-cyan); margin-bottom: 20px; text-align: center;">⚙️ 公告與更新管理</h2>
+            <div class="modal-content" style="max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto;">
+                <h2 style="color: var(--neon-cyan); margin-bottom: 20px; text-align: center;">⚙️ 訊息與更新管理</h2>
                 <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                    <button class="btn-primary ${this.adminTab !== 'ann' ? '' : 'active'}" onclick="window.announcementSystem.switchAdminTab('ann')">📢 公告管理</button>
+                    <button class="btn-primary ${this.adminTab !== 'ann' ? '' : 'active'}" onclick="window.announcementSystem.switchAdminTab('ann')">💬 訊息管理</button>
                     <button class="btn-primary ${this.adminTab !== 'upd' ? '' : 'active'}" onclick="window.announcementSystem.switchAdminTab('upd')">📋 更新管理</button>
                 </div>
                 <div id="announcement-admin-content">載入中...</div>
@@ -367,9 +367,9 @@ class AnnouncementSystem {
 
         if (!announcements || announcements.length === 0) {
             return `
-                <div style="text-align:center;padding:30px;color:var(--text-secondary);">暫無公告</div>
+                <div style="text-align:center;padding:30px;color:var(--text-secondary);">暫無訊息</div>
                 <div style="text-align:center;margin-top:20px;">
-                    <button class="btn-primary" onclick="window.announcementSystem.showAnnouncementForm()">+ 新增公告</button>
+                    <button class="btn-primary" onclick="window.announcementSystem.showAnnouncementForm()">+ 新增訊息</button>
                 </div>
             `;
         }
@@ -377,7 +377,7 @@ class AnnouncementSystem {
         return `
             <div style="display:flex;flex-direction:column;gap:15px;">
                 <div style="text-align:right;margin-bottom:10px;">
-                    <button class="btn-primary" onclick="window.announcementSystem.showAnnouncementForm()" style="background:rgba(0,212,255,0.2);border-color:var(--neon-cyan);color:var(--neon-cyan);">+ 新增公告</button>
+                    <button class="btn-primary" onclick="window.announcementSystem.showAnnouncementForm()" style="background:rgba(0,212,255,0.2);border-color:var(--neon-cyan);color:var(--neon-cyan);">+ 新增訊息</button>
                 </div>
                 ${announcements.map(a => {
             const parsed = this.parseContent(a.content);
@@ -452,9 +452,9 @@ class AnnouncementSystem {
         const parsed = announcement ? this.parseContent(announcement.content) : { text: '', style: {} };
         const { text, style } = parsed;
 
-        const title = announcement ? '編輯公告' : '新增公告';
+        const title = announcement ? '編輯訊息' : '新增訊息';
         const isPinned = announcement?.is_pinned ? 'checked' : '';
-        const submitText = announcement ? '儲存變更' : '發布公告';
+        const submitText = announcement ? '儲存變更' : '發布訊息';
 
         // Style defaults
         const align = style.align || 'left';
@@ -462,12 +462,12 @@ class AnnouncementSystem {
         const color = style.color || '#e0e6ed';
 
         const formHtml = `
-            <div style="background:#0a0e1a;border:2px solid var(--neon-cyan);border-radius:16px;padding:25px;max-width:600px;margin:0 auto;box-shadow:0 0 40px rgba(0,212,255,0.1);">
+            <div style="background:#0a0e1a;border:2px solid var(--neon-cyan);border-radius:16px;padding:25px;max-width:900px;width:95%;max-height:90vh;overflow-y:auto;margin:0 auto;box-shadow:0 0 40px rgba(0,212,255,0.1);">
                 <h3 style="margin:0 0 20px;color:var(--neon-cyan);text-align:center;font-family:'Orbitron';">${title}</h3>
                 <div style="display:flex;flex-direction:column;gap:15px;">
                     <div>
-                        <label style="display:block;margin-bottom:8px;color:var(--neon-cyan);">標題</label>
-                        <input type="text" id="ann-form-title" value="${announcement ? escapeHtml(announcement.title) : ''}" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:8px;padding:12px;color:#fff;" placeholder="輸入公告標題">
+                        <label style="display:block;margin-bottom:8px;color:var(--neon-cyan);">內容</label>
+                        <input type="text" id="ann-form-title" value="${announcement ? escapeHtml(announcement.title) : ''}" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.3);border-radius:8px;padding:12px;color:#fff;" placeholder="輸入訊息預覽文字">
                     </div>
                     
                     <!-- Style Controls -->
@@ -499,7 +499,7 @@ class AnnouncementSystem {
                     <div>
                         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
                             <input type="checkbox" id="ann-form-pinned" ${isPinned} style="width:18px;height:18px;">
-                            <span style="color:var(--neon-cyan);">置頂公告</span>
+                            <span style="color:var(--neon-cyan);">重要訊息 (亮框顯示)</span>
                         </label>
                     </div>
                     <div style="display:flex;gap:10px;justify-content:center;margin-top:10px;">
@@ -538,7 +538,7 @@ class AnnouncementSystem {
         const color = style.color || '#e0e6ed';
 
         const formHtml = `
-            <div style="background:#0a0e1a;border:2px solid var(--neon-purple);border-radius:16px;padding:25px;max-width:600px;margin:0 auto;box-shadow:0 0 40px rgba(176,38,255,0.1);">
+            <div style="background:#0a0e1a;border:2px solid var(--neon-purple);border-radius:16px;padding:25px;max-width:900px;width:95%;max-height:90vh;overflow-y:auto;margin:0 auto;box-shadow:0 0 40px rgba(176,38,255,0.1);">
                 <h3 style="margin:0 0 20px;color:var(--neon-purple);text-align:center;font-family:'Orbitron';">${title}</h3>
                 <div style="display:flex;flex-direction:column;gap:15px;">
                     <div>
@@ -630,7 +630,7 @@ class AnnouncementSystem {
                     .eq('id', id);
 
                 if (error) throw error;
-                window.showToast('公告已更新');
+                window.showToast('訊息已更新');
             } else {
                 // 新增
                 const { error } = await client
@@ -638,7 +638,7 @@ class AnnouncementSystem {
                     .insert({ title, content, is_pinned: isPinned, author_name: authorName });
 
                 if (error) throw error;
-                window.showToast('公告已發布');
+                window.showToast('訊息已發布');
             }
 
             document.getElementById('ann-form-modal')?.remove();
@@ -647,10 +647,10 @@ class AnnouncementSystem {
         } catch (err) {
             if (this.isPermissionError(err)) {
                 console.warn('權限不足 (預期行為):', err.message);
-                window.showToast('演示模式：公告已儲存（未同步到資料庫）', 'success');
+                window.showToast('演示模式：訊息已儲存（未同步到資料庫）', 'success');
                 document.getElementById('ann-form-modal')?.remove();
             } else {
-                console.error('儲存公告失敗:', err);
+                console.error('儲存訊息失敗:', err);
                 window.showToast('儲存失敗：' + (err.message || '未知錯誤'), 'error');
             }
         }
@@ -719,7 +719,7 @@ class AnnouncementSystem {
     }
 
     async deleteAnnouncement(id) {
-        if (!confirm('確定要刪除此公告嗎？此操作無法復原。')) return;
+        if (!confirm('確定要刪除此訊息嗎？此操作無法復原。')) return;
 
         try {
             const client = window.supabaseManager?.getClient();
@@ -731,17 +731,17 @@ class AnnouncementSystem {
             const { error } = await client.from('announcements').delete().eq('id', id);
 
             if (error) throw error;
-            window.showToast('公告已刪除');
+            window.showToast('訊息已刪除');
             await this.refreshAnnouncementData();
             await this.renderAdminTabContent('ann');
         } catch (err) {
             if (this.isPermissionError(err)) {
                 console.warn('權限不足 (預期行為):', err.message);
-                window.showToast('演示模式：公告已刪除（未同步到資料庫）', 'success');
+                window.showToast('演示模式：訊息已刪除（未同步到資料庫）', 'success');
                 await this.refreshAnnouncementData();
                 await this.renderAdminTabContent('ann');
             } else {
-                console.error('刪除公告失敗:', err);
+                console.error('刪除訊息失敗:', err);
                 window.showToast('刪除失敗：' + (err.message || '未知錯誤'), 'error');
             }
         }
@@ -803,22 +803,40 @@ class AnnouncementSystem {
 
     async renderAnnouncementsTab() {
         const announcements = window.announcementData?.announcements || await this.loadAnnouncements();
+        const adminName = window.siteSettings?.admin_name || '管理員';
+        const adminAvatar = window.siteSettings?.admin_avatar || 'https://via.placeholder.com/150';
+        const adminColor = window.siteSettings?.admin_color || 'var(--neon-cyan)';
+
         return `
-            <div style="display:flex;flex-direction:column;gap:15px;">
-                ${announcements.length === 0 ? '<div style="text-align:center;padding:40px;color:var(--text-secondary);">暫無公告</div>' : ''}
+            <div style="display:flex;flex-direction:column;gap:25px;padding: 10px;">
+                ${announcements.length === 0 ? '<div style="text-align:center;padding:40px;color:var(--text-secondary);">暫無訊息</div>' : ''}
                 ${announcements.map(a => {
             const parsed = this.parseContent(a.content);
+            const isPinned = a.is_pinned;
             return `
-                    <div class="premium-card ${a.is_pinned ? 'is-pinned' : ''}">
-                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:15px;border-bottom:1px solid rgba(0,212,255,0.1);padding-bottom:10px;">
-                            <div style="display:flex;align-items:center;gap:10px;">
-                                ${a.is_pinned ? '<span style="background:var(--neon-cyan);color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;box-shadow:0 0 10px var(--neon-cyan);">置頂</span>' : ''}
-                                <h4 style="margin:0;color:var(--neon-cyan);font-family:'Orbitron',sans-serif;font-size:18px;text-shadow:0 0 5px rgba(0,212,255,0.3);">${escapeHtml(a.title)}</h4>
-                            </div>
-                            <span style="color:var(--text-secondary);font-size:12px;font-family:'Orbitron';">${new Date(a.created_at).toLocaleDateString('zh-TW')}</span>
+                    <div style="display: flex; gap: 15px; align-items: flex-start;">
+                        <div style="flex-shrink: 0; width: 45px; height: 45px; border-radius: 50%; overflow: hidden; border: 2px solid ${isPinned ? adminColor : 'rgba(255,255,255,0.1)'}; box-shadow: ${isPinned ? `0 0 10px ${adminColor}` : 'none'};">
+                            <img src="${adminAvatar}" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
-                        <div class="rich-content">${this.renderStyledContent(parsed)}</div>
-                        ${a.author_name ? `<div style="margin-top:15px;font-size:12px;color:var(--neon-blue);text-align:right;font-family:'Orbitron';">USER: ${escapeHtml(a.author_name)}</div>` : ''}
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                <span style="color: ${adminColor}; font-weight: bold; font-family: 'Orbitron'; font-size: 14px;">${escapeHtml(adminName)}</span>
+                                <span style="color: var(--text-secondary); font-size: 10px; font-family: 'Orbitron'; opacity: 0.7;">${new Date(a.created_at).toLocaleString('zh-TW')}</span>
+                                ${isPinned ? `<span style="font-size: 10px; color: ${adminColor}; border: 1px solid ${adminColor}; padding: 0 5px; border-radius: 4px; font-weight: bold;">PINNED</span>` : ''}
+                            </div>
+                            <div style="
+                                position: relative;
+                                background: ${isPinned ? `linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05))` : 'rgba(255,255,255,0.03)'};
+                                border: 1px solid ${isPinned ? adminColor : 'rgba(255,255,255,0.1)'};
+                                padding: 12px 18px;
+                                border-radius: 0 15px 15px 15px;
+                                box-shadow: ${isPinned ? `0 0 20px rgba(0,212,255,0.1)` : 'none'};
+                                display: inline-block;
+                                max-width: 90%;
+                            ">
+                                <div class="rich-content">${this.renderStyledContent(parsed)}</div>
+                            </div>
+                        </div>
                     </div>
                 `}).join('')}
             </div>
@@ -828,20 +846,33 @@ class AnnouncementSystem {
     async renderUpdatesTab() {
         const updates = window.announcementData?.updates || await this.loadUpdates();
         return `
-            <div style="display:flex;flex-direction:column;gap:15px;">
+            <div style="display:flex;flex-direction:column;gap:25px;padding: 10px;">
                 ${updates.length === 0 ? '<div style="text-align:center;padding:40px;color:var(--text-secondary);">暫無更新內容</div>' : ''}
                 ${updates.map(u => {
             const parsed = this.parseContent(u.content);
+            const version = u.version || '1.0';
             return `
-                    <div class="premium-card is-update">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:1px solid rgba(176,38,255,0.2);padding-bottom:10px;">
-                            <div style="display:flex;align-items:center;gap:10px;">
-                                <span style="background:var(--neon-purple);color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;box-shadow:0 0 10px var(--neon-purple);">v${escapeHtml(u.version)}</span>
-                                <h4 style="margin:0;color:var(--neon-purple);font-family:'Orbitron',sans-serif;font-size:18px;">${escapeHtml(u.title)}</h4>
-                            </div>
-                            <span style="color:var(--text-secondary);font-size:12px;font-family:'Orbitron';">${new Date(u.created_at).toLocaleDateString('zh-TW')}</span>
+                    <div style="display: flex; gap: 15px; align-items: flex-start;">
+                        <div style="flex-shrink: 0; width: 45px; height: 45px; border-radius: 8px; background: var(--neon-purple); display: flex; align-items: center; justify-content: center; border: 2px solid var(--neon-purple); box-shadow: 0 0 15px rgba(176, 38, 255, 0.4);">
+                            <span style="color: #000; font-family: 'Orbitron'; font-weight: 900; font-size: 16px;">v${version}</span>
                         </div>
-                        <div class="rich-content">${this.renderStyledContent(parsed)}</div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                <span style="color: var(--neon-purple); font-weight: bold; font-family: 'Orbitron'; font-size: 14px;">${escapeHtml(u.title)}</span>
+                                <span style="color: var(--text-secondary); font-size: 10px; font-family: 'Orbitron'; opacity: 0.7;">${new Date(u.created_at).toLocaleString('zh-TW')}</span>
+                            </div>
+                            <div style="
+                                position: relative;
+                                background: rgba(176,38,255,0.05);
+                                border: 1px solid rgba(176,38,255,0.3);
+                                padding: 12px 18px;
+                                border-radius: 0 15px 15px 15px;
+                                display: inline-block;
+                                max-width: 90%;
+                            ">
+                                <div class="rich-content">${this.renderStyledContent(parsed)}</div>
+                            </div>
+                        </div>
                     </div>
                 `}).join('')}
             </div>
@@ -853,7 +884,7 @@ class AnnouncementSystem {
         const canPost = await this.canPostMessage();
 
         return `
-            <div style="display:flex;flex-direction:column;gap:20px;">
+            <div style="display:flex;flex-direction:column;gap:30px;padding: 10px;">
                 ${canPost.canPost ? this.renderGuestbookForm(canPost.ip) : `
                     <div class="premium-card" style="border-color: rgba(255,200,0,0.3); background: rgba(255,200,0,0.05);">
                         <div style="color: #ffd700; font-size: 14px; text-align: center;">
@@ -861,15 +892,30 @@ class AnnouncementSystem {
                         </div>
                     </div>
                 `}
-                <div style="display:flex;flex-direction:column;gap:15px;">
+                <div style="display:flex;flex-direction:column;gap:25px;">
                     ${messages.length === 0 ? '<div style="text-align:center;padding:40px;color:var(--text-secondary);">還沒有留言，成為第一個留言的人吧！</div>' : ''}
                     ${messages.map(m => `
-                        <div class="premium-card" style="padding: 20px;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid rgba(0,212,255,0.1);padding-bottom:8px;">
-                                <span style="color:var(--neon-cyan);font-weight:bold;font-size: 15px;">${escapeHtml(m.nickname)}</span>
-                                <span style="color:var(--text-secondary);font-size:12px;font-family:'Orbitron';">${new Date(m.created_at).toLocaleDateString('zh-TW')}</span>
+                        <div style="display: flex; gap: 15px; align-items: flex-start;">
+                            <div style="flex-shrink: 0; width: 45px; height: 45px; border-radius: 50%; background: rgba(0,212,255,0.1); display: flex; align-items: center; justify-content: center; border: 2px solid var(--neon-cyan); box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);">
+                                <span style="color: var(--neon-cyan); font-family: 'Orbitron'; font-weight: 900; font-size: 16px;">?</span>
                             </div>
-                            <div style="color:#e0e6ed;line-height:1.6;font-size:14px;">${escapeHtml(m.content)}</div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                    <span style="color: var(--neon-cyan); font-weight: bold; font-family: 'Noto Sans TC'; font-size: 14px;">${escapeHtml(m.nickname)}</span>
+                                    <span style="color: var(--text-secondary); font-size: 10px; font-family: 'Orbitron'; opacity: 0.7;">${new Date(m.created_at).toLocaleString('zh-TW')}</span>
+                                </div>
+                                <div style="
+                                    position: relative;
+                                    background: rgba(255,255,255,0.03);
+                                    border: 1px solid rgba(0,212,255,0.2);
+                                    padding: 12px 18px;
+                                    border-radius: 0 15px 15px 15px;
+                                    display: inline-block;
+                                    max-width: 90%;
+                                ">
+                                    <div style="color:#e0e6ed;line-height:1.6;font-size:14px;white-space: pre-wrap;">${escapeHtml(m.content)}</div>
+                                </div>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
@@ -879,23 +925,23 @@ class AnnouncementSystem {
 
     renderGuestbookForm(ip) {
         return `
-            <div class="premium-card">
+            <div class="premium-card" style="padding: 25px; border-style: dashed; background: rgba(0,212,255,0.03);">
                 <h4 style="margin:0 0 20px;color:var(--neon-cyan);font-family:'Orbitron';border-left: 3px solid var(--neon-cyan); padding-left: 10px;">發表留言</h4>
                 <div style="display:flex;flex-direction:column;gap:15px;">
                     <div style="position:relative;">
                         <input type="text" id="guestbook-nickname" placeholder="您的暱稱" maxlength=20 
-                            style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(0,212,255,0.3); border-radius:8px; padding:12px; color:#fff; transition:all 0.3s;"
+                            style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(0,212,255,0.3); border-radius:8px; padding:15px; color:#fff; transition:all 0.3s;"
                             onfocus="this.style.borderColor='var(--neon-cyan)';this.style.boxShadow='0 0 10px rgba(0,212,255,0.2)'"
                             onblur="this.style.borderColor='rgba(0,212,255,0.3)';this.style.boxShadow='none'">
                     </div>
                     <div style="position:relative;">
                         <textarea id="guestbook-content" placeholder="輸入留言內容...（將進入審核）" maxlength=500 rows=4 
-                            style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(0,212,255,0.3); border-radius:8px; padding:12px; color:#fff; resize:vertical; transition:all 0.3s;"
+                            style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(0,212,255,0.3); border-radius:8px; padding:15px; color:#fff; resize:vertical; transition:all 0.3s;"
                             onfocus="this.style.borderColor='var(--neon-cyan)';this.style.boxShadow='0 0 10px rgba(0,212,255,0.2)'"
                             onblur="this.style.borderColor='rgba(0,212,255,0.3)';this.style.boxShadow='none'"></textarea>
                     </div>
                     <button onclick="window.announcementSystem.submitMessage()" class="btn-primary" 
-                        style="background:linear-gradient(90deg, rgba(0,212,255,0.2), transparent); border-color:var(--neon-cyan); color:var(--neon-cyan); width: 100%; padding: 12px; font-weight: bold; letter-spacing: 1px;">
+                        style="background:linear-gradient(90deg, rgba(0,212,255,0.2), transparent); border-color:var(--neon-cyan); color:var(--neon-cyan); width: 100%; padding: 15px; font-weight: bold; letter-spacing: 1px; font-size: 16px;">
                         ✉️ 提交審核
                     </button>
                 </div>
