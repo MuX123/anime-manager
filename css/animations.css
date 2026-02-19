@@ -4,17 +4,8 @@
 /* 底色為黑色 */
 html {
     background-color: #050609;
-    height: 100vh;
-    width: 100vw;
-}
-
-body {
-    /* Make body transparent so fixed background elements are visible */
-    background-color: transparent;
-    min-height: 100vh;
-    position: relative;
-    margin: 0;
-    overflow-x: hidden;
+    min-height: 100%;
+    height: auto;
 }
 
 /* ========== Mechanical Cycle Background (V8) ========== */
@@ -29,17 +20,6 @@ body {
     z-index: 12;
     overflow: visible;
     pointer-events: none;
-}
-
-body {
-    /* Make body transparent so fixed background elements (-1) are visible */
-    background-color: transparent;
-    /* background-image removed to reveal matrix rain */
-
-    min-height: 100vh;
-    position: relative;
-    margin: 0;
-    overflow-x: hidden;
 }
 
 
@@ -189,19 +169,64 @@ body {
 }
 
 /* 確保頭部元素在氛圍層之上 */
-.site-header,
-.analytics-bar {
+.site-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 10000;
+    height: 35px;
+    z-index: 10001;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.analytics-bar {
+    position: fixed;
+    top: 0; /* 置頂 */
+    left: 0;
+    width: 100%;
+    height: 30px;
+    z-index: 200000; /* 極高層級 */
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+    box-sizing: border-box;
+}
+
+#analytics-display {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    line-height: 1;
+}
+
+#analytics-display span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.marquee-container {
+    flex: 1;
+    margin-left: 20px;
+    overflow: hidden;
+    height: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.marquee-content {
+    white-space: nowrap;
+    font-size: 12px;
+    line-height: 1;
 }
 
 /* app容器保持正常文檔流 */
 #app {
     position: relative;
     z-index: 10;
+    /* margin-top 由 .site-scaler 統一處理 */
 }
 
 /* 載入時模糊效果 - 已移除，由動畫控制 */
@@ -219,6 +244,11 @@ body {
     justify-content: center;
     align-items: center;
     transition: opacity 0.5s ease;
+}
+
+#loading-screen.hidden {
+    display: none !important;
+    opacity: 0 !important;
 }
 
 /* Cyber-Whirl Loading Spinner */
@@ -364,102 +394,6 @@ body {
     --cur-not-allowed: auto;
 }
 
-/* ========== 互動遊標主題套用 (Global Overlay Strategy) ========== */
-/* 
-   核心邏輯 V4 (Modern Approach):
-   使用 @supports 檢測瀏覽器是否支援 cursor: none，
-   支援則直接用 cursor: none，不支援則用 1x1 透明圖片 fallback。
-*/
-
-/* 現代瀏覽器：直接隱藏 */
-@supports (cursor: none) {
-    html.custom-cursor-active,
-    html.custom-cursor-active *,
-    html.custom-cursor-active body,
-    html.custom-cursor-active iframe,
-    html.custom-cursor-active .app-container,
-    html.custom-cursor-active .site-scaler,
-    html.custom-cursor-active .modal,
-    html.custom-cursor-active .modal-content,
-    html.custom-cursor-active #atmosphere-container,
-    html.custom-cursor-active #atmosphere-overlay,
-    html.custom-cursor-active #loading-screen {
-        cursor: none !important;
-    }
-
-    html.custom-cursor-active a,
-    html.custom-cursor-active button,
-    html.custom-cursor-active input,
-    html.custom-cursor-active textarea,
-    html.custom-cursor-active select,
-    html.custom-cursor-active label,
-    html.custom-cursor-active [role="button"],
-    html.custom-cursor-active [onclick],
-    html.custom-cursor-active .clickable {
-        cursor: none !important;
-    }
-
-    html.custom-cursor-active ::-webkit-scrollbar {
-        cursor: none !important;
-    }
-
-    button:disabled,
-    input:disabled,
-    .disabled {
-        cursor: none !important;
-    }
-}
-
-/* 不支援 cursor: none 的瀏覽器：使用 1x1 透明圖片 fallback */
-@supports not (cursor: none) {
-    html.custom-cursor-active,
-    html.custom-cursor-active *,
-    html.custom-cursor-active body,
-    html.custom-cursor-active iframe,
-    html.custom-cursor-active .app-container,
-    html.custom-cursor-active .site-scaler,
-    html.custom-cursor-active .modal,
-    html.custom-cursor-active .modal-content,
-    html.custom-cursor-active #atmosphere-container,
-    html.custom-cursor-active #atmosphere-overlay,
-    html.custom-cursor-active #loading-screen {
-        cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='), none !important;
-    }
-
-    html.custom-cursor-active a,
-    html.custom-cursor-active button,
-    html.custom-cursor-active input,
-    html.custom-cursor-active textarea,
-    html.custom-cursor-active select,
-    html.custom-cursor-active label,
-    html.custom-cursor-active [role="button"],
-    html.custom-cursor-active [onclick],
-    html.custom-cursor-active .clickable {
-        cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='), none !important;
-    }
-
-    html.custom-cursor-active ::-webkit-scrollbar {
-        cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='), none !important;
-    }
-
-    button:disabled,
-    input:disabled,
-    .disabled {
-        cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='), none !important;
-    }
-}
-
-/* 視覺游標層專屬樣式 */
-#custom-cursor-visual {
-    /* 預設使用 block 但 opacity 0，避免 display:none 導致的初始化狀態判定問題 */
-    display: block !important;
-    opacity: 0;
-    will-change: transform, opacity;
-    filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.5));
-    transition: opacity 0.2s ease-out, background-image 0.15s ease-out, transform 0.1s ease-out;
-    /* 初始位置由 JS 控制 (lerp 迴圈) */
-}
-
 /* 跑馬燈位移動畫 */
 @keyframes marquee {
     0% {
@@ -511,4 +445,45 @@ body.admin-mode-active *::before,
 body.admin-mode-active *::after {
     animation: none !important;
     transition: none !important;
+}
+
+/* ========== 全局游標隱藏 (優先級最高) ========== */
+html.custom-cursor-active,
+html.custom-cursor-active *,
+html.custom-cursor-active *::before,
+html.custom-cursor-active *::after,
+html.custom-cursor-active body,
+html.custom-cursor-active body * {
+    cursor: none !important;
+}
+
+/* 針對常見互動元件「雙重強化」隱藏 */
+html.custom-cursor-active a,
+html.custom-cursor-active button,
+html.custom-cursor-active input,
+html.custom-cursor-active textarea,
+html.custom-cursor-active select,
+html.custom-cursor-active label,
+html.custom-cursor-active [role="button"],
+html.custom-cursor-active [href],
+html.custom-cursor-active [onclick],
+html.custom-cursor-active .clickable,
+html.custom-cursor-active [tabindex],
+html.custom-cursor-active .btn-primary,
+html.custom-cursor-active .anime-card,
+html.custom-cursor-active #systemMenu,
+html.custom-cursor-active #systemMenu * {
+    cursor: none !important;
+}
+
+/* 確保滾動條也沒有游標 */
+html.custom-cursor-active ::-webkit-scrollbar,
+html.custom-cursor-active *::-webkit-scrollbar {
+    cursor: none !important;
+}
+
+/* 強制隱藏所有 input 游標 */
+html.custom-cursor-active input,
+html.custom-cursor-active textarea {
+    caret-color: transparent !important;
 }

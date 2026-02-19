@@ -573,3 +573,15 @@ window.usabilityManager = new UsabilityManager();
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = UsabilityManager;
 }
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('usability', {
+        loaded: true,
+        exports: { 
+            usabilityManager: window.usabilityManager
+        },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: usability');
+}

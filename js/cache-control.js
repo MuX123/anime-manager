@@ -171,3 +171,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // 導出給其他模組使用
 window.CacheControl = CacheControl;
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('cache-control', {
+        loaded: true,
+        exports: { 
+            CacheControl,
+            cacheControl: window.cacheControl
+        },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: cache-control');
+}

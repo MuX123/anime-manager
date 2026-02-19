@@ -953,3 +953,17 @@ if (typeof module !== 'undefined' && module.exports) {
         PasswordValidator
     };
 }
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('security', {
+        loaded: true,
+        exports: { 
+            securityManager: window.securityManager,
+            rateLimiter: window.rateLimiter,
+            passwordValidator: window.passwordValidator
+        },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: security');
+}

@@ -1,0 +1,141 @@
+/* =============================================
+    Pagination Premium - 分頁組件重新設計
+    ACG 收藏庫 Premium UI
+    ============================================= */
+
+.pagination-premium {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 40px 0;
+    font-family: 'Orbitron', sans-serif;
+    perspective: 1000px;
+}
+
+/* 按鈕基礎樣式 */
+.pag-btn {
+    background: rgba(10, 15, 25, 0.8);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: var(--neon-cyan, #00d4ff);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+}
+
+.pag-btn .pag-text {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.pag-btn .pag-icon {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+/* 按鈕 Hover 效果 */
+.pag-btn:hover:not(:disabled) {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.4),
+        inset 0 0 10px rgba(0, 212, 255, 0.1);
+    transform: translateY(-2px) scale(1.05);
+}
+
+.pag-btn.prev:hover:not(:disabled) .pag-icon {
+    transform: translateX(-5px);
+}
+
+.pag-btn.next:hover:not(:disabled) .pag-icon {
+    transform: translateX(5px);
+}
+
+.pag-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* 中間下拉選單包裝 */
+.pag-select-wrapper {
+    position: relative;
+    min-width: 140px;
+    height: 42px;
+}
+
+.pag-select {
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(0, 212, 255, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 0 15px;
+    cursor: pointer;
+    appearance: none;
+    text-align: center;
+    transition: all 0.3s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300d4ff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.pag-select:hover {
+    border-color: var(--neon-cyan);
+    background-color: rgba(0, 212, 255, 0.05);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+}
+
+.pag-select:focus {
+    outline: none;
+    border-color: var(--neon-purple, #b026ff);
+    box-shadow: 0 0 15px rgba(176, 38, 255, 0.3);
+}
+
+.pag-select option {
+    background: #050609;
+    color: #fff;
+    padding: 10px;
+}
+
+/* 下拉選單光效 */
+.pag-select-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    pointer-events: none;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    z-index: -1;
+}
+
+/* 自定義點擊波紋效果預留 */
+.pag-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(0, 212, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.pag-btn:active::after {
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+}

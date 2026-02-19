@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="custom-cursor-active">
 
 <head>
-    <!-- 安全性強化 Head -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -11,15 +10,37 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="theme-color" content="#050609">
-    <title>ACG 收藏庫</title>
+    <title>ACG 收藏庫 - 完美呈現版</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap"
         rel="stylesheet">
+
+    <!-- 強力游標隱藏補丁 v1.2 (靜態階段) -->
+    <style id="base-cursor-hide">
+        html.custom-cursor-active,
+        html.custom-cursor-active *,
+        html.custom-cursor-active body,
+        html.custom-cursor-active body * {
+            cursor: none !important;
+        }
+
+        /* 避免 input 游標顯示 */
+        html.custom-cursor-active input,
+        html.custom-cursor-active textarea {
+            caret-color: transparent !important;
+        }
+
+        /* 即使在載入過場中也要徹底隱藏 */
+        #loading-screen,
+        #loading-screen * {
+            cursor: none !important;
+        }
+    </style>
 
     <!-- CSS 模組化結構 -->
     <link rel="stylesheet" href="./css/variables.css?v=20260213_v9">
@@ -30,8 +51,14 @@
     <link rel="stylesheet" href="./css/detail-cyberpunk.css">
     <link rel="stylesheet" href="./css/loader.css?v=20260213_v1">
     <link rel="stylesheet" href="./css/restore_menu.css">
+    <link rel="stylesheet" href="./css/system-menu-v2.css">
+    <link rel="stylesheet" href="./css/search-sidebar.css">
+    <link rel="stylesheet" href="./css/pagination-premium.css">
     <!-- Cursor Animations (Moved to bottom for priority) -->
     <link rel="stylesheet" href="./css/animations.css?v=20260215_v2">
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="./css/admin-style.css">
+
     <!-- 關鍵渲染路徑樣式 -->
     <style>
         #loading-screen {
@@ -66,35 +93,24 @@
             opacity: 0;
         }
     </style>
-    <script>
-        // 系統初始化配置
-    </script>
 </head>
 
 <body>
-    <!-- 駭客任務數碼雨背景 - 在 scaling 容器外面 -->
-    <canvas id="c"></canvas>
+    <!-- 背景效果由 background.js 動態生成 -->
 
-    <!-- 黑色半透明蒙版 -->
     <div id="atmosphere-overlay"></div>
 
-    <!-- ACG 互動氛圍層 -->
     <div id="atmosphere-container">
         <div class="atmosphere-grid"></div>
         <div class="atmosphere-glow"></div>
         <div class="atmosphere-tech-overlay"></div>
     </div>
 
-    <!-- 加載畫面 (移出 site-scaler 以避免縮放影響並確保置頂) -->
-    <!-- 加載畫面 (Gate Animation v8.0 Original) -->
     <div id="loading-screen">
         <div class="gas-steam gas-left"></div>
         <div class="gas-steam gas-right"></div>
-
-        <!-- Left Gate -->
         <div class="gate-left">
             <div class="grid-overlay"></div>
-            <!-- V16 High-Fidelity SVG Circuits -->
             <svg class="gate-pattern" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
                 <defs>
                     <linearGradient id="circuitGradLeft" x1="100%" y1="0%" x2="0%" y2="100%">
@@ -118,13 +134,10 @@
                     d="M700,0 V250 L720,270 V450 L700,470 V650 L720,670 V850 L700,900 V1000"
                     stroke="url(#circuitGradLeft)" stroke-width="3" fill="none" />
             </svg>
-
             <div class="gate-beam"></div>
             <div class="gate-bolt t-1"></div>
             <div class="gate-bolt b-1"></div>
             <div class="mech-detail-1"></div>
-
-            <!-- Masterpiece Armored Lock -->
             <div class="lock-plate left">
                 <svg class="gate-pattern" viewBox="0 0 300 600" preserveAspectRatio="none">
                     <path class="line-breathe-delay" d="M300,50 H100 L80,70 H0" stroke="url(#circuitGradLeft)"
@@ -142,11 +155,8 @@
                 </div>
             </div>
         </div>
-
-        <!-- Right Gate -->
         <div class="gate-right">
             <div class="grid-overlay"></div>
-            <!-- V16 High-Fidelity SVG Circuits -->
             <svg class="gate-pattern" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
                 <defs>
                     <linearGradient id="circuitGradRight" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -170,13 +180,10 @@
                     d="M300,0 V250 L280,270 V450 L300,470 V650 L280,670 V850 L300,900 V1000"
                     stroke="url(#circuitGradRight)" stroke-width="3" fill="none" />
             </svg>
-
             <div class="gate-beam"></div>
             <div class="gate-bolt t-1"></div>
             <div class="gate-bolt b-1"></div>
             <div class="mech-detail-1"></div>
-
-            <!-- Masterpiece Armored Lock -->
             <div class="lock-plate right">
                 <svg class="gate-pattern" viewBox="0 0 300 600" preserveAspectRatio="none">
                     <path class="line-breathe-delay" d="M0,50 H200 L220,70 H300" stroke="url(#circuitGradRight)"
@@ -194,8 +201,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Center Hub & UI -->
         <div class="center-hub-wrapper">
             <div class="center-gas"></div>
             <div class="circuit-burst"></div>
@@ -206,12 +211,9 @@
                     <div class="core-ring inner"></div>
                 </div>
             </div>
-
             <div class="center-ui-container">
                 <div class="loading-title">ACG 收藏庫</div>
-                <div class="loading-status" id="loading-status">
-                    系統初始化中<span class="status-cursor">_</span>
-                </div>
+                <div class="loading-status" id="loading-status">系統初始化中<span class="status-cursor">_</span></div>
                 <div class="progress-container">
                     <div class="progress-bar-frame">
                         <div class="progress-bar-fill" id="progress-bar-fill"></div>
@@ -224,165 +226,126 @@
         </div>
     </div>
 
+    <!-- 頂部固定元素 -->
+    <div class="site-header">
+        <div id="adminHeaderBar" class="admin-header-bar"></div>
+    </div>
+    <div class="analytics-bar">
+        <div id="analytics-display">
+            <span style="margin-right: 8px;">👤 <span
+                    style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
+            <span style="margin-right: 8px;">🖱️ <span
+                    style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
+            <span>📄 <span style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
+        </div>
+        <div class="marquee-container">
+            <div id="top-marquee-content" class="marquee-content"></div>
+        </div>
+    </div>
+
     <div class="site-scaler">
-
-        <div class="site-header">
-            <div id="adminHeaderBar" class="admin-header-bar"></div>
-        </div>
-
-        <!-- 左側搜尋菜單 -->
-        <div id="search-sidebar" class="search-sidebar" style="display: none;">
-            <div class="search-sidebar-header">
-                <span class="search-sidebar-icon">🔍</span>
-                <span class="search-sidebar-title">搜尋</span>
-            </div>
-            <div class="search-sidebar-content">
-                <div class="search-input-group">
-                    <input type="text" id="search-sidebar-input" class="search-sidebar-field"
-                        placeholder="搜尋名稱或描述..."
-                        oninput="window.handleSearch(this.value)">
-                </div>
-                <div id="search-sidebar-filters" class="search-filters-container">
-                    <!-- 搜尋條件選擇將由 render-app.js 渲染 -->
-                </div>
-            </div>
-        </div>
-
-        <div class="analytics-bar">
-            <div id="analytics-display">
-                <span style="margin-right: 8px;">👤 <span
-                        style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
-                <span style="margin-right: 8px;">🖱️ <span
-                        style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
-                <span>📄 <span style="display: inline-block; min-width: 40px; text-align: left;">--</span></span>
-            </div>
-            <div class="marquee-container">
-                <div id="top-marquee-content" class="marquee-content"></div>
-            </div>
-        </div>
-
         <div id="app"></div>
-
-        <!-- 詳情彈窗 (Detail Modal) -->
         <div id="detailModal" class="modal">
             <div class="modal-content">
                 <span class="close-btn" onclick="window.closeAnimeDetail()">&times;</span>
                 <div id="detailContent"></div>
             </div>
         </div>
-
         <div id="toast" class="toast"></div>
+    </div>
 
-    </div> <!-- site-scaler 結束 -->
-
-    <!-- 右側系統選單 (Compact) - 在 site-scaler 外面，跟隨視窗邊界 -->
     <div id="systemMenu" class="system-menu active">
-        <!-- 板塊選擇下拉選單 -->
-        <select id="section-select" onchange="window.switchCategory(this.value)">
-            <option value="notice">💬 訊息列表</option>
-            <option value="anime">🎬 動畫</option>
-            <option value="manga">📚 漫畫</option>
-            <option value="movie">🎥 電影</option>
-        </select>
-
-        <!-- 佈局下拉選單 -->
-        <select id="layout-select" onchange="window.changeGridLayout(this.value)">
-            <option value="5">📐 五欄佈局</option>
-            <option value="4">📐 四欄佈局</option>
-            <option value="3">📐 三欄佈局</option>
-            <option value="mobile">📱 資料列表</option>
-        </select>
-
-        <!-- 排序下拉選單 -->
-        <select id="sort-select" onchange="window.changeSortOrder(this.value)">
-            <option value="desc">📅 最新作品</option>
-            <option value="asc">📅 最早作品</option>
-        </select>
-
-        <!-- 滑鼠風格下拉選單 -->
-        <select id="cursor-theme-select" onchange="window.CursorManager.apply(this.value)">
-            <option value="anya">🦊 阿尼亞</option>
-            <option value="frieren">🧙‍♀️ 芙莉蓮</option>
-            <option value="elysia">🦋 愛莉希雅</option>
-        </select>
-
-        <!-- 滑鼠大小滑桿 -->
-        <div class="cursor-size-control">
-            <label for="cursor-size-slider">🔍 大小</label>
-            <div class="cursor-size-stepper">
-                <button class="step-btn" onclick="window.CursorManager.changeScale(-0.1)">-</button>
-                <span id="cursor-size-display">1.0x</span>
-                <button class="step-btn" onclick="window.CursorManager.changeScale(0.1)">+</button>
+        <div class="system-menu-title">系統收納盒</div>
+        <div class="menu-tabs">
+            <button class="menu-tab active" data-tab="search" onclick="window.switchMenuTab('search')">搜尋</button>
+            <button class="menu-tab" data-tab="settings" onclick="window.switchMenuTab('settings')">設定</button>
+            <button class="menu-tab" data-tab="style" onclick="window.switchMenuTab('style')">滑鼠</button>
+        </div>
+        <div class="menu-divider compact"></div>
+        <div id="tab-search" class="menu-tab-content active">
+            <div class="search-section">
+                <input type="text" id="menu-search-input" class="menu-search-field" placeholder="搜尋名稱或描述..."
+                    oninput="window.handleSearch(this.value)">
+            </div>
+            <div id="menu-search-filters" class="menu-search-filters"></div>
+        </div>
+        <div id="tab-settings" class="menu-tab-content">
+            <select id="section-select" onchange="window.switchCategory(this.value)">
+                <option value="notice">訊息列表</option>
+                <option value="anime">動畫</option>
+                <option value="manga">漫畫</option>
+                <option value="movie">電影</option>
+            </select>
+            <select id="layout-select" onchange="window.changeGridLayout(this.value)">
+                <option value="5">五欄佈局</option>
+                <option value="4">四欄佈局</option>
+                <option value="3">三欄佈局</option>
+                <option value="mobile">資料列表</option>
+            </select>
+            <select id="sort-select" onchange="window.changeSortOrder(this.value)">
+                <option value="desc">最新作品</option>
+                <option value="asc">最早作品</option>
+            </select>
+        </div>
+        <div id="tab-style" class="menu-tab-content">
+            <button class="cursor-theme-btn" onclick="window.CursorManager.openThemePicker()">
+                <span>🎨 選擇游標風格</span>
+            </button>
+            <div id="cursor-theme-container"></div>
+            <div class="cursor-size-control">
+                <div class="control-label">
+                    <span>游標大小</span>
+                    <span id="cursor-size-value">1.0x</span>
+                </div>
+                <input type="range" id="cursor-size-slider" min="0.5" max="3.0" step="0.1" value="1.0"
+                    oninput="window.CursorManager.setScale(this.value)">
+            </div>
+            <div class="cursor-size-control">
+                <div class="control-label">
+                    <span>靈敏度</span>
+                    <span id="cursor-sensitivity-display">0.4</span>
+                </div>
+                <input type="range" id="cursor-sensitivity-slider" min="0.05" max="1.0" step="0.05" value="0.4"
+                    oninput="window.CursorManager.setSensitivity(this.value)">
             </div>
         </div>
-
-        <div class="menu-divider"></div>
-
-        <!-- 登入/登出按鈕 -->
+        <div class="menu-divider compact"></div>
         <div id="adminMenuOptions"></div>
     </div>
 
     <input type="file" id="importFile" style="display: none;" onchange="window.importData(event)">
 
-    <!-- 1. 配置與核心 (Configuration & Core) -->
+    <script src="./js/module-loader.js"></script>
+    <script src="./js/cache-control.js"></script>
     <script src="./js/github-pages-config.js?v=20260204_v1"></script>
     <script src="./js/config.js?v=20260205_v1"></script>
-
-    <!-- 2. 基礎工具庫 (Infrastructure) -->
     <script src="./js/logger.js?v=20260205_v4"></script>
     <script src="./js/security.js?v=20260204_v2"></script>
     <script src="./js/usability.js?v=20260204_v1"></script>
     <script src="./js/performance.js?v=20260204_v1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- 3. 資料與邏輯層 (Data & Logic) -->
     <script src="./js/supabase.js?v=20260205_v4"></script>
-    <!-- script - migrated.js disabled to modular architecture -->
-    <script src="./js/data-manager.js"></script>
+    <script src="./js/fuse.basic.min.js"></script>
+    <script src="./js/embla-carousel.umd.js"></script>
+    <script src="./js/data-manager.js?v=20260216_v2"></script>
+    <script src="./js/admin-panel.js"></script>
     <script src="./js/admin-manager.js"></script>
     <script src="./js/ui-controller.js"></script>
     <script src="./js/event-handler.js"></script>
     <script src="./js/announcements.js?v=20260209_v5"></script>
     <script src="./js/analytics.js?v=20260202_v1"></script>
-
-    <!-- 4. 渲染與 UI 層 (Render & UI) -->
-    <script src="./js/render.js?v=20260214_opt_v1"></script>
-    <script src="./js/render-app.js?v=20260215_v1"></script>
-
-    <!-- 5. 視覺特效層 (Visual Effects Engine) - 必須在 main.js 之前載入 -->
-    <!-- 先載入 VisualEngine 核心，再載入視覺模組 -->
+    <script src="./js/img-utils.js"></script>
+    <script src="./js/render.js?v=20260216_v1"></script>
+    <script src="./js/render-app.js?v=20260216_v1"></script>
     <script src="./js/visual-engine.js"></script>
     <script src="./js/atmosphere.js?v=20260215_v3"></script>
-    <script src="./js/poster-wall.js?v=20260215_v2"></script>
-    <script src="./js/matrix-rain.js?v=20260215_engine_v1"></script>
-
-    <!-- 6. 應用入口 (Entry Point) - 必須在所有模組之後 -->
+    <script src="./js/background.js"></script>
+    <script src="./js/script.js?v=20260216_v4"></script>
+    <script src="./js/ui-helpers.js"></script>
+    <script src="./js/translation.js"></script>
     <script src="./js/main.js"></script>
-
-    <!-- 啟動視覺引擎 -->
-    <!-- VisualEngine init is now handled by main.js after loading animation -->
-    <!-- <script>
-        window.addEventListener('load', () => {
-            if (window.VisualEngine) {
-                window.VisualEngine.init();
-            }
-        });
-    </script> -->
-
-    <!-- 6. 調試與補丁 (Debug & Patches) -->
-    <!-- <script src="./js/debug.js?v=20260202_v1"></script> -->
-
-    <!-- 問題修復補丁 -->
-    <script src="./js/fix-recommendation.js?v=20260204_v1"></script>
-
-    <!-- Service Worker 註冊 -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                console.log('[Main] 正在註冊 Service Worker...');
-            });
-        }
-    </script>
+    <script src="./js/debug.js"></script>
+    <script src="./js/fix-recommendation.js?v=20260216_v1"></script>
 </body>
 
 </html>

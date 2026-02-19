@@ -648,3 +648,18 @@ window.logger = new Logger({
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { Logger, LogStorage, PerformanceMonitor };
 }
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('logger', {
+        loaded: true,
+        exports: { 
+            Logger, 
+            LogStorage, 
+            PerformanceMonitor,
+            logger: window.logger
+        },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: logger');
+}

@@ -1,7 +1,7 @@
 // TECH v8.0.0 - Rendering Logic Module
 // Extracted from script.js and optimized with CSS classes
 
-console.log('🎨 載入渲染模組 (v8.0 - UI Refined)...');
+console.log('🎨 載入渲染模組 (v8.0.1 - Syntax Fixed)...');
 
 // 生成星星評分HTML
 function generateStars(count) {
@@ -315,7 +315,6 @@ function renderHexBadge(rating, recommendation, ratingColor, ratingGlow) {
 
     // 提取推薦度中的星星數量（支持格式: ★, ★2, ★3, ★6）
     let starCount = 0;
-    console.log('[HexBadge DEBUG] Input recommendation:', recommendation, 'Type:', typeof recommendation);
 
     if (typeof recommendation === 'string') {
         const trimmed = recommendation.trim();
@@ -330,23 +329,18 @@ function renderHexBadge(rating, recommendation, ratingColor, ratingGlow) {
                 const parsed = parseInt(numPart);
                 starCount = isNaN(parsed) ? 1 : parsed;
             }
-            console.log('[HexBadge DEBUG] Format ★ detected, numPart:', numPart, '=> starCount:', starCount);
         } else {
             // 尝试提取任何数字
             const match = trimmed.match(/\d+/);
             if (match) {
                 starCount = parseInt(match[0]) || 0;
-                console.log('[HexBadge DEBUG] Found number:', match[0], '=> starCount:', starCount);
             }
         }
     } else if (typeof recommendation === 'number' && !isNaN(recommendation)) {
         starCount = Math.round(recommendation);
-        console.log('[HexBadge DEBUG] Number type, starCount:', starCount);
     }
 
-    const originalStarCount = starCount;
     starCount = Math.min(6, Math.max(0, starCount)); // 限制在 0-6 之間
-    console.log('[HexBadge] Final starCount:', starCount, '(from:', originalStarCount, ')');
 
     // 生成6個星星（順時針排列）- 只生成需要的星星
     let starsHtml = '';
@@ -356,12 +350,11 @@ function renderHexBadge(rating, recommendation, ratingColor, ratingGlow) {
             starsHtml += `<span class="hex-star star-pos-${i}">★</span>`;
         }
     }
-    console.log('[HexBadge DEBUG] Generated starsHtml length:', starsHtml.length, 'HTML:', starsHtml);
 
     // 添加 stars-X 類名來決定所有星星的顏色
     const starsClass = starCount > 0 ? `stars-${starCount}` : '';
 
-    const result = `
+    return `
         <div class="badge-cyber-hex ${starsClass}" style="--rating-color: ${ratingColor}; --rating-glow: ${ratingGlow};">
             <div class="hex-inner">
                 <div class="badge-type">${escape(rating || '普')}</div>
@@ -371,8 +364,6 @@ function renderHexBadge(rating, recommendation, ratingColor, ratingGlow) {
             </div>
         </div>
     `;
-    console.log('[HexBadge DEBUG] Final HTML generated');
-    return result;
 }
 
 function renderStarDisplay(starText, color, size = 12) {
@@ -517,7 +508,17 @@ function renderGridCard(item, colors, data) {
 
     // 判斷是否需要高畫質 (3欄佈局強制高畫質)
     const useHighQuality = (typeof gridColumns !== 'undefined' && gridColumns <= 3);
-    const posterUrl = window.getOptimizedPosterUrl(item.poster_url, useHighQuality);
+
+    // 使用新的 ImgUtils 獲取優化後的圖片
+    const imgOptions = useHighQuality ? { width: 600 } : { width: 300 }; // 為 Grid 卡片設定適當寬度
+    let posterUrl = item.poster_url;
+
+    if (window.ImgUtils) {
+        posterUrl = window.ImgUtils.getOptimizedUrl(item.poster_url, imgOptions);
+    } else {
+        // Fallback to old method if ImgUtils is missing
+        posterUrl = window.getOptimizedPosterUrl(item.poster_url, useHighQuality);
+    }
 
     // 計算日期標籤顯示組
     let dateGroupHTML = '';
@@ -567,8 +568,11 @@ function renderGridCard(item, colors, data) {
             </div>
 
             <div class="grid-poster-container">
-                <img src="${posterUrl || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22450%22%3E%3Crect fill=%22%231a1a2e%22 width=%22300%22 height=%22450%22/%3E%3Ctext fill=%22%23666%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENO+IMAGE%3C/text%3E%3C/svg%3E'}"
-                    class="grid-poster-img"
+                <img src="${posterUrl || 'assets/fallback.jpg'}"
+                     class="grid-poster-img"
+                     loading="lazy"
+                     onerror="window.ImgUtils ? window.ImgUtils.handleError(this) : (this.src='assets/fallback.jpg')"
+                     alt="${escape(name)}"
                 >
                 <div class="grid-poster-overlay"></div>
                 <div class="poster-shine"></div>
@@ -830,7 +834,110 @@ window.showAnimeDetail = (id) => {
                 <div class="poster-badge-group">
                     <!-- 徽章 - 一半覆蓋在海報上方 -->
                     ${renderHexBadge(item.rating, item.recommendation, colors.color, colors.glow)}
+                    
                     <div class="detail-poster-container">
+                    ${(item.extra_data?.gallery && item.extra_data.gallery.length > 0) ? `
+                        <!-- Embla Carousel -->
+                        <div class="embla" style="overflow: hidden; border-radius: 12px; border: 2px solid ${colors.color}; box-shadow: 0 0 20px ${colors.glow}; aspect-ratio: 2/3;">
+                            <div class="embla__container" style="display: flex; height: 100%;">
+                                <!-- Original Poster as first slide -->
+                                <div class="embla__slide" style="flex: 0 0 100%; min-width: 0; position: relative;">
+                                    <img src="${item.poster_url || ''}" class="detail-poster-img" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='./assets/no-poster.jpg'">
+                                    <div class="magic-diffuse-layer"></div>
+                                </div>
+                                <!-- Gallery Images -->
+                                ${item.extra_data.gallery.map(imgUrl => `
+                                <div class="embla__slide" style="flex: 0 0 100%; min-width: 0; position: relative;">
+                                    <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+                                </div>
+                                `).join('')}
+                            </div>
+                            <!-- Navigation Buttons -->
+                            <button class="embla__prev" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%; cursor: pointer; z-index: 10;">‹</button>
+                            <button class="embla__next" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%; cursor: pointer; z-index: 10;">›</button>
+                            <!-- Dots -->
+                            <div class="embla__dots" style="position: absolute; bottom: 10px; left: 0; right: 0; display: flex; justify-content: center; gap: 5px; z-index: 10;"></div>
+                        </div>
+                        <` + `script>
+                            // 使用更精確的選擇器，確保只初始化當前詳情頁的 Embla
+                            setTimeout(() => {
+                                const detailOverlay = document.getElementById('anime-detail-overlay');
+                                if (!detailOverlay) return;
+                                
+                                const emblaNode = detailOverlay.querySelector('.embla');
+                                if (emblaNode && window.EmblaCarousel && !emblaNode.dataset.initialized) {
+                                    // 標記已初始化，避免重複初始化
+                                    emblaNode.dataset.initialized = 'true';
+                                    
+                                    const viewportNode = emblaNode;
+                                    const prevBtn = emblaNode.querySelector('.embla__prev');
+                                    const nextBtn = emblaNode.querySelector('.embla__next');
+                                    const dotsNode = emblaNode.querySelector('.embla__dots');
+                                    
+                                    const embla = EmblaCarousel(viewportNode, { loop: true });
+                                    
+                                    // 導航按鈕空值檢查
+                                    if (prevBtn) {
+                                        prevBtn.addEventListener('click', () => embla.scrollPrev(), false);
+                                    }
+                                    if (nextBtn) {
+                                        nextBtn.addEventListener('click', () => embla.scrollNext(), false);
+                                    }
+                                    
+                                    // Dots
+                                    const scrollSnaps = embla.scrollSnapList();
+                                    if (dotsNode) {
+                                        dotsNode.innerHTML = scrollSnaps.map(() => '<button class="embla__dot" style="width: 8px; height: 8px; border-radius: 50%; border: none; background: rgba(255,255,255,0.3); padding: 0; cursor: pointer;"></button>').join('');
+                                        const dots = Array.from(dotsNode.querySelectorAll('.embla__dot'));
+                                        
+                                        const updateDots = () => {
+                                            const selectedIndex = embla.selectedScrollSnap();
+                                            dots.forEach((dot, index) => {
+                                                // 修正：使用反引號進行 template literal 插值
+                                                const selectedColor = index === selectedIndex ? colors.color : 'rgba(255,255,255,0.3)';
+                                                dot.style.background = selectedColor;
+                                            });
+                                        };
+                                        
+                                        embla.on('select', updateDots);
+                                        embla.on('init', updateDots);
+                                    }
+                                    
+                                    // Auto Autoplay - with cleanup tracking
+                                    let autoplay = null;
+                                    const play = () => {
+                                        if (!autoplay) {
+                                            autoplay = setInterval(() => embla.scrollNext(), 4000);
+                                        }
+                                    };
+                                    const stop = () => {
+                                        if (autoplay) {
+                                            clearInterval(autoplay);
+                                            autoplay = null;
+                                        }
+                                    };
+                                    
+                                    // Store cleanup function for when modal closes
+                                    if (!window._emblaCleanup) window._emblaCleanup = [];
+                                    window._emblaCleanup.push(stop);
+                                    
+                                    play();
+                                    
+                                    // Use { once: false } but track for cleanup
+                                    const mouseEnterHandler = () => stop();
+                                    const mouseLeaveHandler = () => play();
+                                    emblaNode.addEventListener('mouseenter', mouseEnterHandler);
+                                    emblaNode.addEventListener('mouseleave', mouseLeaveHandler);
+                                    
+                                    // Store handlers for cleanup
+                                    window._emblaCleanup.push(() => {
+                                        emblaNode.removeEventListener('mouseenter', mouseEnterHandler);
+                                        emblaNode.removeEventListener('mouseleave', mouseLeaveHandler);
+                                    });
+                                }
+                            }, 100);
+                        <` + `/script>
+                        ` : `
                         <div class="detail-poster-card"
                             style="--rating-color: ${colors.color}; --rating-glow: ${colors.glow}; border-color: ${colors.color};">
                             <!-- 向外擴散的魔力效果 -->
@@ -838,6 +945,7 @@ window.showAnimeDetail = (id) => {
                             <!-- 海報圖片 -->
                             <img src="${item.poster_url || ''}" class="detail-poster-img" onerror="this.src='./assets/no-poster.jpg'">
                         </div>
+                        `}
                     </div>
                 </div>
             </div>
@@ -992,6 +1100,14 @@ if (typeof window.renderCard !== 'function') {
 
 // 關閉詳情頁面函數
 window.closeAnimeDetail = () => {
+    // Cleanup Embla carousel intervals
+    if (window._emblaCleanup) {
+        window._emblaCleanup.forEach(cleanup => {
+            try { cleanup(); } catch (e) {}
+        });
+        window._emblaCleanup = [];
+    }
+    
     // 關閉新 Overlay
     const overlay = document.getElementById('anime-detail-overlay');
     if (overlay) overlay.classList.remove('active');
@@ -1033,3 +1149,13 @@ window.closeYouTubeModal = () => {
 };
 
 console.log('✅ Render Module Fully Loaded');
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('render', {
+        loaded: true,
+        exports: { renderCard: window.renderCard, renderGrid: window.renderGrid },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: render');
+}

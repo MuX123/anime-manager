@@ -639,3 +639,19 @@ window.saveOptionEdit = (key, idx, oldVal) => {
 };
 
 window.injectCursorThemes = () => window.uiController.injectCursorThemes();
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('ui-controller', {
+        loaded: true,
+        exports: { 
+            uiController: window.uiController,
+            renderApp: window.renderApp,
+            renderAdmin: window.renderAdmin,
+            showToast: window.showToast,
+            updateAdminMenu: window.updateAdminMenu
+        },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: ui-controller');
+}

@@ -117,12 +117,46 @@ class VisualEngine {
     _handleVisibility() {
         if (document.hidden) {
             this.stop();
+            this._pauseCSSAnimations();
         } else {
             this.start();
+            this._resumeCSSAnimations();
         }
+    }
+
+    /**
+     * 暫停所有 CSS 動畫以節省 CPU
+     */
+    _pauseCSSAnimations() {
+        document.querySelectorAll('.marquee-content, .entry-animation, .star-glow').forEach(el => {
+            el.style.animationPlayState = 'paused';
+        });
+    }
+
+    /**
+     * 恢復 CSS 動畫
+     */
+    _resumeCSSAnimations() {
+        document.querySelectorAll('.marquee-content, .entry-animation, .star-glow').forEach(el => {
+            el.style.animationPlayState = 'running';
+        });
     }
 }
 
 // 導出單例 (Alias for compatibility)
 window.VisualEngine = new VisualEngine();
 window.visualEngine = window.VisualEngine;
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('visual-engine', {
+        loaded: true,
+        exports: { 
+            VisualEngine: window.VisualEngine,
+            visualEngine: window.visualEngine,
+            initVisualEngine: () => window.visualEngine.init()
+        },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: visual-engine');
+}

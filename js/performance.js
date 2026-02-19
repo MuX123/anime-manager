@@ -69,6 +69,11 @@ class MemoryManager {
 
     monitorMemoryUsage() {
         if (!('memory' in performance)) return;
+        
+        // Clear existing interval if any
+        if (this._memoryInterval) {
+            clearInterval(this._memoryInterval);
+        }
 
         const checkMemory = () => {
             const memory = performance.memory;
@@ -79,7 +84,7 @@ class MemoryManager {
             }
         };
 
-        setInterval(checkMemory, 30000);
+        this._memoryInterval = setInterval(checkMemory, 30000);
     }
 
     setupCleanupTasks() {
@@ -98,6 +103,10 @@ class MemoryManager {
     cleanup() {
         this.observers.forEach(o => o.disconnect());
         this.observers = [];
+        if (this._memoryInterval) {
+            clearInterval(this._memoryInterval);
+            this._memoryInterval = null;
+        }
     }
 }
 
@@ -153,7 +162,10 @@ class HealthMonitor {
     }
 
     start(intervalMs = 60000) {
-        this.stop();
+        // Prevent multiple intervals
+        if (this.interval) {
+            clearInterval(this.interval);
+        }
         this.interval = setInterval(() => this.runChecks(), intervalMs);
         this.runChecks();
     }
@@ -377,4 +389,18 @@ if (window.performance) {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { PerformanceOptimizer, LazyLoader, ResourceOptimizer, MemoryManager, OfflineManager, HealthMonitor };
+}
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('performance', {
+        loaded: true,
+        exports: { 
+            performanceOptimizer: window.performanceOptimizer,
+            offlineManager: window.offlineManager,
+            healthMonitor: window.healthMonitor
+        },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: performance');
 }

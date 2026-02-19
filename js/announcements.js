@@ -1037,7 +1037,7 @@ class AnnouncementSystem {
                 }
             }
         } catch (err) {
-            console.log('載入敏感詞彙設定失敗，使用預設列表');
+            // 靜默失敗，使用預設列表
         }
     }
 
@@ -1153,3 +1153,18 @@ window.renderAnnouncements = () => {
 window.switchAnnouncementTab = (tab) => {
     window.announcementSystem.switchTab(tab);
 };
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('announcements', {
+        loaded: true,
+        exports: { 
+            announcementSystem: window.announcementSystem,
+            showAnnouncementPopups: window.showAnnouncementPopups,
+            renderAnnouncements: window.renderAnnouncements,
+            switchAnnouncementTab: window.switchAnnouncementTab
+        },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: announcements');
+}

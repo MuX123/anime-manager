@@ -334,3 +334,18 @@ setTimeout(() => {
 
 // 立即初始化顯示（使用預設值或快取），避免空白
 updateAnalyticsDisplay();
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('analytics', {
+        loaded: true,
+        exports: { 
+            trackVisit: window.trackVisit,
+            trackCategorySwitch: window.trackCategorySwitch,
+            loadAnalytics: window.loadAnalytics,
+            analyticsData: window.analyticsData
+        },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: analytics');
+}

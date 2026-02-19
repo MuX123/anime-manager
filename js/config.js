@@ -340,3 +340,15 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('🛡️ 生產模式 - 安全性已強化');
     }
 });
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('config', {
+        loaded: true,
+        exports: { 
+            configManager: window.configManager
+        },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: config');
+}

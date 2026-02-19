@@ -1,111 +1,17 @@
 /**
  * main.js
  * ACG 收藏庫 - 應用程序入口 (Entry Point)
+ * 
+ * 職責：系統初始化流程 (initApp)
+ * 依賴：script.js 提供核心工具函數 (startLoadingSimulation, openGatesAndHide)
  */
 
-// --- Loading & Animation Logic ---
-
-let loadingProgress = 0;
 let isLoadingComplete = false;
-
-window.startLoadingSimulation = function () {
-    const statusText = document.getElementById('loading-status');
-    const barFill = document.getElementById('progress-bar-fill');
-    const percentText = document.getElementById('progress-percent');
-    const hub = document.querySelector('.rotating-hub');
-
-    const timer = setInterval(() => {
-        // 檢查是否完成
-        if (loadingProgress >= 100) {
-            clearInterval(timer);
-            if (!isLoadingComplete) {
-                isLoadingComplete = true;
-                setTimeout(() => {
-                    window.openGatesAndHide();
-                }, 300);
-            }
-            return;
-        }
-
-        // 資料載入完成後快速前進
-        if (window.isDataLoaded) {
-            if (loadingProgress < 95) {
-                loadingProgress = 95;
-            }
-            loadingProgress += 5; // 快速增加到 100
-        } else {
-            // 正常速度前進
-            loadingProgress += Math.random() * 3 + 2;
-            if (loadingProgress > 90) loadingProgress = 90;
-        }
-
-        // Update UI
-        const displayProgress = Math.min(loadingProgress, 100);
-        if (barFill) barFill.style.width = `${displayProgress}%`;
-        if (percentText) percentText.innerText = Math.floor(displayProgress);
-        if (hub) hub.style.setProperty('--hub-rotation', `${displayProgress * 3.6}deg`);
-
-        // 更新狀態文字
-        if (statusText) {
-            if (displayProgress < 25) statusText.innerText = '正在初始化系統...';
-            else if (displayProgress < 50) statusText.innerText = '正在載入資料...';
-            else if (displayProgress < 75) statusText.innerText = '正在渲染頁面...';
-            else if (displayProgress < 95) statusText.innerText = '即將完成...';
-            else statusText.innerText = '系統就緒';
-        }
-    }, 50);
-};
-
-window.openGatesAndHide = function () {
-    console.log('📡 開啟閘門...');
-    const loadingScreen = document.getElementById('loading-screen');
-    const gates = document.querySelectorAll('.gate-left, .gate-right');
-    const app = document.getElementById('app');
-    const centers = document.querySelectorAll('.center-stage, .center-ui-container, .center-hub-wrapper');
-
-    if (!loadingScreen || loadingScreen.style.display === 'none') return;
-
-    // 顯示 app 內容
-    if (app) {
-        app.style.display = 'block';
-        app.classList.remove('site-content-blur');
-    }
-
-    // 啟動背景動畫
-    if (window.visualEngine && !window.visualEngine.isRunning) {
-        window.visualEngine.init();
-    }
-
-    // 添加動畫 class
-    loadingScreen.classList.add('opening-gates');
-    gates.forEach(g => g.classList.add('fading'));
-    centers.forEach(c => {
-        c.classList.add('fading');
-        c.style.opacity = '0';
-    });
-
-    // 1秒後完全隱藏
-    setTimeout(() => {
-        if (loadingScreen) {
-            loadingScreen.style.display = 'none';
-        }
-
-        // Fix: 防止過場結束後原生遊標閃現
-        if (window.CursorManager) {
-            window.CursorManager.forceHideNativeCursor();
-        }
-
-        // 初始化公告系統
-        if (window.announcementSystem?.init) {
-            window.announcementSystem.init();
-        }
-    }, 1000);
-};
 
 window.initApp = async function () {
     try {
         console.log('🚀 系統初始化中...');
-        window.siteSettings = window.siteSettings || {}; // Ensure object exists early
+        window.siteSettings = window.siteSettings || {};
         window.startLoadingSimulation();
 
         // 1. Supabase Check
@@ -169,3 +75,13 @@ window.initApp = async function () {
 document.addEventListener('DOMContentLoaded', () => {
     window.initApp();
 });
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('main', {
+        loaded: true,
+        exports: { initApp: window.initApp },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: main');
+}

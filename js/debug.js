@@ -66,3 +66,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     }
 });
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('debug', {
+        loaded: true,
+        exports: { debugSystem: window.debugSystem },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: debug');
+}

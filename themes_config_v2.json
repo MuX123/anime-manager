@@ -1,0 +1,194 @@
+{
+    "amiya": {
+        "name": "Amiya",
+        "folder": "amiya",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "brant": {
+        "name": "Brant",
+        "folder": "brant",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "burnice_white": {
+        "name": "Burnice White",
+        "folder": "burnice_white",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "chibi_firefly": {
+        "name": "Chibi Firefly",
+        "folder": "chibi_firefly",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "chibi_mydei": {
+        "name": "Chibi Mydei",
+        "folder": "chibi_mydei",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "chibi_phainon": {
+        "name": "Chibi Phainon",
+        "folder": "chibi_phainon",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "chibi_phrolova_cd844a7ebd": {
+        "name": "Chibi Phrolova Cd844A7Ebd",
+        "folder": "chibi_phrolova_cd844a7ebd",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "chibi_roccia_f1cafdcc34": {
+        "name": "Chibi Roccia F1Cafdcc34",
+        "folder": "chibi_roccia_f1cafdcc34",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "chibi_zhao_1cdb02dbab": {
+        "name": "Chibi Zhao 1Cdb02Dbab",
+        "folder": "chibi_zhao_1cdb02dbab",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "chisa_wuthering_waves_792f859212": {
+        "name": "Chisa Wuthering Waves 792F859212",
+        "folder": "chisa_wuthering_waves_792f859212",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "citlali_c40bb6ed5f": {
+        "name": "Citlali C40Bb6Ed5F",
+        "folder": "citlali_c40bb6ed5f",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "evernight_6999ef3f35": {
+        "name": "Evernight 6999Ef3F35",
+        "folder": "evernight_6999ef3f35",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "iuno_c5088d425d": {
+        "name": "Iuno C5088D425D",
+        "folder": "iuno_c5088d425d",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "natsume_an_an_9d0c187dd8": {
+        "name": "Natsume An An 9D0C187Dd8",
+        "folder": "natsume_an_an_9d0c187dd8",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "sakuraba_ema_183f5a21e3": {
+        "name": "Sakuraba Ema 183F5A21E3",
+        "folder": "sakuraba_ema_183f5a21e3",
+        "hotspotX": 40,
+        "hotspotY": 40,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    },
+    "furina_d965b215d4": {
+        "name": "Furina D965B215D4",
+        "folder": "furina_d965b215d4",
+        "hotspotX": 4,
+        "hotspotY": 4,
+        "files": {
+            "default": "default.gif",
+            "pointer": "pointer.gif",
+            "text": "text.gif",
+            "help": "help.gif"
+        }
+    }
+}

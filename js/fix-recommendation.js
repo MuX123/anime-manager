@@ -23,3 +23,13 @@
         }
     }, 2000);
 })();
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('fix-recommendation', {
+        loaded: true,
+        exports: {},
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: fix-recommendation');
+}

@@ -93,10 +93,26 @@ window.currentCategory = 'anime';
 window.currentPage = 1;
 window.itemsPerPage = 20;
 
+// Performance optimization: Render caching and batching
+window._renderCache = new Map();
+window._renderPending = false;
+window._renderDebounceTimer = null;
+
 /**
  * 渲染主應用容器
  */
 window.renderApp = function (requestId = null) {
+    // Debounce rapid render calls
+    if (window._renderDebounceTimer) {
+        clearTimeout(window._renderDebounceTimer);
+    }
+    
+    window._renderDebounceTimer = setTimeout(() => {
+        window._performRender(requestId);
+    }, 16); // ~60fps throttle
+};
+
+window._performRender = function (requestId = null) {
     const app = document.getElementById('app');
     if (!app) {
         console.warn('[renderApp] #app not found');
@@ -148,26 +164,16 @@ window.renderApp = function (requestId = null) {
     if (!container) {
         // 首次完整渲染 - 新布局：左側搜尋菜單 + 右側內容
         app.innerHTML = `
-            <div class="app-container app-with-sidebar">
-                <!-- 左側搜尋菜單 -->
-                <div class="sidebar-panel">
-                    <div class="sidebar-header">
-                        <span class="sidebar-icon">🔍</span>
-                        <span class="sidebar-title">搜尋與篩選</span>
+            <div class="app-container">
+                <!-- 站點標題 -->
+                <header class="app-header">
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap;">
+                        <h1 style="color: #ffffff; text-shadow: 0 0 10px var(--neon-blue); margin-bottom: 8px;">
+                            ${window.siteSettings?.site_title || 'ACG 收藏庫'} <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px;">v8.0.0</span>
+                        </h1>
                     </div>
-                    <div class="sidebar-content">
-                        <div class="search-input-group">
-                            <input type="text" id="search-sidebar-input" class="sidebar-input"
-                                placeholder="搜尋名稱或描述..."
-                                value="${window.dataManager?.filters?.search || ''}"
-                                oninput="window.handleSearch(this.value)">
-                        </div>
-                        <div id="search-sidebar-filters" class="sidebar-filters">
-                            ${window.renderSearchSelectsHTML ? window.renderSearchSelectsHTML() : ''}
-                        </div>
-                    </div>
-                </div>
-
+                </header>
+                
                 <!-- 右側主內容 -->
                 <div class="main-content-panel">
                     <!-- 分類按鈕 -->
@@ -206,40 +212,13 @@ window.renderApp = function (requestId = null) {
     } else {
         // 局部更新
 
-        // 1. 更新左側搜尋菜單顯示
-        const sidebar = container.querySelector('.sidebar-panel');
-        if (sidebar) {
-            sidebar.style.display = isNotice ? 'none' : 'flex';
-            // 同步搜尋框值（避免重新渲染導致失去焦點）
-            const searchInput = document.getElementById('search-sidebar-input');
-            if (searchInput && searchInput !== document.activeElement) {
-                searchInput.value = window.dataManager?.filters?.search || '';
-            }
-            // 更新篩選條件
-            const filtersContainer = document.getElementById('search-sidebar-filters');
-            if (filtersContainer && window.renderSearchSelectsHTML) {
-                filtersContainer.innerHTML = window.renderSearchSelectsHTML();
-            }
-        }
-
-        // 2. 更新分類按鈕狀態
+        // 1. 更新分類按鈕狀態
         container.querySelectorAll('.category-buttons-container button').forEach(btn => {
             const isActive = btn.innerText.includes(isNotice ? '訊息' : (window.currentCategory === 'anime' ? '動畫' : (window.currentCategory === 'manga' ? '漫畫' : '電影')));
             btn.classList.toggle('active', isActive);
         });
 
-        // 2. 更新搜尋框顯示
-        const searchSection = container.querySelector('.search-section');
-        if (searchSection) {
-            searchSection.style.display = isNotice ? 'none' : 'block';
-            // 如果搜尋文字在外部被更改，同步它（但盡量避免在輸入時同步以防止游標跳動）
-            const searchInput = document.getElementById('search-input');
-            if (searchInput && searchInput !== document.activeElement) {
-                searchInput.value = window.dataManager?.filters?.search || '';
-            }
-        }
-
-        // 3. 更新公告內容
+        // 2. 更新公告內容
         const noticeCont = document.getElementById('notice-container');
         if (noticeCont) {
             noticeCont.style.display = isNotice ? 'block' : 'none';
@@ -261,18 +240,35 @@ window.renderApp = function (requestId = null) {
                 if (pagTop) pagTop.innerHTML = pagHtml;
                 if (pagBottom) pagBottom.innerHTML = pagHtml;
 
-                // 更新網格列表
-                const gridCont = document.getElementById('anime-grid-container');
-                if (gridCont) {
-                    gridCont.style.display = gridColumns === 'mobile' ? 'flex' : 'grid';
-                    gridCont.style.flexDirection = gridColumns === 'mobile' ? 'column' : '';
-                    gridCont.style.gap = gridColumns === 'mobile' ? '10px' : '20px';
-                    gridCont.style.gridTemplateColumns = gridColumns === 'mobile' ? '' : `repeat(${gridColumns}, 1fr)`;
+                    // 更新網格列表 - 使用 requestAnimationFrame 優化
+                    const gridCont = document.getElementById('anime-grid-container');
+                    if (gridCont) {
+                        gridCont.style.display = gridColumns === 'mobile' ? 'flex' : 'grid';
+                        gridCont.style.flexDirection = gridColumns === 'mobile' ? 'column' : '';
+                        gridCont.style.gap = gridColumns === 'mobile' ? '10px' : '20px';
+                        gridCont.style.gridTemplateColumns = gridColumns === 'mobile' ? '' : `repeat(${gridColumns}, 1fr)`;
 
-                    gridCont.innerHTML = paged.length > 0
-                        ? paged.map(item => window.renderCard ? window.renderCard(item) : '').join('')
-                        : '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">未找到相關資料</div>';
-                }
+                        // Performance: Batch DOM updates
+                        requestAnimationFrame(() => {
+                            const newHTML = paged.length > 0
+                                ? paged.map(item => {
+                                    // Simple cache key
+                                    const cacheKey = item.id + '-' + gridColumns;
+                                    if (window._renderCache.has(cacheKey)) {
+                                        return window._renderCache.get(cacheKey);
+                                    }
+                                    const html = window.renderCard ? window.renderCard(item) : '';
+                                    // Cache only first 50 items to prevent memory bloat
+                                    if (window._renderCache.size < 50) {
+                                        window._renderCache.set(cacheKey, html);
+                                    }
+                                    return html;
+                                }).join('')
+                                : '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">未找到相關資料</div>';
+                            
+                            gridCont.innerHTML = newHTML;
+                        });
+                    }
             }
         }
     }
@@ -315,7 +311,25 @@ window.renderGridContent = function (paged, total, gridColumns) {
 };
 
 /**
+ * 切換分頁
+ * 注意：此函數會被 script.js 中的版本覆蓋
+ */
+window.changePage = function (page) {
+    const filtered = window.dataManager?.getFilteredData ? window.dataManager.getFilteredData() : [];
+    const pages = Math.ceil(filtered.length / window.itemsPerPage);
+    
+    if (page < 1 || page > pages) return;
+    
+    window.currentPage = page;
+    window.renderApp();
+    
+    // 滾動到頂部
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+/**
  * 切換分類
+ * 注意：此函數會被 script.js 中的版本覆蓋
  */
 window.switchCategory = async function (cat) {
     // Update both window and dataManager
@@ -335,15 +349,6 @@ window.switchCategory = async function (cat) {
     window.renderApp();
 
     // 滾動到頂部
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-
-/**
- * 切換頁面
- */
-window.changePage = function (p) {
-    window.currentPage = p;
-    window.renderApp();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
@@ -456,3 +461,13 @@ window.handleFilter = function (key, val) {
 };
 
 console.log('✅ 應用渲染模組載入完成');
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('render-app', {
+        loaded: true,
+        exports: { renderApp: window.renderApp },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: render-app');
+}

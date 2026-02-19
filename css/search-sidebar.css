@@ -1,0 +1,158 @@
+/* =============================================
+    Search Sidebar - 左側搜尋菜單
+    ACG 收藏庫 Premium UI
+    ============================================= */
+
+#searchSidebar {
+    position: fixed !important;
+    top: 300px !important;
+    left: -240px !important;
+    /* 預設收起 - 放在系統菜單下方 */
+    width: 220px !important;
+    height: calc(100vh - 300px) !important;
+    background: rgba(10, 15, 25, 0.98) !important;
+    border-right: 1px solid rgba(0, 212, 255, 0.3) !important;
+    z-index: 1000001 !important;
+
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    display: flex !important;
+    flex-direction: column;
+    padding: 20px 15px !important;
+    box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5) !important;
+    box-sizing: border-box !important;
+    overflow-y: auto !important;
+    font-family: 'Space Mono', monospace !important;
+    transition: left 0.4s cubic-bezier(0.19, 1, 0.22, 1) !important;
+}
+
+#searchSidebar.active {
+    left: 0 !important;
+}
+
+/* 搜尋開關按鈕 - 固定在左側 (使用ID) */
+#sidebarToggleBtn {
+    position: fixed !important;
+    left: 0;
+    top: 320px !important;
+    width: 35px;
+    height: 60px;
+    background: rgba(10, 15, 25, 0.9);
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    border-left: none;
+    border-radius: 0 12px 12px 0;
+    color: var(--neon-cyan, #00d4ff);
+    z-index: 1000000 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    /* 顯式強制 */
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all 0.3s ease;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+    outline: 1px solid white;
+    /* 位置診斷 */
+}
+
+#sidebarToggleBtn:hover {
+    width: 45px;
+    background: rgba(0, 212, 255, 0.1);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+/* 開啟時按鈕滑開 */
+#searchSidebar.active ~ #sidebarToggleBtn {
+    opacity: 0;
+    pointer-events: none;
+    left: -50px;
+}
+
+/* 標題樣式 */
+.sidebar-section-title {
+    font-family: 'Orbitron', sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: var(--neon-cyan, #00d4ff) !important;
+    letter-spacing: 1px !important;
+    margin-bottom: 12px !important;
+    margin-top: 15px !important;
+    text-transform: uppercase !important;
+    opacity: 0.8;
+}
+
+.sidebar-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.sidebar-close-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 5px;
+    transition: color 0.2s;
+}
+
+.sidebar-close-btn:hover {
+    color: var(--neon-cyan, #00d4ff);
+}
+
+/* 搜尋輸入框 */
+#search-sidebar-input {
+    width: 100% !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(0, 212, 255, 0.3) !important;
+    border-radius: 8px !important;
+    padding: 10px 12px !important;
+    color: #fff !important;
+    font-size: 13px !important;
+    margin-bottom: 15px !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+}
+
+#search-sidebar-input:focus {
+    border-color: var(--neon-cyan, #00d4ff) !important;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2) !important;
+}
+
+/* 篩選下拉選單 */
+#search-sidebar-filters {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+}
+
+#search-sidebar-filters select {
+    width: 100% !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(0, 212, 255, 0.2) !important;
+    border-radius: 6px !important;
+    padding: 8px 10px !important;
+    color: #fff !important;
+    font-size: 12px !important;
+    font-family: 'Space Mono', monospace !important;
+    cursor: pointer !important;
+    appearance: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%2300d4ff' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 8px center !important;
+    padding-right: 25px !important;
+}
+
+.sidebar-panel::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-panel::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 255, 0.2);
+    border-radius: 2px;
+}

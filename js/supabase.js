@@ -163,6 +163,11 @@ class SupabaseManager {
      * 開始健康檢查
      */
     startHealthCheck() {
+        // Clear existing interval to prevent duplicates
+        if (this.healthCheckInterval) {
+            clearInterval(this.healthCheckInterval);
+        }
+        
         // 每 30 秒檢查一次連線
         this.healthCheckInterval = setInterval(async () => {
             if (!this.isOnline) return;
@@ -497,6 +502,16 @@ class SupabaseManager {
         this.connectionAttempts = 0;
         await this.init();
     }
+
+    /**
+     * 清理資源 - 清除所有定時器
+     */
+    cleanup() {
+        if (this.healthCheckInterval) {
+            clearInterval(this.healthCheckInterval);
+            this.healthCheckInterval = null;
+        }
+    }
 }
 
 // 創建全局 Supabase 管理器實例
@@ -513,4 +528,14 @@ Object.defineProperty(window, 'supabaseClient', {
 // 導出模組（支援模組化）
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = SupabaseManager;
+}
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('supabase', {
+        loaded: true,
+        exports: { supabaseManager: window.supabaseManager },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: supabase');
 }

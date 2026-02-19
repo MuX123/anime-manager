@@ -3,6 +3,149 @@
  * ACG 收藏庫 - 資料狀態與數據邏輯 (Data Layer)
  */
 
+const DEMO_ANIME_DATA = [
+    {
+        id: 1,
+        name: '刀劍神域',
+        original_name: 'Sword Art Online',
+        genre: '科幻',
+        year: '2024',
+        season: '冬',
+        episodes: '24集',
+        rating: '優',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1173/142080l.jpg',
+        description: '2022年，VRMMO遊戲「SAO」正式營運，玩家們被困在遊戲中無法登出，只有打倒BOSS才能離開...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 2,
+        name: '鬼滅之刃',
+        original_name: 'Demon Slayer',
+        genre: '熱血',
+        year: '2023',
+        season: '春',
+        episodes: '26集',
+        rating: '神',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1178/142083l.jpg',
+        description: '大正時期，名為「鬼」的怪物存在於世。主角炭治郎的家人被鬼殺害，他踏上了成為鬼殺隊的旅程...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 3,
+        name: '間諜家家酒',
+        original_name: 'Spy x Family',
+        genre: '喜劇',
+        year: '2024',
+        season: '春',
+        episodes: '12集',
+        rating: '優',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/3408/142078l.jpg',
+        description: '間諜「黃昏」為了完成任務，需要組建一個臨時家庭。他收養了具有讀心能力的女兒，展開了意想不到的生活...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 4,
+        name: '進擊的巨人',
+        original_name: 'Attack on Titan',
+        genre: '熱血',
+        year: '2023',
+        season: '秋',
+        episodes: '24集',
+        rating: '神',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1174/142081l.jpg',
+        description: '在巨人威脅下的人類最後的城堡，面對巨人捕食的恐懼，主角艾倫決定加入訓練兵團，展開復仇之旅...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 5,
+        name: '我的英雄學院',
+        original_name: 'My Hero Academia',
+        genre: '熱血',
+        year: '2024',
+        season: '夏',
+        episodes: '24集',
+        rating: '優',
+        recommendation: '★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1205/142085l.jpg',
+        description: '在80%的人類都擁有名為「個性」的超能力的時代，沒有力量的少年綠谷出久如何成為英雄？',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 6,
+        name: '咒術迴戰',
+        original_name: 'Jujutsu Kaisen',
+        genre: '熱血',
+        year: '2024',
+        season: '冬',
+        episodes: '24集',
+        rating: '神',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1173/142079l.jpg',
+        description: '高中生虎杖悠仁在吞下詛咒的手指後，成為了詛咒的容器，必須進入咒術高等學校學習...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 7,
+        name: '紫羅蘭永恆花園',
+        original_name: 'Violet Evergarden',
+        genre: '戀愛',
+        year: '2023',
+        season: '春',
+        episodes: '14集',
+        rating: '神',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1795/142084l.jpg',
+        description: '自動手記人偶「薇爾莉特·伊芙加登」在戰後尋找「愛」的意義，替人們代筆書信...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 8,
+        name: '你的名字',
+        original_name: 'Your Name',
+        genre: '戀愛',
+        year: '2022',
+        season: '秋',
+        episodes: '劇場版',
+        rating: '神',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/1315/142086l.jpg',
+        description: '住在東京的少年與住在鄉下的少女，在夢中交換了身體。跨越時空的奇蹟就此展開...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 9,
+        name: 'Re:從零開始的異世界生活',
+        original_name: 'Re:Zero',
+        genre: '異世界',
+        year: '2024',
+        season: '夏',
+        episodes: '24集',
+        rating: '優',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/152/142088l.jpg',
+        description: '被召喚到異世界的少年菜月昴，擁有「死亡回歸」的能力，只有拯救他人才能打破詛咒...',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 10,
+        name: '海賊王',
+        original_name: 'One Piece',
+        genre: '冒險',
+        year: '2024',
+        season: '夏',
+        episodes: '24集',
+        rating: '神',
+        recommendation: '★★★★★',
+        image_url: 'https://cdn.myanimelist.net/images/anime/456/142090l.jpg',
+        description: '戴上草帽的少年魯夫踏上尋找「大海賊王」寶藏的冒險旅程，組建了草帽海賊團...',
+        created_at: new Date().toISOString()
+    }
+];
+
 class DataManager {
     constructor() {
         this.animeData = [];
@@ -21,7 +164,12 @@ class DataManager {
         this.currentCategory = 'anime'; // Default to anime, not notice
         this.filters = { search: '', genre: '', year: '', rating: '', season: '', month: '', episodes: '' };
         this.sortOrder = localStorage.getItem('sortOrder') || 'desc';
-        this.gridColumns = localStorage.getItem('gridColumns') || 4;
+        this.gridColumns = (() => {
+            const stored = localStorage.getItem('gridColumns');
+            if (stored === 'mobile') return 'mobile';
+            if (['3', '4', '5'].includes(stored)) return parseInt(stored);
+            return window.innerWidth <= 768 ? 'mobile' : 4;
+        })();
 
         // Sync to window
         window.animeData = this.animeData;
@@ -37,6 +185,7 @@ class DataManager {
     setAnimeData(data) {
         this.animeData = data;
         window.animeData = data;
+        this.initFuse(data);
     }
 
     setOptionsData(data) {
@@ -49,26 +198,42 @@ class DataManager {
         window.currentCategory = cat;
     }
 
+    initFuse(data) {
+        if (!window.Fuse) return;
+        const options = {
+            keys: ['name', 'desc', 'genre', 'year'],
+            threshold: 0.4,
+            ignoreLocation: true
+        };
+        this.fuse = new Fuse(data, options);
+    }
+
     // --- Get Filtered Data ---
     getFilteredData() {
         let data = this.animeData || [];
-        
-        // Filter by category
+
+        // 1. Apply search filter (Fuse.js or Basic)
+        if (this.filters.search) {
+            if (this.fuse) {
+                const results = this.fuse.search(this.filters.search);
+                data = results.map(r => r.item);
+            } else {
+                // Fallback
+                const search = this.filters.search.toLowerCase();
+                data = data.filter(item =>
+                    (item.name || '').toLowerCase().includes(search) ||
+                    (item.desc || '').toLowerCase().includes(search)
+                );
+            }
+        }
+
+        // 2. Filter by category
         const cat = this.currentCategory || window.currentCategory || 'anime';
         if (cat !== 'notice') {
             data = data.filter(item => (item.category || 'anime') === cat);
         }
-        
-        // Apply search filter
-        if (this.filters.search) {
-            const search = this.filters.search.toLowerCase();
-            data = data.filter(item => 
-                (item.name || '').toLowerCase().includes(search) ||
-                (item.desc || '').toLowerCase().includes(search)
-            );
-        }
-        
-        // Apply other filters
+
+        // 3. Apply other filters
         if (this.filters.genre) {
             data = data.filter(item => (item.genre || '').includes(this.filters.genre));
         }
@@ -78,15 +243,19 @@ class DataManager {
         if (this.filters.rating) {
             data = data.filter(item => (item.rating || '') === this.filters.rating);
         }
-        
-        // Sort
+
+        // 4. Sort
         const order = this.sortOrder || 'desc';
         data = [...data].sort((a, b) => {
+            if (order === 'name') return a.name.localeCompare(b.name, 'zh-TW');
+            // Assuming created_at is the default sort key for time
             const dateA = new Date(a.created_at || 0);
             const dateB = new Date(b.created_at || 0);
-            return order === 'desc' ? dateB - dateA : dateA - dateB;
+            if (order === 'desc') return dateB - dateA;
+            if (order === 'asc') return dateA - dateB;
+            return 0;
         });
-        
+
         return data;
     }
 
@@ -114,18 +283,16 @@ class DataManager {
         const client = window.supabaseManager?.getClient();
 
         if (!client || !window.supabaseManager?.isConnectionReady()) {
-            console.warn('Supabase 未就緒');
-            this.animeData = [];
-            window.animeData = [];
-            window.dataLoadError = '無法連接數據庫，請檢查網絡連接';
+            console.warn('Supabase 未就緒，使用演示數據');
+            this.setAnimeData([...DEMO_ANIME_DATA]);
+            window.dataLoadError = '資料庫未連接，使用演示數據';
             return this.animeData;
         }
 
         try {
             const { data, error } = await client.from('anime_list').select('*').order('created_at', { ascending: false });
             if (!error) {
-                this.animeData = data || [];
-                window.animeData = this.animeData;
+                this.setAnimeData(data || []);
                 if (this.animeData.length === 0) {
                     window.dataLoadError = '當前無作品資料，請透過後台新增';
                 } else {
@@ -139,10 +306,10 @@ class DataManager {
             console.warn('Data load error:', e);
         }
 
-        // No fallback - show error state
-        this.animeData = [];
-        window.animeData = [];
-        window.dataLoadError = '無法載入資料，請稍後重試';
+        // Fallback to demo data
+        console.warn('使用演示數據');
+        this.setAnimeData([...DEMO_ANIME_DATA]);
+        window.dataLoadError = '無法載入資料，已切換至離線演示模式';
         return this.animeData;
     }
 
@@ -174,6 +341,32 @@ class DataManager {
         });
     }
 
+    // --- Render Search Filter HTML ---
+    renderSearchSelectsHTML() {
+        const optionsData = this.optionsData || {};
+        const filters = this.filters || {};
+        
+        const createSelect = (id, label, options, currentVal, onChange) => {
+            if (!options || options.length === 0) return '';
+            return `<select id="${id}" onchange="${onChange}" style="min-width: 100px; background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.25); padding: 8px; font-size: 13px; cursor: pointer; color: #fff; border-radius: 6px; font-family: 'Noto Sans TC', sans-serif;">
+                <option value="" style="background: #0a0f19;">${label}</option>
+                ${options.map(o => `<option value="${o}" ${o === currentVal ? 'selected' : ''} style="background: #0a0f19;">${o}</option>`).join('')}
+            </select>`;
+        };
+        
+        return `${createSelect('filter-genre', '類型', optionsData.genre, filters.genre, "window.dataManager?.applyFilter('genre', this.value)")}
+               ${createSelect('filter-year', '年份', optionsData.year, filters.year, "window.dataManager?.applyFilter('year', this.value)")}
+               ${createSelect('filter-season', '季度', optionsData.season, filters.season, "window.dataManager?.applyFilter('season', this.value)")}
+               ${createSelect('filter-month', '月份', optionsData.month, filters.month, "window.dataManager?.applyFilter('month', this.value)")}
+               ${createSelect('filter-rating', '評分', optionsData.rating, filters.rating, "window.dataManager?.applyFilter('rating', this.value)")}`;
+    }
+    
+    // --- Apply Filter ---
+    applyFilter(key, value) {
+        this.updateFilter(key, value);
+        window.renderApp?.();
+    }
+
     getOptionLabel(key) {
         return window.siteSettings?.custom_labels?.[key] || {
             genre: '類型', year: '年份', month: '月份', season: '季度', episodes: '集數', rating: '評分', recommendation: '推薦'
@@ -195,6 +388,15 @@ class DataManager {
 
             const btnColor = document.getElementById('set-btn-color')?.value;
             if (btnColor) extra_data.btn_bg = btnColor;
+
+            // Handle gallery (劇照) field - split by newline and filter empty
+            const galleryInput = document.getElementById('form-gallery')?.value;
+            if (galleryInput) {
+                const galleryUrls = galleryInput.split('\n').map(url => url.trim()).filter(url => url);
+                if (galleryUrls.length > 0) {
+                    extra_data.gallery = galleryUrls;
+                }
+            }
 
             const selectedGenres = Array.from(document.querySelectorAll('input[name="form-genre"]:checked')).map(cb => cb.value);
 
@@ -380,6 +582,7 @@ window.bulkDeleteAnime = () => window.dataManager.bulkDeleteAnime();
 window.saveOptionsToDB = (s) => window.dataManager.saveOptionsToDB(s);
 window.addNewCustomList = () => window.dataManager.addNewCustomList();
 window.deleteCustomList = (k) => window.dataManager.deleteCustomList(k);
+window.renderSearchSelectsHTML = () => window.dataManager.renderSearchSelectsHTML();
 window.deleteOptionItem = async (k, i) => {
     if (!confirm('Delete?')) return;
     window.dataManager.optionsData[k].splice(i, 1);
@@ -468,3 +671,17 @@ window.dataManager = new DataManager();
 
 // Admin functions are now in admin-manager.js
 console.log('✅ data-manager.js loaded');
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('data-manager', {
+        loaded: true,
+        exports: { 
+            dataManager: window.dataManager,
+            loadData: window.loadData,
+            getFilteredData: window.getFilteredData
+        },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: data-manager');
+}

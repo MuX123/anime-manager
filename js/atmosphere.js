@@ -15,25 +15,31 @@
    ========================================== */
 window.CursorManager = {
     // 此路徑與 CSS 中的變數需保持一致
-    BASE_PATH: new URL('./assets/cursors', window.location.href).href,
+    BASE_PATH: './assets/cursors',
 
-    // 預載主題設定
+    // 預載主題設定 - 包含熱點偏移 (hotspotX, hotspotY)
     themes: {
-        anya: {
-            name: '🦊 阿尼亞',
-            folder: 'anya',
-            files: { 'default': 'default.gif', 'pointer': 'pointer.gif', 'text': 'text.gif', 'help': 'help.gif' }
-        },
-        frieren: {
-            name: '🧙‍♀️ 芙莉蓮',
-            folder: 'frieren',
-            files: { 'default': 'default.gif', 'pointer': 'pointer.gif', 'text': 'text.gif', 'help': 'help.gif' }
-        },
-        elysia: {
-            name: '🦋 愛莉希雅',
-            folder: 'elysia',
-            files: { 'default': 'default.gif', 'pointer': 'pointer.gif', 'text': 'text.gif', 'help': 'help.gif' }
-        }
+        anya: { name: '🦊 安妮亞', folder: 'anya', hotspotX: 4, hotspotY: 4, files: { 'default': 'default.gif', 'pointer': 'pointer.gif', 'text': 'text.gif', 'help': 'help.gif' } },
+        frieren: { name: '🧙‍♀️ 芙莉蓮', folder: 'frieren', hotspotX: 4, hotspotY: 4, files: { 'default': 'default.gif', 'pointer': 'pointer.gif', 'text': 'text.gif', 'help': 'help.gif' } },
+        elysia: { name: '🦋 愛莉希雅', folder: 'elysia', hotspotX: 5, hotspotY: 4, files: { 'default': 'default.gif', 'pointer': 'pointer.gif', 'text': 'text.gif', 'help': 'help.gif' } },
+
+        // --- 新增主題 (自動掃描) ---
+        amiya: { "name": "阿米婭 (明日方舟)", "folder": "amiya", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        brant: { "name": "Brant (鳴潮)", "folder": "brant", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        burnice_white: { "name": "柏妮思 (絕區零)", "folder": "burnice_white", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        chibi_firefly: { "name": "流螢 Q版 (星鐵)", "folder": "chibi_firefly", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        chibi_mydei: { "name": "Mydei Q版 (崩壞)", "folder": "chibi_mydei", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        chibi_phainon: { "name": "Phainon Q版 (崩壞)", "folder": "chibi_phainon", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        chibi_phrolova_cd844a7ebd: { "name": "弗洛洛 Q版 (鳴潮)", "folder": "chibi_phrolova_cd844a7ebd", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        chibi_roccia_f1cafdcc34: { "name": "Roccia Q版 (鳴潮)", "folder": "chibi_roccia_f1cafdcc34", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        chibi_zhao_1cdb02dbab: { "name": "Zhao Q版 (絕區零)", "folder": "chibi_zhao_1cdb02dbab", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        chisa_wuthering_waves_792f859212: { "name": "熾霞 (鳴潮)", "folder": "chisa_wuthering_waves_792f859212", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        citlali_c40bb6ed5f: { "name": "茜特菈莉 (原神)", "folder": "citlali_c40bb6ed5f", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        evernight_6999ef3f35: { "name": "永夜 (崩壞)", "folder": "evernight_6999ef3f35", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        furina_d965b215d4: { "name": "芙寧娜 (原神)", "folder": "furina_d965b215d4", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        iuno_c5088d425d: { "name": "Iuno (鳴潮)", "folder": "iuno_c5088d425d", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        natsume_an_an_9d0c187dd8: { "name": "棗安安", "folder": "natsume_an_an_9d0c187dd8", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
+        sakuraba_ema_183f5a21e3: { "name": "櫻庭繪馬", "folder": "sakuraba_ema_183f5a21e3", "hotspotX": 4, "hotspotY": 4, "files": { "default": "default.gif", "pointer": "pointer.gif", "text": "text.gif", "help": "help.gif" } },
     },
 
     // 狀態標記
@@ -52,6 +58,35 @@ window.CursorManager = {
     // 點擊/懸停狀態
     isClicking: false,
     isScaled: false,
+
+    // 觀察器
+    _mutationObserver: null,
+
+    // 取得靈敏度 (0.1-1.0)
+    getSensitivity() {
+        const saved = localStorage.getItem('cursorSensitivity');
+        return saved ? parseFloat(saved) : 0.4; // 預設 0.4
+    },
+
+    // 設定靈敏度
+    setSensitivity(value) {
+        const sensitivity = Math.max(0.1, Math.min(1.0, parseFloat(value)));
+        localStorage.setItem('cursorSensitivity', sensitivity);
+        this.trailingSpeed = sensitivity;
+        this.updateSensitivityDisplay();
+    },
+
+    // 調整靈敏度 (用於按鈕 +/-)
+    adjustSensitivity(delta) {
+        let current = this.getSensitivity();
+        this.setSensitivity(current + delta);
+    },
+
+    // 比例調整 (用於按鈕 +/-)
+    changeScale(delta) {
+        let current = parseFloat(localStorage.getItem('cursorScale')) || 1.0;
+        this.setScale(current + delta);
+    },
 
     // 初始化入口
     init(isLowSpec = false) {
@@ -76,6 +111,9 @@ window.CursorManager = {
             savedScale = '1.0';
             localStorage.setItem('cursorScale', '1.0');
         }
+
+        // 載入靈敏度設定
+        this.trailingSpeed = this.getSensitivity();
 
         this.apply(savedTheme);
         this.setScale(savedScale);
@@ -120,7 +158,8 @@ window.CursorManager = {
             willChange: 'transform, opacity',
             opacity: '0',
             left: '0',
-            top: '0'
+            top: '0',
+            transformOrigin: 'top left' // 關鍵：確保縮放從左上角開始
         });
         this.visualCursor = cursor;
     },
@@ -132,8 +171,14 @@ window.CursorManager = {
 
     // 啟動 Lerp 動畫迴圈
     startLerpLoop() {
+        // Visibility check - pause when tab hidden
+        if (document.hidden) {
+            this.rafId = requestAnimationFrame(() => this.startLerpLoop());
+            return;
+        }
+
         const animate = () => {
-            if (!this.visualCursor || !this.initialized) {
+            if (!this.visualCursor || !this.initialized || document.hidden) {
                 this.rafId = requestAnimationFrame(animate);
                 return;
             }
@@ -142,20 +187,26 @@ window.CursorManager = {
             this.cursorPos.x = this.lerp(this.cursorPos.x, this.targetPos.x, this.trailingSpeed);
             this.cursorPos.y = this.lerp(this.cursorPos.y, this.targetPos.y, this.trailingSpeed);
 
-            // 安全取得 Scale
+            // 安全取得 Scale 和熱點偏移
             let baseScaleVal = localStorage.getItem('cursorScale');
             let baseScale = parseFloat(baseScaleVal);
             if (isNaN(baseScale)) baseScale = 1.0;
 
             let currentScale = baseScale;
 
-            // 更新位置
-            let transform = `translate3d(${this.cursorPos.x}px, ${this.cursorPos.y}px, 0) scale(${currentScale})`;
+            // 取得當前主題的熱點偏移
+            const currentThemeId = localStorage.getItem('cursorTheme') || 'anya';
+            const currentTheme = this.themes[currentThemeId] || this.themes['anya'];
+            const hotspotX = currentTheme?.hotspotX || 0;
+            const hotspotY = currentTheme?.hotspotY || 0;
 
-            // 指針類型熱點偏移
-            if (this.currentType === 'pointer') {
-                transform = `translate3d(${this.cursorPos.x - 5}px, ${this.cursorPos.y - 2}px, 0) scale(${currentScale})`;
-            }
+            // 更新位置 - 只應用熱點偏移，不乘以縮放比例
+            // 邏輯：游標圖片左上角位置 = 滑鼠位置 - 熱點位置
+            // 這樣可以確保視覺上的熱點始終對齊滑鼠尖端，無論縮放
+            const renderX = this.cursorPos.x - hotspotX;
+            const renderY = this.cursorPos.y - hotspotY;
+
+            let transform = `translate3d(${renderX}px, ${renderY}px, 0) scale(${currentScale})`;
 
             // 狀態縮放補償
             if (this.isClicking) {
@@ -182,23 +233,24 @@ window.CursorManager = {
 
         // 全域移動監聽 - 只更新目標位置，由 RAF 迴圈處理動畫
         document.addEventListener('mousemove', (e) => {
-            // 第一次移動時，直接跳到目標位置（避免 lerp 延遲）
+            // 1. 第一次移動時，直接跳到目標位置（避免 lerp 延遲）
             if (!this.hasMoved) {
                 this.cursorPos.x = e.clientX;
                 this.cursorPos.y = e.clientY;
             }
 
-            // 強制顯示遊標
+            // 2. 強制顯示遊標
             activateCursor();
             this.hasMoved = true;
 
-            // 更新目標位置
+            // 3. 更新目標位置
             this.targetPos.x = e.clientX;
             this.targetPos.y = e.clientY;
 
-            // 更新遊標類型
+            // 5. 更新遊標類型
             this.updateCursorType(e.target);
         }, { passive: true });
+
 
         // 點擊事件 - 縮放動畫
         document.addEventListener('mousedown', () => {
@@ -253,6 +305,9 @@ window.CursorManager = {
                 this.visualCursor.style.opacity = '1';
             }
         }, 500);
+
+        // Store reference for cleanup
+        this._ensureVisibleInterval = interval;
     },
 
     checkVisibilityFallback() {
@@ -325,6 +380,9 @@ window.CursorManager = {
 
         // 直接設置背景圖（異步加載）
         this.visualCursor.style.backgroundImage = `url('${url}')`;
+        this.visualCursor.style.backgroundSize = 'contain';  // 關鍵：強制縮放至容器大小
+        this.visualCursor.style.backgroundRepeat = 'no-repeat';
+        this.visualCursor.style.backgroundPosition = '0 0';  // 從左上角開始，確保熱點對齊
         this.visualCursor.style.width = '32px';
         this.visualCursor.style.height = '32px';
 
@@ -358,30 +416,121 @@ window.CursorManager = {
         document.documentElement.style.setProperty('--cur-scale', scale);
         this.updateCursorImage();
         this.updateSizeDisplay(scale);
-    },
 
-    changeScale(delta) {
-        let current = parseFloat(localStorage.getItem('cursorScale') || '1');
-        let newScale = Math.max(0.5, Math.min(3.0, current + delta));
-        this.setScale(newScale);
+        // 同步滑桿 UI
+        const slider = document.getElementById('cursor-size-slider');
+        if (slider && slider.value !== String(scale)) {
+            slider.value = scale;
+        }
     },
 
     forceHideNativeCursor() {
-        document.documentElement.classList.add('custom-cursor-active');
+        // 1. 確保 class 已添加
+        if (!document.documentElement.classList.contains('custom-cursor-active')) {
+            document.documentElement.classList.add('custom-cursor-active');
+        }
 
-        // 確保注入強力隱藏樣式
+        // 2. 注入最高優先級隱藏樣式到 head
         if (!document.getElementById('cursor-hide-patch')) {
             const style = document.createElement('style');
             style.id = 'cursor-hide-patch';
-            style.innerHTML = `
-                html.custom-cursor-active, 
+            style.textContent = `
+                /* === 強制隱藏原生游標 === */
+                html.custom-cursor-active,
                 html.custom-cursor-active *,
-                html.custom-cursor-active body,
-                html.custom-cursor-active iframe {
+                html.custom-cursor-active *:before,
+                html.custom-cursor-active *:after {
                     cursor: none !important;
                 }
             `;
+            // 插入到 head 最後面，確保最高權重
             document.head.appendChild(style);
+            console.log('[CursorManager] 強制隱藏樣式已注入到 head');
+        }
+
+        // 3. 立即應用
+        this._applyImmediateHide();
+
+        // 4. 用 setInterval 持續檢查（不像 requestAnimationFrame 會在頁面靜止時停止）
+        // PERFORMANCE FIX: Limit watchdog to 6 seconds then stop
+        if (!this._cursorWatchdog) {
+            let watchdogCount = 0;
+            this._cursorWatchdog = setInterval(() => {
+                watchdogCount++;
+                // Stop watchdog after 6 seconds to prevent memory leak
+                if (watchdogCount > 12) {
+                    clearInterval(this._cursorWatchdog);
+                    this._cursorWatchdog = null;
+                    return;
+                }
+                this._applyImmediateHide();
+                if (!document.documentElement.classList.contains('custom-cursor-active')) {
+                    document.documentElement.classList.add('custom-cursor-active');
+                }
+            }, 500); // 每 500ms 檢查一次
+        }
+
+        // 5. 頁面可見性變化時重置
+        if (!this._visibilityHandler) {
+            this._visibilityHandler = () => {
+                if (!document.hidden) {
+                    this._applyImmediateHide();
+                    document.documentElement.classList.add('custom-cursor-active');
+                }
+            };
+            document.addEventListener('visibilitychange', this._visibilityHandler);
+            window.addEventListener('focus', () => this._applyImmediateHide());
+        }
+    },
+
+    _applyImmediateHide() {
+        // 強制隱藏，不檢查條件
+        try {
+            const el = document.documentElement;
+            el.style.setProperty('cursor', 'none', 'important');
+            el.style.setProperty('caret-color', 'transparent', 'important');
+
+            if (document.body) {
+                document.body.style.setProperty('cursor', 'none', 'important');
+                document.body.style.setProperty('caret-color', 'transparent', 'important');
+            }
+        } catch (e) {
+            console.warn('[CursorManager] Apply hide failed', e);
+        }
+    },
+
+    /**
+     * 銷毀函數 - 清除守護程序
+     */
+    destroy() {
+        if (this._cursorWatchdog) {
+            clearInterval(this._cursorWatchdog);
+            this._cursorWatchdog = null;
+        }
+        if (this._ensureVisibleInterval) {
+            clearInterval(this._ensureVisibleInterval);
+            this._ensureVisibleInterval = null;
+        }
+        if (this._visibilityHandler) {
+            document.removeEventListener('visibilitychange', this._visibilityHandler);
+            window.removeEventListener('focus', this._applyImmediateHide); // 移除新增的監聽器
+            this._visibilityHandler = null;
+        }
+        if (this._mutationObserver) {
+            this._mutationObserver.disconnect();
+            this._mutationObserver = null;
+        }
+        // 清除 class 和 style
+        document.documentElement.classList.remove('custom-cursor-active');
+        document.documentElement.removeAttribute('data-cursor-hidden');
+        const style = document.getElementById('cursor-hide-patch');
+        if (style) style.remove();
+        // 恢復原生遊標
+        document.documentElement.style.removeProperty('cursor');
+        document.documentElement.style.removeProperty('caret-color');
+        if (document.body) {
+            document.body.style.removeProperty('cursor');
+            document.body.style.removeProperty('caret-color');
         }
     },
 
@@ -389,15 +538,34 @@ window.CursorManager = {
         return Object.keys(this.themes).map(k => ({ id: k, name: this.themes[k].name }));
     },
 
+    // 注入主題到 DOM (保持向後兼容 - 已廢棄)
+    injectThemes() {
+        // 已廢棄，不再需要
+    },
+
     syncUI(theme, scale) {
         const select = document.getElementById('cursor-theme-select');
         if (select) select.value = theme;
         this.updateSizeDisplay(scale);
+        this.updateSensitivityDisplay();
     },
 
     updateSizeDisplay(scale) {
-        const display = document.getElementById('cursor-size-display');
+        // 更新顯示文字
+        const display = document.getElementById('cursor-size-display'); // 舊版相容
         if (display) display.textContent = parseFloat(scale).toFixed(1) + 'x';
+
+        const valueDisplay = document.getElementById('cursor-size-value'); // 新版
+        if (valueDisplay) valueDisplay.textContent = parseFloat(scale).toFixed(1) + 'x';
+    },
+
+    updateSensitivityDisplay() {
+        const val = this.getSensitivity();
+        const display = document.getElementById('cursor-sensitivity-display');
+        if (display) display.textContent = val.toFixed(2);
+
+        const slider = document.getElementById('cursor-sensitivity-slider');
+        if (slider) slider.value = val;
     }
 };
 
@@ -406,14 +574,139 @@ if (window.VisualEngine) {
     window.VisualEngine.register('CursorManager', window.CursorManager);
 }
 
+// ==================== Theme Picker Modal ====================
+window.CursorManager.openThemePicker = function() {
+    // Remove existing modal if any
+    const existing = document.getElementById('cursor-theme-modal');
+    if (existing) existing.remove();
+
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'cursor-theme-modal';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 2147483646;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.id = 'cursor-theme-modal-content';
+    modal.style.cssText = `
+        background: rgba(10, 15, 25, 0.95);
+        border: 1px solid rgba(0, 212, 255, 0.3);
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 16px;
+        box-shadow: 0 0 40px rgba(0, 212, 255, 0.2);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+    `;
+
+    // Add title
+    const title = document.createElement('div');
+    title.textContent = '🎨 選擇游標風格';
+    title.style.cssText = `
+        grid-column: 1 / -1;
+        text-align: center;
+        font-size: 18px;
+        color: #00d4ff;
+        margin-bottom: 8px;
+    `;
+    modal.appendChild(title);
+
+    // Get current theme
+    const currentTheme = localStorage.getItem('cursorTheme') || 'anya';
+
+    // Generate theme cards
+    Object.keys(this.themes).forEach(themeId => {
+        const theme = this.themes[themeId];
+        const card = document.createElement('div');
+        const isActive = themeId === currentTheme;
+        
+        card.innerHTML = `
+            <div class="cursor-theme-card ${isActive ? 'active' : ''}" data-theme="${themeId}" 
+                 style="cursor: pointer; padding: 8px; border-radius: 8px; 
+                        background: ${isActive ? 'rgba(0, 212, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)'};
+                        border: 1px solid ${isActive ? '#00d4ff' : 'transparent'};
+                        transition: all 0.2s ease; text-align: center;">
+                <img src="${this.BASE_PATH}/${theme.folder}/default.gif" 
+                     style="width: 48px; height: 48px; display: block; margin: 0 auto 8px;"
+                     onerror="this.style.display='none'">
+                <div style="font-size: 12px; color: #fff;">${theme.name}</div>
+            </div>
+        `;
+        
+        card.onclick = () => {
+            localStorage.setItem('cursorTheme', themeId);
+            this.apply(themeId);
+            this.syncUI(themeId, localStorage.getItem('cursorScale') || '1.0');
+            overlay.remove();
+        };
+        
+        modal.appendChild(card);
+    });
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Fade in
+    requestAnimationFrame(() => {
+        overlay.style.opacity = '1';
+        modal.style.transform = 'scale(1)';
+    });
+
+    // Click outside to close
+    overlay.onclick = (e) => {
+        if (e.target === overlay) {
+            overlay.style.opacity = '0';
+            modal.style.transform = 'scale(0.9)';
+            setTimeout(() => overlay.remove(), 300);
+        }
+    };
+};
+
 // Priority #1: 立即啟動
+// 即使沒有 body，也要先在 html 上動手
+document.documentElement.classList.add('custom-cursor-active');
+document.documentElement.style.setProperty('cursor', 'none', 'important');
+
 if (document.body) {
-    // 立即加上 class
-    document.documentElement.classList.add('custom-cursor-active');
     window.CursorManager.init();
 } else {
     document.addEventListener('DOMContentLoaded', () => {
-        document.documentElement.classList.add('custom-cursor-active');
         window.CursorManager.init();
     });
+}
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('atmosphere', {
+        loaded: true,
+        exports: { 
+            CursorManager: window.CursorManager,
+            changeCursorTheme: window.changeCursorTheme,
+            applyCursorTheme: window.applyCursorTheme,
+            initAtmosphere: window.initAtmosphere,
+            openThemePicker: window.openThemePicker
+        },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: atmosphere');
 }

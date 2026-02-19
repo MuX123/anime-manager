@@ -1,0 +1,183 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e19]:
+    - generic [ref=e20]:
+      - generic [ref=e39]:
+        - text: 👤
+        - generic [ref=e40]: "62"
+      - generic [ref=e41]:
+        - text: 🖱️
+        - generic [ref=e42]: 1,557
+      - generic [ref=e43]:
+        - text: 📄
+        - generic [ref=e44]: "761"
+    - generic:
+      - generic: "📢 測試：JSON:::{\"text\":\"儲存失敗：invalid input syntax for type uuid: \\\"null\\\"\",\"style\":{\"align\":\"left\",\"size\":\"n ⚡ 測試：JSON:::{\"text\":\"儲存失敗：invalid input syntax for type uuid: \\\"null\\\"\",\"style\":{\"align\":\"left\",\"size\":\"n"
+  - generic [ref=e46]:
+    - banner [ref=e47]:
+      - heading "ACG 收藏庫 v8.0.0" [level=1] [ref=e49]
+    - generic [ref=e50]:
+      - button "訊息" [ref=e51]
+      - button "動畫" [ref=e52]
+      - button "漫畫" [ref=e53]
+      - button "電影" [ref=e54]
+    - generic [ref=e57]:
+      - generic [ref=e58]:
+        - button "💬 系統訊息" [ref=e59]
+        - button "📝 留言板" [ref=e60]
+        - button "📋 版本更新" [ref=e61]
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - img [ref=e66]
+          - generic [ref=e67]:
+            - generic [ref=e68]:
+              - generic [ref=e69]: 音樂安
+              - generic [ref=e70]: 2026/2/9 下午3:51:40
+            - generic [ref=e73]: "儲存失敗：invalid input syntax for type uuid: \"null\""
+        - generic [ref=e74]:
+          - img [ref=e76]
+          - generic [ref=e77]:
+            - generic [ref=e78]:
+              - generic [ref=e79]: 音樂安
+              - generic [ref=e80]: 2026/2/9 下午1:17:08
+            - generic [ref=e83]: 巴巴
+  - generic [ref=e28]:
+    - generic [ref=e29]: 系統收納盒
+    - generic [ref=e30]:
+      - button "搜尋" [ref=e31]
+      - button "設定" [ref=e32]
+      - button "風格" [ref=e33]
+    - generic [ref=e35]:
+      - textbox "搜尋名稱或描述..." [ref=e37]
+      - generic [ref=e84]:
+        - combobox [ref=e85]:
+          - option "類型" [selected]
+          - option "奇幻"
+          - option "科幻"
+          - option "冒險"
+          - option "校園"
+          - option "體育"
+          - option "推理"
+          - option "恐怖"
+          - option "歷史"
+          - option "戰爭"
+          - option "機甲"
+          - option "賽博龐克"
+          - option "蒸氣龐克"
+          - option "末日廢土"
+          - option "異世界"
+          - option "轉生"
+          - option "魔法"
+          - option "武俠"
+          - option "仙俠"
+          - option "職場"
+          - option "美食"
+          - option "偶像"
+          - option "萌系"
+          - option "日常"
+          - option "搞笑"
+          - option "戀愛"
+          - option "後宮"
+          - option "逆後宮"
+          - option "百合"
+          - option "耽美"
+          - option "治癒"
+          - option "致鬱"
+          - option "懸疑"
+          - option "驚悚"
+          - option "犯罪"
+          - option "政治"
+          - option "哲學"
+          - option "熱血"
+          - option "勵志"
+          - option "少年"
+          - option "少女"
+          - option "青年"
+          - option "女性向"
+          - option "泡麵番"
+          - option "群像劇"
+          - option "暴力美學"
+          - option "民俗傳說"
+          - option "特攝風"
+          - option "超能力"
+          - option "卡牌競技"
+          - option "都市傳說"
+          - option "吸血鬼"
+          - option "殭屍"
+          - option "惡魔"
+          - option "機器人"
+          - option "反烏托邦"
+          - option "虛擬實境"
+          - option "傲嬌"
+          - option "病嬌"
+          - option "大逃殺"
+          - option "偽娘"
+          - option "性轉換"
+          - option "親情"
+          - option "懷舊"
+          - option "童話"
+          - option "神話"
+          - option "邪道"
+          - option "賽車"
+          - option "醫療"
+          - option "特工"
+          - option "R18"
+        - combobox [ref=e86]:
+          - option "年份" [selected]
+          - option "2006"
+          - option "2007"
+          - option "2008"
+          - option "2009"
+          - option "2010"
+          - option "2011"
+          - option "2012"
+          - option "2013"
+          - option "2014"
+          - option "2015"
+          - option "2016"
+          - option "2017"
+          - option "2018"
+          - option "2019"
+          - option "2020"
+          - option "2021"
+          - option "2022"
+          - option "2023"
+          - option "2024"
+          - option "2025"
+          - option "2026"
+          - option "2027"
+          - option "2028"
+          - option "2029"
+          - option "2030"
+        - combobox [ref=e87]:
+          - option "季度" [selected]
+          - option "冬"
+          - option "春"
+          - option "夏"
+          - option "秋"
+        - combobox [ref=e88]:
+          - option "月份" [selected]
+          - option "1月"
+          - option "2月"
+          - option "3月"
+          - option "4月"
+          - option "5月"
+          - option "6月"
+          - option "7月"
+          - option "8月"
+          - option "9月"
+          - option "10月"
+          - option "11月"
+          - option "12月"
+        - combobox [ref=e89]:
+          - option "評分" [selected]
+          - option "SSR"
+          - option "SR"
+          - option "S"
+          - option "A+"
+          - option "A"
+          - option "B+"
+          - option "B"
+          - option "C"
+          - option "D"
+          - option "未看"
+    - button "🔐 登入" [ref=e91]

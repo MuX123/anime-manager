@@ -130,89 +130,46 @@ window.updateAdminMenu = () => {
 };
 
 window.toggleAdminMode = (enable) => {
-    if (enable && !window.isAdminLoggedIn) {
-        window.showAdminLoginModal();
+    console.log('[Admin] toggleAdminMode called, enable=', enable);
+    
+    // 強制使用新的 AdminPanel
+    if (window.AdminPanel) {
+        console.log('[Admin] Using new AdminPanel');
+        if (enable && !window.isAdminLoggedIn) {
+            window.AdminPanel.Auth.showLogin();
+            return;
+        }
+        if (enable) {
+            window.AdminPanel.open();
+        } else {
+            window.AdminPanel.close();
+        }
         return;
     }
-
-    const app = document.getElementById('app');
-    const systemMenu = document.getElementById('systemMenu');
-
-    if (enable) {
-        document.body.classList.add('admin-mode-active');
-
-        // 创建全黑遮罩覆盖背景
-        let overlay = document.getElementById('admin-bg-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'admin-bg-overlay';
-            overlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: #000;
-                z-index: -1;
-                pointer-events: none;
-            `;
-            document.body.appendChild(overlay);
-        }
-
-        window.lastFrontendCategory = window.currentCategory;
-        window.currentSection = 'admin';
-
-        // 隐藏背景元素
-        const matrixCanvas = document.getElementById('c');
-        const atmosphereContainer = document.getElementById('atmosphere-container');
-        const atmosphereOverlay = document.getElementById('atmosphere-overlay');
-
-        if (matrixCanvas) matrixCanvas.style.display = 'none';
-        if (atmosphereContainer) atmosphereContainer.style.display = 'none';
-        if (atmosphereOverlay) atmosphereOverlay.style.display = 'none';
-
-        // 暂停前台视觉特效以节省资源
-        if (window.visualEngine?.stop) {
-            window.visualEngine.stop();
-        }
-
-        window.renderAdmin();
-    } else {
-        document.body.classList.remove('admin-mode-active');
-
-        // 移除全黑遮罩
-        const overlay = document.getElementById('admin-bg-overlay');
-        if (overlay) overlay.remove();
-
-        if (app) app.classList.remove('admin-mode-active');
-        if (systemMenu) systemMenu.classList.remove('admin-mode-active');
-        window.currentSection = window.lastFrontendCategory || 'anime';
-
-        // 恢复背景元素
-        const matrixCanvas = document.getElementById('c');
-        const atmosphereContainer = document.getElementById('atmosphere-container');
-        const atmosphereOverlay = document.getElementById('atmosphere-overlay');
-
-        if (matrixCanvas) matrixCanvas.style.display = 'block';
-        if (atmosphereContainer) atmosphereContainer.style.display = 'block';
-        if (atmosphereOverlay) atmosphereOverlay.style.display = 'block';
-
-        // 恢复前台视觉特效
-        if (window.visualEngine?.start) {
-            window.visualEngine.start();
-        }
-
-        window.renderApp();
-    }
+    
+    // AdminPanel 不存在，顯示錯誤
+    console.error('[Admin] AdminPanel not found!');
+    alert('錯誤：AdminPanel 未載入，請重新整理頁面');
 };
 
 // ===== Admin Render Functions =====
 
 window.renderAdmin = () => {
-    const app = document.getElementById('app');
-    if (!app) return;
-
-    const filtered = (window.animeData || []).filter(item => item.category === window.currentCategory);
+    console.log('[Admin] renderAdmin called');
+    
+    // 如果 AdminPanel 存在，直接使用新後台
+    if (window.AdminPanel) {
+        console.log('[Admin] Opening new AdminPanel');
+        window.AdminPanel.open();
+        return;
+    }
+    
+    // AdminPanel 不存在
+    console.error('[Admin] AdminPanel not found!');
+    alert('錯誤：AdminPanel 未載入，請重新整理頁面');
+    return;
+    
+    const filtered = window.dataManager?.getFilteredData?.() || [];
     const paged = filtered.slice((window.adminPage - 1) * window.adminItemsPerPage, window.adminPage * window.adminItemsPerPage);
 
     const adminTabs = [
@@ -1426,6 +1383,24 @@ if (window.supabaseManager?.client?.auth) {
             window.updateAdminMenu();
         }
     });
+}
+
+// ===== Module Registration =====
+if (window.Modules) {
+    window.Modules.loaded.set('admin-manager', {
+        loaded: true,
+        exports: { 
+            toggleAdminMode: window.toggleAdminMode,
+            renderAdmin: window.renderAdmin,
+            checkAndUpdateAdminStatus: window.checkAndUpdateAdminStatus,
+            updateAdminMenu: window.updateAdminMenu,
+            performAdminLogin: window.performAdminLogin,
+            showAdminLoginModal: window.showAdminLoginModal,
+            changeAdminPage: window.changeAdminPage
+        },
+        timestamp: Date.now()
+    });
+    console.log('[Module] Registered: admin-manager');
 }
 
 console.log('✅ 管理員模組載入完成');

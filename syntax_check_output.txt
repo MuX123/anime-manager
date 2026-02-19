@@ -1,0 +1,9 @@
+D:\cod\GH\anime-manager\js\admin-manager.js:1055
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+             ^^^^^
+
+SyntaxError: Unexpected identifier 'style'
+    at wrapSafe (node:internal/modules/cjs/loader:1692:18)
+    at checkSyntax (node:internal/main/check_syntax:76:3)
+
+Node.js v24.13.0
